@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema } from "./index";
+import { idSchema } from "./common";
 import { userRoleSchema } from "../types/roles";
 
 export const adminSmsTargetSchema = z.discriminatedUnion("kind", [

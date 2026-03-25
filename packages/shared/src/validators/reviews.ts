@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema } from "./index";
+import { idSchema } from "./common";
 
 export const createCourseReviewSchema = z.object({
   comment: z.string().trim().max(2000).optional(),

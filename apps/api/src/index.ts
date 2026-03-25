@@ -21,13 +21,13 @@ if (import.meta.main) {
       return app.fetch(request, server);
     },
     hostname: env.API_HOST,
-    port: env.API_PORT,
+    port: env.API_PORT || 3001,
     websocket
   });
 
   logger.info({
     host: env.API_HOST,
-    port: env.API_PORT
+    port: env.API_PORT || 3001
   });
 }
 

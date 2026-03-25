@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema, nonEmptyStringSchema } from "./index";
+import { idSchema, nonEmptyStringSchema } from "./common";
 
 export const messagesConversationQuerySchema = z.object({
   search: z.string().trim().max(120).optional()

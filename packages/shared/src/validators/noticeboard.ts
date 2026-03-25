@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema } from "./index";
+import { idSchema } from "./common";
 
 export const createCourseNoticeSchema = z.object({
   content: z.string().trim().min(1).max(8000),
