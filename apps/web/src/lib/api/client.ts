@@ -77,3 +77,7 @@ export async function apiGet<TData>(path: string): Promise<ApiEnvelope<TData>> {
 export async function apiPost<TBody, TData>(path: string, json: TBody): Promise<ApiEnvelope<TData>> {
   return apiClient.post(path, { json }).json() as Promise<ApiEnvelope<TData>>;
 }
+
+export async function apiPut<TBody, TData>(path: string, json: TBody): Promise<ApiEnvelope<TData>> {
+  return apiClient.put(path, { json }).json() as Promise<ApiEnvelope<TData>>;
+}

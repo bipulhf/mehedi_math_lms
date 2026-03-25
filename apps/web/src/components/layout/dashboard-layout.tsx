@@ -1,4 +1,4 @@
-import { BookCopy, ChartColumn, LayoutDashboard, Settings, Users } from "lucide-react";
+import { BookCopy, ChartColumn, LayoutDashboard, Settings, UserRound, Users } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -11,22 +11,26 @@ interface DashboardLayoutProps extends PropsWithChildren {
 const dashboardNavigation = {
   ACCOUNTANT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
+    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: ChartColumn, label: "Payments", to: "/dashboard" },
     { icon: Settings, label: "Operations", to: "/dashboard" }
   ],
   ADMIN: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
+    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: Users, label: "Users", to: "/dashboard" },
     { icon: BookCopy, label: "Courses", to: "/dashboard" },
     { icon: ChartColumn, label: "Insights", to: "/dashboard" }
   ],
   STUDENT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
+    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: BookCopy, label: "Courses", to: "/dashboard" },
     { icon: ChartColumn, label: "Progress", to: "/dashboard" }
   ],
   TEACHER: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
+    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: BookCopy, label: "Courses", to: "/dashboard" },
     { icon: Users, label: "Students", to: "/dashboard" },
     { icon: ChartColumn, label: "Analytics", to: "/dashboard" }

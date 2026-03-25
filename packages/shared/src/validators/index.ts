@@ -10,4 +10,5 @@ export const paginationSchema = z.object({
   limit: z.number().int().positive().max(100).default(10)
 });
 
+export * from "./profiles";
 export { userRoleSchema };

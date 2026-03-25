@@ -13,7 +13,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as TeachersIdRouteImport } from './routes/teachers/$id'
+import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -36,10 +40,31 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const TeachersIdRoute = TeachersIdRouteImport.update({
+  id: '/teachers/$id',
+  path: '/teachers/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardProfileCompleteRoute =
+  DashboardProfileCompleteRouteImport.update({
+    id: '/profile-complete',
+    path: '/profile-complete',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
+  id: '/students/$id',
+  path: '/students/$id',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -52,15 +77,23 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
+  '/teachers/$id': typeof TeachersIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/students/$id': typeof DashboardStudentsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
+  '/teachers/$id': typeof TeachersIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/students/$id': typeof DashboardStudentsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,8 +101,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
+  '/teachers/$id': typeof TeachersIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/students/$id': typeof DashboardStudentsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,24 +115,42 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/auth/sign-in'
+    | '/dashboard/profile'
+    | '/dashboard/profile-complete'
+    | '/teachers/$id'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/students/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/auth/sign-in' | '/dashboard' | '/api/auth/$'
+  to:
+    | '/'
+    | '/auth'
+    | '/auth/sign-in'
+    | '/dashboard/profile'
+    | '/dashboard/profile-complete'
+    | '/teachers/$id'
+    | '/dashboard'
+    | '/api/auth/$'
+    | '/dashboard/students/$id'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/dashboard'
     | '/auth/sign-in'
+    | '/dashboard/profile'
+    | '/dashboard/profile-complete'
+    | '/teachers/$id'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/students/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
+  TeachersIdRoute: typeof TeachersIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -129,12 +184,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/teachers/$id': {
+      id: '/teachers/$id'
+      path: '/teachers/$id'
+      fullPath: '/teachers/$id'
+      preLoaderRoute: typeof TeachersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/profile-complete': {
+      id: '/dashboard/profile-complete'
+      path: '/profile-complete'
+      fullPath: '/dashboard/profile-complete'
+      preLoaderRoute: typeof DashboardProfileCompleteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/auth/sign-in': {
       id: '/auth/sign-in'
       path: '/sign-in'
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/dashboard/students/$id': {
+      id: '/dashboard/students/$id'
+      path: '/students/$id'
+      fullPath: '/dashboard/students/$id'
+      preLoaderRoute: typeof DashboardStudentsIdRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -157,11 +240,17 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface DashboardRouteChildren {
+  DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardProfileCompleteRoute: typeof DashboardProfileCompleteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardProfileRoute: DashboardProfileRoute,
+  DashboardProfileCompleteRoute: DashboardProfileCompleteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardStudentsIdRoute: DashboardStudentsIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -172,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
+  TeachersIdRoute: TeachersIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

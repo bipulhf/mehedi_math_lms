@@ -7,6 +7,11 @@ const apiEnvSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(3001),
   API_HOST: z.string().default("0.0.0.0"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  AWS_REGION: z.string().default("ap-south-1"),
+  AWS_ACCESS_KEY_ID: z.string().default("replace-me"),
+  AWS_SECRET_ACCESS_KEY: z.string().default("replace-me"),
+  AWS_S3_BUCKET: z.string().default("replace-me"),
+  S3_PUBLIC_BASE_URL: z.url().optional(),
   CORS_ORIGINS: z.string().optional(),
   BODY_LIMIT_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
@@ -26,6 +31,10 @@ const defaultCorsOrigins = [
 
 export const env = {
   ...parsedEnv,
+  isS3Configured:
+    parsedEnv.AWS_ACCESS_KEY_ID !== "replace-me" &&
+    parsedEnv.AWS_SECRET_ACCESS_KEY !== "replace-me" &&
+    parsedEnv.AWS_S3_BUCKET !== "replace-me",
   corsOrigins: parsedEnv.CORS_ORIGINS
     ? parsedEnv.CORS_ORIGINS.split(",")
         .map((origin) => origin.trim())
