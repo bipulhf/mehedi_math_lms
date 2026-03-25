@@ -38,3 +38,11 @@ export async function uploadBugScreenshot(file: File): Promise<string> {
 export async function uploadCourseCover(file: File): Promise<string> {
   return uploadImage("upload/course-cover/presign", file);
 }
+
+export async function uploadCourseMaterial(file: File): Promise<string> {
+  return uploadImage("upload/course-material/presign", file);
+}
+
+export async function uploadLectureVideo(file: File): Promise<string> {
+  return uploadImage("upload/lecture-video/presign", file);
+}

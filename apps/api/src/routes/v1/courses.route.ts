@@ -1,15 +1,18 @@
 import { Hono } from "hono";
 import {
+  courseContentParamsSchema,
   courseIdParamsSchema,
   courseTeacherIdsSchema,
   createCourseSchema,
+  createChapterSchema,
   listCoursesQuerySchema,
+  reorderChaptersSchema,
   teacherDirectoryQuerySchema,
   updateCourseSchema
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
-import { courseController } from "@/lib/container";
+import { contentController, courseController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -44,6 +47,19 @@ coursesRoutes.get("/:id", (context) => {
     params.id,
     authUser?.id,
     authSession?.role as UserRole | undefined
+  );
+});
+
+coursesRoutes.get("/:courseId/content", requireRole("ADMIN", "TEACHER"), (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return contentController.getCourseContent(
+    context,
+    params.courseId,
+    authUser!.id,
+    authSession!.role as UserRole
   );
 });
 
@@ -111,6 +127,36 @@ coursesRoutes.post("/:id/teachers", requireRole("ADMIN", "TEACHER"), async (cont
     context,
     params.id,
     payload.teacherIds,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.post("/:courseId/chapters", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const payload = createChapterSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return contentController.createChapter(
+    context,
+    params.courseId,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.patch("/:courseId/chapters/reorder", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const payload = reorderChaptersSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return contentController.reorderChapters(
+    context,
+    params.courseId,
+    payload,
     authUser!.id,
     authSession!.role as UserRole
   );

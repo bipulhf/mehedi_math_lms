@@ -31,6 +31,7 @@ import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard
 import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
+import { Route as DashboardCoursesIdContentRouteImport } from './routes/dashboard/courses/$id/content'
 import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
 import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/admin/bugs/$id'
 
@@ -146,6 +147,12 @@ const DashboardCoursesIdEditRoute = DashboardCoursesIdEditRouteImport.update({
   path: '/courses/$id/edit',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCoursesIdContentRoute =
+  DashboardCoursesIdContentRouteImport.update({
+    id: '/courses/$id/content',
+    path: '/courses/$id/content',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -206,6 +214,7 @@ export interface FileRoutesByTo {
   '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRoutesById {
@@ -233,6 +242,7 @@ export interface FileRoutesById {
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRouteTypes {
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
   id:
     | '__root__'
@@ -312,6 +324,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesIdEditRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/courses/$id/content': {
+      id: '/dashboard/courses/$id/content'
+      path: '/courses/$id/content'
+      fullPath: '/dashboard/courses/$id/content'
+      preLoaderRoute: typeof DashboardCoursesIdContentRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/admin/users/$id': {
       id: '/dashboard/admin/users/$id'
       path: '/$id'
@@ -544,6 +564,7 @@ interface DashboardRouteChildren {
   DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
   DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
   DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
+  DashboardCoursesIdContentRoute: typeof DashboardCoursesIdContentRoute
   DashboardCoursesIdEditRoute: typeof DashboardCoursesIdEditRoute
 }
 
@@ -560,6 +581,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardStudentsIdRoute: DashboardStudentsIdRoute,
   DashboardBugsIndexRoute: DashboardBugsIndexRoute,
   DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
+  DashboardCoursesIdContentRoute: DashboardCoursesIdContentRoute,
   DashboardCoursesIdEditRoute: DashboardCoursesIdEditRoute,
 }
 

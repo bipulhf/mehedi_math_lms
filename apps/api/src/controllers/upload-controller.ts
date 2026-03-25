@@ -36,4 +36,22 @@ export class UploadController {
 
     return success(context, payload, 201, "Course cover upload prepared successfully");
   }
+
+  public async createCourseMaterialUpload(
+    context: Context<AppBindings>,
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<Response> {
+    const payload = await this.uploadService.createCourseMaterialUpload(input);
+
+    return success(context, payload, 201, "Course material upload prepared successfully");
+  }
+
+  public async createLectureVideoUpload(
+    context: Context<AppBindings>,
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<Response> {
+    const payload = await this.uploadService.createLectureVideoUpload(input);
+
+    return success(context, payload, 201, "Lecture video upload prepared successfully");
+  }
 }

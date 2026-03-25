@@ -29,3 +29,15 @@ uploadRoutes.post("/course-cover/presign", requireAuth(), async (context) => {
 
   return uploadController.createCourseCoverUpload(context, payload);
 });
+
+uploadRoutes.post("/course-material/presign", requireAuth(), async (context) => {
+  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+
+  return uploadController.createCourseMaterialUpload(context, payload);
+});
+
+uploadRoutes.post("/lecture-video/presign", requireAuth(), async (context) => {
+  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+
+  return uploadController.createLectureVideoUpload(context, payload);
+});

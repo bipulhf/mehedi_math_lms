@@ -1,0 +1,50 @@
+import { createFileRoute } from "@tanstack/react-router";
+import type { JSX } from "react";
+import { useEffect, useState } from "react";
+
+import {
+  CourseContentBuilder,
+  CourseContentBuilderSkeleton
+} from "@/components/courses/course-content-builder";
+import { RouteErrorView } from "@/components/common/route-error";
+import type { CourseDetail } from "@/lib/api/courses";
+import { getCourse } from "@/lib/api/courses";
+import type { ContentChapter } from "@/lib/api/content";
+import { getCourseContent } from "@/lib/api/content";
+
+export const Route = createFileRoute("/dashboard/courses/$id/content" as never)({
+  component: CourseContentPage,
+  errorComponent: RouteErrorView
+} as never);
+
+function CourseContentPage(): JSX.Element {
+  const { id } = Route.useParams();
+  const [course, setCourse] = useState<CourseDetail | null>(null);
+  const [content, setContent] = useState<readonly ContentChapter[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadData = async (): Promise<void> => {
+    setIsLoading(true);
+
+    try {
+      const [courseData, contentData] = await Promise.all([
+        getCourse(id),
+        getCourseContent(id)
+      ]);
+      setCourse(courseData);
+      setContent(contentData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadData();
+  }, [id]);
+
+  if (isLoading || !course) {
+    return <CourseContentBuilderSkeleton />;
+  }
+
+  return <CourseContentBuilder content={content} course={course} onRefresh={loadData} />;
+}

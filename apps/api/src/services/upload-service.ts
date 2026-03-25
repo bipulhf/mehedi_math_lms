@@ -31,17 +31,16 @@ function createImageValidationIssue(field: string, message: string): ValidationE
 }
 
 export class UploadService {
-  private async createImageUpload(
+  private async createUpload(
     folderName: string,
-    input: CreateProfilePhotoUploadRequest
+    input: CreateProfilePhotoUploadRequest,
+    validator: (contentType: string) => void
   ): Promise<ProfilePhotoUploadResponse> {
     if (!env.isS3Configured) {
       throw new ConflictError("S3 upload is not configured");
     }
 
-    if (!input.contentType.startsWith("image/")) {
-      throw createImageValidationIssue("contentType", "Uploads must be image files");
-    }
+    validator(input.contentType);
 
     const sanitizedFileName = sanitizeFileName(input.fileName);
     const key = `${folderName}/${crypto.randomUUID()}-${sanitizedFileName || "upload"}`;
@@ -54,21 +53,73 @@ export class UploadService {
     };
   }
 
+  private validateImageUpload(contentType: string): void {
+    if (!contentType.startsWith("image/")) {
+      throw createImageValidationIssue("contentType", "Uploads must be image files");
+    }
+  }
+
+  private validateCourseMaterialUpload(contentType: string): void {
+    const normalizedType = contentType.toLowerCase();
+    const isAllowed =
+      normalizedType.startsWith("image/") ||
+      normalizedType === "application/pdf" ||
+      normalizedType === "application/msword" ||
+      normalizedType === "application/vnd.ms-powerpoint" ||
+      normalizedType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      normalizedType === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+    if (!isAllowed) {
+      throw createImageValidationIssue(
+        "contentType",
+        "Material uploads must be PDF, DOC, DOCX, PPT, PPTX, or image files"
+      );
+    }
+  }
+
+  private validateLectureVideoUpload(contentType: string): void {
+    if (!contentType.startsWith("video/")) {
+      throw createImageValidationIssue("contentType", "Lecture video uploads must be video files");
+    }
+  }
+
   public async createProfilePhotoUpload(
     input: CreateProfilePhotoUploadRequest
   ): Promise<ProfilePhotoUploadResponse> {
-    return this.createImageUpload("profile-photos", input);
+    return this.createUpload("profile-photos", input, (contentType) =>
+      this.validateImageUpload(contentType)
+    );
   }
 
   public async createBugScreenshotUpload(
     input: CreateProfilePhotoUploadRequest
   ): Promise<ProfilePhotoUploadResponse> {
-    return this.createImageUpload("bug-screenshots", input);
+    return this.createUpload("bug-screenshots", input, (contentType) =>
+      this.validateImageUpload(contentType)
+    );
   }
 
   public async createCourseCoverUpload(
     input: CreateProfilePhotoUploadRequest
   ): Promise<ProfilePhotoUploadResponse> {
-    return this.createImageUpload("course-covers", input);
+    return this.createUpload("course-covers", input, (contentType) =>
+      this.validateImageUpload(contentType)
+    );
+  }
+
+  public async createCourseMaterialUpload(
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<ProfilePhotoUploadResponse> {
+    return this.createUpload("course-materials", input, (contentType) =>
+      this.validateCourseMaterialUpload(contentType)
+    );
+  }
+
+  public async createLectureVideoUpload(
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<ProfilePhotoUploadResponse> {
+    return this.createUpload("lecture-videos", input, (contentType) =>
+      this.validateLectureVideoUpload(contentType)
+    );
   }
 }

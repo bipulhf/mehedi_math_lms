@@ -19,19 +19,19 @@ todos:
     status: completed
   - id: phase-06
     content: "Phase 6: User and Profile Management (role-specific profiles, first-login prompt)"
-    status: pending
+    status: completed
   - id: phase-07
     content: "Phase 7: Admin Dashboard, Account Management, and Bug Reports (CRUD, activate/deactivate, bug system)"
-    status: pending
+    status: completed
   - id: phase-08
     content: "Phase 8: Category Management (hierarchical categories, admin CRUD)"
-    status: pending
+    status: completed
   - id: phase-09
     content: "Phase 9: Course CRUD and Management (creation wizard, approval workflow, co-teachers)"
-    status: pending
+    status: completed
   - id: phase-10
     content: "Phase 10: Course Content Structure -- Chapters, Lectures, Materials (drag-and-drop ordering)"
-    status: pending
+    status: completed
   - id: phase-11
     content: "Phase 11: File Upload and Media Management (AWS S3 presigned URLs, video/image/doc)"
     status: pending
@@ -533,6 +533,8 @@ erDiagram
 ## Phase 10: Course Content Structure -- Chapters, Lectures, Materials
 
 **Goal:** Build the content management system for courses: chapters containing lectures (video/link) and downloadable materials.
+
+**Status:** Completed
 
 **Key tasks:**
 
@@ -1081,14 +1083,11 @@ import type { Course, CreateCourseInput } from "@mma/shared";
 
 export const coursesApi = {
   list: (params?: { categoryId?: string; page?: number }) =>
-    api
-      .get("courses", { searchParams: params })
-      .json<PaginatedResponse<Course>>(),
+    api.get("courses", { searchParams: params }).json<PaginatedResponse<Course>>(),
 
   getById: (id: string) => api.get(`courses/${id}`).json<Course>(),
 
-  create: (data: CreateCourseInput) =>
-    api.post("courses", { json: data }).json<Course>(),
+  create: (data: CreateCourseInput) => api.post("courses", { json: data }).json<Course>()
 };
 ```
 
@@ -1105,7 +1104,7 @@ export const createCourseSchema = z.object({
   description: z.string().min(10),
   categoryId: z.string().uuid(),
   price: z.number().min(0).default(0),
-  isExamOnly: z.boolean().default(false),
+  isExamOnly: z.boolean().default(false)
 });
 
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;

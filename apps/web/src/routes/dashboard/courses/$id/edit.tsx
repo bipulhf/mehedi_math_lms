@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import {
   type CourseEditorValues
 } from "@/components/courses/course-editor";
 import { RouteErrorView } from "@/components/common/route-error";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseDetail, CourseTeacherOption } from "@/lib/api/courses";
@@ -101,14 +103,32 @@ function EditCoursePage(): JSX.Element {
   }
 
   return (
-    <CourseEditor
-      categories={categories}
-      description="Refine the offer, revise rejection feedback, and resubmit the draft when it is ready."
-      initialValues={mapInitialValues(course)}
-      isSaving={isSaving}
-      teachers={teachers}
-      title={`Edit ${course.title}`}
-      onCommit={handleCommit}
-    />
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <div>
+            <p className="font-semibold text-on-surface">Course content builder</p>
+            <p className="text-sm leading-6 text-on-surface/70">
+              Move into chapters, lectures, and materials once the course shell is ready.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/dashboard/courses/$id/content" params={{ id: course.id }}>
+              Open content builder
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <CourseEditor
+        categories={categories}
+        description="Refine the offer, revise rejection feedback, and resubmit the draft when it is ready."
+        initialValues={mapInitialValues(course)}
+        isSaving={isSaving}
+        teachers={teachers}
+        title={`Edit ${course.title}`}
+        onCommit={handleCommit}
+      />
+    </div>
   );
 }
