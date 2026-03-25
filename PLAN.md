@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: phase-02
     content: "Phase 2: Database Schema Design and Drizzle ORM Setup (all tables, relations, migrations, seed)"
-    status: pending
+    status: completed
   - id: phase-03
     content: "Phase 3: Backend Core -- Hono API Server (middleware, error handling, route structure)"
     status: pending
@@ -233,6 +233,8 @@ mehedi_math_academy/
 ## Phase 2: Database Schema Design and Drizzle ORM Setup
 
 **Goal:** Design the complete PostgreSQL schema using Drizzle ORM in `packages/db/`, covering all entities needed for the LMS.
+
+**Status:** Completed
 
 **Key tables and relationships:**
 
