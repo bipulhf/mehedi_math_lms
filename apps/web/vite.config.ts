@@ -9,6 +9,12 @@ export default defineConfig({
     tsconfigPaths: true
   },
   server: {
-    port: 3000
+    port: 3000,
+    proxy: {
+      "/api": {
+        changeOrigin: true,
+        target: "http://localhost:3001"
+      }
+    }
   }
 });

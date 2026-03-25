@@ -1,5 +1,7 @@
 import { Hono } from "hono";
+import type { UserRole } from "@mma/shared";
 import {
+  adminSendNotificationSchema,
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   bugsQuerySchema,
@@ -17,9 +19,10 @@ import {
   adminUserController,
   bugReportController,
   courseController,
+  notificationController,
   profileController
 } from "@/lib/container";
-import { requireAdmin } from "@/middleware/auth";
+import { requireAdmin, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
 export const adminRoutes = new Hono<AppBindings>();
@@ -106,4 +109,17 @@ adminRoutes.post("/courses/:id/reject", requireAdmin(), async (context) => {
   const payload = rejectCourseSchema.parse(await context.req.json());
 
   return courseController.rejectCourse(context, params.id, payload);
+});
+
+adminRoutes.post("/notifications/send", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const payload = adminSendNotificationSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return notificationController.adminOrTeacherSend(
+    context,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
 });

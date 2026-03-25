@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Bell, BookOpen, GraduationCap, LayoutDashboard, MessageSquareText } from "lucide-react";
+import { BookOpen, GraduationCap, LayoutDashboard, MessageSquareText } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
 
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { cn } from "@/lib/utils";
 
 export interface AppShellNavItem {
@@ -86,12 +87,7 @@ export function AppShell({ children, description, navItems, title }: AppShellPro
                 </h1>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface transition-colors hover:bg-surface-container-highest"
-                >
-                  <Bell className="size-4" />
-                </button>
+                <NotificationBell />
                 <Link
                   to="/dashboard/messages"
                   className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface transition-colors hover:bg-surface-container-highest"

@@ -20,7 +20,13 @@ const apiEnvSchema = z.object({
   BODY_LIMIT_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info")
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
+  FIREBASE_SERVICE_ACCOUNT_JSON: z.string().optional(),
+  FIREBASE_CLIENT_API_KEY: z.string().optional(),
+  FIREBASE_CLIENT_AUTH_DOMAIN: z.string().optional(),
+  FIREBASE_CLIENT_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_MESSAGING_SENDER_ID: z.string().optional(),
+  FIREBASE_CLIENT_APP_ID: z.string().optional()
 });
 
 const parsedEnv = apiEnvSchema.parse(process.env);
@@ -35,6 +41,19 @@ const defaultCorsOrigins = [
 
 export const env = {
   ...parsedEnv,
+  isFirebaseConfigured:
+    Boolean(
+      parsedEnv.FIREBASE_SERVICE_ACCOUNT_JSON &&
+        parsedEnv.FIREBASE_SERVICE_ACCOUNT_JSON.trim().length > 0
+    ),
+  isFirebaseClientConfigured:
+    Boolean(
+      parsedEnv.FIREBASE_CLIENT_API_KEY &&
+        parsedEnv.FIREBASE_CLIENT_AUTH_DOMAIN &&
+        parsedEnv.FIREBASE_CLIENT_PROJECT_ID &&
+        parsedEnv.FIREBASE_CLIENT_MESSAGING_SENDER_ID &&
+        parsedEnv.FIREBASE_CLIENT_APP_ID
+    ),
   isS3Configured:
     parsedEnv.AWS_ACCESS_KEY_ID !== "replace-me" &&
     parsedEnv.AWS_SECRET_ACCESS_KEY !== "replace-me" &&

@@ -1,4 +1,4 @@
-import { AlertTriangle, BookCopy, ChartColumn, Layers3, LayoutDashboard, MessageSquareText, Settings, UserRound, Users } from "lucide-react";
+import { AlertTriangle, BookCopy, ChartColumn, Layers3, LayoutDashboard, Megaphone, MessageSquareText, Settings, UserRound, Users } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -20,6 +20,7 @@ const dashboardNavigation = {
   ADMIN: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
+    { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
     { icon: Users, label: "Users", to: "/dashboard/admin/users" },
     { icon: Layers3, label: "Categories", to: "/dashboard/admin/categories" },
     { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
@@ -38,6 +39,7 @@ const dashboardNavigation = {
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: BookCopy, label: "Courses", to: "/dashboard/courses" },
+    { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
     { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
     { icon: Users, label: "Students", to: "/dashboard" },
     { icon: ChartColumn, label: "Analytics", to: "/dashboard" },

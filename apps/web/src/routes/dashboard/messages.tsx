@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { clientEnv } from "@/lib/env";
+import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import {
   createConversation,
   getConversationMessages,
@@ -68,10 +68,6 @@ export const Route = createFileRoute("/dashboard/messages" as never)({
   component: DashboardMessagesPage,
   errorComponent: RouteErrorView
 } as never);
-
-function buildMessagesWsUrl(): string {
-  return `${clientEnv.apiBaseUrl.replace(/^http/, "ws")}/messages/ws`;
-}
 
 function emitUnreadCount(count: number): void {
   if (typeof window === "undefined") {
@@ -321,7 +317,7 @@ function DashboardMessagesPage(): JSX.Element {
       return;
     }
 
-    const socket = new WebSocket(buildMessagesWsUrl());
+    const socket = new WebSocket(buildApiWebSocketUrl("messages/ws"));
 
     socketRef.current = socket;
     socket.onopen = () => {

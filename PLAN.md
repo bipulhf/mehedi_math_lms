@@ -52,7 +52,7 @@ todos:
     status: completed
   - id: phase-17
     content: "Phase 17: Notification System (FCM push + in-app notification center)"
-    status: pending
+    status: completed
   - id: phase-18
     content: "Phase 18: SMS Module, Noticeboard, and Bulk Communication"
     status: pending
@@ -726,6 +726,8 @@ erDiagram
 ## Phase 17: Notification System (FCM + In-App)
 
 **Goal:** Implement push notifications via Firebase Cloud Messaging and an in-app notification center.
+
+**Status:** Completed
 
 **Key tasks:**
 

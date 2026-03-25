@@ -7,6 +7,7 @@ import {
   updateAdminUserSchema,
   updateAdminUserStatusSchema,
   userListStatusSchema,
+  type AdminSendNotificationInput,
   type UserRole
 } from "@mma/shared";
 import type { z } from "zod";
@@ -187,6 +188,17 @@ export async function getAdminBug(id: string): Promise<AdminBugRecord> {
 
 export async function updateAdminBug(id: string, values: AdminUpdateBugInput): Promise<AdminBugRecord> {
   const response = await apiPatch<AdminUpdateBugInput, AdminBugRecord>(`admin/bugs/${id}`, values);
+
+  return response.data;
+}
+
+export async function adminSendNotification(
+  input: AdminSendNotificationInput
+): Promise<{ delivered: number }> {
+  const response = await apiPost<AdminSendNotificationInput, { delivered: number }>(
+    "admin/notifications/send",
+    input
+  );
 
   return response.data;
 }

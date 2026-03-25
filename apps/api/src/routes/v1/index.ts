@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 
 import type { AppBindings } from "@/types/app-bindings";
+import { publicConfigRoutes } from "@/routes/public-config.route";
 
 import { adminRoutes } from "./admin.route";
 import { analyticsRoutes } from "./analytics.route";
@@ -24,6 +25,7 @@ import { usersRoutes } from "./users.route";
 
 export const v1Routes = new Hono<AppBindings>();
 
+v1Routes.route("/public", publicConfigRoutes);
 v1Routes.route("/auth", authRoutes);
 v1Routes.route("/bugs", bugsRoutes);
 v1Routes.route("/users", usersRoutes);

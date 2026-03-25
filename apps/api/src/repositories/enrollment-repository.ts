@@ -6,6 +6,7 @@ import {
   db,
   enrollments,
   eq,
+  inArray,
   lectures,
   payments,
   sql
@@ -234,6 +235,17 @@ export class EnrollmentRepository {
     }
 
     return mapCourseProgressRecord(record);
+  }
+
+  public async listEnrolledUserIdsByCourse(courseId: string): Promise<readonly string[]> {
+    const rows = await db
+      .select({ userId: enrollments.userId })
+      .from(enrollments)
+      .where(
+        and(eq(enrollments.courseId, courseId), inArray(enrollments.status, ["ACTIVE", "COMPLETED"]))
+      );
+
+    return [...new Set(rows.map((row) => row.userId))];
   }
 
   public async hasCourseAccess(userId: string, courseId: string): Promise<boolean> {

@@ -16,6 +16,7 @@ export * from "./comments";
 export * from "./content";
 export * from "./courses";
 export * from "./messages";
+export * from "./notifications";
 export * from "./progress";
 export * from "./profiles";
 export * from "./payments";

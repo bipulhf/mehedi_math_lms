@@ -11,6 +11,7 @@ import { EnrollmentController } from "@/controllers/enrollment-controller";
 import { HealthController } from "@/controllers/health-controller";
 import { MessageController } from "@/controllers/message-controller";
 import { NotImplementedController } from "@/controllers/not-implemented-controller";
+import { NotificationController } from "@/controllers/notification-controller";
 import { PaymentController } from "@/controllers/payment-controller";
 import { ProgressController } from "@/controllers/progress-controller";
 import { ProfileController } from "@/controllers/profile-controller";
@@ -29,6 +30,7 @@ import { CourseRepository } from "@/repositories/course-repository";
 import { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { HealthRepository } from "@/repositories/health-repository";
 import { MessageRepository } from "@/repositories/message-repository";
+import { NotificationRepository } from "@/repositories/notification-repository";
 import { PaymentRepository } from "@/repositories/payment-repository";
 import { ProfileRepository } from "@/repositories/profile-repository";
 import { StaffAccountRepository } from "@/repositories/staff-account-repository";
@@ -44,9 +46,12 @@ import { CommerceService } from "@/services/commerce-service";
 import { ContentService } from "@/services/content-service";
 import { CourseService } from "@/services/course-service";
 import { HealthService } from "@/services/health-service";
+import { FcmPushService } from "@/services/fcm-push-service";
 import { MessageRealtimeService } from "@/services/message-realtime-service";
 import { MessageService } from "@/services/message-service";
 import { NotImplementedService } from "@/services/not-implemented-service";
+import { NotificationRealtimeService } from "@/services/notification-realtime-service";
+import { NotificationService } from "@/services/notification-service";
 import { ProgressService } from "@/services/progress-service";
 import { ProfileService } from "@/services/profile-service";
 import { SslCommerzService } from "@/services/sslcommerz-service";
@@ -65,6 +70,7 @@ const contentRepository = new ContentRepository();
 const courseRepository = new CourseRepository();
 const enrollmentRepository = new EnrollmentRepository();
 const messageRepository = new MessageRepository();
+const notificationRepository = new NotificationRepository();
 const profileRepository = new ProfileRepository();
 const paymentRepository = new PaymentRepository();
 const staffAccountRepository = new StaffAccountRepository();
@@ -74,7 +80,17 @@ const adminDashboardService = new AdminDashboardService(adminDashboardRepository
 const healthService = new HealthService(healthRepository);
 const authGuardService = new AuthGuardService(authSessionRepository);
 const messageRealtimeService = new MessageRealtimeService(process.env.REDIS_URL ?? "redis://localhost:6379");
+const notificationRealtimeService = new NotificationRealtimeService(
+  process.env.REDIS_URL ?? "redis://localhost:6379"
+);
+const fcmPushService = new FcmPushService();
 const messageService = new MessageService(messageRepository, messageRealtimeService);
+const notificationService = new NotificationService(
+  notificationRepository,
+  enrollmentRepository,
+  courseRepository,
+  notificationRealtimeService
+);
 const staffAccountService = new StaffAccountService(staffAccountRepository);
 const adminUserService = new AdminUserService(adminUserRepository, authSessionRepository, staffAccountService);
 const bugReportService = new BugReportService(bugReportRepository);
@@ -119,7 +135,14 @@ export const courseController = new CourseController(courseService);
 export const enrollmentController = new EnrollmentController(commerceService);
 export const healthController = new HealthController(healthService);
 export const messageController = new MessageController(messageService);
-export { messageRealtimeService, messageService };
+export const notificationController = new NotificationController(notificationService);
+export {
+  fcmPushService,
+  messageRealtimeService,
+  messageService,
+  notificationRealtimeService,
+  notificationService
+};
 export const notImplementedController = new NotImplementedController(notImplementedService);
 export const paymentController = new PaymentController(commerceService);
 export const progressController = new ProgressController(progressService);
