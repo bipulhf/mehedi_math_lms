@@ -18,6 +18,7 @@ import {
   type LectureRecord,
   type MaterialRecord
 } from "@/repositories/content-repository";
+import { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CreateChapterInput = z.infer<typeof createChapterSchema>;
@@ -128,8 +129,33 @@ function mapChapter(
 export class ContentService {
   public constructor(
     private readonly contentRepository: ContentRepository,
-    private readonly courseRepository: CourseRepository
+    private readonly courseRepository: CourseRepository,
+    private readonly enrollmentRepository: EnrollmentRepository
   ) {}
+
+  private async requireCourseContentAccess(
+    courseId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<CourseRecord> {
+    const course = await this.courseRepository.findById(courseId);
+
+    if (!course) {
+      throw new NotFoundError("Course not found");
+    }
+
+    if (currentUserRole === "STUDENT") {
+      const hasAccess = await this.enrollmentRepository.hasCourseAccess(currentUserId, courseId);
+
+      if (!hasAccess) {
+        throw new ForbiddenError("You do not have access to this course content");
+      }
+
+      return course;
+    }
+
+    return this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+  }
 
   private async requireManageableCourse(
     courseId: string,
@@ -242,7 +268,7 @@ export class ContentService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly ContentChapter[]> {
-    await this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+    await this.requireCourseContentAccess(courseId, currentUserId, currentUserRole);
 
     const chapterRecords = await this.contentRepository.listCourseChapters(courseId);
     const chapterIds = chapterRecords.map((chapter) => chapter.id);

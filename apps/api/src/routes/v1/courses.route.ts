@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   courseContentParamsSchema,
+  courseProgressParamsSchema,
   courseIdParamsSchema,
   courseTeacherIdsSchema,
   createCourseSchema,
@@ -12,8 +13,8 @@ import {
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
-import { contentController, courseController, testController } from "@/lib/container";
-import { requireRole } from "@/middleware/auth";
+import { contentController, courseController, progressController, testController } from "@/lib/container";
+import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
 export const coursesRoutes = new Hono<AppBindings>();
@@ -50,7 +51,7 @@ coursesRoutes.get("/:id", (context) => {
   );
 });
 
-coursesRoutes.get("/:courseId/content", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.get("/:courseId/content", requireAuth(), (context) => {
   const params = courseContentParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
@@ -63,7 +64,14 @@ coursesRoutes.get("/:courseId/content", requireRole("ADMIN", "TEACHER"), (contex
   );
 });
 
-coursesRoutes.get("/:courseId/tests", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.get("/:courseId/progress", requireRole("STUDENT"), (context) => {
+  const params = courseProgressParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return progressController.getCourseProgress(context, params.courseId, authUser!.id);
+});
+
+coursesRoutes.get("/:courseId/tests", requireAuth(), (context) => {
   const params = courseContentParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");

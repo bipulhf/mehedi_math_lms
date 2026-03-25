@@ -22,6 +22,17 @@ export interface EnrollmentRecord {
   userId: string;
 }
 
+export interface CourseProgressRecord {
+  completedAt: Date | null;
+  createdAt: Date;
+  enrollmentId: string;
+  id: string;
+  isCompleted: boolean;
+  lastViewedAt: Date | null;
+  lectureId: string;
+  updatedAt: Date;
+}
+
 export interface StudentEnrollmentRecord extends EnrollmentRecord {
   categoryName: string;
   categorySlug: string;
@@ -36,6 +47,10 @@ export interface StudentEnrollmentRecord extends EnrollmentRecord {
 }
 
 function mapEnrollmentRecord(record: typeof enrollments.$inferSelect): EnrollmentRecord {
+  return record;
+}
+
+function mapCourseProgressRecord(record: typeof courseProgress.$inferSelect): CourseProgressRecord {
   return record;
 }
 
@@ -140,6 +155,85 @@ export class EnrollmentRepository {
       .orderBy(sql`${enrollments.enrolledAt} desc`);
 
     return rows;
+  }
+
+  public async listProgressByEnrollment(enrollmentId: string): Promise<readonly CourseProgressRecord[]> {
+    const rows = await db
+      .select()
+      .from(courseProgress)
+      .where(eq(courseProgress.enrollmentId, enrollmentId))
+      .orderBy(sql`${courseProgress.createdAt} asc`);
+
+    return rows.map(mapCourseProgressRecord);
+  }
+
+  public async findProgressByEnrollmentAndLecture(
+    enrollmentId: string,
+    lectureId: string
+  ): Promise<CourseProgressRecord | null> {
+    const [record] = await db
+      .select()
+      .from(courseProgress)
+      .where(
+        and(
+          eq(courseProgress.enrollmentId, enrollmentId),
+          eq(courseProgress.lectureId, lectureId)
+        )
+      )
+      .limit(1);
+
+    return record ? mapCourseProgressRecord(record) : null;
+  }
+
+  public async createProgress(input: {
+    completedAt: Date | null;
+    enrollmentId: string;
+    isCompleted: boolean;
+    lastViewedAt: Date | null;
+    lectureId: string;
+  }): Promise<CourseProgressRecord> {
+    const [record] = await db
+      .insert(courseProgress)
+      .values({
+        completedAt: input.completedAt,
+        enrollmentId: input.enrollmentId,
+        isCompleted: input.isCompleted,
+        lastViewedAt: input.lastViewedAt,
+        lectureId: input.lectureId
+      })
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to create course progress");
+    }
+
+    return mapCourseProgressRecord(record);
+  }
+
+  public async updateProgress(
+    id: string,
+    input: {
+      completedAt?: Date | null | undefined;
+      isCompleted?: boolean | undefined;
+      lastViewedAt?: Date | null | undefined;
+    }
+  ): Promise<CourseProgressRecord> {
+    const [record] = await db
+      .update(courseProgress)
+      .set({
+        completedAt: input.completedAt,
+        isCompleted: input.isCompleted,
+        lastViewedAt: input.lastViewedAt,
+        updatedAt: new Date()
+      })
+      .where(eq(courseProgress.id, id))
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to update course progress");
+    }
+
+    return mapCourseProgressRecord(record);
   }
 
   public async hasCourseAccess(userId: string, courseId: string): Promise<boolean> {

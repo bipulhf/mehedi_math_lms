@@ -142,9 +142,18 @@ function MyCoursesPage(): JSX.Element {
 
                 <div className="flex gap-3">
                   <Button asChild>
-                    <Link to="/courses/$id" params={{ id: enrollment.course.id }}>
-                      {enrollment.accessGranted ? "Review course" : "Finish payment"}
-                    </Link>
+                    {enrollment.accessGranted ? (
+                      <Link
+                        to="/dashboard/learn/$courseId"
+                        params={{ courseId: enrollment.course.id }}
+                      >
+                        Resume learning
+                      </Link>
+                    ) : (
+                      <Link to="/courses/$id" params={{ id: enrollment.course.id }}>
+                        Finish payment
+                      </Link>
+                    )}
                   </Button>
                   <Button asChild variant="outline">
                     <Link to="/dashboard/payments">Payment history</Link>

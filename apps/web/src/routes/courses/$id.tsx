@@ -163,7 +163,9 @@ function CourseDetailPage(): JSX.Element {
                 </Button>
               ) : enrollment?.accessGranted ? (
                 <Button asChild className="w-full">
-                  <Link to="/dashboard/my-courses">Open my courses</Link>
+                  <Link to="/dashboard/learn/$courseId" params={{ courseId: course.id }}>
+                    Open course player
+                  </Link>
                 </Button>
               ) : (
                 <Button className="w-full" disabled={isSubmittingEnrollment} onClick={() => void handleEnroll()}>

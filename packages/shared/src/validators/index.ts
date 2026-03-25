@@ -14,6 +14,7 @@ export * from "./admin";
 export * from "./categories";
 export * from "./content";
 export * from "./courses";
+export * from "./progress";
 export * from "./profiles";
 export * from "./payments";
 export * from "./tests";

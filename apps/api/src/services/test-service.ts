@@ -13,6 +13,7 @@ import {
 
 import { ContentRepository, type ChapterRecord } from "@/repositories/content-repository";
 import { CourseRepository, type CourseRecord } from "@/repositories/course-repository";
+import { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import {
   TestRepository,
   type QuestionOptionRecord,
@@ -150,8 +151,25 @@ export class TestService {
   public constructor(
     private readonly testRepository: TestRepository,
     private readonly contentRepository: ContentRepository,
-    private readonly courseRepository: CourseRepository
+    private readonly courseRepository: CourseRepository,
+    private readonly enrollmentRepository: EnrollmentRepository
   ) {}
+
+  private async requireStudentCourseAccess(
+    courseId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<void> {
+    if (currentUserRole !== "STUDENT") {
+      throw new ForbiddenError("You do not have permission to access course assessments");
+    }
+
+    const hasAccess = await this.enrollmentRepository.hasCourseAccess(currentUserId, courseId);
+
+    if (!hasAccess) {
+      throw new ForbiddenError("You do not have access to this course assessments");
+    }
+  }
 
   private async requireManageableCourse(
     courseId: string,
@@ -238,6 +256,8 @@ export class TestService {
         chapter
       };
     }
+
+    await this.requireStudentCourseAccess(chapter.courseId, currentUserId, currentUserRole);
 
     if (!test.isPublished) {
       throw new ForbiddenError("This test is not available yet");
@@ -442,7 +462,11 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly AssessmentChapterSummary[]> {
-    await this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+    if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
+      await this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+    } else {
+      await this.requireStudentCourseAccess(courseId, currentUserId, currentUserRole);
+    }
 
     const chapters = await this.contentRepository.listCourseChapters(courseId);
     const chapterIds = chapters.map((chapter) => chapter.id);
@@ -459,6 +483,10 @@ export class TestService {
 
     const testsMap = new Map<string, AssessmentTestSummary[]>();
     for (const test of testsByChapter) {
+      if (currentUserRole === "STUDENT" && !test.isPublished) {
+        continue;
+      }
+
       const chapterTests = testsMap.get(test.chapterId) ?? [];
       chapterTests.push({
         chapterId: test.chapterId,

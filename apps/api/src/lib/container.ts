@@ -10,6 +10,7 @@ import { EnrollmentController } from "@/controllers/enrollment-controller";
 import { HealthController } from "@/controllers/health-controller";
 import { NotImplementedController } from "@/controllers/not-implemented-controller";
 import { PaymentController } from "@/controllers/payment-controller";
+import { ProgressController } from "@/controllers/progress-controller";
 import { ProfileController } from "@/controllers/profile-controller";
 import { TestController } from "@/controllers/test-controller";
 import { UploadController } from "@/controllers/upload-controller";
@@ -39,6 +40,7 @@ import { ContentService } from "@/services/content-service";
 import { CourseService } from "@/services/course-service";
 import { HealthService } from "@/services/health-service";
 import { NotImplementedService } from "@/services/not-implemented-service";
+import { ProgressService } from "@/services/progress-service";
 import { ProfileService } from "@/services/profile-service";
 import { SslCommerzService } from "@/services/sslcommerz-service";
 import { StaffAccountService } from "@/services/staff-account-service";
@@ -74,11 +76,17 @@ const commerceService = new CommerceService(
   profileRepository,
   sslCommerzService
 );
-const contentService = new ContentService(contentRepository, courseRepository);
+const contentService = new ContentService(contentRepository, courseRepository, enrollmentRepository);
 const courseService = new CourseService(courseRepository, categoryRepository);
 const profileService = new ProfileService(profileRepository);
 const notImplementedService = new NotImplementedService();
-const testService = new TestService(testRepository, contentRepository, courseRepository);
+const progressService = new ProgressService(enrollmentRepository, contentRepository);
+const testService = new TestService(
+  testRepository,
+  contentRepository,
+  courseRepository,
+  enrollmentRepository
+);
 const uploadService = new UploadService(uploadRepository);
 
 export const adminController = new AdminController(staffAccountService);
@@ -94,6 +102,7 @@ export const enrollmentController = new EnrollmentController(commerceService);
 export const healthController = new HealthController(healthService);
 export const notImplementedController = new NotImplementedController(notImplementedService);
 export const paymentController = new PaymentController(commerceService);
+export const progressController = new ProgressController(progressService);
 export const profileController = new ProfileController(profileService);
 export const testController = new TestController(testService);
 export const uploadController = new UploadController(uploadService);

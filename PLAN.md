@@ -40,10 +40,10 @@ todos:
     status: completed
   - id: phase-13
     content: "Phase 13: Course Enrollment and Payment (free + SSLCommerz paid flow)"
-    status: pending
+    status: completed
   - id: phase-14
     content: "Phase 14: Course Player and Learning Experience (video player, progress tracking)"
-    status: pending
+    status: completed
   - id: phase-15
     content: "Phase 15: Community and Discussion System (threaded comments per lecture)"
     status: pending
@@ -643,6 +643,8 @@ erDiagram
 ## Phase 14: Course Player and Learning Experience
 
 **Goal:** Build the immersive course consumption interface with progress tracking, video player, and material downloads.
+
+**Status:** Completed
 
 **Key tasks:**
 
