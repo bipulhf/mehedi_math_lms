@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: phase-03
     content: "Phase 3: Backend Core -- Hono API Server (middleware, error handling, route structure)"
-    status: pending
+    status: completed
   - id: phase-04
     content: "Phase 4: Authentication System (Better Auth + Drizzle + Google OAuth + role-based middleware)"
     status: pending
@@ -299,6 +299,8 @@ erDiagram
 ---
 
 ## Phase 3: Backend Core -- Hono API Server
+
+**Status:** Completed
 
 **Goal:** Set up the Hono API server in `apps/api/` with middleware stack, error handling, route structure, and shared utilities.
 
