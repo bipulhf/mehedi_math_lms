@@ -1,1 +1,1 @@
-export { auth, authClient } from "@mma/auth";
+export { authClient } from "@mma/auth/client";

@@ -4,13 +4,40 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "bun --watch src/index.ts",
+    "build": "vite build",
+    "dev": "vite dev --port 3000",
     "lint": "eslint .",
+    "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/manrope": "^5.2.8",
+    "@hookform/resolvers": "^5.2.2",
     "@mma/auth": "workspace:*",
-    "@tanstack/react-router": "^1.168.3"
+    "@mma/shared": "workspace:*",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tanstack/react-router": "^1.168.3",
+    "@tanstack/react-start": "^1.167.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "ky": "^1.14.3",
+    "lucide-react": "^1.6.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hook-form": "^7.72.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.2",
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }

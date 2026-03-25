@@ -16,7 +16,7 @@ todos:
     status: completed
   - id: phase-05
     content: "Phase 5: Frontend Foundation -- TanStack Start + Digital Atelier Design System"
-    status: pending
+    status: completed
   - id: phase-06
     content: "Phase 6: User and Profile Management (role-specific profiles, first-login prompt)"
     status: pending
@@ -374,6 +374,8 @@ erDiagram
 ---
 
 ## Phase 5: Frontend Foundation -- TanStack Start + Design System
+
+**Status:** Completed
 
 **Goal:** Set up the TanStack Start web app with Tailwind CSS v4, shadcn/ui, and implement the "Digital Atelier" design system from [DESIGN.md](DESIGN.md).
 
