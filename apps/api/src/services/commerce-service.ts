@@ -13,6 +13,7 @@ import {
   type PaymentRecord
 } from "@/repositories/payment-repository";
 import { ProfileRepository } from "@/repositories/profile-repository";
+import { ReviewRepository } from "@/repositories/review-repository";
 import { SslCommerzService } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -35,6 +36,7 @@ export interface StudentEnrollmentItem {
     name: string;
     slug: string;
   };
+  completedAt: string | null;
   course: {
     coverImageUrl: string | null;
     id: string;
@@ -44,11 +46,14 @@ export interface StudentEnrollmentItem {
     title: string;
   };
   enrolledAt: string;
+  hasReview: boolean;
   id: string;
   latestPaymentStatus: PaymentRecord["status"] | null;
   progressPercentage: number;
   status: "ACTIVE" | "COMPLETED" | "CANCELLED";
 }
+
+type FormattedEnrollment = Omit<StudentEnrollmentItem, "hasReview">;
 
 export interface PaymentHistoryItem {
   amount: string;
@@ -110,7 +115,7 @@ function formatPayment(record: PaymentListRecord, includeUser = false): PaymentH
   };
 }
 
-function formatEnrollment(record: StudentEnrollmentRecord): StudentEnrollmentItem {
+function formatEnrollment(record: StudentEnrollmentRecord): FormattedEnrollment {
   const progressPercentage =
     record.totalLectures === 0
       ? 0
@@ -124,6 +129,7 @@ function formatEnrollment(record: StudentEnrollmentRecord): StudentEnrollmentIte
       name: record.categoryName,
       slug: record.categorySlug
     },
+    completedAt: record.completedAt ? record.completedAt.toISOString() : null,
     course: {
       coverImageUrl: record.courseCoverImageUrl,
       id: record.courseId,
@@ -146,7 +152,8 @@ export class CommerceService {
     private readonly paymentRepository: PaymentRepository,
     private readonly courseRepository: CourseRepository,
     private readonly profileRepository: ProfileRepository,
-    private readonly sslCommerzService: SslCommerzService
+    private readonly sslCommerzService: SslCommerzService,
+    private readonly reviewRepository: ReviewRepository
   ) {}
 
   private async getPublishedCourseOrThrow(courseId: string) {
@@ -262,15 +269,27 @@ export class CommerceService {
 
   public async listMyEnrollments(userId: string): Promise<readonly StudentEnrollmentItem[]> {
     const enrollments = await this.enrollmentRepository.listByUser(userId);
+    const items = enrollments.map(formatEnrollment);
+    const reviewedIds = await this.reviewRepository.courseIdsReviewedByUser(
+      userId,
+      items.map((item) => item.course.id)
+    );
 
-    return enrollments.map(formatEnrollment);
+    return items.map((item) => ({ ...item, hasReview: reviewedIds.has(item.course.id) }));
   }
 
   public async getMyCourseEnrollment(userId: string, courseId: string): Promise<StudentEnrollmentItem | null> {
     const enrollments = await this.enrollmentRepository.listByUser(userId);
     const record = enrollments.find((item) => item.courseId === courseId);
 
-    return record ? formatEnrollment(record) : null;
+    if (!record) {
+      return null;
+    }
+
+    const item = formatEnrollment(record);
+    const hasReview = (await this.reviewRepository.findByUserAndCourse(courseId, userId)) !== null;
+
+    return { ...item, hasReview };
   }
 
   public async listMyPayments(userId: string): Promise<readonly PaymentHistoryItem[]> {

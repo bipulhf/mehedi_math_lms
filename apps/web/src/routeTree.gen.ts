@@ -20,6 +20,7 @@ import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard
 import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
 import { Route as DashboardMyCoursesRouteImport } from './routes/dashboard/my-courses'
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
 import { Route as CoursesIdRouteImport } from './routes/courses/$id'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as DashboardPaymentsIndexRouteImport } from './routes/dashboard/payments/index'
@@ -38,11 +39,14 @@ import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/
 import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
 import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
+import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
+import { Route as DashboardAccountantAnalyticsRouteImport } from './routes/dashboard/accountant/analytics'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardTestsTestIdSubmissionsRouteImport } from './routes/dashboard/tests/$testId/submissions'
 import { Route as DashboardCoursesIdTestsRouteImport } from './routes/dashboard/courses/$id/tests'
 import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
 import { Route as DashboardCoursesIdContentRouteImport } from './routes/dashboard/courses/$id/content'
+import { Route as DashboardCoursesIdAnalyticsRouteImport } from './routes/dashboard/courses/$id/analytics'
 import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
 import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/admin/bugs/$id'
 import { Route as DashboardTestsTestIdSubmissionsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/submissions/$submissionId'
@@ -102,6 +106,11 @@ const DashboardMyCoursesRoute = DashboardMyCoursesRouteImport.update({
 const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => DashboardRoute,
 } as any)
 const CoursesIdRoute = CoursesIdRouteImport.update({
@@ -196,6 +205,17 @@ const DashboardAdminBugsRoute = DashboardAdminBugsRouteImport.update({
   path: '/admin/bugs',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAccountantAnalyticsRoute =
+  DashboardAccountantAnalyticsRouteImport.update({
+    id: '/accountant/analytics',
+    path: '/accountant/analytics',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -221,6 +241,12 @@ const DashboardCoursesIdContentRoute =
   DashboardCoursesIdContentRouteImport.update({
     id: '/courses/$id/content',
     path: '/courses/$id/content',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardCoursesIdAnalyticsRoute =
+  DashboardCoursesIdAnalyticsRouteImport.update({
+    id: '/courses/$id/analytics',
+    path: '/courses/$id/analytics',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
@@ -253,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/my-courses': typeof DashboardMyCoursesRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -261,6 +288,8 @@ export interface FileRoutesByFullPath {
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
@@ -279,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
@@ -292,6 +322,7 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/my-courses': typeof DashboardMyCoursesRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -300,6 +331,8 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
@@ -318,6 +351,7 @@ export interface FileRoutesByTo {
   '/dashboard/payments': typeof DashboardPaymentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
@@ -333,6 +367,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/courses/$id': typeof CoursesIdRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/my-courses': typeof DashboardMyCoursesRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -341,6 +376,8 @@ export interface FileRoutesById {
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
+  '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
@@ -359,6 +396,7 @@ export interface FileRoutesById {
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
@@ -375,6 +413,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/sign-in'
     | '/courses/$id'
+    | '/dashboard/analytics'
     | '/dashboard/messages'
     | '/dashboard/my-courses'
     | '/dashboard/profile'
@@ -383,6 +422,8 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/accountant/analytics'
+    | '/dashboard/admin/analytics'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
@@ -401,6 +442,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/tests'
@@ -414,6 +456,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/auth/sign-in'
     | '/courses/$id'
+    | '/dashboard/analytics'
     | '/dashboard/messages'
     | '/dashboard/my-courses'
     | '/dashboard/profile'
@@ -422,6 +465,8 @@ export interface FileRouteTypes {
     | '/courses'
     | '/dashboard'
     | '/api/auth/$'
+    | '/dashboard/accountant/analytics'
+    | '/dashboard/admin/analytics'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
@@ -440,6 +485,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/tests'
@@ -454,6 +500,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/auth/sign-in'
     | '/courses/$id'
+    | '/dashboard/analytics'
     | '/dashboard/messages'
     | '/dashboard/my-courses'
     | '/dashboard/profile'
@@ -462,6 +509,8 @@ export interface FileRouteTypes {
     | '/courses/'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/accountant/analytics'
+    | '/dashboard/admin/analytics'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
@@ -480,6 +529,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/tests'
@@ -576,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/messages'
       fullPath: '/dashboard/messages'
       preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/courses/$id': {
@@ -704,6 +761,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminBugsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin/analytics': {
+      id: '/dashboard/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/dashboard/admin/analytics'
+      preLoaderRoute: typeof DashboardAdminAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/accountant/analytics': {
+      id: '/dashboard/accountant/analytics'
+      path: '/accountant/analytics'
+      fullPath: '/dashboard/accountant/analytics'
+      preLoaderRoute: typeof DashboardAccountantAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -737,6 +808,13 @@ declare module '@tanstack/react-router' {
       path: '/courses/$id/content'
       fullPath: '/dashboard/courses/$id/content'
       preLoaderRoute: typeof DashboardCoursesIdContentRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses/$id/analytics': {
+      id: '/dashboard/courses/$id/analytics'
+      path: '/courses/$id/analytics'
+      fullPath: '/dashboard/courses/$id/analytics'
+      preLoaderRoute: typeof DashboardCoursesIdAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/users/$id': {
@@ -833,11 +911,14 @@ const DashboardTestsTestIdRouteWithChildren =
   DashboardTestsTestIdRoute._addFileChildren(DashboardTestsTestIdRouteChildren)
 
 interface DashboardRouteChildren {
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
   DashboardMyCoursesRoute: typeof DashboardMyCoursesRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardProfileCompleteRoute: typeof DashboardProfileCompleteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardAccountantAnalyticsRoute: typeof DashboardAccountantAnalyticsRoute
+  DashboardAdminAnalyticsRoute: typeof DashboardAdminAnalyticsRoute
   DashboardAdminBugsRoute: typeof DashboardAdminBugsRouteWithChildren
   DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
   DashboardAdminCoursesRoute: typeof DashboardAdminCoursesRoute
@@ -854,17 +935,21 @@ interface DashboardRouteChildren {
   DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
   DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
   DashboardPaymentsIndexRoute: typeof DashboardPaymentsIndexRoute
+  DashboardCoursesIdAnalyticsRoute: typeof DashboardCoursesIdAnalyticsRoute
   DashboardCoursesIdContentRoute: typeof DashboardCoursesIdContentRoute
   DashboardCoursesIdEditRoute: typeof DashboardCoursesIdEditRoute
   DashboardCoursesIdTestsRoute: typeof DashboardCoursesIdTestsRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
   DashboardMyCoursesRoute: DashboardMyCoursesRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardProfileCompleteRoute: DashboardProfileCompleteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardAccountantAnalyticsRoute: DashboardAccountantAnalyticsRoute,
+  DashboardAdminAnalyticsRoute: DashboardAdminAnalyticsRoute,
   DashboardAdminBugsRoute: DashboardAdminBugsRouteWithChildren,
   DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
   DashboardAdminCoursesRoute: DashboardAdminCoursesRoute,
@@ -881,6 +966,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBugsIndexRoute: DashboardBugsIndexRoute,
   DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
   DashboardPaymentsIndexRoute: DashboardPaymentsIndexRoute,
+  DashboardCoursesIdAnalyticsRoute: DashboardCoursesIdAnalyticsRoute,
   DashboardCoursesIdContentRoute: DashboardCoursesIdContentRoute,
   DashboardCoursesIdEditRoute: DashboardCoursesIdEditRoute,
   DashboardCoursesIdTestsRoute: DashboardCoursesIdTestsRoute,
@@ -903,3 +989,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

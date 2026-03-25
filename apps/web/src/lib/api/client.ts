@@ -18,6 +18,17 @@ export interface PaginatedEnvelope<TData> extends ApiEnvelope<readonly TData[]> 
   };
 }
 
+export interface PaginatedApiResponse<TData> {
+  data: readonly TData[];
+  pagination: {
+    limit: number;
+    page: number;
+    pages: number;
+    total: number;
+  };
+  status: "success";
+}
+
 export interface ApiClientOptions {
   getHeaders?: () => HeadersInit | Promise<HeadersInit>;
 }
@@ -72,6 +83,25 @@ export const apiClient = createApiClient();
 
 export async function apiGet<TData>(path: string): Promise<ApiEnvelope<TData>> {
   return apiClient.get(path).json() as Promise<ApiEnvelope<TData>>;
+}
+
+export async function apiGetPaginated<TData>(
+  path: string,
+  query?: { limit?: number; page?: number }
+): Promise<PaginatedApiResponse<TData>> {
+  const searchParams: Record<string, string> = {};
+
+  if (query?.page !== undefined) {
+    searchParams.page = String(query.page);
+  }
+
+  if (query?.limit !== undefined) {
+    searchParams.limit = String(query.limit);
+  }
+
+  return apiClient
+    .get(path, { searchParams })
+    .json() as Promise<PaginatedApiResponse<TData>>;
 }
 
 export async function apiPost<TBody, TData>(path: string, json: TBody): Promise<ApiEnvelope<TData>> {

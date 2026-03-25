@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { courseIdParamsSchema, createEnrollmentSchema } from "@mma/shared";
+import { courseIdParamsSchema, createEnrollmentSchema, enrollmentIdParamsSchema } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
 import { enrollmentController } from "@/lib/container";
@@ -33,4 +33,18 @@ enrollmentsRoutes.get("/courses/:id/me", requireRole("STUDENT"), (context) => {
   const authUser = context.get("authUser");
 
   return enrollmentController.getMyCourseEnrollment(context, params.id, authUser!.id);
+});
+
+enrollmentsRoutes.get("/:id/certificate", requireRole("STUDENT"), (context) => {
+  const params = enrollmentIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return enrollmentController.downloadCertificate(context, params.id, authUser!.id);
+});
+
+enrollmentsRoutes.get("/:id/receipt", requireRole("STUDENT"), (context) => {
+  const params = enrollmentIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return enrollmentController.downloadReceipt(context, params.id, authUser!.id);
 });

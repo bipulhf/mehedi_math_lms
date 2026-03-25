@@ -1,4 +1,5 @@
 import { AdminController } from "@/controllers/admin-controller";
+import { AnalyticsController } from "@/controllers/analytics-controller";
 import { AdminDashboardController } from "@/controllers/admin-dashboard-controller";
 import { AdminUserController } from "@/controllers/admin-user-controller";
 import { AuthController } from "@/controllers/auth-controller";
@@ -15,6 +16,7 @@ import { NoticeController } from "@/controllers/notice-controller";
 import { NotificationController } from "@/controllers/notification-controller";
 import { SmsController } from "@/controllers/sms-controller";
 import { PaymentController } from "@/controllers/payment-controller";
+import { ReviewController } from "@/controllers/review-controller";
 import { ProgressController } from "@/controllers/progress-controller";
 import { ProfileController } from "@/controllers/profile-controller";
 import { TestController } from "@/controllers/test-controller";
@@ -22,6 +24,7 @@ import { UploadController } from "@/controllers/upload-controller";
 import { queues } from "@/lib/queues";
 import { redis } from "@/lib/redis";
 import { AdminDashboardRepository } from "@/repositories/admin-dashboard-repository";
+import { AnalyticsRepository } from "@/repositories/analytics-repository";
 import { AdminUserRepository } from "@/repositories/admin-user-repository";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { BugReportRepository } from "@/repositories/bug-report-repository";
@@ -36,17 +39,20 @@ import { NoticeRepository } from "@/repositories/notice-repository";
 import { NotificationRepository } from "@/repositories/notification-repository";
 import { PaymentRepository } from "@/repositories/payment-repository";
 import { ProfileRepository } from "@/repositories/profile-repository";
+import { ReviewRepository } from "@/repositories/review-repository";
 import { SmsRepository } from "@/repositories/sms-repository";
 import { StaffAccountRepository } from "@/repositories/staff-account-repository";
 import { TestRepository } from "@/repositories/test-repository";
 import { UploadRepository } from "@/repositories/upload-repository";
 import { AdminDashboardService } from "@/services/admin-dashboard-service";
+import { AnalyticsService } from "@/services/analytics-service";
 import { AdminUserService } from "@/services/admin-user-service";
 import { AuthGuardService } from "@/services/auth-guard-service";
 import { BugReportService } from "@/services/bug-report-service";
 import { CategoryService } from "@/services/category-service";
 import { CommentService } from "@/services/comment-service";
 import { CommerceService } from "@/services/commerce-service";
+import { EnrollmentPdfService } from "@/services/enrollment-pdf-service";
 import { ContentService } from "@/services/content-service";
 import { CourseService } from "@/services/course-service";
 import { HealthService } from "@/services/health-service";
@@ -61,6 +67,7 @@ import { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
 import { SmsService } from "@/services/sms-service";
 import { ProgressService } from "@/services/progress-service";
 import { ProfileService } from "@/services/profile-service";
+import { ReviewService } from "@/services/review-service";
 import { SslCommerzService } from "@/services/sslcommerz-service";
 import { StaffAccountService } from "@/services/staff-account-service";
 import { TestService } from "@/services/test-service";
@@ -82,6 +89,8 @@ const noticeRepository = new NoticeRepository();
 const smsRepository = new SmsRepository();
 const profileRepository = new ProfileRepository();
 const paymentRepository = new PaymentRepository();
+const reviewRepository = new ReviewRepository();
+const analyticsRepository = new AnalyticsRepository();
 const staffAccountRepository = new StaffAccountRepository();
 const testRepository = new TestRepository();
 const uploadRepository = new UploadRepository();
@@ -119,8 +128,12 @@ const commerceService = new CommerceService(
   paymentRepository,
   courseRepository,
   profileRepository,
-  sslCommerzService
+  sslCommerzService,
+  reviewRepository
 );
+const enrollmentPdfService = new EnrollmentPdfService(enrollmentRepository, paymentRepository);
+const reviewService = new ReviewService(reviewRepository, enrollmentRepository, courseRepository);
+const analyticsService = new AnalyticsService(analyticsRepository, courseRepository);
 const contentService = new ContentService(contentRepository, courseRepository, enrollmentRepository);
 const courseService = new CourseService(courseRepository, categoryRepository);
 const profileService = new ProfileService(profileRepository);
@@ -144,7 +157,9 @@ export const categoryController = new CategoryController(categoryService);
 export const commentController = new CommentController(commentService);
 export const contentController = new ContentController(contentService);
 export const courseController = new CourseController(courseService);
-export const enrollmentController = new EnrollmentController(commerceService);
+export const analyticsController = new AnalyticsController(analyticsService);
+export const enrollmentController = new EnrollmentController(commerceService, enrollmentPdfService);
+export const reviewController = new ReviewController(reviewService);
 export const healthController = new HealthController(healthService);
 export const messageController = new MessageController(messageService);
 export const notificationController = new NotificationController(notificationService);

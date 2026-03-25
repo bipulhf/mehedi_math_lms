@@ -1,4 +1,4 @@
-import { and, db, eq, payments, sql } from "@mma/db";
+import { and, db, desc, eq, payments, sql } from "@mma/db";
 
 export interface PaymentRecord {
   amount: string;
@@ -91,7 +91,18 @@ export class PaymentRepository {
       .select()
       .from(payments)
       .where(eq(payments.enrollmentId, enrollmentId))
-      .orderBy(sql`${payments.createdAt} desc`)
+      .orderBy(desc(payments.createdAt))
+      .limit(1);
+
+    return rows[0] ? mapPaymentRecord(rows[0]) : null;
+  }
+
+  public async findLatestSuccessByEnrollmentId(enrollmentId: string): Promise<PaymentRecord | null> {
+    const rows = await db
+      .select()
+      .from(payments)
+      .where(and(eq(payments.enrollmentId, enrollmentId), eq(payments.status, "SUCCESS")))
+      .orderBy(desc(payments.paidAt), desc(payments.createdAt))
       .limit(1);
 
     return rows[0] ? mapPaymentRecord(rows[0]) : null;

@@ -120,6 +120,15 @@ function DashboardHomePage(): JSX.Element {
                   Review incoming bugs, assign priority, and move issues through resolution states.
                 </p>
               </Link>
+              <Link
+                to="/dashboard/admin/analytics"
+                className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 transition-all duration-150 ease-out hover:bg-surface-container-highest"
+              >
+                <p className="font-semibold text-on-surface">Platform analytics</p>
+                <p className="mt-2 text-sm leading-6 text-on-surface/68">
+                  Enrollment trends, revenue, completion, and student demographics across the academy.
+                </p>
+              </Link>
             </CardContent>
           </Card>
 
@@ -163,9 +172,14 @@ function DashboardHomePage(): JSX.Element {
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
                 Review every enrollment payment, filter by gateway status, and issue refunds from the same surface.
               </div>
-              <Button asChild>
-                <Link to="/dashboard/payments">Open payment operations</Link>
-              </Button>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild>
+                  <Link to="/dashboard/payments">Open payment operations</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/dashboard/accountant/analytics">Financial analytics</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

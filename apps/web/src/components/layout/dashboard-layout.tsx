@@ -26,6 +26,7 @@ const dashboardNavigation = {
   ACCOUNTANT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
+    { icon: ChartColumn, label: "Financial analytics", to: "/dashboard/accountant/analytics" },
     { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
     { icon: Settings, label: "Operations", to: "/dashboard/payments" }
   ],
@@ -37,7 +38,8 @@ const dashboardNavigation = {
     { icon: Users, label: "Users", to: "/dashboard/admin/users" },
     { icon: Layers3, label: "Categories", to: "/dashboard/admin/categories" },
     { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard/admin/courses" }
+    { icon: BookCopy, label: "Courses", to: "/dashboard/admin/courses" },
+    { icon: ChartColumn, label: "Analytics", to: "/dashboard/admin/analytics" }
   ],
   STUDENT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
@@ -55,7 +57,7 @@ const dashboardNavigation = {
     { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
     { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
     { icon: Users, label: "Students", to: "/dashboard" },
-    { icon: ChartColumn, label: "Analytics", to: "/dashboard" },
+    { icon: ChartColumn, label: "Analytics", to: "/dashboard/analytics" },
     { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
     { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
   ]

@@ -4,7 +4,9 @@ import {
   courseProgressParamsSchema,
   courseIdParamsSchema,
   courseTeacherIdsSchema,
+  courseReviewsQuerySchema,
   createCourseNoticeSchema,
+  createCourseReviewSchema,
   createCourseSchema,
   createChapterSchema,
   listCoursesQuerySchema,
@@ -19,6 +21,7 @@ import {
   courseController,
   noticeController,
   progressController,
+  reviewController,
   testController
 } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
@@ -43,6 +46,28 @@ coursesRoutes.get("/support/teachers", requireRole("ADMIN", "TEACHER"), (context
   const query = teacherDirectoryQuerySchema.parse(context.req.query());
 
   return courseController.listTeacherDirectory(context, query.search);
+});
+
+coursesRoutes.get("/:id/review-summary", (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+
+  return reviewController.summaryForCourse(context, params.id);
+});
+
+coursesRoutes.get("/:id/reviews", (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+  const query = courseReviewsQuerySchema.parse(context.req.query());
+
+  return reviewController.listForCourse(context, params.id, query);
+});
+
+coursesRoutes.post("/:id/reviews", requireRole("STUDENT"), async (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+  const payload = createCourseReviewSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return reviewController.create(context, params.id, payload, authUser!.id, authSession!.role as UserRole);
 });
 
 coursesRoutes.get("/:id", (context) => {

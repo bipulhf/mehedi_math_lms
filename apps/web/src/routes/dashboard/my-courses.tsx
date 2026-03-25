@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
-import { listMyEnrollments } from "@/lib/api/enrollments";
+import {
+  fetchEnrollmentCertificatePdf,
+  fetchEnrollmentReceiptPdf,
+  listMyEnrollments
+} from "@/lib/api/enrollments";
 
 export const Route = createFileRoute("/dashboard/my-courses" as never)({
   component: MyCoursesPage,
@@ -38,6 +42,42 @@ function MyCoursesPage(): JSX.Element {
   const { isPending: isSessionPending, session } = useAuthSession();
   const [enrollments, setEnrollments] = useState<readonly StudentEnrollment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [pdfPreview, setPdfPreview] = useState<{ title: string; url: string } | null>(null);
+  const pdfUrlRef = useRef<string | null>(null);
+
+  const releasePdfUrl = (): void => {
+    if (pdfUrlRef.current) {
+      URL.revokeObjectURL(pdfUrlRef.current);
+      pdfUrlRef.current = null;
+    }
+  };
+
+  const openPdfPreview = (blob: Blob, title: string): void => {
+    releasePdfUrl();
+    const url = URL.createObjectURL(blob);
+    pdfUrlRef.current = url;
+    setPdfPreview({ title, url });
+  };
+
+  const closePdfPreview = (): void => {
+    releasePdfUrl();
+    setPdfPreview(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      releasePdfUrl();
+    };
+  }, []);
+
+  const downloadBlob = (blob: Blob, filename: string): void => {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     if (isSessionPending || session?.session.role !== "STUDENT") {
@@ -74,6 +114,20 @@ function MyCoursesPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
+      {pdfPreview ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest shadow-lg">
+            <div className="flex items-center justify-between gap-3 border-b border-outline-variant px-4 py-3">
+              <p className="font-semibold text-on-surface">{pdfPreview.title}</p>
+              <Button type="button" variant="outline" onClick={closePdfPreview}>
+                Close
+              </Button>
+            </div>
+            <iframe className="min-h-[70vh] w-full flex-1 bg-white" src={pdfPreview.url} title={pdfPreview.title} />
+          </div>
+        </div>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>My courses</CardTitle>
@@ -140,7 +194,7 @@ function MyCoursesPage(): JSX.Element {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   <Button asChild>
                     {enrollment.accessGranted ? (
                       <Link
@@ -158,6 +212,48 @@ function MyCoursesPage(): JSX.Element {
                   <Button asChild variant="outline">
                     <Link to="/dashboard/payments">Payment history</Link>
                   </Button>
+                  {enrollment.status === "COMPLETED" ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          void (async () => {
+                            const blob = await fetchEnrollmentCertificatePdf(enrollment.id);
+                            openPdfPreview(blob, `Certificate · ${enrollment.course.title}`);
+                          })()
+                        }
+                      >
+                        View certificate
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() =>
+                          void (async () => {
+                            const blob = await fetchEnrollmentCertificatePdf(enrollment.id);
+                            downloadBlob(blob, `certificate-${enrollment.id}.pdf`);
+                          })()
+                        }
+                      >
+                        Download certificate
+                      </Button>
+                    </>
+                  ) : null}
+                  {enrollment.latestPaymentStatus === "SUCCESS" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        void (async () => {
+                          const blob = await fetchEnrollmentReceiptPdf(enrollment.id);
+                          downloadBlob(blob, `receipt-${enrollment.id}.pdf`);
+                        })()
+                      }
+                    >
+                      Download receipt
+                    </Button>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>

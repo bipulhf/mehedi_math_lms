@@ -1,7 +1,7 @@
 import { createEnrollmentSchema } from "@mma/shared";
 import type { z } from "zod";
 
-import { apiGet, apiPost } from "@/lib/api/client";
+import { apiClient, apiGet, apiPost } from "@/lib/api/client";
 
 export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
 
@@ -32,7 +32,9 @@ export interface StudentEnrollment {
     status: "DRAFT" | "PENDING" | "PUBLISHED" | "ARCHIVED";
     title: string;
   };
+  completedAt: string | null;
   enrolledAt: string;
+  hasReview: boolean;
   id: string;
   latestPaymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED" | null;
   progressPercentage: number;
@@ -55,4 +57,12 @@ export async function getMyCourseEnrollment(courseId: string): Promise<StudentEn
   const response = await apiGet<StudentEnrollment | null>(`enrollments/courses/${courseId}/me`);
 
   return response.data;
+}
+
+export async function fetchEnrollmentCertificatePdf(enrollmentId: string): Promise<Blob> {
+  return apiClient.get(`enrollments/${enrollmentId}/certificate`).blob();
+}
+
+export async function fetchEnrollmentReceiptPdf(enrollmentId: string): Promise<Blob> {
+  return apiClient.get(`enrollments/${enrollmentId}/receipt`).blob();
 }

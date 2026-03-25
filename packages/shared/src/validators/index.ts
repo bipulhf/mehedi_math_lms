@@ -19,6 +19,7 @@ export * from "./messages";
 export * from "./noticeboard";
 export * from "./notifications";
 export * from "./progress";
+export * from "./reviews";
 export * from "./profiles";
 export * from "./payments";
 export * from "./sms";

@@ -9,7 +9,8 @@ import {
   inArray,
   lectures,
   payments,
-  sql
+  sql,
+  users
 } from "@mma/db";
 
 export interface EnrollmentRecord {
@@ -60,6 +61,40 @@ export class EnrollmentRepository {
     const [record] = await db.select().from(enrollments).where(eq(enrollments.id, id)).limit(1);
 
     return record ? mapEnrollmentRecord(record) : null;
+  }
+
+  public async findOwnedCertificateDetail(
+    enrollmentId: string,
+    userId: string
+  ): Promise<{
+    completedAt: Date | null;
+    courseTitle: string;
+    status: EnrollmentRecord["status"];
+    studentName: string;
+  } | null> {
+    const [row] = await db
+      .select({
+        completedAt: enrollments.completedAt,
+        courseTitle: courses.title,
+        status: enrollments.status,
+        studentName: users.name
+      })
+      .from(enrollments)
+      .innerJoin(courses, eq(enrollments.courseId, courses.id))
+      .innerJoin(users, eq(enrollments.userId, users.id))
+      .where(and(eq(enrollments.id, enrollmentId), eq(enrollments.userId, userId)))
+      .limit(1);
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      completedAt: row.completedAt,
+      courseTitle: row.courseTitle,
+      status: row.status,
+      studentName: row.studentName
+    };
   }
 
   public async findByUserAndCourse(
