@@ -5,6 +5,7 @@ import type { JSX, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
 export interface AppShellNavItem {
+  badge?: number | undefined;
   icon: typeof LayoutDashboard;
   label: string;
   to: string;
@@ -19,10 +20,10 @@ interface AppShellProps extends PropsWithChildren {
 export function AppShell({ children, description, navItems, title }: AppShellProps): JSX.Element {
   return (
     <div className="min-h-screen bg-surface px-4 py-4 text-on-surface sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-[90rem] gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
+      <div className="mx-auto grid w-full max-w-360 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <aside
           className={cn(
-            "rounded-[calc(var(--radius)+0.375rem)] bg-surface/80 p-4 backdrop-blur-[24px]",
+            "rounded-[calc(var(--radius)+0.375rem)] bg-surface/80 p-4 backdrop-blur-xl",
             "shadow-[0_18px_38px_-20px_rgba(19,27,46,0.18)]"
           )}
         >
@@ -52,12 +53,17 @@ export function AppShell({ children, description, navItems, title }: AppShellPro
                 >
                   <Icon className="size-4" />
                   <span>{item.label}</span>
+                  {item.badge && item.badge > 0 ? (
+                    <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-violet-100 px-2 py-1 text-[0.65rem] font-semibold text-violet-900">
+                      {item.badge}
+                    </span>
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
 
-          <div className="mt-8 rounded-[var(--radius)] bg-surface-container-low p-4">
+          <div className="mt-8 rounded-(--radius) bg-surface-container-low p-4">
             <div className="flex items-center gap-3">
               <BookOpen className="size-4 text-secondary-container" />
               <p className="text-sm font-semibold">Editorial Learning</p>
@@ -86,12 +92,12 @@ export function AppShell({ children, description, navItems, title }: AppShellPro
                 >
                   <Bell className="size-4" />
                 </button>
-                <button
-                  type="button"
+                <Link
+                  to="/dashboard/messages"
                   className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface transition-colors hover:bg-surface-container-highest"
                 >
                   <MessageSquareText className="size-4" />
-                </button>
+                </Link>
               </div>
             </div>
           </header>

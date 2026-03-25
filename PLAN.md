@@ -46,10 +46,10 @@ todos:
     status: completed
   - id: phase-15
     content: "Phase 15: Community and Discussion System (threaded comments per lecture)"
-    status: pending
+    status: completed
   - id: phase-16
     content: "Phase 16: Real-time Messaging System (WebSocket 1-to-1, no delete)"
-    status: pending
+    status: completed
   - id: phase-17
     content: "Phase 17: Notification System (FCM push + in-app notification center)"
     status: pending
@@ -695,6 +695,8 @@ erDiagram
 ## Phase 16: Real-time Messaging System (WebSocket)
 
 **Goal:** Build a 1-to-1 messaging system between teachers and students with WebSocket real-time delivery. Messages cannot be deleted.
+
+**Status:** Completed
 
 **Key tasks:**
 
