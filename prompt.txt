@@ -1,0 +1,51 @@
+I want to create a LMS site. The site will have four  type of users. 
+i. Student,
+ii. Teachers,
+iii. Accountants
+iv. Admins
+
+The each type of user has their own role as it stated by their name. The student can sign up publicly using email, password, google login. The teachers and accountants accounts will be created by the admin. The admin account will be only one for security pupose. It will be created using the seed data. 
+
+Now for functionality, I will have all the functionality like every LMS. Still I am providing the list, you can supervise always. Features:
+i. Account CRUD (Admin)
+ii. Course CRUD (Teacher and Admin, Every course must be accepted by the admin to have published status, each course can have a cover photo with the relevant information)
+iii. Profile CRUD (Everyone)
+iv. Course Enrollment (free and paid, I will add SSL Commerz Integrations for paid courses)
+v. Course Analytics (All except students)
+vi. Course can have multiple chapters, inside the chapters there can be lectures (video upload/link), Tests (MCQ or Written).
+vii. Each lectures can have their own materials, also each chapter can have their own materials.
+viii. Community sections with each lectures. Students, teachers and admins can comment and reply on the lectures.
+ix. Teacher can post notices on each courses (course noticeboard)
+x. A course can be taken by multiple teachers.
+xi. Admin will have an SMS Module (can send SMS to students as bulk)
+xii. Admin, teachers can send notifications/notices to the corresponding person/group of persons/roles.
+xiii. A teacher can connect to a students using a one to one messaging system. Vice versa, students can also connect. (messages can't be deleted for security pupose)
+xiv. Students can enroll as many courses as he wants.
+xv. Courses must be grouped into categories (like ssc, hsc etc.)
+xvi. Categories Management (Admin only)
+xv. Every Student will have a profile which can be accessed by admin and that student only. and student must be prompted to fill up his profile on first login.
+xvi. There should be public teacher profile with the courses he is taking and everything. 
+xvii. There can be courses with exams only.
+xviii. Upon finishing students can review a course.
+xix. I want pdf to be downloaded with each enrollment and some more options (insights and analytics)
+
+(you can decide the rest of the features with standard LMS system)
+
+Tech Stack: (Typescript, monorepo)
+Frontend: Tanstack Start, React, ShadCN, Tailwind, Reach Hook Form, ky for api calls, React pdf for pdf generation.
+Backend: Bun, Hono, Postgresql, drizzle orm
+Authentication: better auth
+Notification: Firebase Cloud Messaging
+Mobile App: React Native
+SMS: Onecodesoft ( I will provide the documentation later)
+(You can add more technology like redis, rabbitmq if needed with my stack)
+
+For the tech stack you can also ask me for better alternatives. Also make sure I want the latest libraries here, so get the latest libraries first before adding.
+
+User experience:
+I want the best user experience with fault tolerant systems. I want the systems not to be tightly coupled. I want to extend the system in future. The user should always get the best experiences with proper skeleton and loading states. The error should be handled gracefully. 
+
+UI theme can be found on DESIGN.md file on this folder.
+
+
+I want you to create a detailed plan with 20 phases each with proper planning. I want to implement the mobile app at last. The monorepo should keep in mind to support everything. The structure should be professional and modular. Learn all the available react, design, react native skills for best support.

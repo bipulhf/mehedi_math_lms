@@ -1,0 +1,17 @@
+{
+  "name": "@mma/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:generate": "bun --eval \"console.log('Database generation will be implemented in Phase 2.')\"",
+    "db:migrate": "bun --eval \"console.log('Database migration will be implemented in Phase 2.')\""
+  }
+}

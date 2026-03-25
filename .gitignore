@@ -1,0 +1,17 @@
+node_modules
+.turbo
+.idea
+.vscode
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+dist
+coverage
+*.log
+apps/*/dist
+packages/*/dist
+tooling/*/dist
+packages/db/src/migrations
+*.tsbuildinfo
