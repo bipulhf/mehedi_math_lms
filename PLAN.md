@@ -480,6 +480,8 @@ erDiagram
 
 ## Phase 8: Category Management
 
+**Status:** Completed
+
 **Goal:** Implement hierarchical course categories (e.g., SSC, HSC, Admission, etc.) managed by admin.
 
 **Key tasks:**

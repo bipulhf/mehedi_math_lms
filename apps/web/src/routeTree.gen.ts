@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
@@ -21,6 +22,7 @@ import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/
 import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
 import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
 import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
+import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
@@ -29,6 +31,11 @@ import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/adm
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesRoute = CategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -87,6 +94,12 @@ const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminCategoriesRoute =
+  DashboardAdminCategoriesRouteImport.update({
+    id: '/admin/categories',
+    path: '/admin/categories',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardAdminBugsRoute = DashboardAdminBugsRouteImport.update({
   id: '/admin/bugs',
   path: '/admin/bugs',
@@ -111,6 +124,7 @@ const DashboardAdminBugsIdRoute = DashboardAdminBugsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -119,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
@@ -129,6 +144,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/categories': typeof CategoriesRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
@@ -136,6 +152,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
@@ -147,6 +164,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -155,6 +173,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
@@ -167,6 +186,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/categories'
     | '/dashboard'
     | '/auth/sign-in'
     | '/dashboard/profile'
@@ -175,6 +195,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
+    | '/dashboard/admin/categories'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
@@ -185,6 +206,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/categories'
     | '/auth/sign-in'
     | '/dashboard/profile'
     | '/dashboard/profile-complete'
@@ -192,6 +214,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
+    | '/dashboard/admin/categories'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
@@ -202,6 +225,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/categories'
     | '/dashboard'
     | '/auth/sign-in'
     | '/dashboard/profile'
@@ -210,6 +234,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
+    | '/dashboard/admin/categories'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
@@ -221,6 +246,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   TeachersIdRoute: typeof TeachersIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -233,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -312,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminUsersRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin/categories': {
+      id: '/dashboard/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/dashboard/admin/categories'
+      preLoaderRoute: typeof DashboardAdminCategoriesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/admin/bugs': {
       id: '/dashboard/admin/bugs'
       path: '/admin/bugs'
@@ -380,6 +420,7 @@ interface DashboardRouteChildren {
   DashboardProfileCompleteRoute: typeof DashboardProfileCompleteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAdminBugsRoute: typeof DashboardAdminBugsRouteWithChildren
+  DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
   DashboardAdminUsersRoute: typeof DashboardAdminUsersRouteWithChildren
   DashboardBugsReportRoute: typeof DashboardBugsReportRoute
   DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
@@ -391,6 +432,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileCompleteRoute: DashboardProfileCompleteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAdminBugsRoute: DashboardAdminBugsRouteWithChildren,
+  DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
   DashboardAdminUsersRoute: DashboardAdminUsersRouteWithChildren,
   DashboardBugsReportRoute: DashboardBugsReportRoute,
   DashboardStudentsIdRoute: DashboardStudentsIdRoute,
@@ -404,6 +446,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRouteWithChildren,
   TeachersIdRoute: TeachersIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

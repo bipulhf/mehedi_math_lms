@@ -11,5 +11,6 @@ export const paginationSchema = z.object({
 });
 
 export * from "./admin";
+export * from "./categories";
 export * from "./profiles";
 export { userRoleSchema };

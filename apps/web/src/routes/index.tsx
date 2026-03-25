@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Layers3, Sparkles } from "lucide-react";
 import type { JSX } from "react";
 
@@ -68,9 +69,11 @@ function HomePage(): JSX.Element {
                       <Skeleton className="h-20" />
                       <Skeleton className="h-20" />
                     </div>
-                    <Button variant="ghost" className="px-0 text-secondary-container hover:bg-transparent">
-                      Designed for the next phases
-                      <ArrowRight className="size-4" />
+                    <Button asChild variant="ghost" className="px-0 text-secondary-container hover:bg-transparent">
+                      <Link to="/categories">
+                        Browse categories
+                        <ArrowRight className="size-4" />
+                      </Link>
                     </Button>
                   </CardContent>
                 </div>
