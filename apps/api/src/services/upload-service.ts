@@ -1,4 +1,4 @@
-import type { AuthUser } from "@mma/auth";
+import type { AuthUser } from "@mma/auth/server";
 import type { UploadKind, UploadPurpose } from "@mma/shared";
 
 import { env } from "@/lib/env";
@@ -30,7 +30,10 @@ export interface PreparedUploadResponse {
   uploadUrl: string;
 }
 
-export interface UploadResponse extends Omit<UploadRecord, "createdAt" | "updatedAt" | "confirmedAt"> {
+export interface UploadResponse extends Omit<
+  UploadRecord,
+  "createdAt" | "updatedAt" | "confirmedAt"
+> {
   confirmedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -145,7 +148,10 @@ function getFileExtension(fileName: string, contentType: string): string {
     return lastPart;
   }
 
-  const fallbackFromType = contentType.split("/").at(-1)?.replace(/[^a-z0-9]+/g, "-");
+  const fallbackFromType = contentType
+    .split("/")
+    .at(-1)
+    ?.replace(/[^a-z0-9]+/g, "-");
 
   return fallbackFromType && fallbackFromType.length > 0 ? fallbackFromType : "bin";
 }
@@ -167,7 +173,10 @@ export class UploadService {
     );
 
     if (!isAllowed) {
-      throw createValidationIssue("contentType", "This file type is not allowed for the selected upload");
+      throw createValidationIssue(
+        "contentType",
+        "This file type is not allowed for the selected upload"
+      );
     }
 
     if (input.fileSize > config.maxFileSize) {
@@ -225,7 +234,10 @@ export class UploadService {
     };
   }
 
-  public async confirmUpload(actor: AuthUser, input: ConfirmUploadRequest): Promise<UploadResponse> {
+  public async confirmUpload(
+    actor: AuthUser,
+    input: ConfirmUploadRequest
+  ): Promise<UploadResponse> {
     const upload = await this.uploadRepository.findUploadById(input.uploadId);
 
     if (!upload) {

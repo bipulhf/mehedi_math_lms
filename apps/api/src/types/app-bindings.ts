@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from "@mma/auth";
+import type { AuthSession, AuthUser } from "@mma/auth/server";
 import type { Logger } from "pino";
 
 export type QueueName = "email" | "notification" | "sms" | "file-processing";

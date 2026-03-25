@@ -3,6 +3,7 @@ import { hashPassword } from "better-auth/crypto";
 import { admin } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { accounts, db, sessions, users } from "@mma/db";
 import * as schema from "@mma/db/schema";
@@ -144,7 +145,8 @@ export const auth = betterAuth({
           isActive: authUser.isActive ?? true
         }
       };
-    })
+    }),
+    tanstackStartCookies()
   ]
 });
 

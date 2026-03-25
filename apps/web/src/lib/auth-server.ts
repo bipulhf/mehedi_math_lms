@@ -1,1 +1,1 @@
-export { auth } from "@mma/auth/server";
+export { auth } from "@mma/auth/tanstack-server";

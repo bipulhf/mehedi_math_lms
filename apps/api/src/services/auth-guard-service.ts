@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from "@mma/auth";
+import type { AuthSession, AuthUser } from "@mma/auth/server";
 import type { UserRole } from "@mma/shared";
 
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";

@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { AuthUser } from "@mma/auth";
+import type { AuthUser } from "@mma/auth/server";
 
 import {
   UploadService,

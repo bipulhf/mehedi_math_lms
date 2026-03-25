@@ -1,4 +1,4 @@
-import { createPasswordHash } from "@mma/auth";
+import { createPasswordHash } from "@mma/auth/server";
 
 import { queues } from "@/lib/queues";
 import { StaffAccountRepository, type StaffRole } from "@/repositories/staff-account-repository";
