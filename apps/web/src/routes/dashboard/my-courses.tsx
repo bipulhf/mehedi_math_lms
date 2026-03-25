@@ -1,7 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
+import { certificateDisplayName } from "@/components/certificates/certificate-display-name";
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -9,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
-import {
-  fetchEnrollmentCertificatePdf,
-  fetchEnrollmentReceiptPdf,
-  listMyEnrollments
-} from "@/lib/api/enrollments";
+import { fetchEnrollmentReceiptPdf, listMyEnrollments } from "@/lib/api/enrollments";
+
+const CertificatePreviewDialog = lazy(async () => {
+  const mod = await import("@/components/certificates/certificate-preview-dialog");
+
+  return { default: mod.CertificatePreviewDialog };
+});
 
 export const Route = createFileRoute("/dashboard/my-courses" as never)({
   component: MyCoursesPage,
@@ -42,33 +45,13 @@ function MyCoursesPage(): JSX.Element {
   const { isPending: isSessionPending, session } = useAuthSession();
   const [enrollments, setEnrollments] = useState<readonly StudentEnrollment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [pdfPreview, setPdfPreview] = useState<{ title: string; url: string } | null>(null);
-  const pdfUrlRef = useRef<string | null>(null);
-
-  const releasePdfUrl = (): void => {
-    if (pdfUrlRef.current) {
-      URL.revokeObjectURL(pdfUrlRef.current);
-      pdfUrlRef.current = null;
-    }
-  };
-
-  const openPdfPreview = (blob: Blob, title: string): void => {
-    releasePdfUrl();
-    const url = URL.createObjectURL(blob);
-    pdfUrlRef.current = url;
-    setPdfPreview({ title, url });
-  };
-
-  const closePdfPreview = (): void => {
-    releasePdfUrl();
-    setPdfPreview(null);
-  };
-
-  useEffect(() => {
-    return () => {
-      releasePdfUrl();
-    };
-  }, []);
+  const [certificatePreview, setCertificatePreview] = useState<{
+    courseTitle: string;
+    enrollmentId: string;
+    issuedAt: Date;
+    studentName: string;
+    title: string;
+  } | null>(null);
 
   const downloadBlob = (blob: Blob, filename: string): void => {
     const url = URL.createObjectURL(blob);
@@ -114,18 +97,23 @@ function MyCoursesPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
-      {pdfPreview ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest shadow-lg">
-            <div className="flex items-center justify-between gap-3 border-b border-outline-variant px-4 py-3">
-              <p className="font-semibold text-on-surface">{pdfPreview.title}</p>
-              <Button type="button" variant="outline" onClick={closePdfPreview}>
-                Close
-              </Button>
+      {certificatePreview && session ? (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+              <div className="h-[70vh] w-full max-w-4xl animate-pulse rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest" />
             </div>
-            <iframe className="min-h-[70vh] w-full flex-1 bg-white" src={pdfPreview.url} title={pdfPreview.title} />
-          </div>
-        </div>
+          }
+        >
+          <CertificatePreviewDialog
+            courseTitle={certificatePreview.courseTitle}
+            enrollmentId={certificatePreview.enrollmentId}
+            issuedAt={certificatePreview.issuedAt}
+            studentName={certificatePreview.studentName}
+            title={certificatePreview.title}
+            onClose={() => setCertificatePreview(null)}
+          />
+        </Suspense>
       ) : null}
 
       <Card>
@@ -204,7 +192,7 @@ function MyCoursesPage(): JSX.Element {
                         Resume learning
                       </Link>
                     ) : (
-                      <Link to="/courses/$id" params={{ id: enrollment.course.id }}>
+                      <Link to="/courses/$slug" params={{ slug: enrollment.course.slug }}>
                         Finish payment
                       </Link>
                     )}
@@ -212,16 +200,19 @@ function MyCoursesPage(): JSX.Element {
                   <Button asChild variant="outline">
                     <Link to="/dashboard/payments">Payment history</Link>
                   </Button>
-                  {enrollment.status === "COMPLETED" ? (
+                  {enrollment.status === "COMPLETED" && session ? (
                     <>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() =>
-                          void (async () => {
-                            const blob = await fetchEnrollmentCertificatePdf(enrollment.id);
-                            openPdfPreview(blob, `Certificate · ${enrollment.course.title}`);
-                          })()
+                          setCertificatePreview({
+                            courseTitle: enrollment.course.title,
+                            enrollmentId: enrollment.id,
+                            issuedAt: new Date(enrollment.completedAt ?? Date.now()),
+                            studentName: certificateDisplayName(session.user.name, session.user.email),
+                            title: `Certificate · ${enrollment.course.title}`
+                          })
                         }
                       >
                         View certificate
@@ -231,7 +222,17 @@ function MyCoursesPage(): JSX.Element {
                         variant="secondary"
                         onClick={() =>
                           void (async () => {
-                            const blob = await fetchEnrollmentCertificatePdf(enrollment.id);
+                            const [{ pdf }, { CertificatePdfDocument }] = await Promise.all([
+                              import("@react-pdf/renderer"),
+                              import("@/components/certificates/certificate-pdf-document")
+                            ]);
+                            const blob = await pdf(
+                              <CertificatePdfDocument
+                                courseTitle={enrollment.course.title}
+                                issuedAt={new Date(enrollment.completedAt ?? Date.now())}
+                                studentName={certificateDisplayName(session.user.name, session.user.email)}
+                              />
+                            ).toBlob();
                             downloadBlob(blob, `certificate-${enrollment.id}.pdf`);
                           })()
                         }

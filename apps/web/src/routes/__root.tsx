@@ -3,6 +3,9 @@ import type { JSX, PropsWithChildren } from "react";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 
+import interLatinWoff2 from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
+import manropeLatinWoff2 from "@fontsource/manrope/files/manrope-latin-600-normal.woff2?url";
+
 import { RouteErrorView } from "@/components/common/route-error";
 import { siteConfig } from "@/lib/site";
 import appCss from "@/styles/app.css?url";
@@ -39,6 +42,20 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      {
+        as: "font",
+        crossOrigin: "anonymous",
+        href: interLatinWoff2,
+        rel: "preload",
+        type: "font/woff2"
+      },
+      {
+        as: "font",
+        crossOrigin: "anonymous",
+        href: manropeLatinWoff2,
+        rel: "preload",
+        type: "font/woff2"
+      },
       { rel: "stylesheet", href: appCss }
     ]
   }),

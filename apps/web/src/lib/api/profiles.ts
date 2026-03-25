@@ -102,6 +102,14 @@ export async function getPublicTeacherProfile(id: string): Promise<PublicTeacher
   return response.data;
 }
 
+export async function getPublicTeacherBySlug(slug: string): Promise<PublicTeacherProfileData> {
+  const response = await apiGet<PublicTeacherProfileData>(
+    `profiles/teachers/by-slug/${encodeURIComponent(slug)}`
+  );
+
+  return response.data;
+}
+
 export async function getAdminStudentProfile(id: string): Promise<OwnProfileData> {
   const response = await apiGet<OwnProfileData>(`admin/users/${id}/profile`);
 

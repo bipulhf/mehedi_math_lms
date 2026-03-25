@@ -24,6 +24,12 @@ export class CategoryController {
     return success(context, category);
   }
 
+  public async getPublicCategoryBySlug(context: Context<AppBindings>, slug: string): Promise<Response> {
+    const category = await this.categoryService.getPublicCategoryBySlug(slug);
+
+    return success(context, category);
+  }
+
   public async createCategory(
     context: Context<AppBindings>,
     input: Parameters<CategoryService["createCategory"]>[0]

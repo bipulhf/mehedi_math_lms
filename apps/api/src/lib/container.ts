@@ -40,6 +40,7 @@ import { NotificationRepository } from "@/repositories/notification-repository";
 import { PaymentRepository } from "@/repositories/payment-repository";
 import { ProfileRepository } from "@/repositories/profile-repository";
 import { ReviewRepository } from "@/repositories/review-repository";
+import { SeoRepository } from "@/repositories/seo-repository";
 import { SmsRepository } from "@/repositories/sms-repository";
 import { StaffAccountRepository } from "@/repositories/staff-account-repository";
 import { TestRepository } from "@/repositories/test-repository";
@@ -63,11 +64,13 @@ import { NoticeService } from "@/services/notice-service";
 import { NotImplementedService } from "@/services/not-implemented-service";
 import { NotificationRealtimeService } from "@/services/notification-realtime-service";
 import { NotificationService } from "@/services/notification-service";
+import { OgImageService } from "@/services/og-image-service";
 import { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
 import { SmsService } from "@/services/sms-service";
 import { ProgressService } from "@/services/progress-service";
 import { ProfileService } from "@/services/profile-service";
 import { ReviewService } from "@/services/review-service";
+import { SitemapService } from "@/services/sitemap-service";
 import { SslCommerzService } from "@/services/sslcommerz-service";
 import { StaffAccountService } from "@/services/staff-account-service";
 import { TestService } from "@/services/test-service";
@@ -90,6 +93,7 @@ const smsRepository = new SmsRepository();
 const profileRepository = new ProfileRepository();
 const paymentRepository = new PaymentRepository();
 const reviewRepository = new ReviewRepository();
+const seoRepository = new SeoRepository();
 const analyticsRepository = new AnalyticsRepository();
 const staffAccountRepository = new StaffAccountRepository();
 const testRepository = new TestRepository();
@@ -146,6 +150,8 @@ const testService = new TestService(
   enrollmentRepository
 );
 const uploadService = new UploadService(uploadRepository);
+export const sitemapService = new SitemapService(seoRepository, redis);
+export const ogImageService = new OgImageService(courseRepository, profileRepository);
 
 export const adminController = new AdminController(staffAccountService);
 export const adminDashboardController = new AdminDashboardController(adminDashboardService);

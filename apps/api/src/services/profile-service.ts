@@ -238,12 +238,29 @@ export class ProfileService {
     return mapUserProfile(updatedProfile);
   }
 
+  public async getPublicTeacherProfileBySlug(slug: string): Promise<PublicTeacherProfileResponse> {
+    const teacherProfile = await this.profileRepository.findPublicTeacherBySlug(slug);
+
+    if (!teacherProfile || teacherProfile.role !== "TEACHER") {
+      throw new NotFoundError("Teacher profile not found");
+    }
+
+    return this.mapPublicTeacherProfile(teacherProfile);
+  }
+
   public async getPublicTeacherProfile(userId: string): Promise<PublicTeacherProfileResponse> {
     const teacherProfile = await this.profileRepository.findPublicTeacherById(userId);
 
     if (!teacherProfile || teacherProfile.role !== "TEACHER") {
       throw new NotFoundError("Teacher profile not found");
     }
+
+    return this.mapPublicTeacherProfile(teacherProfile);
+  }
+
+  private mapPublicTeacherProfile(teacherProfile: NonNullable<
+    Awaited<ReturnType<ProfileRepository["findPublicTeacherById"]>>
+  >): PublicTeacherProfileResponse {
 
     const publishedCourses = teacherProfile.courses
       .filter((course) => course.status === "PUBLISHED")

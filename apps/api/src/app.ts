@@ -11,6 +11,7 @@ import { requestLoggerMiddleware } from "@/middleware/request-logger";
 import { requestIdMiddleware } from "@/middleware/request-id";
 import { createRateLimitMiddleware } from "@/middleware/rate-limit";
 import { healthRoutes } from "@/routes/health.route";
+import { siteSeoRoutes } from "@/routes/site-seo.route";
 import { v1Routes } from "@/routes/v1";
 import { error } from "@/utils/response";
 
@@ -35,5 +36,6 @@ app.use("/api/v1/*", sessionContextMiddleware);
 app.onError(onError);
 app.notFound((context) => error(context, "Route not found", 404));
 
+app.route("/", siteSeoRoutes);
 app.route("/api/health", healthRoutes);
 app.route("/api/v1", v1Routes);

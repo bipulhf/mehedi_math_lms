@@ -14,6 +14,14 @@ export default defineConfig({
       "/api": {
         changeOrigin: true,
         target: "http://localhost:3001"
+      },
+      "/robots.txt": {
+        changeOrigin: true,
+        target: "http://localhost:3001"
+      },
+      "/sitemap.xml": {
+        changeOrigin: true,
+        target: "http://localhost:3001"
       }
     }
   }

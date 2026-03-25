@@ -4,6 +4,7 @@ import {
   categoryIdParamsSchema,
   createCategorySchema,
   reorderCategoriesSchema,
+  slugParamsSchema,
   updateCategorySchema
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
@@ -19,6 +20,12 @@ categoriesRoutes.get("/", (context) => {
   const authSession = context.get("authSession");
 
   return categoryController.listCategories(context, query, authSession?.role as UserRole | undefined);
+});
+
+categoriesRoutes.get("/by-slug/:slug", (context) => {
+  const params = slugParamsSchema.parse(context.req.param());
+
+  return categoryController.getPublicCategoryBySlug(context, params.slug);
 });
 
 categoriesRoutes.post("/", requireAdmin(), async (context) => {

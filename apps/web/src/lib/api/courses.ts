@@ -108,6 +108,12 @@ export async function getCourse(id: string): Promise<CourseDetail> {
   return response.data;
 }
 
+export async function getCourseBySlug(slug: string): Promise<CourseDetail> {
+  const response = await apiGet<CourseDetail>(`courses/by-slug/${encodeURIComponent(slug)}`);
+
+  return response.data;
+}
+
 export async function createCourse(values: CreateCourseInput): Promise<CourseDetail> {
   const response = await apiPost<CreateCourseInput, CourseDetail>("courses", values);
 

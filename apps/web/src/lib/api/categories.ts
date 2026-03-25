@@ -41,6 +41,12 @@ function buildQueryString(query: Record<string, string | boolean | undefined>): 
   return serialized.length > 0 ? `?${serialized}` : "";
 }
 
+export async function getPublicCategoryBySlug(slug: string): Promise<CategoryNode> {
+  const response = await apiGet<CategoryNode>(`categories/by-slug/${encodeURIComponent(slug)}`);
+
+  return response.data;
+}
+
 export async function listCategories(query?: {
   flat?: boolean | undefined;
   includeInactive?: boolean | undefined;

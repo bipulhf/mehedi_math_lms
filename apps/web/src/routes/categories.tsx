@@ -11,19 +11,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
-import { siteConfig } from "@/lib/site";
+import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
+import { ssrApiGet } from "@/lib/ssr-api";
 
-export const Route = createFileRoute("/categories" as never)({
-  head: () => ({
-    meta: [
-      {
-        title: `${siteConfig.name} | Category Browser`
-      }
-    ]
-  }),
+export const Route = createFileRoute("/categories")({
+  head: ({ loaderData }) => {
+    const items = loaderData?.categoryItems ?? [];
+
+    return seo({
+      description:
+        "Browse hierarchical math and science categories that organize every course in Mehedi's Math Academy.",
+      jsonLd: [
+        organizationJsonLd(),
+        itemListJsonLd(
+          "Academy categories",
+          "Top-level category pathways for structured discovery.",
+          items
+        )
+      ],
+      path: "/categories",
+      title: "Categories"
+    });
+  },
+  loader: async () => {
+    const tree = await ssrApiGet<CategoryNode[]>("/categories");
+
+    return {
+      categoryItems: tree.map((node) => ({ name: node.name, path: `/categories/${node.slug}` }))
+    };
+  },
   component: CategoriesPage,
   errorComponent: RouteErrorView
-} as never);
+});
 
 function PublicCategoryTree({
   categories,
@@ -51,7 +70,11 @@ function PublicCategoryTree({
               </CardHeader>
               <CardContent className="space-y-4" style={{ marginLeft: `${depth * 1.5}rem` }}>
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="blue">/{category.slug}</Badge>
+                  <Badge tone="blue">
+                    <Link className="text-inherit no-underline" to="/categories/$slug" params={{ slug: category.slug }}>
+                      /{category.slug}
+                    </Link>
+                  </Badge>
                   {category.children.length > 0 ? (
                     <Badge tone="violet">{category.children.length} subcategories</Badge>
                   ) : null}
@@ -59,8 +82,12 @@ function PublicCategoryTree({
                 {category.children.length > 0 ? (
                   <PublicCategoryTree categories={category.children} depth={depth + 1} />
                 ) : (
-                  <Link className="text-sm font-semibold text-secondary-container" to="/">
-                    Courses will branch into this category in the upcoming course catalog phases.
+                  <Link
+                    className="text-sm font-semibold text-secondary-container"
+                    to="/categories/$slug"
+                    params={{ slug: category.slug }}
+                  >
+                    View published courses in this category.
                   </Link>
                 )}
               </CardContent>

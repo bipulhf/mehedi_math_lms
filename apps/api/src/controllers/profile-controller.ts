@@ -67,6 +67,12 @@ export class ProfileController {
     return success(context, profile as PublicTeacherProfileResponse);
   }
 
+  public async getPublicTeacherProfileBySlug(context: Context<AppBindings>, slug: string): Promise<Response> {
+    const profile = await this.profileService.getPublicTeacherProfileBySlug(slug);
+
+    return success(context, profile as PublicTeacherProfileResponse);
+  }
+
   public async getAdminStudentProfile(context: Context<AppBindings>, userId: string): Promise<Response> {
     const profile = await this.profileService.getAdminStudentProfile(userId);
 

@@ -22,7 +22,10 @@ export function CourseCard({
             <img
               alt={course.title}
               className="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-[1.02]"
+              height={675}
+              loading="lazy"
               src={course.coverImageUrl}
+              width={1200}
             />
           ) : (
             <div className="h-full w-full bg-[radial-gradient(circle_at_top_left,rgba(96,99,238,0.18),transparent_55%),linear-gradient(135deg,rgba(27,27,31,0.04),rgba(96,99,238,0.1))]" />
@@ -44,7 +47,7 @@ export function CourseCard({
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm">
-              <Link to="/courses/$id" params={{ id: course.id }}>
+              <Link to="/courses/$slug" params={{ slug: course.slug }}>
                 Open details
               </Link>
             </Button>

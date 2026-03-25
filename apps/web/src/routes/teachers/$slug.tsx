@@ -1,48 +1,77 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { PublicTeacherProfileData } from "@/lib/api/profiles";
-import { getPublicTeacherProfile } from "@/lib/api/profiles";
+import type { PublicTeacherProfileData, TeacherCourseSummary } from "@/lib/api/profiles";
+import { breadcrumbJsonLd, seo, teacherPersonJsonLd } from "@/lib/seo";
+import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
+import { siteConfig } from "@/lib/site";
 
-export const Route = createFileRoute("/teachers/$id")({
+export const Route = createFileRoute("/teachers/$slug")({
+  loader: async ({ params }) => {
+    try {
+      return await ssrApiGet<PublicTeacherProfileData>(
+        `/profiles/teachers/by-slug/${encodeURIComponent(params.slug)}`
+      );
+    } catch (error) {
+      if (error instanceof SsrNotFoundError) {
+        throw notFound();
+      }
+
+      throw error;
+    }
+  },
+  head: ({ loaderData, params }) => {
+    const profile = loaderData;
+
+    if (!profile) {
+      return seo({
+        description: siteConfig.description,
+        path: "/teachers",
+        title: "Teacher"
+      });
+    }
+
+    const pathSlug = profile.user.slug ?? params.slug;
+    const photo =
+      profile.user.image ??
+      profile.teacherProfile?.profilePhoto ??
+      null;
+    const og: string =
+      photo !== null && photo.length > 0
+        ? photo
+        : `/api/v1/og-image/teacher/${encodeURIComponent(pathSlug)}`;
+
+    return seo({
+      description:
+        profile.teacherProfile?.bio?.trim() ?? `Courses and teaching profile for ${profile.user.name}.`,
+      jsonLd: [
+        teacherPersonJsonLd({
+          bio: profile.teacherProfile?.bio ?? null,
+          courses: profile.courses.map((c) => ({ slug: c.slug, title: c.title })),
+          image: profile.user.image ?? profile.teacherProfile?.profilePhoto ?? null,
+          name: profile.user.name,
+          slug: profile.user.slug
+        }),
+        breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" },
+          { name: profile.user.name, path: `/teachers/${pathSlug}` }
+        ])
+      ],
+      ogImageUrl: og,
+      path: `/teachers/${pathSlug}`,
+      title: profile.user.name
+    });
+  },
   component: TeacherProfilePage,
   errorComponent: RouteErrorView
 });
 
 function TeacherProfilePage(): JSX.Element {
-  const { id } = Route.useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<PublicTeacherProfileData | null>(null);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextProfile = await getPublicTeacherProfile(id);
-        setProfile(nextProfile);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [id]);
-
-  if (isLoading || !profile) {
-    return (
-      <div className="mx-auto max-w-6xl space-y-4 px-4 py-10">
-        <Skeleton className="h-48 w-full" />
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <Skeleton className="h-72" />
-          <Skeleton className="h-72" />
-        </div>
-      </div>
-    );
-  }
+  const profile = Route.useLoaderData();
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
@@ -76,7 +105,7 @@ function TeacherProfilePage(): JSX.Element {
                   Qualifications
                 </p>
                 <p className="mt-3 text-sm leading-7 text-on-surface/72">
-                  {profile.teacherProfile?.qualifications ?? "Qualifications will appear here once provided."}
+                  {profile.teacherProfile?.qualifications ?? "Once qualifications are added, they appear here for students deciding on the right guide."}
                 </p>
                 <p className="mt-6 text-[0.75rem] font-semibold uppercase tracking-[0.06em] text-on-surface/50">
                   Specializations
@@ -101,10 +130,12 @@ function TeacherProfilePage(): JSX.Element {
             </CardHeader>
             <CardContent className="space-y-4">
               {profile.courses.length > 0 ? (
-                profile.courses.map((course) => (
-                  <div
+                profile.courses.map((course: TeacherCourseSummary) => (
+                  <Link
                     key={course.id}
-                    className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4"
+                    className="block rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 transition-colors hover:bg-surface-container-highest/40"
+                    to="/courses/$slug"
+                    params={{ slug: course.slug }}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-2">
@@ -116,7 +147,7 @@ function TeacherProfilePage(): JSX.Element {
                         <div>{course.reviewCount} reviews</div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">

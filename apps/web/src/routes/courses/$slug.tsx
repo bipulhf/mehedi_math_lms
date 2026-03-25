@@ -1,5 +1,5 @@
 import { createCourseReviewSchema } from "@mma/shared";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -15,21 +15,83 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useZodForm } from "@/lib/forms/use-zod-form";
-import type { CourseDetail } from "@/lib/api/courses";
-import { getCourse } from "@/lib/api/courses";
+import type { CourseDetail, CourseTeacherSummary } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
+import { breadcrumbJsonLd, courseJsonLd, seo } from "@/lib/seo";
+import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
 import {
   getCourseReviewSummary,
   listCourseReviews,
   submitCourseReview
 } from "@/lib/api/reviews";
+import { siteConfig } from "@/lib/site";
 
-export const Route = createFileRoute("/courses/$id" as never)({
+export const Route = createFileRoute("/courses/$slug")({
+  loader: async ({ params }) => {
+    try {
+      const course = await ssrApiGet<CourseDetail>(
+        `/courses/by-slug/${encodeURIComponent(params.slug)}`
+      );
+      let reviewSummary: { average: number; count: number } | null = null;
+
+      if (course.status === "PUBLISHED") {
+        try {
+          reviewSummary = await ssrApiGet<{ average: number; count: number }>(
+            `/courses/${course.id}/review-summary`
+          );
+        } catch {
+          reviewSummary = null;
+        }
+      }
+
+      return { course, reviewSummary };
+    } catch (error) {
+      if (error instanceof SsrNotFoundError) {
+        throw notFound();
+      }
+
+      throw error;
+    }
+  },
+  head: ({ loaderData }) => {
+    const data = loaderData;
+
+    if (!data) {
+      return seo({
+        description: siteConfig.description,
+        path: "/courses",
+        title: "Course"
+      });
+    }
+
+    const { course, reviewSummary } = data;
+    const cover =
+      course.coverImageUrl !== null && course.coverImageUrl.length > 0
+        ? course.coverImageUrl
+        : `/api/v1/og-image/course/${encodeURIComponent(course.slug)}`;
+
+    return seo({
+      description: course.description,
+      jsonLd: [
+        courseJsonLd(course, reviewSummary),
+        breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" },
+          { name: course.category.name, path: `/categories/${course.category.slug}` },
+          { name: course.title, path: `/courses/${course.slug}` }
+        ])
+      ],
+      ogImageUrl: cover,
+      ogType: "article",
+      path: `/courses/${course.slug}`,
+      title: course.title
+    });
+  },
   component: CourseDetailPage,
   errorComponent: RouteErrorView
-} as never);
+});
 
 function StarRow({ rating }: { rating: number }): JSX.Element {
   return (
@@ -47,12 +109,13 @@ function StarRow({ rating }: { rating: number }): JSX.Element {
 }
 
 function CourseDetailPage(): JSX.Element {
-  const { id } = Route.useParams();
+  const { course, reviewSummary: loaderReviewSummary } = Route.useLoaderData();
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
   const [enrollment, setEnrollment] = useState<StudentEnrollment | null>(null);
   const [isSubmittingEnrollment, setIsSubmittingEnrollment] = useState(false);
-  const [reviewSummary, setReviewSummary] = useState<{ average: number; count: number } | null>(null);
+  const [reviewSummary, setReviewSummary] = useState<{ average: number; count: number } | null>(
+    loaderReviewSummary
+  );
   const [reviews, setReviews] = useState<readonly CourseReviewPublic[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
 
@@ -62,11 +125,8 @@ function CourseDetailPage(): JSX.Element {
   });
 
   useEffect(() => {
-    void (async () => {
-      const courseData = await getCourse(id);
-      setCourse(courseData);
-    })();
-  }, [id]);
+    setReviewSummary(loaderReviewSummary);
+  }, [course.id, loaderReviewSummary]);
 
   useEffect(() => {
     if (isSessionPending || session?.session.role !== "STUDENT") {
@@ -75,14 +135,13 @@ function CourseDetailPage(): JSX.Element {
     }
 
     void (async () => {
-      const currentEnrollment = await getMyCourseEnrollment(id);
+      const currentEnrollment = await getMyCourseEnrollment(course.id);
       setEnrollment(currentEnrollment);
     })();
-  }, [id, isSessionPending, session]);
+  }, [course.id, isSessionPending, session]);
 
   useEffect(() => {
-    if (!course || course.status !== "PUBLISHED") {
-      setReviewSummary(null);
+    if (course.status !== "PUBLISHED") {
       setReviews([]);
       return;
     }
@@ -92,28 +151,28 @@ function CourseDetailPage(): JSX.Element {
 
       try {
         const [summary, page] = await Promise.all([
-          getCourseReviewSummary(id),
-          listCourseReviews(id, { limit: 20, page: 1 })
+          getCourseReviewSummary(course.id),
+          listCourseReviews(course.id, { limit: 20, page: 1 })
         ]);
         setReviewSummary(summary);
         setReviews(page.data);
       } catch {
-        setReviewSummary(null);
+        setReviewSummary(loaderReviewSummary);
         setReviews([]);
       } finally {
         setReviewsLoading(false);
       }
     })();
-  }, [course, id]);
+  }, [course.id, course.status, loaderReviewSummary]);
 
   const refreshReviews = async (): Promise<void> => {
-    if (!course || course.status !== "PUBLISHED") {
+    if (course.status !== "PUBLISHED") {
       return;
     }
 
     const [summary, page] = await Promise.all([
-      getCourseReviewSummary(id),
-      listCourseReviews(id, { limit: 20, page: 1 })
+      getCourseReviewSummary(course.id),
+      listCourseReviews(course.id, { limit: 20, page: 1 })
     ]);
     setReviewSummary(summary);
     setReviews(page.data);
@@ -121,12 +180,12 @@ function CourseDetailPage(): JSX.Element {
 
   const handleReviewSubmit = reviewForm.handleSubmit(async (values) => {
     try {
-      await submitCourseReview(id, values);
+      await submitCourseReview(course.id, values);
       toast.success("Thanks for your review");
       reviewForm.reset({ comment: "", rating: 5 });
       await refreshReviews();
       if (session?.session.role === "STUDENT") {
-        const next = await getMyCourseEnrollment(id);
+        const next = await getMyCourseEnrollment(course.id);
         setEnrollment(next);
       }
     } catch {
@@ -140,7 +199,7 @@ function CourseDetailPage(): JSX.Element {
     try {
       const response = await createEnrollment({
         callbackOrigin: window.location.origin,
-        courseId: id
+        courseId: course.id
       });
 
       if (response.requiresPayment && response.payment?.gatewayUrl) {
@@ -155,18 +214,6 @@ function CourseDetailPage(): JSX.Element {
     }
   };
 
-  if (!course) {
-    return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-10">
-        <div className="aspect-16/7 animate-pulse rounded-(--radius) bg-surface-container-low" />
-        <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="h-80 animate-pulse rounded-(--radius) bg-surface-container-low" />
-          <div className="h-80 animate-pulse rounded-(--radius) bg-surface-container-low" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10">
       <FadeIn>
@@ -175,7 +222,9 @@ function CourseDetailPage(): JSX.Element {
             <img
               alt={course.title}
               className="aspect-16/7 w-full object-cover"
+              height={525}
               src={course.coverImageUrl}
+              width={1200}
             />
           ) : (
             <div className="aspect-16/7 w-full bg-[radial-gradient(circle_at_top_left,rgba(96,99,238,0.18),transparent_55%),linear-gradient(135deg,rgba(27,27,31,0.04),rgba(96,99,238,0.1))]" />
@@ -220,12 +269,20 @@ function CourseDetailPage(): JSX.Element {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3">
-              {course.teachers.map((teacher) => (
+              {course.teachers.map((teacher: CourseTeacherSummary) => (
                 <div
                   key={teacher.id}
                   className="rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4"
                 >
-                  <p className="font-semibold text-on-surface">{teacher.name}</p>
+                  {teacher.slug ? (
+                    <p className="font-semibold text-on-surface">
+                      <Link className="text-secondary-container underline-offset-4 hover:underline" to="/teachers/$slug" params={{ slug: teacher.slug }}>
+                        {teacher.name}
+                      </Link>
+                    </p>
+                  ) : (
+                    <p className="font-semibold text-on-surface">{teacher.name}</p>
+                  )}
                   <p className="text-sm text-on-surface/62">{teacher.email}</p>
                 </div>
               ))}

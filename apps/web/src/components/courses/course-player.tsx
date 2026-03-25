@@ -535,7 +535,7 @@ export function CoursePlayer({
                       asChild
                       variant="outline"
                     >
-                      <Link to="/courses/$id" params={{ id: course.id }}>
+                      <Link to="/courses/$slug" params={{ slug: course.slug }}>
                         Course overview
                       </Link>
                     </Button>

@@ -9,16 +9,17 @@ import { PublicLayout } from "@/components/layout/public-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      {
-        title: `${siteConfig.name} | Editorial LMS Foundation`
-      }
-    ]
-  }),
+  head: () =>
+    seo({
+      description: siteConfig.description,
+      jsonLd: [organizationJsonLd()],
+      path: "/",
+      title: "Editorial LMS foundation"
+    }),
   component: HomePage,
   errorComponent: RouteErrorView
 });

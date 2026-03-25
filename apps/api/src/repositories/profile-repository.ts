@@ -1,8 +1,10 @@
 import {
+  and,
   courseTeachers,
   courses,
   db,
   eq,
+  isNotNull,
   reviews,
   studentProfiles,
   teacherProfiles,
@@ -168,6 +170,30 @@ export class ProfileRepository {
     });
 
     return mapProfileUserRecord(user);
+  }
+
+  public async findPublicTeacherBySlug(slug: string): Promise<PublicTeacherProfileRecord | null> {
+    const match = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        and(
+          eq(users.slug, slug),
+          eq(users.role, "TEACHER"),
+          eq(users.isActive, true),
+          eq(users.banned, false),
+          isNotNull(users.slug)
+        )
+      )
+      .limit(1);
+
+    const userId = match[0]?.id;
+
+    if (!userId) {
+      return null;
+    }
+
+    return this.findPublicTeacherById(userId);
   }
 
   public async findPublicTeacherById(userId: string): Promise<PublicTeacherProfileRecord | null> {

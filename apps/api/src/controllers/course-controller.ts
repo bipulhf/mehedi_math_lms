@@ -35,6 +35,17 @@ export class CourseController {
     return success(context, course);
   }
 
+  public async getCourseBySlug(
+    context: Context<AppBindings>,
+    slug: string,
+    currentUserId?: string | undefined,
+    currentUserRole?: UserRole | undefined
+  ): Promise<Response> {
+    const course = await this.courseService.getCourseBySlug(slug, currentUserId, currentUserRole);
+
+    return success(context, course);
+  }
+
   public async createCourse(
     context: Context<AppBindings>,
     input: Parameters<CourseService["createCourse"]>[0],

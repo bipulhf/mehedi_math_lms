@@ -14,12 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { CourseDetail } from "@/lib/api/courses";
-import type {
-  ContentChapter,
-  ContentLecture,
-  CreateChapterInput,
-  CreateLectureInput
-} from "@/lib/api/content";
+import type { ContentChapter, ContentLecture, CreateChapterInput } from "@/lib/api/content";
 import {
   createChapter,
   createChapterMaterial,
@@ -108,9 +103,10 @@ export function CourseContentBuilder({
   const [lectureMaterialTitles, setLectureMaterialTitles] = useState<Record<string, string>>({});
   const [materialTitleDrafts, setMaterialTitleDrafts] = useState<Record<string, string>>({});
   const [draggedChapterId, setDraggedChapterId] = useState<string | null>(null);
-  const [draggedLecture, setDraggedLecture] = useState<{ chapterId: string; lectureId: string } | null>(
-    null
-  );
+  const [draggedLecture, setDraggedLecture] = useState<{
+    chapterId: string;
+    lectureId: string;
+  } | null>(null);
   const [isWorking, setIsWorking] = useState(false);
 
   const totalLectures = useMemo(
@@ -500,7 +496,8 @@ export function CourseContentBuilder({
                 </div>
                 <CardTitle>Content atelier for {course.title}</CardTitle>
                 <CardDescription>
-                  Shape chapters, switch lecture delivery modes, attach materials, and keep the learning path ordered with direct drag-and-drop.
+                  Shape chapters, switch lecture delivery modes, attach materials, and keep the
+                  learning path ordered with direct drag-and-drop.
                 </CardDescription>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -510,7 +507,7 @@ export function CourseContentBuilder({
                   </Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/courses/$id" params={{ id: course.id }}>
+                  <Link to="/courses/$slug" params={{ slug: course.slug }}>
                     Preview public page
                   </Link>
                 </Button>
@@ -522,7 +519,9 @@ export function CourseContentBuilder({
         <Card>
           <CardHeader>
             <CardTitle>Add chapter</CardTitle>
-            <CardDescription>Start the structure with a clear title and an optional chapter summary.</CardDescription>
+            <CardDescription>
+              Start the structure with a clear title and an optional chapter summary.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -640,7 +639,11 @@ export function CourseContentBuilder({
                       }
                     />
                     <div className="flex gap-2">
-                      <Button type="button" size="sm" onClick={() => void handleSaveChapter(chapter.id)}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => void handleSaveChapter(chapter.id)}
+                      >
                         Save chapter
                       </Button>
                       <Button
@@ -673,7 +676,7 @@ export function CourseContentBuilder({
                         }))
                       }
                     />
-                          <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-surface-container-low px-4 py-2 text-sm font-semibold text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.15)]">
+                    <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-surface-container-low px-4 py-2 text-sm font-semibold text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.15)]">
                       Upload file
                       <input
                         className="hidden"
@@ -883,9 +886,11 @@ export function CourseContentBuilder({
                             <VideoUploader
                               label="Lecture video"
                               value={{
-                                mode: (lectureEditDrafts[lecture.id]?.type ?? "VIDEO_LINK") === "VIDEO_UPLOAD"
-                                  ? "VIDEO_UPLOAD"
-                                  : "VIDEO_LINK",
+                                mode:
+                                  (lectureEditDrafts[lecture.id]?.type ?? "VIDEO_LINK") ===
+                                  "VIDEO_UPLOAD"
+                                    ? "VIDEO_UPLOAD"
+                                    : "VIDEO_LINK",
                                 videoUrl: lectureEditDrafts[lecture.id]?.videoUrl ?? ""
                               }}
                               onValueChange={(nextValue) =>
@@ -901,7 +906,11 @@ export function CourseContentBuilder({
                             />
                           )}
                           <div className="flex gap-2">
-                            <Button type="button" size="sm" onClick={() => void handleSaveLecture(lecture.id)}>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => void handleSaveLecture(lecture.id)}
+                            >
                               Save lecture
                             </Button>
                             <Button
@@ -934,7 +943,9 @@ export function CourseContentBuilder({
                             <input
                               className="hidden"
                               type="file"
-                              onChange={(event) => void handleLectureMaterialUpload(lecture.id, event)}
+                              onChange={(event) =>
+                                void handleLectureMaterialUpload(lecture.id, event)
+                              }
                             />
                           </label>
                         </div>
@@ -957,7 +968,9 @@ export function CourseContentBuilder({
                                   />
                                 ) : (
                                   <>
-                                    <p className="font-semibold text-on-surface">{material.title}</p>
+                                    <p className="font-semibold text-on-surface">
+                                      {material.title}
+                                    </p>
                                     <a
                                       className="text-sm text-secondary-container hover:underline"
                                       href={material.fileUrl}
@@ -974,7 +987,9 @@ export function CourseContentBuilder({
                                   <Button
                                     type="button"
                                     size="sm"
-                                    onClick={() => void handleRenameMaterial(material.id, "lecture")}
+                                    onClick={() =>
+                                      void handleRenameMaterial(material.id, "lecture")
+                                    }
                                   >
                                     Save
                                   </Button>
@@ -1073,9 +1088,10 @@ export function CourseContentBuilder({
                         <VideoUploader
                           label="Lecture video"
                           value={{
-                            mode: (lectureDrafts[chapter.id]?.type ?? "VIDEO_LINK") === "VIDEO_UPLOAD"
-                              ? "VIDEO_UPLOAD"
-                              : "VIDEO_LINK",
+                            mode:
+                              (lectureDrafts[chapter.id]?.type ?? "VIDEO_LINK") === "VIDEO_UPLOAD"
+                                ? "VIDEO_UPLOAD"
+                                : "VIDEO_LINK",
                             videoUrl: lectureDrafts[chapter.id]?.videoUrl ?? ""
                           }}
                           onValueChange={(nextValue) =>
@@ -1130,7 +1146,8 @@ export function CourseContentBuilder({
             <CardHeader>
               <CardTitle>Structure preview</CardTitle>
               <CardDescription>
-                A quick read on hierarchy, lecture density, and material placement before students ever enter the player.
+                A quick read on hierarchy, lecture density, and material placement before students
+                ever enter the player.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -1197,7 +1214,10 @@ export function CourseContentBuilderSkeleton(): JSX.Element {
         </CardHeader>
         <CardContent className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-24 animate-pulse rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low" />
+            <div
+              key={index}
+              className="h-24 animate-pulse rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low"
+            />
           ))}
         </CardContent>
       </Card>

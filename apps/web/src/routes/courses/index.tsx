@@ -13,11 +13,35 @@ import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses } from "@/lib/api/courses";
+import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
+import { ssrApiGetCourses } from "@/lib/ssr-api";
 
-export const Route = createFileRoute("/courses/" as never)({
+export const Route = createFileRoute("/courses/")({
+  head: ({ loaderData }) => {
+    const courses = loaderData?.coursesForLd ?? [];
+
+    return seo({
+      description:
+        "Explore every published mathematics program at Mehedi's Math Academy: pricing, teachers, and enrollment in one editorial catalog.",
+      jsonLd: [
+        catalogItemListFromCourses(courses),
+        breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" }
+        ])
+      ],
+      path: "/courses",
+      title: "Course catalog"
+    });
+  },
+  loader: async () => {
+    const { data } = await ssrApiGetCourses({ limit: 24, page: 1, status: "PUBLISHED" });
+
+    return { coursesForLd: data };
+  },
   component: CoursesCatalogPage,
   errorComponent: RouteErrorView
-} as never);
+});
 
 function flattenCategories(categories: readonly CategoryNode[]): readonly CategoryNode[] {
   return categories.flatMap((category) => [category, ...flattenCategories(category.children)]);

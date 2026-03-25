@@ -11,6 +11,7 @@ import {
   createChapterSchema,
   listCoursesQuerySchema,
   reorderChaptersSchema,
+  slugParamsSchema,
   teacherDirectoryQuerySchema,
   updateCourseSchema
 } from "@mma/shared";
@@ -46,6 +47,19 @@ coursesRoutes.get("/support/teachers", requireRole("ADMIN", "TEACHER"), (context
   const query = teacherDirectoryQuerySchema.parse(context.req.query());
 
   return courseController.listTeacherDirectory(context, query.search);
+});
+
+coursesRoutes.get("/by-slug/:slug", (context) => {
+  const params = slugParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return courseController.getCourseBySlug(
+    context,
+    params.slug,
+    authUser?.id,
+    authSession?.role as UserRole | undefined
+  );
 });
 
 coursesRoutes.get("/:id/review-summary", (context) => {

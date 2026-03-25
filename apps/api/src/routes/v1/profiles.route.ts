@@ -3,6 +3,7 @@ import type { UserRole } from "@mma/shared";
 import {
   basicProfileInputSchema,
   profileIdParamsSchema,
+  slugParamsSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
 } from "@mma/shared";
@@ -37,6 +38,12 @@ profilesRoutes.put("/me", requireAuth(), async (context) => {
 
   const payload = basicProfileInputSchema.parse(rawPayload);
   return profileController.updateBasicProfile(context, authUser!.id, payload);
+});
+
+profilesRoutes.get("/teachers/by-slug/:slug", (context) => {
+  const params = slugParamsSchema.parse(context.req.param());
+
+  return profileController.getPublicTeacherProfileBySlug(context, params.slug);
 });
 
 profilesRoutes.get("/teachers/:id", async (context) => {

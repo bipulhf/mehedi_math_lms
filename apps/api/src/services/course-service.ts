@@ -206,8 +206,25 @@ export class CourseService {
     const effectiveStatus =
       currentUserRole === "ADMIN" || isMineRequest ? query.status : ("PUBLISHED" as const);
 
+    let categoryId = query.categoryId;
+
+    if (query.categorySlug) {
+      const category = await this.categoryRepository.findBySlug(query.categorySlug);
+
+      if (!category || !category.isActive) {
+        return {
+          items: [],
+          limit: query.limit,
+          page: query.page,
+          total: 0
+        };
+      }
+
+      categoryId = category.id;
+    }
+
     const repositoryQuery = {
-      categoryId: query.categoryId,
+      categoryId,
       limit: query.limit,
       maxPrice: query.maxPrice,
       minPrice: query.minPrice,
@@ -244,6 +261,22 @@ export class CourseService {
     currentUserRole?: UserRole | undefined
   ): Promise<CourseDetailResponse> {
     const course = await this.courseRepository.findById(id);
+
+    if (!course) {
+      throw new NotFoundError("Course not found");
+    }
+
+    this.ensureCanViewCourse(course, currentUserId, currentUserRole);
+
+    return mapCourse(course);
+  }
+
+  public async getCourseBySlug(
+    slug: string,
+    currentUserId?: string | undefined,
+    currentUserRole?: UserRole | undefined
+  ): Promise<CourseDetailResponse> {
+    const course = await this.courseRepository.findBySlug(slug);
 
     if (!course) {
       throw new NotFoundError("Course not found");

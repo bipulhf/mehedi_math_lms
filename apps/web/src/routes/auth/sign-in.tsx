@@ -9,8 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/auth/sign-in")({
+  head: () =>
+    seo({
+      description:
+        "Secure email and Google sign-in for Mehedi's Math Academy dashboards, courses, and messaging.",
+      path: "/auth/sign-in",
+      title: "Sign in"
+    }),
   component: SignInPage,
   errorComponent: RouteErrorView
 });
@@ -20,7 +28,7 @@ const signInSchema = z.object({
   password: z.string().min(8)
 });
 
-function SignInPage(): JSX.Element {
+export function SignInPage(): JSX.Element {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({

@@ -102,6 +102,16 @@ export class CategoryService {
     return mapNode(category, []);
   }
 
+  public async getPublicCategoryBySlug(slug: string): Promise<CategoryTreeNode> {
+    const category = await this.categoryRepository.findBySlug(slug);
+
+    if (!category || !category.isActive) {
+      throw new NotFoundError("Category not found");
+    }
+
+    return mapNode(category, []);
+  }
+
   public async createCategory(input: CreateCategoryInput): Promise<CategoryTreeNode> {
     const slug = normalizeOptionalString(input.slug) ?? createSlug(input.name);
     const existingCategory = await this.categoryRepository.findBySlug(slug);
