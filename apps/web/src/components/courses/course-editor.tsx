@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { CategorySelector } from "@/components/categories/category-selector";
 import { FadeIn } from "@/components/common/fade-in";
+import { ImageCropUploader } from "@/components/uploads/image-crop-uploader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -101,7 +102,6 @@ export function CourseEditor({
 }: CourseEditorProps): JSX.Element {
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState<CourseEditorErrors>({});
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [values, setValues] = useState<CourseEditorValues>(initialValues);
 
   useEffect(() => {
@@ -120,21 +120,6 @@ export function CourseEditor({
         ? currentValues.teacherIds.filter((currentTeacherId) => currentTeacherId !== teacherId)
         : [...currentValues.teacherIds, teacherId]
     }));
-  };
-
-  const handleUploadCover = async (file: File): Promise<void> => {
-    setIsUploadingCover(true);
-
-    try {
-      const publicUrl = await uploadCourseCover(file);
-      setValues((currentValues) => ({
-        ...currentValues,
-        coverImageUrl: publicUrl
-      }));
-      toast.success("Course cover uploaded");
-    } finally {
-      setIsUploadingCover(false);
-    }
   };
 
   const handleCommit = async (action: EditorAction): Promise<void> => {
@@ -260,26 +245,22 @@ export function CourseEditor({
           {currentStep === 1 ? (
             <FadeIn className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
               <div className="space-y-3">
-                <p className="text-sm leading-6 text-on-surface/70">
-                  A strong cover gives the catalog more presence and makes the approval queue easier to scan.
-                </p>
-                <label className="flex cursor-pointer items-center justify-center rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-outline-variant bg-surface-container-low px-4 py-10 text-center text-sm text-on-surface/70 transition-colors hover:bg-surface-container">
-                  <input
-                    accept="image/*"
-                    className="hidden"
-                    type="file"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-
-                      if (!file) {
-                        return;
-                      }
-
-                      void handleUploadCover(file);
-                    }}
-                  />
-                  {isUploadingCover ? "Uploading cover..." : "Choose cover image"}
-                </label>
+                <ImageCropUploader
+                  aspect={16 / 9}
+                  buttonLabel="Choose cover image"
+                  description="Crop the cover before upload so course cards, catalog previews, and public detail pages stay consistent."
+                  label="Cover image URL"
+                  previewAlt="Course cover preview"
+                  successMessage="Course cover uploaded"
+                  value={values.coverImageUrl ?? ""}
+                  onUploadFile={(file, onProgress) => uploadCourseCover(file, onProgress)}
+                  onValueChange={(coverImageUrl) =>
+                    setValues((currentValues) => ({
+                      ...currentValues,
+                      coverImageUrl: coverImageUrl || undefined
+                    }))
+                  }
+                />
                 <Button
                   type="button"
                   variant="outline"

@@ -1,8 +1,10 @@
 import type { Context } from "hono";
+import type { AuthUser } from "@mma/auth";
 
 import {
   UploadService,
-  type CreateProfilePhotoUploadRequest
+  type ConfirmUploadRequest,
+  type CreatePresignedUploadRequest
 } from "@/services/upload-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
@@ -10,48 +12,33 @@ import { success } from "@/utils/response";
 export class UploadController {
   public constructor(private readonly uploadService: UploadService) {}
 
-  public async createProfilePhotoUpload(
+  public async createPresignedUpload(
     context: Context<AppBindings>,
-    input: CreateProfilePhotoUploadRequest
+    actor: AuthUser,
+    input: CreatePresignedUploadRequest
   ): Promise<Response> {
-    const payload = await this.uploadService.createProfilePhotoUpload(input);
+    const payload = await this.uploadService.createPresignedUpload(actor, input);
 
-    return success(context, payload, 201, "Profile photo upload prepared successfully");
+    return success(context, payload, 201, "Upload prepared successfully");
   }
 
-  public async createBugScreenshotUpload(
+  public async confirmUpload(
     context: Context<AppBindings>,
-    input: CreateProfilePhotoUploadRequest
+    actor: AuthUser,
+    input: ConfirmUploadRequest
   ): Promise<Response> {
-    const payload = await this.uploadService.createBugScreenshotUpload(input);
+    const payload = await this.uploadService.confirmUpload(actor, input);
 
-    return success(context, payload, 201, "Bug screenshot upload prepared successfully");
+    return success(context, payload, 200, "Upload confirmed successfully");
   }
 
-  public async createCourseCoverUpload(
+  public async deleteUpload(
     context: Context<AppBindings>,
-    input: CreateProfilePhotoUploadRequest
+    actor: AuthUser,
+    uploadId: string
   ): Promise<Response> {
-    const payload = await this.uploadService.createCourseCoverUpload(input);
+    await this.uploadService.deleteUpload(actor, uploadId);
 
-    return success(context, payload, 201, "Course cover upload prepared successfully");
-  }
-
-  public async createCourseMaterialUpload(
-    context: Context<AppBindings>,
-    input: CreateProfilePhotoUploadRequest
-  ): Promise<Response> {
-    const payload = await this.uploadService.createCourseMaterialUpload(input);
-
-    return success(context, payload, 201, "Course material upload prepared successfully");
-  }
-
-  public async createLectureVideoUpload(
-    context: Context<AppBindings>,
-    input: CreateProfilePhotoUploadRequest
-  ): Promise<Response> {
-    const payload = await this.uploadService.createLectureVideoUpload(input);
-
-    return success(context, payload, 201, "Lecture video upload prepared successfully");
+    return success(context, { id: uploadId }, 200, "Upload deleted successfully");
   }
 }

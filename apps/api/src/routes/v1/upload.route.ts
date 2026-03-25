@@ -1,43 +1,30 @@
 import { Hono } from "hono";
-import { z } from "zod";
+import { confirmUploadSchema, createPresignedUploadSchema, idSchema } from "@mma/shared";
 
 import { uploadController } from "@/lib/container";
 import { requireAuth } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
-const createProfilePhotoUploadSchema = z.object({
-  contentType: z.string().trim().min(1),
-  fileName: z.string().trim().min(1).max(255)
-});
-
 export const uploadRoutes = new Hono<AppBindings>();
 
-uploadRoutes.post("/profile-photo/presign", requireAuth(), async (context) => {
-  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+uploadRoutes.post("/presigned", requireAuth(), async (context) => {
+  const payload = createPresignedUploadSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
 
-  return uploadController.createProfilePhotoUpload(context, payload);
+  return uploadController.createPresignedUpload(context, authUser!, payload);
 });
 
-uploadRoutes.post("/bug-screenshot/presign", requireAuth(), async (context) => {
-  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+uploadRoutes.post("/confirm", requireAuth(), async (context) => {
+  const payload = confirmUploadSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
 
-  return uploadController.createBugScreenshotUpload(context, payload);
+  return uploadController.confirmUpload(context, authUser!, payload);
 });
 
-uploadRoutes.post("/course-cover/presign", requireAuth(), async (context) => {
-  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+uploadRoutes.delete("/:id", requireAuth(), async (context) => {
+  const params = context.req.param();
+  const uploadId = idSchema.parse(params.id);
+  const authUser = context.get("authUser");
 
-  return uploadController.createCourseCoverUpload(context, payload);
-});
-
-uploadRoutes.post("/course-material/presign", requireAuth(), async (context) => {
-  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
-
-  return uploadController.createCourseMaterialUpload(context, payload);
-});
-
-uploadRoutes.post("/lecture-video/presign", requireAuth(), async (context) => {
-  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
-
-  return uploadController.createLectureVideoUpload(context, payload);
+  return uploadController.deleteUpload(context, authUser!, uploadId);
 });

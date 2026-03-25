@@ -11,6 +11,7 @@ import { conversations, messages } from "./messages";
 import { fcmTokens, notifications } from "./notifications";
 import { payments } from "./payments";
 import { questionOptions, submissionAnswers, testQuestions, tests, testSubmissions } from "./tests";
+import { uploads } from "./uploads";
 import {
   accounts,
   sessions,
@@ -42,10 +43,18 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   fcmTokens: many(fcmTokens),
   reviews: many(reviews),
   bugReports: many(bugReports),
+  uploads: many(uploads),
   gradedSubmissions: many(testSubmissions, { relationName: "graded_by_user" }),
   notices: many(notices),
   conversationOne: many(conversations, { relationName: "conversation_participant_one" }),
   conversationTwo: many(conversations, { relationName: "conversation_participant_two" })
+}));
+
+export const uploadsRelations = relations(uploads, ({ one }) => ({
+  user: one(users, {
+    fields: [uploads.userId],
+    references: [users.id]
+  })
 }));
 
 export const studentProfilesRelations = relations(studentProfiles, ({ one }) => ({

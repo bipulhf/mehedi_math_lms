@@ -34,7 +34,7 @@ todos:
     status: completed
   - id: phase-11
     content: "Phase 11: File Upload and Media Management (AWS S3 presigned URLs, video/image/doc)"
-    status: pending
+    status: completed
   - id: phase-12
     content: "Phase 12: Tests and Assessments (MCQ auto-grade, written manual grade, timer)"
     status: pending

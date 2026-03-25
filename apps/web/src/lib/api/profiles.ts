@@ -7,7 +7,7 @@ import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPut } from "@/lib/api/client";
-import { apiPost } from "@/lib/api/client";
+export { uploadProfilePhoto } from "@/lib/api/uploads";
 
 export interface ProfileUser {
   email: string;
@@ -72,17 +72,6 @@ export type StudentProfileInput = z.infer<typeof studentProfileInputSchema>;
 export type TeacherProfileInput = z.infer<typeof teacherProfileInputSchema>;
 export type BasicProfileInput = z.infer<typeof basicProfileInputSchema>;
 
-interface ProfilePhotoUploadPayload {
-  contentType: string;
-  fileName: string;
-}
-
-interface ProfilePhotoUploadResponse {
-  key: string;
-  publicUrl: string;
-  uploadUrl: string;
-}
-
 export async function getOwnProfile(): Promise<OwnProfileData> {
   const response = await apiGet<OwnProfileData>("profiles/me");
 
@@ -119,25 +108,3 @@ export async function getAdminStudentProfile(id: string): Promise<OwnProfileData
   return response.data;
 }
 
-export async function uploadProfilePhoto(file: File): Promise<string> {
-  const response = await apiPost<ProfilePhotoUploadPayload, ProfilePhotoUploadResponse>(
-    "upload/profile-photo/presign",
-    {
-      contentType: file.type,
-      fileName: file.name
-    }
-  );
-  const uploadResponse = await fetch(response.data.uploadUrl, {
-    body: file,
-    headers: {
-      "Content-Type": file.type
-    },
-    method: "PUT"
-  });
-
-  if (!uploadResponse.ok) {
-    throw new Error("Profile photo upload failed");
-  }
-
-  return response.data.publicUrl;
-}

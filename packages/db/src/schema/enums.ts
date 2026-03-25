@@ -68,3 +68,19 @@ export const notificationTypeEnum = pgEnum("notification_type", [
 ]);
 
 export const deviceTypeEnum = pgEnum("device_type", ["WEB", "ANDROID", "IOS"]);
+
+export const uploadPurposeEnum = pgEnum("upload_purpose", [
+  "PROFILE_PHOTO",
+  "BUG_SCREENSHOT",
+  "COURSE_COVER",
+  "COURSE_MATERIAL",
+  "LECTURE_VIDEO"
+]);
+
+export const uploadKindEnum = pgEnum("upload_kind", ["IMAGE", "VIDEO", "DOCUMENT"]);
+
+export const uploadStatusEnum = pgEnum("upload_status", [
+  "PENDING",
+  "READY",
+  "FAILED"
+]);

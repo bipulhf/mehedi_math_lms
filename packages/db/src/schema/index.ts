@@ -12,4 +12,5 @@ export * from "./payments";
 export * from "./relations";
 export * from "./reviews";
 export * from "./tests";
+export * from "./uploads";
 export * from "./users";

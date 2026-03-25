@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { FadeIn } from "@/components/common/fade-in";
+import { VideoUploader } from "@/components/uploads/video-uploader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ import {
   updateLecture,
   updateLectureMaterial
 } from "@/lib/api/content";
-import { uploadCourseMaterial, uploadLectureVideo } from "@/lib/api/uploads";
+import { uploadCourseMaterial } from "@/lib/api/uploads";
 
 interface CourseContentBuilderProps {
   content: readonly ContentChapter[];
@@ -85,12 +86,6 @@ function validateMaterialFile(file: File): void {
 
   if (!file.type.startsWith("image/") && !allowedTypes.has(file.type)) {
     throw new Error("Use PDF, DOC, DOCX, PPT, PPTX, or image files");
-  }
-}
-
-function validateLectureVideoFile(file: File): void {
-  if (!file.type.startsWith("video/")) {
-    throw new Error("Use a video file for lecture uploads");
   }
 }
 
@@ -369,35 +364,6 @@ export function CourseContentBuilder({
 
       await onRefresh();
       toast.success("Material deleted");
-    } finally {
-      setIsWorking(false);
-    }
-  };
-
-  const handleLectureVideoUpload = async (
-    chapterId: string,
-    event: ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    setIsWorking(true);
-
-    try {
-      validateLectureVideoFile(file);
-      const videoUrl = await uploadLectureVideo(file);
-      setLectureDrafts((currentValues) => ({
-        ...currentValues,
-        [chapterId]: {
-          ...(currentValues[chapterId] ?? initialLectureDraft),
-          type: "VIDEO_UPLOAD",
-          videoUrl
-        }
-      }));
-      toast.success("Lecture video uploaded");
     } finally {
       setIsWorking(false);
     }
@@ -914,15 +880,21 @@ export function CourseContentBuilder({
                               }
                             />
                           ) : (
-                            <Input
-                              placeholder="Video URL"
-                              value={lectureEditDrafts[lecture.id]?.videoUrl ?? ""}
-                              onChange={(event) =>
+                            <VideoUploader
+                              label="Lecture video"
+                              value={{
+                                mode: (lectureEditDrafts[lecture.id]?.type ?? "VIDEO_LINK") === "VIDEO_UPLOAD"
+                                  ? "VIDEO_UPLOAD"
+                                  : "VIDEO_LINK",
+                                videoUrl: lectureEditDrafts[lecture.id]?.videoUrl ?? ""
+                              }}
+                              onValueChange={(nextValue) =>
                                 setLectureEditDrafts((currentValues) => ({
                                   ...currentValues,
                                   [lecture.id]: {
                                     ...(currentValues[lecture.id] ?? initialLectureDraft),
-                                    videoUrl: event.target.value
+                                    type: nextValue.mode,
+                                    videoUrl: nextValue.videoUrl
                                   }
                                 }))
                               }
@@ -1098,29 +1070,25 @@ export function CourseContentBuilder({
                           }
                         />
                       ) : (
-                        <div className="grid gap-3 md:grid-cols-[1fr_auto]">
-                          <Input
-                            placeholder="Video URL"
-                            value={lectureDrafts[chapter.id]?.videoUrl ?? ""}
-                            onChange={(event) =>
-                              setLectureDrafts((currentValues) => ({
-                                ...currentValues,
-                                [chapter.id]: {
-                                  ...(currentValues[chapter.id] ?? initialLectureDraft),
-                                  videoUrl: event.target.value
-                                }
-                              }))
-                            }
-                          />
-                          <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.15)]">
-                            Upload video
-                            <input
-                              className="hidden"
-                              type="file"
-                              onChange={(event) => void handleLectureVideoUpload(chapter.id, event)}
-                            />
-                          </label>
-                        </div>
+                        <VideoUploader
+                          label="Lecture video"
+                          value={{
+                            mode: (lectureDrafts[chapter.id]?.type ?? "VIDEO_LINK") === "VIDEO_UPLOAD"
+                              ? "VIDEO_UPLOAD"
+                              : "VIDEO_LINK",
+                            videoUrl: lectureDrafts[chapter.id]?.videoUrl ?? ""
+                          }}
+                          onValueChange={(nextValue) =>
+                            setLectureDrafts((currentValues) => ({
+                              ...currentValues,
+                              [chapter.id]: {
+                                ...(currentValues[chapter.id] ?? initialLectureDraft),
+                                type: nextValue.mode,
+                                videoUrl: nextValue.videoUrl
+                              }
+                            }))
+                          }
+                        />
                       )}
                       <label className="flex items-center gap-3 text-sm text-on-surface">
                         <input
