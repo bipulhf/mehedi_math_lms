@@ -21,7 +21,7 @@ const dashboardNavigation = {
     { icon: Users, label: "Users", to: "/dashboard/admin/users" },
     { icon: Layers3, label: "Categories", to: "/dashboard/admin/categories" },
     { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard" }
+    { icon: BookCopy, label: "Courses", to: "/dashboard/admin/courses" }
   ],
   STUDENT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
@@ -34,7 +34,7 @@ const dashboardNavigation = {
   TEACHER: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard" },
+    { icon: BookCopy, label: "Courses", to: "/dashboard/courses" },
     { icon: Users, label: "Students", to: "/dashboard" },
     { icon: ChartColumn, label: "Analytics", to: "/dashboard" },
     { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },

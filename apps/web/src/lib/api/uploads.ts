@@ -34,3 +34,7 @@ async function uploadImage(path: string, file: File): Promise<string> {
 export async function uploadBugScreenshot(file: File): Promise<string> {
   return uploadImage("upload/bug-screenshot/presign", file);
 }
+
+export async function uploadCourseCover(file: File): Promise<string> {
+  return uploadImage("upload/course-cover/presign", file);
+}

@@ -65,4 +65,10 @@ export class UploadService {
   ): Promise<ProfilePhotoUploadResponse> {
     return this.createImageUpload("bug-screenshots", input);
   }
+
+  public async createCourseCoverUpload(
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<ProfilePhotoUploadResponse> {
+    return this.createImageUpload("course-covers", input);
+  }
 }

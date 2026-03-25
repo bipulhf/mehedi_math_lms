@@ -27,4 +27,13 @@ export class UploadController {
 
     return success(context, payload, 201, "Bug screenshot upload prepared successfully");
   }
+
+  public async createCourseCoverUpload(
+    context: Context<AppBindings>,
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<Response> {
+    const payload = await this.uploadService.createCourseCoverUpload(input);
+
+    return success(context, payload, 201, "Course cover upload prepared successfully");
+  }
 }

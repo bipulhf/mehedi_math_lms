@@ -502,6 +502,8 @@ erDiagram
 
 **Goal:** Build the complete course creation, editing, and admin approval workflow.
 
+**Status:** Completed
+
 **Key tasks:**
 
 - **Backend:**

@@ -23,3 +23,9 @@ uploadRoutes.post("/bug-screenshot/presign", requireAuth(), async (context) => {
 
   return uploadController.createBugScreenshotUpload(context, payload);
 });
+
+uploadRoutes.post("/course-cover/presign", requireAuth(), async (context) => {
+  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+
+  return uploadController.createCourseCoverUpload(context, payload);
+});

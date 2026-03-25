@@ -28,6 +28,7 @@ export const courses = pgTable(
     title: varchar("title", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }).notNull(),
     description: text("description").notNull(),
+    reviewFeedback: text("review_feedback"),
     coverImageUrl: text("cover_image_url"),
     price: numeric("price", { precision: 10, scale: 2 }).default("0").notNull(),
     status: courseStatusEnum("status").default("DRAFT").notNull(),

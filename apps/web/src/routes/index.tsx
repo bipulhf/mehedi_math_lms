@@ -69,12 +69,20 @@ function HomePage(): JSX.Element {
                       <Skeleton className="h-20" />
                       <Skeleton className="h-20" />
                     </div>
-                    <Button asChild variant="ghost" className="px-0 text-secondary-container hover:bg-transparent">
-                      <Link to="/categories">
-                        Browse categories
-                        <ArrowRight className="size-4" />
-                      </Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild variant="ghost" className="px-0 text-secondary-container hover:bg-transparent">
+                        <Link to="/courses">
+                          Browse courses
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      </Button>
+                      <Button asChild variant="ghost" className="px-0 text-secondary-container hover:bg-transparent">
+                        <Link to="/categories">
+                          Browse categories
+                          <ArrowRight className="size-4" />
+                        </Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </div>
               </Card>

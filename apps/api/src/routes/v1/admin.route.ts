@@ -3,9 +3,11 @@ import {
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   bugsQuerySchema,
+  courseIdParamsSchema,
   createAdminUserSchema,
   idParamsSchema,
   profileIdParamsSchema,
+  rejectCourseSchema,
   updateAdminUserSchema,
   updateAdminUserStatusSchema
 } from "@mma/shared";
@@ -14,6 +16,7 @@ import {
   adminDashboardController,
   adminUserController,
   bugReportController,
+  courseController,
   profileController
 } from "@/lib/container";
 import { requireAdmin } from "@/middleware/auth";
@@ -90,4 +93,17 @@ adminRoutes.patch("/bugs/:id", requireAdmin(), async (context) => {
     priority: payload.priority,
     status: payload.status
   });
+});
+
+adminRoutes.post("/courses/:id/approve", requireAdmin(), (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+
+  return courseController.approveCourse(context, params.id);
+});
+
+adminRoutes.post("/courses/:id/reject", requireAdmin(), async (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+  const payload = rejectCourseSchema.parse(await context.req.json());
+
+  return courseController.rejectCourse(context, params.id, payload);
 });

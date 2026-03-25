@@ -14,17 +14,23 @@ import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as TeachersIdRouteImport } from './routes/teachers/$id'
 import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
+import { Route as CoursesIdRouteImport } from './routes/courses/$id'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard/courses/index'
 import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/index'
 import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
+import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard/courses/new'
 import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
 import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
+import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
 import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
 import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
 import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/admin/bugs/$id'
 
@@ -53,6 +59,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const CoursesIndexRoute = CoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeachersIdRoute = TeachersIdRouteImport.update({
   id: '/teachers/$id',
   path: '/teachers/$id',
@@ -69,10 +80,20 @@ const DashboardProfileRoute = DashboardProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DashboardRoute,
 } as any)
+const CoursesIdRoute = CoursesIdRouteImport.update({
+  id: '/courses/$id',
+  path: '/courses/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardBugsIndexRoute = DashboardBugsIndexRouteImport.update({
   id: '/bugs/',
@@ -84,6 +105,11 @@ const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
   path: '/students/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCoursesNewRoute = DashboardCoursesNewRouteImport.update({
+  id: '/courses/new',
+  path: '/courses/new',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
   id: '/bugs/report',
   path: '/bugs/report',
@@ -92,6 +118,11 @@ const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
 const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminCoursesRoute = DashboardAdminCoursesRouteImport.update({
+  id: '/admin/courses',
+  path: '/admin/courses',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardAdminCategoriesRoute =
@@ -110,6 +141,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardCoursesIdEditRoute = DashboardCoursesIdEditRouteImport.update({
+  id: '/courses/$id/edit',
+  path: '/courses/$id/edit',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -127,38 +163,50 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
+  '/courses/$id': typeof CoursesIdRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
+  '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/categories': typeof CategoriesRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/courses/$id': typeof CoursesIdRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/courses': typeof CoursesIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
+  '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs': typeof DashboardBugsIndexRoute
+  '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,19 +215,25 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/auth/sign-in': typeof AuthSignInRoute
+  '/courses/$id': typeof CoursesIdRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/teachers/$id': typeof TeachersIdRoute
+  '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
+  '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
+  '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,38 +243,50 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/auth/sign-in'
+    | '/courses/$id'
     | '/dashboard/profile'
     | '/dashboard/profile-complete'
     | '/teachers/$id'
+    | '/courses/'
     | '/dashboard/'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
+    | '/dashboard/admin/courses'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
+    | '/dashboard/courses/new'
     | '/dashboard/students/$id'
     | '/dashboard/bugs/'
+    | '/dashboard/courses/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/categories'
     | '/auth/sign-in'
+    | '/courses/$id'
     | '/dashboard/profile'
     | '/dashboard/profile-complete'
     | '/teachers/$id'
+    | '/courses'
     | '/dashboard'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
+    | '/dashboard/admin/courses'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
+    | '/dashboard/courses/new'
     | '/dashboard/students/$id'
     | '/dashboard/bugs'
+    | '/dashboard/courses'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -228,19 +294,25 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/auth/sign-in'
+    | '/courses/$id'
     | '/dashboard/profile'
     | '/dashboard/profile-complete'
     | '/teachers/$id'
+    | '/courses/'
     | '/dashboard/'
     | '/api/auth/$'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
+    | '/dashboard/admin/courses'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
+    | '/dashboard/courses/new'
     | '/dashboard/students/$id'
     | '/dashboard/bugs/'
+    | '/dashboard/courses/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
+    | '/dashboard/courses/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,7 +320,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  CoursesIdRoute: typeof CoursesIdRoute
   TeachersIdRoute: typeof TeachersIdRoute
+  CoursesIndexRoute: typeof CoursesIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -289,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teachers/$id': {
       id: '/teachers/$id'
       path: '/teachers/$id'
@@ -310,12 +391,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/courses/$id': {
+      id: '/courses/$id'
+      path: '/courses/$id'
+      fullPath: '/courses/$id'
+      preLoaderRoute: typeof CoursesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/sign-in': {
       id: '/auth/sign-in'
       path: '/sign-in'
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/dashboard/courses/': {
+      id: '/dashboard/courses/'
+      path: '/courses'
+      fullPath: '/dashboard/courses/'
+      preLoaderRoute: typeof DashboardCoursesIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/bugs/': {
       id: '/dashboard/bugs/'
@@ -331,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentsIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/courses/new': {
+      id: '/dashboard/courses/new'
+      path: '/courses/new'
+      fullPath: '/dashboard/courses/new'
+      preLoaderRoute: typeof DashboardCoursesNewRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/bugs/report': {
       id: '/dashboard/bugs/report'
       path: '/bugs/report'
@@ -343,6 +445,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/users'
       fullPath: '/dashboard/admin/users'
       preLoaderRoute: typeof DashboardAdminUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/courses': {
+      id: '/dashboard/admin/courses'
+      path: '/admin/courses'
+      fullPath: '/dashboard/admin/courses'
+      preLoaderRoute: typeof DashboardAdminCoursesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/categories': {
@@ -365,6 +474,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/courses/$id/edit': {
+      id: '/dashboard/courses/$id/edit'
+      path: '/courses/$id/edit'
+      fullPath: '/dashboard/courses/$id/edit'
+      preLoaderRoute: typeof DashboardCoursesIdEditRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/users/$id': {
       id: '/dashboard/admin/users/$id'
@@ -421,10 +537,14 @@ interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAdminBugsRoute: typeof DashboardAdminBugsRouteWithChildren
   DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
+  DashboardAdminCoursesRoute: typeof DashboardAdminCoursesRoute
   DashboardAdminUsersRoute: typeof DashboardAdminUsersRouteWithChildren
   DashboardBugsReportRoute: typeof DashboardBugsReportRoute
+  DashboardCoursesNewRoute: typeof DashboardCoursesNewRoute
   DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
   DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
+  DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
+  DashboardCoursesIdEditRoute: typeof DashboardCoursesIdEditRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -433,10 +553,14 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAdminBugsRoute: DashboardAdminBugsRouteWithChildren,
   DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
+  DashboardAdminCoursesRoute: DashboardAdminCoursesRoute,
   DashboardAdminUsersRoute: DashboardAdminUsersRouteWithChildren,
   DashboardBugsReportRoute: DashboardBugsReportRoute,
+  DashboardCoursesNewRoute: DashboardCoursesNewRoute,
   DashboardStudentsIdRoute: DashboardStudentsIdRoute,
   DashboardBugsIndexRoute: DashboardBugsIndexRoute,
+  DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
+  DashboardCoursesIdEditRoute: DashboardCoursesIdEditRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -448,7 +572,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  CoursesIdRoute: CoursesIdRoute,
   TeachersIdRoute: TeachersIdRoute,
+  CoursesIndexRoute: CoursesIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
