@@ -14,6 +14,8 @@ import { lecturesRoutes } from "./lectures.route";
 import { messagesRoutes } from "./messages.route";
 import { notificationsRoutes } from "./notifications.route";
 import { profilesRoutes } from "./profiles.route";
+import { questionsRoutes } from "./questions.route";
+import { testsRoutes } from "./tests.route";
 import { uploadRoutes } from "./upload.route";
 import { usersRoutes } from "./users.route";
 
@@ -28,6 +30,8 @@ v1Routes.route("/courses", coursesRoutes);
 v1Routes.route("/chapters", chaptersRoutes);
 v1Routes.route("/enrollments", enrollmentsRoutes);
 v1Routes.route("/lectures", lecturesRoutes);
+v1Routes.route("/questions", questionsRoutes);
+v1Routes.route("/tests", testsRoutes);
 v1Routes.route("/messages", messagesRoutes);
 v1Routes.route("/notifications", notificationsRoutes);
 v1Routes.route("/admin", adminRoutes);

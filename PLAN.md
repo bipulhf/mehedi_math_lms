@@ -37,7 +37,7 @@ todos:
     status: completed
   - id: phase-12
     content: "Phase 12: Tests and Assessments (MCQ auto-grade, written manual grade, timer)"
-    status: pending
+    status: completed
   - id: phase-13
     content: "Phase 13: Course Enrollment and Payment (free + SSLCommerz paid flow)"
     status: pending

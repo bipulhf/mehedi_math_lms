@@ -120,6 +120,22 @@ function EditCoursePage(): JSX.Element {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <div>
+            <p className="font-semibold text-on-surface">Assessment builder</p>
+            <p className="text-sm leading-6 text-on-surface/70">
+              Create MCQ and written tests, manage questions, and open grading queues.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/dashboard/courses/$id/tests" params={{ id: course.id }}>
+              Open assessment builder
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
       <CourseEditor
         categories={categories}
         description="Refine the offer, revise rejection feedback, and resubmit the draft when it is ready."

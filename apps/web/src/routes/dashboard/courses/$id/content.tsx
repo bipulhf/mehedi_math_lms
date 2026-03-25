@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
@@ -7,6 +7,8 @@ import {
   CourseContentBuilderSkeleton
 } from "@/components/courses/course-content-builder";
 import { RouteErrorView } from "@/components/common/route-error";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
 import type { ContentChapter } from "@/lib/api/content";
@@ -46,5 +48,24 @@ function CourseContentPage(): JSX.Element {
     return <CourseContentBuilderSkeleton />;
   }
 
-  return <CourseContentBuilder content={content} course={course} onRefresh={loadData} />;
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
+          <div>
+            <p className="font-semibold text-on-surface">Assessment builder</p>
+            <p className="text-sm leading-6 text-on-surface/70">
+              Switch into timed tests, question banks, and submission review for this course.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/dashboard/courses/$id/tests" params={{ id: course.id }}>
+              Open assessments
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+      <CourseContentBuilder content={content} course={course} onRefresh={loadData} />
+    </div>
+  );
 }

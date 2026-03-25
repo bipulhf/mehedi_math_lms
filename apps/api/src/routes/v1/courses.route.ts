@@ -12,7 +12,7 @@ import {
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
-import { contentController, courseController } from "@/lib/container";
+import { contentController, courseController, testController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -56,6 +56,19 @@ coursesRoutes.get("/:courseId/content", requireRole("ADMIN", "TEACHER"), (contex
   const authSession = context.get("authSession");
 
   return contentController.getCourseContent(
+    context,
+    params.courseId,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.get("/:courseId/tests", requireRole("ADMIN", "TEACHER"), (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return testController.listCourseAssessments(
     context,
     params.courseId,
     authUser!.id,

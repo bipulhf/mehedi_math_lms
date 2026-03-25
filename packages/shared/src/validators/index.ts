@@ -15,5 +15,6 @@ export * from "./categories";
 export * from "./content";
 export * from "./courses";
 export * from "./profiles";
+export * from "./tests";
 export * from "./uploads";
 export { userRoleSchema };
