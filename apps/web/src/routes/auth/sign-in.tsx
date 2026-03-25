@@ -75,10 +75,17 @@ export function SignInPage(): JSX.Element {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" error={errors.password?.message} {...register("password")} />
+          <Input
+            id="password"
+            type="password"
+            error={errors.password?.message}
+            {...register("password")}
+          />
         </div>
         <Button className="w-full" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? <span className="h-4 w-14 rounded-full bg-white/25" aria-hidden="true" /> : null}
+          {isSubmitting ? (
+            <span className="h-4 w-14 rounded-full bg-white/25" aria-hidden="true" />
+          ) : null}
           {isSubmitting ? "Securely signing in" : "Continue to dashboard"}
         </Button>
       </form>
@@ -97,7 +104,8 @@ export function SignInPage(): JSX.Element {
           Continue with Google
         </Button>
         <p className="text-sm leading-6 text-on-surface/62">
-          Public student signup arrives in the next phases. This page already follows the shared React Hook Form + Zod pattern.
+          Public student signup arrives in the next phases. This page already follows the shared
+          React Hook Form + Zod pattern.
         </p>
       </div>
     </div>

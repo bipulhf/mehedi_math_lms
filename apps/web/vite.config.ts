@@ -24,7 +24,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        "/api": {
+        "/api/v1": {
+          changeOrigin: true,
+          target: "http://localhost:3001"
+        },
+        "/api/health": {
           changeOrigin: true,
           target: "http://localhost:3001"
         },

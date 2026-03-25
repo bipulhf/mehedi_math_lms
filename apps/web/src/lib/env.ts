@@ -13,7 +13,8 @@ const apiBaseFromEnv =
     : undefined;
 
 export const clientEnv = {
-  apiBaseUrl: apiBaseFromEnv ?? "/api/v1",
+  // In local dev we always use Vite proxy to keep requests same-origin.
+  apiBaseUrl: import.meta.env.DEV ? "/api/v1" : (apiBaseFromEnv ?? "/api/v1"),
   firebaseVapidKey: parsedClientEnv.success
     ? parsedClientEnv.data.VITE_FIREBASE_VAPID_KEY
     : undefined

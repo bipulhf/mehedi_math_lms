@@ -8,7 +8,7 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:seed": "bun --env-file ../../.env run seed.ts"
+    "db:seed": "bun --env-file ../../.env seed.ts"
   },
   "dependencies": {
     "@mma/auth": "workspace:*",

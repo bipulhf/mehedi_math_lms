@@ -4,7 +4,7 @@ import { admin } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { accounts, db, sessions, users } from "@mma/db";
+import { accounts, db, sessions, users, verificationTokens } from "@mma/db";
 import * as schema from "@mma/db/schema";
 import { z } from "zod";
 
@@ -48,7 +48,8 @@ export const auth = betterAuth({
       user: users,
       account: accounts,
       session: sessions,
-      verification: schema.verificationTokens
+      verification: verificationTokens,
+      verification_tokens: verificationTokens
     }
   }),
   advanced: {
@@ -111,10 +112,6 @@ export const auth = betterAuth({
   },
   account: {
     modelName: "accounts",
-    fields: {
-      accountId: "provider_account_id",
-      password: "password_hash"
-    },
     accountLinking: {
       enabled: true,
       trustedProviders: ["google", "credential"],
@@ -122,10 +119,7 @@ export const auth = betterAuth({
     }
   },
   verification: {
-    modelName: "verification_tokens",
-    fields: {
-      value: "token"
-    }
+    modelName: "verification_tokens"
   },
   plugins: [
     admin({

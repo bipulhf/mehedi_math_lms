@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { Activity, AlertTriangle, BarChart3, BookOpenCheck, CircleHelp, UsersRound } from "lucide-react";
+import { AlertTriangle, BarChart3, BookOpenCheck, CircleHelp, UsersRound } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { FadeIn } from "@/components/common/fade-in";
@@ -35,6 +36,8 @@ function DashboardHomePage(): JSX.Element {
       try {
         const nextStats = await getAdminDashboardStats();
         setStats(nextStats);
+      } catch {
+        toast.error("Couldn't load dashboard stats. Please retry.");
       } finally {
         setIsLoadingStats(false);
       }
@@ -99,7 +102,9 @@ function DashboardHomePage(): JSX.Element {
           <Card>
             <CardHeader>
               <CardTitle>Operations focus</CardTitle>
-              <CardDescription>Quick access to the highest-signal admin workflows for this phase.</CardDescription>
+              <CardDescription>
+                Quick access to the highest-signal admin workflows for this phase.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <Link
@@ -126,7 +131,8 @@ function DashboardHomePage(): JSX.Element {
               >
                 <p className="font-semibold text-on-surface">Platform analytics</p>
                 <p className="mt-2 text-sm leading-6 text-on-surface/68">
-                  Enrollment trends, revenue, completion, and student demographics across the academy.
+                  Enrollment trends, revenue, completion, and student demographics across the
+                  academy.
                 </p>
               </Link>
             </CardContent>
@@ -135,7 +141,9 @@ function DashboardHomePage(): JSX.Element {
           <Card>
             <CardHeader>
               <CardTitle>Live overview</CardTitle>
-              <CardDescription>High-level queue pressure before deeper analytics and reporting land.</CardDescription>
+              <CardDescription>
+                High-level queue pressure before deeper analytics and reporting land.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
@@ -165,12 +173,14 @@ function DashboardHomePage(): JSX.Element {
             <CardHeader>
               <CardTitle>Accounting cockpit</CardTitle>
               <CardDescription>
-                Payment operations are now centralized for transaction review, refund handling, and revenue monitoring.
+                Payment operations are now centralized for transaction review, refund handling, and
+                revenue monitoring.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                Review every enrollment payment, filter by gateway status, and issue refunds from the same surface.
+                Review every enrollment payment, filter by gateway status, and issue refunds from
+                the same surface.
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
@@ -186,11 +196,14 @@ function DashboardHomePage(): JSX.Element {
           <Card>
             <CardHeader>
               <CardTitle>Phase checkpoint</CardTitle>
-              <CardDescription>Enrollment and payment flows are now ready for accountant oversight.</CardDescription>
+              <CardDescription>
+                Enrollment and payment flows are now ready for accountant oversight.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                Paid courses can initialize SSLCommerz sessions, while local development uses a built-in mock gateway.
+                Paid courses can initialize SSLCommerz sessions, while local development uses a
+                built-in mock gateway.
               </div>
             </CardContent>
           </Card>
@@ -207,7 +220,8 @@ function DashboardHomePage(): JSX.Element {
             <CardHeader>
               <CardTitle>Learning hub</CardTitle>
               <CardDescription>
-                Enrollment, payment history, and course access are now part of the student dashboard.
+                Enrollment, payment history, and course access are now part of the student
+                dashboard.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -225,11 +239,14 @@ function DashboardHomePage(): JSX.Element {
           <Card>
             <CardHeader>
               <CardTitle>Support channel</CardTitle>
-              <CardDescription>Payment trouble, broken content, or access issues can be reported directly.</CardDescription>
+              <CardDescription>
+                Payment trouble, broken content, or access issues can be reported directly.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                If an enrollment or payment does not settle correctly, submit a bug report with the transaction context.
+                If an enrollment or payment does not settle correctly, submit a bug report with the
+                transaction context.
               </div>
               <Button asChild variant="outline">
                 <Link to="/dashboard/bugs/report">Report an issue</Link>
@@ -253,10 +270,11 @@ function DashboardHomePage(): JSX.Element {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-              Report broken lectures, upload failures, playback issues, missing content, or unexpected grading
-              behavior directly from the workspace.
+              Report broken lectures, upload failures, playback issues, missing content, or
+              unexpected grading behavior directly from the workspace.
             </div>
-            {(session?.session.role === "STUDENT" || session?.session.role === "TEACHER") && !isSessionPending ? (
+            {(session?.session.role === "STUDENT" || session?.session.role === "TEACHER") &&
+            !isSessionPending ? (
               <div className="flex gap-3">
                 <Button asChild>
                   <Link to="/dashboard/bugs/report">Report a bug</Link>
@@ -276,18 +294,24 @@ function DashboardHomePage(): JSX.Element {
         <Card>
           <CardHeader>
             <CardTitle>Phase checkpoint</CardTitle>
-            <CardDescription>Current dashboard priorities before course, messaging, and analytics phases expand.</CardDescription>
+            <CardDescription>
+              Current dashboard priorities before course, messaging, and analytics phases expand.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-              Profile completion, admin account governance, and bug intake are now first-class dashboard flows.
+              Profile completion, admin account governance, and bug intake are now first-class
+              dashboard flows.
             </div>
             <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-              The platform can now lock deactivated accounts and expose admin-safe controls for operational triage.
+              The platform can now lock deactivated accounts and expose admin-safe controls for
+              operational triage.
             </div>
             <div className="flex items-center gap-2 text-sm text-on-surface/60">
               <CircleHelp className="size-4" />
-              <span>Smooth 150ms transitions remain the default for every admin and support surface.</span>
+              <span>
+                Smooth 150ms transitions remain the default for every admin and support surface.
+              </span>
             </div>
           </CardContent>
         </Card>
