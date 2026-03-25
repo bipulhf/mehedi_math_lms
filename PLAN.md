@@ -672,6 +672,8 @@ erDiagram
 
 **Goal:** Build per-lecture comment/discussion sections where students, teachers, and admins can comment and reply.
 
+**Status:** Completed
+
 **Key tasks:**
 
 - **Backend:**

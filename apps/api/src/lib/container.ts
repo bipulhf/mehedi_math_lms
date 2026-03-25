@@ -4,6 +4,7 @@ import { AdminUserController } from "@/controllers/admin-user-controller";
 import { AuthController } from "@/controllers/auth-controller";
 import { BugReportController } from "@/controllers/bug-report-controller";
 import { CategoryController } from "@/controllers/category-controller";
+import { CommentController } from "@/controllers/comment-controller";
 import { ContentController } from "@/controllers/content-controller";
 import { CourseController } from "@/controllers/course-controller";
 import { EnrollmentController } from "@/controllers/enrollment-controller";
@@ -21,6 +22,7 @@ import { AdminUserRepository } from "@/repositories/admin-user-repository";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { BugReportRepository } from "@/repositories/bug-report-repository";
 import { CategoryRepository } from "@/repositories/category-repository";
+import { CommentRepository } from "@/repositories/comment-repository";
 import { ContentRepository } from "@/repositories/content-repository";
 import { CourseRepository } from "@/repositories/course-repository";
 import { EnrollmentRepository } from "@/repositories/enrollment-repository";
@@ -35,6 +37,7 @@ import { AdminUserService } from "@/services/admin-user-service";
 import { AuthGuardService } from "@/services/auth-guard-service";
 import { BugReportService } from "@/services/bug-report-service";
 import { CategoryService } from "@/services/category-service";
+import { CommentService } from "@/services/comment-service";
 import { CommerceService } from "@/services/commerce-service";
 import { ContentService } from "@/services/content-service";
 import { CourseService } from "@/services/course-service";
@@ -53,6 +56,7 @@ const adminUserRepository = new AdminUserRepository();
 const authSessionRepository = new AuthSessionRepository();
 const bugReportRepository = new BugReportRepository();
 const categoryRepository = new CategoryRepository();
+const commentRepository = new CommentRepository();
 const contentRepository = new ContentRepository();
 const courseRepository = new CourseRepository();
 const enrollmentRepository = new EnrollmentRepository();
@@ -68,6 +72,12 @@ const staffAccountService = new StaffAccountService(staffAccountRepository);
 const adminUserService = new AdminUserService(adminUserRepository, authSessionRepository, staffAccountService);
 const bugReportService = new BugReportService(bugReportRepository);
 const categoryService = new CategoryService(categoryRepository);
+const commentService = new CommentService(
+  commentRepository,
+  contentRepository,
+  courseRepository,
+  enrollmentRepository
+);
 const sslCommerzService = new SslCommerzService();
 const commerceService = new CommerceService(
   enrollmentRepository,
@@ -96,6 +106,7 @@ export const authController = new AuthController();
 export { authGuardService };
 export const bugReportController = new BugReportController(bugReportService);
 export const categoryController = new CategoryController(categoryService);
+export const commentController = new CommentController(commentService);
 export const contentController = new ContentController(contentService);
 export const courseController = new CourseController(courseService);
 export const enrollmentController = new EnrollmentController(commerceService);

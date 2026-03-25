@@ -12,6 +12,7 @@ export const paginationSchema = z.object({
 
 export * from "./admin";
 export * from "./categories";
+export * from "./comments";
 export * from "./content";
 export * from "./courses";
 export * from "./progress";

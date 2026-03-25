@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { FadeIn } from "@/components/common/fade-in";
+import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -523,6 +524,7 @@ export function CoursePlayer({
 
               <MaterialLinks materials={selectedLecture.materials} title="Lecture materials" />
               <MaterialLinks materials={selectedChapter.materials} title="Chapter materials" />
+              <LectureDiscussion lectureId={selectedLecture.id} />
 
               <Card>
                 <CardContent className="flex flex-wrap justify-between gap-3 p-4">
