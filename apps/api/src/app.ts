@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { env } from "@/lib/env";
 import type { AppBindings } from "@/types/app-bindings";
 import { onError } from "@/middleware/error-handler";
+import { sessionContextMiddleware } from "@/middleware/session-context";
 import { requestLoggerMiddleware } from "@/middleware/request-logger";
 import { requestIdMiddleware } from "@/middleware/request-id";
 import { createRateLimitMiddleware } from "@/middleware/rate-limit";
@@ -29,6 +30,7 @@ app.use(
 app.use("*", bodyLimit({ maxSize: env.BODY_LIMIT_BYTES }));
 app.use("*", compress());
 app.use("/api/*", createRateLimitMiddleware());
+app.use("/api/v1/*", sessionContextMiddleware);
 
 app.onError(onError);
 app.notFound((context) => error(context, "Route not found", 404));

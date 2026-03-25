@@ -8,5 +8,9 @@
     "dev": "bun --watch src/index.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@mma/auth": "workspace:*",
+    "@tanstack/react-router": "^1.168.3"
   }
 }

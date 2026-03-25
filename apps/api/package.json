@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@mma/auth": "workspace:*",
     "@mma/db": "workspace:*",
     "@mma/shared": "workspace:*",
     "bullmq": "^5.61.0",

@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: phase-04
     content: "Phase 4: Authentication System (Better Auth + Drizzle + Google OAuth + role-based middleware)"
-    status: pending
+    status: completed
   - id: phase-05
     content: "Phase 5: Frontend Foundation -- TanStack Start + Digital Atelier Design System"
     status: pending
@@ -341,6 +341,8 @@ erDiagram
 ---
 
 ## Phase 4: Authentication System (Better Auth)
+
+**Status:** Completed
 
 **Goal:** Integrate Better Auth with Drizzle adapter, supporting email/password signup (students), Google OAuth, and admin-created accounts for teachers/accountants.
 

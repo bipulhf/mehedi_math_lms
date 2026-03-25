@@ -1,5 +1,4 @@
-import { randomBytes, scryptSync } from "node:crypto";
-
+import { createPasswordHash } from "@mma/auth/server";
 import { accounts, and, db, eq, users } from "@mma/db";
 import { z } from "zod";
 
@@ -10,16 +9,7 @@ const seedEnvSchema = z.object({
 
 const seedEnv = seedEnvSchema.parse(process.env);
 
-function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-
-  return `${salt}:${hash}`;
-}
-
 async function seedAdmin(): Promise<void> {
-  const passwordHash = hashPassword(seedEnv.ADMIN_PASSWORD);
-
   const existingUser = await db
     .select({ id: users.id })
     .from(users)
@@ -36,6 +26,7 @@ async function seedAdmin(): Promise<void> {
         name: "Platform Administrator",
         slug: "platform-administrator",
         role: "ADMIN",
+        banned: false,
         emailVerified: true,
         profileCompleted: true,
         isActive: true
@@ -58,6 +49,9 @@ async function seedAdmin(): Promise<void> {
         name: "Platform Administrator",
         slug: "platform-administrator",
         role: "ADMIN",
+        banned: false,
+        banReason: null,
+        banExpires: null,
         emailVerified: true,
         profileCompleted: true,
         isActive: true,
@@ -72,12 +66,14 @@ async function seedAdmin(): Promise<void> {
     .where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential")))
     .limit(1);
 
+  const passwordHash = await createPasswordHash(seedEnv.ADMIN_PASSWORD);
+
   if (existingAccount[0]?.id) {
     await db
       .update(accounts)
       .set({
-        providerAccountId: seedEnv.ADMIN_EMAIL,
-        passwordHash,
+        accountId: userId,
+        password: passwordHash,
         updatedAt: new Date()
       })
       .where(eq(accounts.id, existingAccount[0].id));
@@ -85,8 +81,8 @@ async function seedAdmin(): Promise<void> {
     await db.insert(accounts).values({
       userId,
       providerId: "credential",
-      providerAccountId: seedEnv.ADMIN_EMAIL,
-      passwordHash
+      accountId: userId,
+      password: passwordHash
     });
   }
 }

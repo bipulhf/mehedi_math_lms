@@ -19,6 +19,9 @@ export const users = pgTable(
     name: varchar("name", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }),
     role: userRoleEnum("role").default("STUDENT").notNull(),
+    banned: boolean("banned").default(false).notNull(),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires", { withTimezone: true }),
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
     profileCompleted: boolean("profile_completed").default(false).notNull(),
@@ -86,8 +89,8 @@ export const accounts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     providerId: varchar("provider_id", { length: 64 }).notNull(),
-    providerAccountId: varchar("provider_account_id", { length: 255 }).notNull(),
-    passwordHash: text("password_hash"),
+    accountId: varchar("provider_account_id", { length: 255 }).notNull(),
+    password: text("password_hash"),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
@@ -98,7 +101,7 @@ export const accounts = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [
-    uniqueIndex("accounts_provider_unique_idx").on(table.providerId, table.providerAccountId),
+    uniqueIndex("accounts_provider_unique_idx").on(table.providerId, table.accountId),
     index("accounts_user_id_idx").on(table.userId)
   ]
 );
@@ -114,6 +117,7 @@ export const sessions = pgTable(
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     ipAddress: varchar("ip_address", { length: 64 }),
     userAgent: text("user_agent"),
+    impersonatedBy: uuid("impersonated_by"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
@@ -128,12 +132,13 @@ export const verificationTokens = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     identifier: varchar("identifier", { length: 255 }).notNull(),
-    token: varchar("token", { length: 255 }).notNull(),
+    value: varchar("token", { length: 255 }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [
-    uniqueIndex("verification_tokens_token_unique_idx").on(table.token),
+    uniqueIndex("verification_tokens_token_unique_idx").on(table.value),
     index("verification_tokens_identifier_idx").on(table.identifier)
   ]
 );
