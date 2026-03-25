@@ -614,6 +614,8 @@ erDiagram
 
 **Goal:** Implement free and paid enrollment flows with SSLCommerz payment gateway integration.
 
+**Status:** Completed
+
 **Key tasks:**
 
 - **Backend:**

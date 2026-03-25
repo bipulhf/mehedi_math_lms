@@ -1,14 +1,18 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
+import type { StudentEnrollment } from "@/lib/api/enrollments";
+import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
 
 export const Route = createFileRoute("/courses/$id" as never)({
   component: CourseDetailPage,
@@ -17,7 +21,10 @@ export const Route = createFileRoute("/courses/$id" as never)({
 
 function CourseDetailPage(): JSX.Element {
   const { id } = Route.useParams();
+  const { isPending: isSessionPending, session } = useAuthSession();
   const [course, setCourse] = useState<CourseDetail | null>(null);
+  const [enrollment, setEnrollment] = useState<StudentEnrollment | null>(null);
+  const [isSubmittingEnrollment, setIsSubmittingEnrollment] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -25,6 +32,39 @@ function CourseDetailPage(): JSX.Element {
       setCourse(courseData);
     })();
   }, [id]);
+
+  useEffect(() => {
+    if (isSessionPending || session?.session.role !== "STUDENT") {
+      setEnrollment(null);
+      return;
+    }
+
+    void (async () => {
+      const currentEnrollment = await getMyCourseEnrollment(id);
+      setEnrollment(currentEnrollment);
+    })();
+  }, [id, isSessionPending, session]);
+
+  const handleEnroll = async (): Promise<void> => {
+    setIsSubmittingEnrollment(true);
+
+    try {
+      const response = await createEnrollment({
+        callbackOrigin: window.location.origin,
+        courseId: id
+      });
+
+      if (response.requiresPayment && response.payment?.gatewayUrl) {
+        window.location.href = response.payment.gatewayUrl;
+        return;
+      }
+
+      toast.success("Course added to your dashboard");
+      window.location.href = "/dashboard/my-courses";
+    } finally {
+      setIsSubmittingEnrollment(false);
+    }
+  };
 
   if (!course) {
     return (
@@ -111,9 +151,38 @@ function CourseDetailPage(): JSX.Element {
                   {Number(course.price) > 0 ? `BDT ${Number(course.price).toFixed(2)}` : "Free"}
                 </p>
               </div>
-              <Button asChild className="w-full">
-                <Link to="/auth/sign-in">Sign in to continue</Link>
-              </Button>
+              {isSessionPending ? (
+                <div className="h-11 animate-pulse rounded-md bg-surface-container-low" />
+              ) : !session ? (
+                <Button asChild className="w-full">
+                  <Link to="/auth/sign-in">Sign in to enroll</Link>
+                </Button>
+              ) : session.session.role !== "STUDENT" ? (
+                <Button className="w-full" disabled>
+                  Student enrollment only
+                </Button>
+              ) : enrollment?.accessGranted ? (
+                <Button asChild className="w-full">
+                  <Link to="/dashboard/my-courses">Open my courses</Link>
+                </Button>
+              ) : (
+                <Button className="w-full" disabled={isSubmittingEnrollment} onClick={() => void handleEnroll()}>
+                  {isSubmittingEnrollment
+                    ? "Preparing checkout"
+                    : enrollment?.latestPaymentStatus === "PENDING"
+                      ? "Continue payment"
+                      : Number(course.price) > 0
+                        ? "Enroll and pay"
+                        : "Enroll now"}
+                </Button>
+              )}
+              {session?.session.role === "STUDENT" && enrollment ? (
+                <p className="text-sm leading-6 text-on-surface/62">
+                  {enrollment.accessGranted
+                    ? "You already have access to this course."
+                    : `Latest payment status: ${enrollment.latestPaymentStatus ?? "FREE"}.`}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
         </FadeIn>

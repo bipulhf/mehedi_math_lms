@@ -148,6 +148,85 @@ function DashboardHomePage(): JSX.Element {
     );
   }
 
+  if (session?.session.role === "ACCOUNTANT") {
+    return (
+      <div className="space-y-4">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Accounting cockpit</CardTitle>
+              <CardDescription>
+                Payment operations are now centralized for transaction review, refund handling, and revenue monitoring.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+                Review every enrollment payment, filter by gateway status, and issue refunds from the same surface.
+              </div>
+              <Button asChild>
+                <Link to="/dashboard/payments">Open payment operations</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Phase checkpoint</CardTitle>
+              <CardDescription>Enrollment and payment flows are now ready for accountant oversight.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+                Paid courses can initialize SSLCommerz sessions, while local development uses a built-in mock gateway.
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      </div>
+    );
+  }
+
+  if (session?.session.role === "STUDENT") {
+    return (
+      <div className="space-y-4">
+        <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Learning hub</CardTitle>
+              <CardDescription>
+                Enrollment, payment history, and course access are now part of the student dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-3">
+                <Button asChild>
+                  <Link to="/dashboard/my-courses">My courses</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/dashboard/payments">Payment history</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Support channel</CardTitle>
+              <CardDescription>Payment trouble, broken content, or access issues can be reported directly.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+                If an enrollment or payment does not settle correctly, submit a bug report with the transaction context.
+              </div>
+              <Button asChild variant="outline">
+                <Link to="/dashboard/bugs/report">Report an issue</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_0.9fr]">

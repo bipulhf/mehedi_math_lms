@@ -4,6 +4,7 @@ const apiEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_NAME: z.string().default("Mehedi's Math Academy"),
   APP_URL: z.string().url().default("https://mehedismathacademy.com"),
+  API_PUBLIC_URL: z.string().url().default("http://localhost:3001/api/v1"),
   API_PORT: z.coerce.number().int().positive().default(3001),
   API_HOST: z.string().default("0.0.0.0"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
@@ -12,6 +13,9 @@ const apiEnvSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().default("replace-me"),
   AWS_S3_BUCKET: z.string().default("replace-me"),
   S3_PUBLIC_BASE_URL: z.url().optional(),
+  SSLCOMMERZ_STORE_ID: z.string().default("replace-me"),
+  SSLCOMMERZ_STORE_PASSWORD: z.string().default("replace-me"),
+  SSLCOMMERZ_SANDBOX_MODE: z.coerce.boolean().default(true),
   CORS_ORIGINS: z.string().optional(),
   BODY_LIMIT_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
@@ -35,6 +39,9 @@ export const env = {
     parsedEnv.AWS_ACCESS_KEY_ID !== "replace-me" &&
     parsedEnv.AWS_SECRET_ACCESS_KEY !== "replace-me" &&
     parsedEnv.AWS_S3_BUCKET !== "replace-me",
+  isSslCommerzConfigured:
+    parsedEnv.SSLCOMMERZ_STORE_ID !== "replace-me" &&
+    parsedEnv.SSLCOMMERZ_STORE_PASSWORD !== "replace-me",
   corsOrigins: parsedEnv.CORS_ORIGINS
     ? parsedEnv.CORS_ORIGINS.split(",")
         .map((origin) => origin.trim())

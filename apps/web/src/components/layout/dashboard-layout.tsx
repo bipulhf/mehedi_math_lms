@@ -12,8 +12,8 @@ const dashboardNavigation = {
   ACCOUNTANT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: ChartColumn, label: "Payments", to: "/dashboard" },
-    { icon: Settings, label: "Operations", to: "/dashboard" }
+    { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
+    { icon: Settings, label: "Operations", to: "/dashboard/payments" }
   ],
   ADMIN: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
@@ -26,8 +26,8 @@ const dashboardNavigation = {
   STUDENT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard" },
-    { icon: ChartColumn, label: "Progress", to: "/dashboard" },
+    { icon: BookCopy, label: "My Courses", to: "/dashboard/my-courses" },
+    { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
     { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
     { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
   ],
