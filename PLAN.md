@@ -55,7 +55,7 @@ todos:
     status: completed
   - id: phase-18
     content: "Phase 18: SMS Module, Noticeboard, and Bulk Communication"
-    status: pending
+    status: completed
   - id: phase-19
     content: "Phase 19: Analytics, Reviews, PDF Generation, and Certificates"
     status: pending
@@ -754,6 +754,8 @@ erDiagram
 ## Phase 18: SMS Module, Noticeboard, and Bulk Communication
 
 **Goal:** Implement admin SMS module (Onecodesoft), course noticeboard, and bulk communication tools.
+
+**Status:** Completed
 
 **Key tasks:**
 

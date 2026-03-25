@@ -4,6 +4,7 @@ import {
   courseProgressParamsSchema,
   courseIdParamsSchema,
   courseTeacherIdsSchema,
+  createCourseNoticeSchema,
   createCourseSchema,
   createChapterSchema,
   listCoursesQuerySchema,
@@ -13,7 +14,13 @@ import {
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
-import { contentController, courseController, progressController, testController } from "@/lib/container";
+import {
+  contentController,
+  courseController,
+  noticeController,
+  progressController,
+  testController
+} from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -175,6 +182,34 @@ coursesRoutes.patch("/:courseId/chapters/reorder", requireRole("ADMIN", "TEACHER
   const authSession = context.get("authSession");
 
   return contentController.reorderChapters(
+    context,
+    params.courseId,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.get("/:courseId/notices", requireAuth(), (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return noticeController.listForCourse(
+    context,
+    params.courseId,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.post("/:courseId/notices", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const payload = createCourseNoticeSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return noticeController.createForCourse(
     context,
     params.courseId,
     payload,

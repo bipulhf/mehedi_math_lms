@@ -84,3 +84,19 @@ export const uploadStatusEnum = pgEnum("upload_status", [
   "READY",
   "FAILED"
 ]);
+
+export const smsBatchStatusEnum = pgEnum("sms_batch_status", [
+  "QUEUED",
+  "SENDING",
+  "COMPLETED",
+  "FAILED"
+]);
+
+export const smsRecipientStatusEnum = pgEnum("sms_recipient_status", [
+  "PENDING",
+  "SENT",
+  "FAILED",
+  "SKIPPED_NO_PHONE"
+]);
+
+export const smsTargetKindEnum = pgEnum("sms_target_kind", ["ALL_STUDENTS", "ROLE", "COURSE"]);

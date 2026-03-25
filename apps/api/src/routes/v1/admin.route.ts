@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import type { UserRole } from "@mma/shared";
 import {
   adminSendNotificationSchema,
+  adminSendSmsSchema,
+  adminSmsHistoryQuerySchema,
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   bugsQuerySchema,
@@ -20,7 +22,8 @@ import {
   bugReportController,
   courseController,
   notificationController,
-  profileController
+  profileController,
+  smsController
 } from "@/lib/container";
 import { requireAdmin, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
@@ -122,4 +125,18 @@ adminRoutes.post("/notifications/send", requireRole("ADMIN", "TEACHER"), async (
     authUser!.id,
     authSession!.role as UserRole
   );
+});
+
+adminRoutes.get("/sms/status", requireAdmin(), (context) => smsController.providerStatus(context));
+
+adminRoutes.post("/sms/send", requireAdmin(), async (context) => {
+  const payload = adminSendSmsSchema.parse(await context.req.json());
+
+  return smsController.queueSend(context, payload);
+});
+
+adminRoutes.get("/sms/history", requireAdmin(), (context) => {
+  const query = adminSmsHistoryQuerySchema.parse(context.req.query());
+
+  return smsController.listHistory(context, query);
 });

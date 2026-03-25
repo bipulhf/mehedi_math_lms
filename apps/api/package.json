@@ -8,7 +8,8 @@
     "dev": "bun --watch src/index.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "worker:notifications": "bun src/workers/notification-worker.ts"
+    "worker:notifications": "bun src/workers/notification-worker.ts",
+    "worker:sms": "bun src/workers/sms-worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1016.0",

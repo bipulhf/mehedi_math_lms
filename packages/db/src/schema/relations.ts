@@ -8,6 +8,7 @@ import { courseProgress, enrollments } from "./enrollments";
 import { courseTeachers, courses, notices } from "./courses";
 import { lectureMaterials, lectures } from "./lectures";
 import { conversations, messages } from "./messages";
+import { smsBatches, smsRecipients } from "./sms";
 import { fcmTokens, notifications } from "./notifications";
 import { payments } from "./payments";
 import { questionOptions, submissionAnswers, testQuestions, tests, testSubmissions } from "./tests";
@@ -46,8 +47,32 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   uploads: many(uploads),
   gradedSubmissions: many(testSubmissions, { relationName: "graded_by_user" }),
   notices: many(notices),
+  smsBatchesCreated: many(smsBatches),
   conversationOne: many(conversations, { relationName: "conversation_participant_one" }),
   conversationTwo: many(conversations, { relationName: "conversation_participant_two" })
+}));
+
+export const smsBatchesRelations = relations(smsBatches, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [smsBatches.createdByUserId],
+    references: [users.id]
+  }),
+  course: one(courses, {
+    fields: [smsBatches.courseId],
+    references: [courses.id]
+  }),
+  recipients: many(smsRecipients)
+}));
+
+export const smsRecipientsRelations = relations(smsRecipients, ({ one }) => ({
+  batch: one(smsBatches, {
+    fields: [smsRecipients.batchId],
+    references: [smsBatches.id]
+  }),
+  user: one(users, {
+    fields: [smsRecipients.userId],
+    references: [users.id]
+  })
 }));
 
 export const uploadsRelations = relations(uploads, ({ one }) => ({

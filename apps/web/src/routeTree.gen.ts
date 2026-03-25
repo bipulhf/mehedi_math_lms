@@ -34,6 +34,7 @@ import { Route as DashboardLearnCourseIdRouteImport } from './routes/dashboard/l
 import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard/courses/new'
 import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
 import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
+import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/sms'
 import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
 import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
@@ -174,6 +175,11 @@ const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminSmsRoute = DashboardAdminSmsRouteImport.update({
+  id: '/admin/sms',
+  path: '/admin/sms',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAdminCoursesRoute = DashboardAdminCoursesRouteImport.update({
   id: '/admin/courses',
   path: '/admin/courses',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
@@ -296,6 +303,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
@@ -336,6 +344,7 @@ export interface FileRoutesById {
   '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/sms'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/courses/new'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/sms'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/courses/new'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/sms'
     | '/dashboard/admin/users'
     | '/dashboard/bugs/report'
     | '/dashboard/courses/new'
@@ -664,6 +676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminUsersRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin/sms': {
+      id: '/dashboard/admin/sms'
+      path: '/admin/sms'
+      fullPath: '/dashboard/admin/sms'
+      preLoaderRoute: typeof DashboardAdminSmsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/admin/courses': {
       id: '/dashboard/admin/courses'
       path: '/admin/courses'
@@ -822,6 +841,7 @@ interface DashboardRouteChildren {
   DashboardAdminBugsRoute: typeof DashboardAdminBugsRouteWithChildren
   DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
   DashboardAdminCoursesRoute: typeof DashboardAdminCoursesRoute
+  DashboardAdminSmsRoute: typeof DashboardAdminSmsRoute
   DashboardAdminUsersRoute: typeof DashboardAdminUsersRouteWithChildren
   DashboardBugsReportRoute: typeof DashboardBugsReportRoute
   DashboardCoursesNewRoute: typeof DashboardCoursesNewRoute
@@ -848,6 +868,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminBugsRoute: DashboardAdminBugsRouteWithChildren,
   DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
   DashboardAdminCoursesRoute: DashboardAdminCoursesRoute,
+  DashboardAdminSmsRoute: DashboardAdminSmsRoute,
   DashboardAdminUsersRoute: DashboardAdminUsersRouteWithChildren,
   DashboardBugsReportRoute: DashboardBugsReportRoute,
   DashboardCoursesNewRoute: DashboardCoursesNewRoute,

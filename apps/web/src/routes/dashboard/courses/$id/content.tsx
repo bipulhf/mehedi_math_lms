@@ -6,6 +6,7 @@ import {
   CourseContentBuilder,
   CourseContentBuilderSkeleton
 } from "@/components/courses/course-content-builder";
+import { CourseNoticeManager } from "@/components/courses/course-notice-manager";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,6 +67,7 @@ function CourseContentPage(): JSX.Element {
         </CardContent>
       </Card>
       <CourseContentBuilder content={content} course={course} onRefresh={loadData} />
+      <CourseNoticeManager courseId={course.id} />
     </div>
   );
 }

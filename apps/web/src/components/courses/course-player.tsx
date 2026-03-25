@@ -8,6 +8,7 @@ import {
   Clock3,
   Download,
   FileText,
+  Megaphone,
   PlayCircle
 } from "lucide-react";
 import type { JSX } from "react";
@@ -15,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { FadeIn } from "@/components/common/fade-in";
+import { CourseNoticesPanel } from "@/components/courses/course-notices-panel";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,6 +168,7 @@ export function CoursePlayer({
   const [progress, setProgress] = useState(initialProgress);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [playerMode, setPlayerMode] = useState<"learn" | "notices">("learn");
   const progressByLectureId = useMemo(
     () => new Map(progress.lectures.map((lecture) => [lecture.lectureId, lecture] as const)),
     [progress.lectures]
@@ -340,10 +343,36 @@ export function CoursePlayer({
               lectures={allLectures}
               progress={progress}
             />
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                type="button"
+                size="sm"
+                variant={playerMode === "learn" ? "primary" : "outline"}
+                onClick={() => setPlayerMode("learn")}
+              >
+                Lessons & tests
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={playerMode === "notices" ? "primary" : "outline"}
+                onClick={() => setPlayerMode("notices")}
+              >
+                <Megaphone className="size-4" />
+                Course notices
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </FadeIn>
 
+      {playerMode === "notices" ? (
+        <FadeIn>
+          <CourseNoticesPanel courseId={course.id} />
+        </FadeIn>
+      ) : null}
+
+      {playerMode === "learn" ? (
       <div className="grid gap-4 xl:grid-cols-[0.34fr_0.66fr]">
         <FadeIn>
           <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
@@ -614,6 +643,7 @@ export function CoursePlayer({
           )}
         </FadeIn>
       </div>
+      ) : null}
     </div>
   );
 }

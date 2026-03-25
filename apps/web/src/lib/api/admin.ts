@@ -8,6 +8,7 @@ import {
   updateAdminUserStatusSchema,
   userListStatusSchema,
   type AdminSendNotificationInput,
+  type AdminSendSmsInput,
   type UserRole
 } from "@mma/shared";
 import type { z } from "zod";
@@ -201,6 +202,47 @@ export async function adminSendNotification(
   );
 
   return response.data;
+}
+
+export interface AdminSmsBatchRow {
+  completedAt: string | null;
+  courseId: string | null;
+  createdAt: string;
+  createdByName: string;
+  failedCount: number;
+  id: string;
+  messageBody: string;
+  providerLastResponse: string | null;
+  sentCount: number;
+  skippedCount: number;
+  status: string;
+  targetKind: string;
+  targetRole: string | null;
+  totalRecipients: number;
+}
+
+export async function getAdminSmsStatus(): Promise<{ configured: boolean }> {
+  const response = await apiGet<{ configured: boolean }>("admin/sms/status");
+
+  return response.data;
+}
+
+export async function adminSendBulkSms(input: AdminSendSmsInput): Promise<{ batchId: string }> {
+  const response = await apiPost<AdminSendSmsInput, { batchId: string }>("admin/sms/send", input);
+
+  return response.data;
+}
+
+export async function listAdminSmsHistory(params: {
+  limit: number;
+  page: number;
+}): Promise<PaginatedEnvelope<AdminSmsBatchRow>> {
+  return apiGet<readonly AdminSmsBatchRow[]>(
+    `admin/sms/history${buildQueryString({
+      limit: params.limit,
+      page: params.page
+    })}`
+  ) as Promise<PaginatedEnvelope<AdminSmsBatchRow>>;
 }
 
 export { userListStatusSchema };
