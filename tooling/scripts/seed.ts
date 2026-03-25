@@ -1,7 +1,6 @@
 import { randomBytes, scryptSync } from "node:crypto";
 
-import { and, eq } from "drizzle-orm";
-import { accounts, db, users } from "@mma/db";
+import { accounts, and, db, eq, users } from "@mma/db";
 import { z } from "zod";
 
 const seedEnvSchema = z.object({
