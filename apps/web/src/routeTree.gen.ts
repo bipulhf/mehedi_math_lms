@@ -17,8 +17,14 @@ import { Route as TeachersIdRouteImport } from './routes/teachers/$id'
 import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/index'
 import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
+import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
+import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
+import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
+import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/admin/bugs/$id'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -61,15 +67,45 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
 } as any)
+const DashboardBugsIndexRoute = DashboardBugsIndexRouteImport.update({
+  id: '/bugs/',
+  path: '/bugs/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
   id: '/students/$id',
   path: '/students/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
+  id: '/bugs/report',
+  path: '/bugs/report',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminBugsRoute = DashboardAdminBugsRouteImport.update({
+  id: '/admin/bugs',
+  path: '/admin/bugs',
   getParentRoute: () => DashboardRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardAdminUsersRoute,
+} as any)
+const DashboardAdminBugsIdRoute = DashboardAdminBugsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardAdminBugsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -82,7 +118,13 @@ export interface FileRoutesByFullPath {
   '/teachers/$id': typeof TeachersIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
+  '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
+  '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
+  '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +135,13 @@ export interface FileRoutesByTo {
   '/teachers/$id': typeof TeachersIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
+  '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
+  '/dashboard/bugs': typeof DashboardBugsIndexRoute
+  '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
+  '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +154,13 @@ export interface FileRoutesById {
   '/teachers/$id': typeof TeachersIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin/bugs': typeof DashboardAdminBugsRouteWithChildren
+  '/dashboard/admin/users': typeof DashboardAdminUsersRouteWithChildren
+  '/dashboard/bugs/report': typeof DashboardBugsReportRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
+  '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
+  '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +174,13 @@ export interface FileRouteTypes {
     | '/teachers/$id'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/admin/bugs'
+    | '/dashboard/admin/users'
+    | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
+    | '/dashboard/bugs/'
+    | '/dashboard/admin/bugs/$id'
+    | '/dashboard/admin/users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,7 +191,13 @@ export interface FileRouteTypes {
     | '/teachers/$id'
     | '/dashboard'
     | '/api/auth/$'
+    | '/dashboard/admin/bugs'
+    | '/dashboard/admin/users'
+    | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
+    | '/dashboard/bugs'
+    | '/dashboard/admin/bugs/$id'
+    | '/dashboard/admin/users/$id'
   id:
     | '__root__'
     | '/'
@@ -143,7 +209,13 @@ export interface FileRouteTypes {
     | '/teachers/$id'
     | '/dashboard/'
     | '/api/auth/$'
+    | '/dashboard/admin/bugs'
+    | '/dashboard/admin/users'
+    | '/dashboard/bugs/report'
     | '/dashboard/students/$id'
+    | '/dashboard/bugs/'
+    | '/dashboard/admin/bugs/$id'
+    | '/dashboard/admin/users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,11 +284,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/dashboard/bugs/': {
+      id: '/dashboard/bugs/'
+      path: '/bugs'
+      fullPath: '/dashboard/bugs/'
+      preLoaderRoute: typeof DashboardBugsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/students/$id': {
       id: '/dashboard/students/$id'
       path: '/students/$id'
       fullPath: '/dashboard/students/$id'
       preLoaderRoute: typeof DashboardStudentsIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/bugs/report': {
+      id: '/dashboard/bugs/report'
+      path: '/bugs/report'
+      fullPath: '/dashboard/bugs/report'
+      preLoaderRoute: typeof DashboardBugsReportRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/users': {
+      id: '/dashboard/admin/users'
+      path: '/admin/users'
+      fullPath: '/dashboard/admin/users'
+      preLoaderRoute: typeof DashboardAdminUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/bugs': {
+      id: '/dashboard/admin/bugs'
+      path: '/admin/bugs'
+      fullPath: '/dashboard/admin/bugs'
+      preLoaderRoute: typeof DashboardAdminBugsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/api/auth/$': {
@@ -225,6 +325,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/admin/users/$id': {
+      id: '/dashboard/admin/users/$id'
+      path: '/$id'
+      fullPath: '/dashboard/admin/users/$id'
+      preLoaderRoute: typeof DashboardAdminUsersIdRouteImport
+      parentRoute: typeof DashboardAdminUsersRoute
+    }
+    '/dashboard/admin/bugs/$id': {
+      id: '/dashboard/admin/bugs/$id'
+      path: '/$id'
+      fullPath: '/dashboard/admin/bugs/$id'
+      preLoaderRoute: typeof DashboardAdminBugsIdRouteImport
+      parentRoute: typeof DashboardAdminBugsRoute
     }
   }
 }
@@ -239,18 +353,48 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface DashboardAdminBugsRouteChildren {
+  DashboardAdminBugsIdRoute: typeof DashboardAdminBugsIdRoute
+}
+
+const DashboardAdminBugsRouteChildren: DashboardAdminBugsRouteChildren = {
+  DashboardAdminBugsIdRoute: DashboardAdminBugsIdRoute,
+}
+
+const DashboardAdminBugsRouteWithChildren =
+  DashboardAdminBugsRoute._addFileChildren(DashboardAdminBugsRouteChildren)
+
+interface DashboardAdminUsersRouteChildren {
+  DashboardAdminUsersIdRoute: typeof DashboardAdminUsersIdRoute
+}
+
+const DashboardAdminUsersRouteChildren: DashboardAdminUsersRouteChildren = {
+  DashboardAdminUsersIdRoute: DashboardAdminUsersIdRoute,
+}
+
+const DashboardAdminUsersRouteWithChildren =
+  DashboardAdminUsersRoute._addFileChildren(DashboardAdminUsersRouteChildren)
+
 interface DashboardRouteChildren {
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardProfileCompleteRoute: typeof DashboardProfileCompleteRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardAdminBugsRoute: typeof DashboardAdminBugsRouteWithChildren
+  DashboardAdminUsersRoute: typeof DashboardAdminUsersRouteWithChildren
+  DashboardBugsReportRoute: typeof DashboardBugsReportRoute
   DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
+  DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardProfileCompleteRoute: DashboardProfileCompleteRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardAdminBugsRoute: DashboardAdminBugsRouteWithChildren,
+  DashboardAdminUsersRoute: DashboardAdminUsersRouteWithChildren,
+  DashboardBugsReportRoute: DashboardBugsReportRoute,
   DashboardStudentsIdRoute: DashboardStudentsIdRoute,
+  DashboardBugsIndexRoute: DashboardBugsIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

@@ -442,6 +442,8 @@ erDiagram
 
 ## Phase 7: Admin Dashboard, Account Management, and Bug Reports
 
+**Status:** Completed
+
 **Goal:** Build the admin dashboard with user account CRUD, activate/deactivate users, system overview, and a bug reporting system for students and teachers.
 
 **Key tasks:**

@@ -21,8 +21,18 @@ function sanitizeFileName(fileName: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function createImageValidationIssue(field: string, message: string): ValidationError {
+  return new ValidationError(message, [
+    {
+      field,
+      message
+    }
+  ]);
+}
+
 export class UploadService {
-  public async createProfilePhotoUpload(
+  private async createImageUpload(
+    folderName: string,
     input: CreateProfilePhotoUploadRequest
   ): Promise<ProfilePhotoUploadResponse> {
     if (!env.isS3Configured) {
@@ -30,16 +40,11 @@ export class UploadService {
     }
 
     if (!input.contentType.startsWith("image/")) {
-      throw new ValidationError("Only image uploads are allowed", [
-        {
-          field: "contentType",
-          message: "Profile photos must be image files"
-        }
-      ]);
+      throw createImageValidationIssue("contentType", "Uploads must be image files");
     }
 
     const sanitizedFileName = sanitizeFileName(input.fileName);
-    const key = `profile-photos/${crypto.randomUUID()}-${sanitizedFileName || "upload"}`;
+    const key = `${folderName}/${crypto.randomUUID()}-${sanitizedFileName || "upload"}`;
     const uploadUrl = await createSignedUploadUrl(key, input.contentType);
 
     return {
@@ -47,5 +52,17 @@ export class UploadService {
       publicUrl: getPublicFileUrl(key),
       uploadUrl
     };
+  }
+
+  public async createProfilePhotoUpload(
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<ProfilePhotoUploadResponse> {
+    return this.createImageUpload("profile-photos", input);
+  }
+
+  public async createBugScreenshotUpload(
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<ProfilePhotoUploadResponse> {
+    return this.createImageUpload("bug-screenshots", input);
   }
 }

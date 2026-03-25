@@ -81,3 +81,11 @@ export async function apiPost<TBody, TData>(path: string, json: TBody): Promise<
 export async function apiPut<TBody, TData>(path: string, json: TBody): Promise<ApiEnvelope<TData>> {
   return apiClient.put(path, { json }).json() as Promise<ApiEnvelope<TData>>;
 }
+
+export async function apiPatch<TBody, TData>(path: string, json: TBody): Promise<ApiEnvelope<TData>> {
+  return apiClient.patch(path, { json }).json() as Promise<ApiEnvelope<TData>>;
+}
+
+export async function apiDelete<TData>(path: string): Promise<ApiEnvelope<TData>> {
+  return apiClient.delete(path).json() as Promise<ApiEnvelope<TData>>;
+}

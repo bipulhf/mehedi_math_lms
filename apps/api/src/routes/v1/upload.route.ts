@@ -17,3 +17,9 @@ uploadRoutes.post("/profile-photo/presign", requireAuth(), async (context) => {
 
   return uploadController.createProfilePhotoUpload(context, payload);
 });
+
+uploadRoutes.post("/bug-screenshot/presign", requireAuth(), async (context) => {
+  const payload = createProfilePhotoUploadSchema.parse(await context.req.json());
+
+  return uploadController.createBugScreenshotUpload(context, payload);
+});

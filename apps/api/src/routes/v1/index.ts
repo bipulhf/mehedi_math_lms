@@ -5,6 +5,7 @@ import type { AppBindings } from "@/types/app-bindings";
 import { adminRoutes } from "./admin.route";
 import { analyticsRoutes } from "./analytics.route";
 import { authRoutes } from "./auth.route";
+import { bugsRoutes } from "./bugs.route";
 import { categoriesRoutes } from "./categories.route";
 import { coursesRoutes } from "./courses.route";
 import { enrollmentsRoutes } from "./enrollments.route";
@@ -17,6 +18,7 @@ import { usersRoutes } from "./users.route";
 export const v1Routes = new Hono<AppBindings>();
 
 v1Routes.route("/auth", authRoutes);
+v1Routes.route("/bugs", bugsRoutes);
 v1Routes.route("/users", usersRoutes);
 v1Routes.route("/profiles", profilesRoutes);
 v1Routes.route("/categories", categoriesRoutes);

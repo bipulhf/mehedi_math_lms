@@ -15,7 +15,14 @@ export class AuthGuardService {
       throw new UnauthorizedError("Authentication required");
     }
 
-    if (authSession.isActive === false) {
+    const currentUserState = await this.authSessionRepository.findUserAuthState(authUser.id);
+
+    if (!currentUserState) {
+      await this.authSessionRepository.deleteByUserId(authUser.id);
+      throw new UnauthorizedError("Authentication required");
+    }
+
+    if (authSession.isActive === false || currentUserState.isActive === false) {
       await this.authSessionRepository.deleteByUserId(authUser.id);
       throw new ForbiddenError("Account is deactivated");
     }

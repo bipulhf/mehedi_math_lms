@@ -18,4 +18,13 @@ export class UploadController {
 
     return success(context, payload, 201, "Profile photo upload prepared successfully");
   }
+
+  public async createBugScreenshotUpload(
+    context: Context<AppBindings>,
+    input: CreateProfilePhotoUploadRequest
+  ): Promise<Response> {
+    const payload = await this.uploadService.createBugScreenshotUpload(input);
+
+    return success(context, payload, 201, "Bug screenshot upload prepared successfully");
+  }
 }

@@ -1,4 +1,4 @@
-import { BookCopy, ChartColumn, LayoutDashboard, Settings, UserRound, Users } from "lucide-react";
+import { AlertTriangle, BookCopy, ChartColumn, LayoutDashboard, Settings, UserRound, Users } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -18,22 +18,26 @@ const dashboardNavigation = {
   ADMIN: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: Users, label: "Users", to: "/dashboard" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard" },
-    { icon: ChartColumn, label: "Insights", to: "/dashboard" }
+    { icon: Users, label: "Users", to: "/dashboard/admin/users" },
+    { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
+    { icon: BookCopy, label: "Courses", to: "/dashboard" }
   ],
   STUDENT: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: BookCopy, label: "Courses", to: "/dashboard" },
-    { icon: ChartColumn, label: "Progress", to: "/dashboard" }
+    { icon: ChartColumn, label: "Progress", to: "/dashboard" },
+    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
+    { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
   ],
   TEACHER: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
     { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
     { icon: BookCopy, label: "Courses", to: "/dashboard" },
     { icon: Users, label: "Students", to: "/dashboard" },
-    { icon: ChartColumn, label: "Analytics", to: "/dashboard" }
+    { icon: ChartColumn, label: "Analytics", to: "/dashboard" },
+    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
+    { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
   ]
 } as const;
 
