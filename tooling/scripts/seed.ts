@@ -1,5 +1,5 @@
 import { createPasswordHash } from "@mma/auth/server";
-import { accounts, and, db, eq, users } from "@mma/db";
+import { accounts, and, db, eq, sql, users } from "@mma/db";
 import { generateUniqueSlug } from "./slug";
 import { z } from "zod";
 
@@ -23,6 +23,14 @@ async function createUniqueUserSlug(name: string, excludeUserId?: string): Promi
 }
 
 async function seedAdmin(): Promise<void> {
+  const check = await db.execute(sql`select to_regclass('public.users') as t`);
+  const exists = check.rows?.[0]?.t ?? null;
+  if (!exists) {
+    throw new Error(
+      "Schema not migrated: public.users does not exist. Run bun run db:migrate first (same DATABASE_URL)."
+    );
+  }
+
   const existingUser = await db
     .select({ id: users.id })
     .from(users)
