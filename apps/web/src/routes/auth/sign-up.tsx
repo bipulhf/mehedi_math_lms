@@ -29,7 +29,7 @@ const signUpSchema = z.object({
   password: z.string().min(8)
 });
 
-export function SignUpPage(): JSX.Element {
+function SignUpPage(): JSX.Element {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
@@ -87,8 +87,11 @@ export function SignUpPage(): JSX.Element {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" error={errors.password?.message} {...register("password")} />
         </div>
-        <Button className="w-full" disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Creating your workspace" : "Create account"}
+        <Button className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all" disabled={isSubmitting} type="submit">
+          {isSubmitting ? (
+            <span className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" aria-hidden="true" />
+          ) : null}
+          {isSubmitting ? "Creating workspace..." : "Create workspace"}
         </Button>
       </form>
     </div>

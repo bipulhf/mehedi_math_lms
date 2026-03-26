@@ -28,7 +28,7 @@ const signInSchema = z.object({
   password: z.string().min(8)
 });
 
-export function SignInPage(): JSX.Element {
+function SignInPage(): JSX.Element {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
@@ -82,11 +82,11 @@ export function SignInPage(): JSX.Element {
             {...register("password")}
           />
         </div>
-        <Button className="w-full" type="submit" disabled={isSubmitting}>
+        <Button className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all" type="submit" disabled={isSubmitting}>
           {isSubmitting ? (
-            <span className="h-4 w-14 rounded-full bg-white/25" aria-hidden="true" />
+            <span className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" aria-hidden="true" />
           ) : null}
-          {isSubmitting ? "Securely signing in" : "Continue to dashboard"}
+          {isSubmitting ? "Signing in..." : "Continue to workspace"}
         </Button>
       </form>
 
@@ -94,6 +94,7 @@ export function SignInPage(): JSX.Element {
         <Button
           type="button"
           variant="outline"
+          className="w-full h-12 font-headline font-semibold text-on-surface hover:bg-surface-container-high transition-all"
           onClick={async () => {
             await authClient.signIn.social({
               provider: "google",

@@ -20,18 +20,18 @@ export function HeroSection() {
             Experience a curated academic atelier designed for high-performance students. From SSC
             foundations to professional mastery, we treat education as a craft.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 w-full">
-            <div className="w-full bg-surface-container-lowest border border-outline-variant/20 p-1.5 rounded-xl flex items-center shadow-sm">
+          <div className="flex justify-between items-center w-full bg-surface-container-lowest border border-outline-variant/20 p-1.5 rounded-xl shadow-sm">
+            <div className="flex items-center flex-1">
               <Search className="ml-4 text-outline size-5 shrink-0" />
               <Input
-                className="bg-transparent border-none focus-visible:ring-0 shadow-none text-sm w-full flex-1 py-3 px-3 min-w-0"
+                className="bg-transparent border-none focus-visible:ring-0 shadow-none text-sm flex-1 py-3 px-3"
                 placeholder="What would you like to learn today?"
                 type="text"
               />
-              <Button className="bg-primary text-white px-8 h-full py-3 rounded-lg font-headline font-semibold text-sm hover:bg-on-surface transition-all shrink-0">
-                Explore
-              </Button>
             </div>
+            <Button className="bg-primary text-white px-8 h-full py-3 rounded-lg font-headline font-semibold text-sm hover:bg-on-surface transition-all shrink-0">
+              Explore
+            </Button>
           </div>
         </div>
         <div className="relative">

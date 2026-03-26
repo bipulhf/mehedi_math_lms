@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 
 export function LandingLayout({ children }: PropsWithChildren) {
   return (
-    <div className="min-h-screen bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container">
+    <div className="min-h-screen bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container relative">
+      {/* Fixed background pattern */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] pointer-events-none z-0 opacity-60"></div>
+
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto">
