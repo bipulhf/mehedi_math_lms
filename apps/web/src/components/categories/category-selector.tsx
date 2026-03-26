@@ -37,7 +37,13 @@ export function CategorySelector({
 
   return (
     <Select id={id} value={value} error={error} onChange={(event) => onChange(event.target.value)}>
-      {includeRootOption ? <option value="">No parent</option> : null}
+      {includeRootOption ? (
+        <option value="">No parent</option>
+      ) : (
+        <option value="" disabled>
+          Select a category
+        </option>
+      )}
       {options.map((option) => (
         <option key={option.id} value={option.id}>
           {option.label}
