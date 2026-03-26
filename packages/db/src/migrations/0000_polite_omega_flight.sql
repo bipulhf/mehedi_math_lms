@@ -8,8 +8,14 @@ CREATE TYPE "public"."notification_type" AS ENUM('SYSTEM', 'COURSE', 'NOTICE', '
 CREATE TYPE "public"."payment_provider" AS ENUM('SSLCOMMERZ');--> statement-breakpoint
 CREATE TYPE "public"."payment_status" AS ENUM('PENDING', 'SUCCESS', 'FAILED', 'REFUNDED');--> statement-breakpoint
 CREATE TYPE "public"."question_type" AS ENUM('MCQ', 'WRITTEN');--> statement-breakpoint
+CREATE TYPE "public"."sms_batch_status" AS ENUM('QUEUED', 'SENDING', 'COMPLETED', 'FAILED');--> statement-breakpoint
+CREATE TYPE "public"."sms_recipient_status" AS ENUM('PENDING', 'SENT', 'FAILED', 'SKIPPED_NO_PHONE');--> statement-breakpoint
+CREATE TYPE "public"."sms_target_kind" AS ENUM('ALL_STUDENTS', 'ROLE', 'COURSE');--> statement-breakpoint
 CREATE TYPE "public"."test_submission_status" AS ENUM('STARTED', 'SUBMITTED', 'GRADED');--> statement-breakpoint
 CREATE TYPE "public"."test_type" AS ENUM('MCQ', 'WRITTEN', 'MIXED');--> statement-breakpoint
+CREATE TYPE "public"."upload_kind" AS ENUM('IMAGE', 'VIDEO', 'DOCUMENT');--> statement-breakpoint
+CREATE TYPE "public"."upload_purpose" AS ENUM('PROFILE_PHOTO', 'BUG_SCREENSHOT', 'COURSE_COVER', 'COURSE_MATERIAL', 'LECTURE_VIDEO');--> statement-breakpoint
+CREATE TYPE "public"."upload_status" AS ENUM('PENDING', 'READY', 'FAILED');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('STUDENT', 'TEACHER', 'ACCOUNTANT', 'ADMIN');--> statement-breakpoint
 CREATE TABLE "bug_reports" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -84,6 +90,7 @@ CREATE TABLE "courses" (
 	"title" varchar(255) NOT NULL,
 	"slug" varchar(255) NOT NULL,
 	"description" text NOT NULL,
+	"review_feedback" text,
 	"cover_image_url" text,
 	"price" numeric(10, 2) DEFAULT '0' NOT NULL,
 	"status" "course_status" DEFAULT 'DRAFT' NOT NULL,
@@ -219,6 +226,34 @@ CREATE TABLE "reviews" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "sms_batches" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"created_by_user_id" uuid NOT NULL,
+	"message_body" text NOT NULL,
+	"target_kind" "sms_target_kind" NOT NULL,
+	"target_role" "user_role",
+	"course_id" uuid,
+	"status" "sms_batch_status" DEFAULT 'QUEUED' NOT NULL,
+	"provider_last_response" text,
+	"total_recipients" integer DEFAULT 0 NOT NULL,
+	"sent_count" integer DEFAULT 0 NOT NULL,
+	"failed_count" integer DEFAULT 0 NOT NULL,
+	"skipped_count" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"completed_at" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "sms_recipients" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"batch_id" uuid NOT NULL,
+	"user_id" uuid,
+	"phone_e164" varchar(20),
+	"status" "sms_recipient_status" DEFAULT 'PENDING' NOT NULL,
+	"error_message" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "question_options" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"question_id" uuid NOT NULL,
@@ -284,6 +319,26 @@ CREATE TABLE "tests" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "uploads" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"purpose" "upload_purpose" NOT NULL,
+	"kind" "upload_kind" NOT NULL,
+	"status" "upload_status" DEFAULT 'PENDING' NOT NULL,
+	"original_file_name" varchar(255) NOT NULL,
+	"content_type" varchar(255) NOT NULL,
+	"file_extension" varchar(32) NOT NULL,
+	"file_key" text NOT NULL,
+	"file_url" text NOT NULL,
+	"file_size" integer NOT NULL,
+	"width" integer,
+	"height" integer,
+	"duration_in_seconds" integer,
+	"confirmed_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
@@ -307,6 +362,7 @@ CREATE TABLE "sessions" (
 	"expires_at" timestamp with time zone NOT NULL,
 	"ip_address" varchar(64),
 	"user_agent" text,
+	"impersonated_by" uuid,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -345,6 +401,9 @@ CREATE TABLE "users" (
 	"name" varchar(255) NOT NULL,
 	"slug" varchar(255),
 	"role" "user_role" DEFAULT 'STUDENT' NOT NULL,
+	"banned" boolean DEFAULT false NOT NULL,
+	"ban_reason" text,
+	"ban_expires" timestamp with time zone,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
 	"profile_completed" boolean DEFAULT false NOT NULL,
@@ -358,7 +417,8 @@ CREATE TABLE "verification_tokens" (
 	"identifier" varchar(255) NOT NULL,
 	"token" varchar(255) NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "bug_reports" ADD CONSTRAINT "bug_reports_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -388,6 +448,10 @@ ALTER TABLE "payments" ADD CONSTRAINT "payments_enrollment_id_enrollments_id_fk"
 ALTER TABLE "payments" ADD CONSTRAINT "payments_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sms_batches" ADD CONSTRAINT "sms_batches_created_by_user_id_users_id_fk" FOREIGN KEY ("created_by_user_id") REFERENCES "public"."users"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sms_batches" ADD CONSTRAINT "sms_batches_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sms_recipients" ADD CONSTRAINT "sms_recipients_batch_id_sms_batches_id_fk" FOREIGN KEY ("batch_id") REFERENCES "public"."sms_batches"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sms_recipients" ADD CONSTRAINT "sms_recipients_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "question_options" ADD CONSTRAINT "question_options_question_id_test_questions_id_fk" FOREIGN KEY ("question_id") REFERENCES "public"."test_questions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "submission_answers" ADD CONSTRAINT "submission_answers_submission_id_test_submissions_id_fk" FOREIGN KEY ("submission_id") REFERENCES "public"."test_submissions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "submission_answers" ADD CONSTRAINT "submission_answers_question_id_test_questions_id_fk" FOREIGN KEY ("question_id") REFERENCES "public"."test_questions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -397,6 +461,7 @@ ALTER TABLE "test_submissions" ADD CONSTRAINT "test_submissions_test_id_tests_id
 ALTER TABLE "test_submissions" ADD CONSTRAINT "test_submissions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "test_submissions" ADD CONSTRAINT "test_submissions_graded_by_id_users_id_fk" FOREIGN KEY ("graded_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tests" ADD CONSTRAINT "tests_chapter_id_chapters_id_fk" FOREIGN KEY ("chapter_id") REFERENCES "public"."chapters"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "uploads" ADD CONSTRAINT "uploads_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "student_profiles" ADD CONSTRAINT "student_profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -446,6 +511,11 @@ CREATE INDEX "payments_transaction_id_idx" ON "payments" USING btree ("transacti
 CREATE UNIQUE INDEX "reviews_course_user_unique_idx" ON "reviews" USING btree ("course_id","user_id");--> statement-breakpoint
 CREATE INDEX "reviews_course_id_idx" ON "reviews" USING btree ("course_id");--> statement-breakpoint
 CREATE INDEX "reviews_user_id_idx" ON "reviews" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "sms_batches_created_by_user_id_idx" ON "sms_batches" USING btree ("created_by_user_id");--> statement-breakpoint
+CREATE INDEX "sms_batches_created_at_idx" ON "sms_batches" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "sms_batches_status_idx" ON "sms_batches" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "sms_recipients_batch_id_idx" ON "sms_recipients" USING btree ("batch_id");--> statement-breakpoint
+CREATE INDEX "sms_recipients_status_idx" ON "sms_recipients" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "question_options_question_id_idx" ON "question_options" USING btree ("question_id");--> statement-breakpoint
 CREATE INDEX "question_options_sort_order_idx" ON "question_options" USING btree ("sort_order");--> statement-breakpoint
 CREATE INDEX "submission_answers_submission_id_idx" ON "submission_answers" USING btree ("submission_id");--> statement-breakpoint
@@ -457,6 +527,10 @@ CREATE INDEX "test_submissions_user_id_idx" ON "test_submissions" USING btree ("
 CREATE INDEX "test_submissions_graded_by_id_idx" ON "test_submissions" USING btree ("graded_by_id");--> statement-breakpoint
 CREATE INDEX "tests_chapter_id_idx" ON "tests" USING btree ("chapter_id");--> statement-breakpoint
 CREATE INDEX "tests_sort_order_idx" ON "tests" USING btree ("sort_order");--> statement-breakpoint
+CREATE INDEX "uploads_user_id_idx" ON "uploads" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "uploads_purpose_idx" ON "uploads" USING btree ("purpose");--> statement-breakpoint
+CREATE INDEX "uploads_status_idx" ON "uploads" USING btree ("status");--> statement-breakpoint
+CREATE UNIQUE INDEX "uploads_file_key_unique_idx" ON "uploads" USING btree ("file_key");--> statement-breakpoint
 CREATE UNIQUE INDEX "accounts_provider_unique_idx" ON "accounts" USING btree ("provider_id","provider_account_id");--> statement-breakpoint
 CREATE INDEX "accounts_user_id_idx" ON "accounts" USING btree ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "sessions_token_unique_idx" ON "sessions" USING btree ("token");--> statement-breakpoint

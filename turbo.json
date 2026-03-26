@@ -32,6 +32,10 @@
     "db:backfill-user-slugs": {
       "cache": false,
       "outputs": []
+    },
+    "db:repair-course-review-feedback": {
+      "cache": false,
+      "outputs": []
     }
   }
 }
