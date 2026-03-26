@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)]",
+    "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)]",
     "text-sm font-semibold transition-all duration-150 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-container/30",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
@@ -21,26 +21,26 @@ const buttonVariants = cva(
         sm: "px-3.5 py-2"
       },
       variant: {
-        primary:
-          "bg-linear-to-r from-primary to-on-primary-container text-white shadow-[0_10px_30px_-10px_rgba(19,27,46,0.18)] hover:-translate-y-0.5 hover:brightness-105",
+        default:
+          "bg-primary text-white shadow-[0_2px_4px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:bg-on-surface",
+        gradient:
+          "bg-linear-to-br from-primary to-on-primary-container text-white shadow-[0_10px_30px_-10px_rgba(19,27,46,0.18)] hover:-translate-y-0.5 hover:brightness-105 active:scale-95 border-0",
         secondary:
           "bg-secondary-container text-white shadow-[0_10px_30px_-10px_rgba(19,27,46,0.12)] hover:-translate-y-0.5 hover:brightness-105",
-        ghost:
-          "bg-transparent text-on-surface hover:bg-surface-container-highest/60",
+        ghost: "bg-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/60",
         outline:
           "bg-surface-container-lowest text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.15)] hover:bg-surface-container-highest/50"
       }
     },
     defaultVariants: {
       size: "default",
-      variant: "primary"
+      variant: "default"
     }
   }
 );
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   children: ReactNode;
 }

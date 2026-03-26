@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, GraduationCap, LayoutDashboard, MessageSquareText } from "lucide-react";
+import { BookOpen, GraduationCap, MessageSquareText, type LucideIcon } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
 
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export interface AppShellNavItem {
   badge?: number | undefined;
-  icon: typeof LayoutDashboard;
+  icon: LucideIcon;
   label: string;
   to: string;
 }
