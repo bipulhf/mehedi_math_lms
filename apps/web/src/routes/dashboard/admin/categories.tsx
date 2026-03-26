@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layers3 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import { createCategorySchema } from "@mma/shared";
+
+import { IconPicker } from "@/components/categories/icon-picker";
 
 import { CategorySelector } from "@/components/categories/category-selector";
 import { CategoryTree } from "@/components/categories/category-tree";
@@ -112,6 +115,7 @@ function serializeCategoryTree(
 
 function AdminCategoriesPage(): JSX.Element {
   const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
@@ -183,6 +187,12 @@ function AdminCategoriesPage(): JSX.Element {
       parentId: category?.parentId ?? "",
       sortOrder: category?.sortOrder ?? 0
     });
+
+    if (category) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 0);
+    }
   };
 
   const onSubmit = handleSubmit(async (values) => {
@@ -279,7 +289,7 @@ function AdminCategoriesPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-5 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
         <div className="mb-8">
           <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
@@ -291,135 +301,128 @@ function AdminCategoriesPage(): JSX.Element {
           </p>
         </div>
 
-        <div className="grid gap-10 xl:grid-cols-[0.95fr_1.05fr]">
-          <form className="space-y-6" onSubmit={onSubmit}>
-            <div className="space-y-3">
-              <Label
-                htmlFor="category-name"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-              >
-                Name
-              </Label>
-              <Input
-                id="category-name"
-                className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
-                error={errors.name?.message}
-                {...register("name")}
-              />
-            </div>
-            <div className="space-y-3">
-              <Label
-                htmlFor="category-icon"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-              >
-                Icon (Lucide name)
-              </Label>
-              <Input
-                id="category-icon"
-                className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
-                error={errors.icon?.message}
-                {...register("icon")}
-              />
-            </div>
-            <div className="space-y-3">
-              <Label
-                htmlFor="category-parent"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-              >
-                Parent category
-              </Label>
-              <CategorySelector
-                id="category-parent"
-                categories={availableParentCategories}
-                error={errors.parentId?.message}
-                value={selectedParentId}
-                onChange={(value) =>
-                  setValue("parentId", value, { shouldDirty: true, shouldValidate: true })
-                }
-              />
-            </div>
-            <div className="space-y-3">
-              <Label
-                htmlFor="category-description"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-              >
-                Description
-              </Label>
-              <Textarea
-                id="category-description"
-                className="min-h-24 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
-                error={errors.description?.message}
-                {...register("description")}
-              />
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <Label
-                  htmlFor="category-sort-order"
-                  className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                >
-                  Sort order
-                </Label>
-                <Input
-                  id="category-sort-order"
-                  type="number"
-                  className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
-                  error={errors.sortOrder?.message}
-                  {...register("sortOrder", { valueAsNumber: true })}
-                />
-              </div>
-              <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 p-5 shadow-inner">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/80">
-                      Visibility
-                    </p>
-                    <p className="text-[0.65rem] text-on-surface/50 font-light mt-1">
-                      Hidden from public if inactive.
-                    </p>
-                  </div>
-                  <label className="inline-flex items-center gap-3 cursor-pointer group/toggle">
-                    <input type="checkbox" className="sr-only peer" {...register("isActive")} />
-                    <div className="relative w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
-                    <span className="text-xs font-bold uppercase tracking-tighter text-on-surface/70 peer-checked:text-secondary group-hover/toggle:text-on-surface transition-colors">
-                      Active
-                    </span>
-                  </label>
+        <div className="grid gap-8 lg:gap-10 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="xl:sticky xl:top-8 self-start">
+            <FormProvider {...form}>
+              <form ref={formRef} className="space-y-6" onSubmit={onSubmit}>
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="category-name"
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                  >
+                    Name
+                  </Label>
+                  <Input
+                    id="category-name"
+                    className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    error={errors.name?.message}
+                    {...register("name")}
+                  />
                 </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {isSubmitting ? (
-                  <Skeleton className="h-4 w-20 bg-white/20" />
-                ) : editingCategory ? (
-                  "Update category"
-                ) : (
-                  "Create category"
-                )}
-              </Button>
-              {editingCategory ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => syncEditingForm(null)}
-                  className="h-12 rounded-2xl px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high active:scale-95"
-                >
-                  Cancel edit
-                </Button>
-              ) : null}
-            </div>
-          </form>
+
+                <IconPicker name="icon" error={errors.icon?.message} />
+
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="category-parent"
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                  >
+                    Parent category
+                  </Label>
+                  <CategorySelector
+                    id="category-parent"
+                    categories={availableParentCategories}
+                    error={errors.parentId?.message}
+                    value={selectedParentId}
+                    onChange={(value) =>
+                      setValue("parentId", value, { shouldDirty: true, shouldValidate: true })
+                    }
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="category-description"
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                  >
+                    Description
+                  </Label>
+                  <Textarea
+                    id="category-description"
+                    className="min-h-24 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    error={errors.description?.message}
+                    {...register("description")}
+                  />
+                </div>
+                <div className="grid gap-6">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="category-sort-order"
+                      className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                    >
+                      Sort order
+                    </Label>
+                    <Input
+                      id="category-sort-order"
+                      type="number"
+                      className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                      error={errors.sortOrder?.message}
+                      {...register("sortOrder", { valueAsNumber: true })}
+                    />
+                  </div>
+                  <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 p-5 shadow-inner">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/80">
+                          Visibility
+                        </p>
+                        <p className="text-[0.65rem] text-on-surface/50 font-light mt-1">
+                          Hidden from public if inactive.
+                        </p>
+                      </div>
+                      <label className="inline-flex items-center gap-3 cursor-pointer group/toggle">
+                        <input type="checkbox" className="sr-only peer" {...register("isActive")} />
+                        <div className="relative w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+                        <span className="text-xs font-bold uppercase tracking-tighter text-on-surface/70 peer-checked:text-secondary group-hover/toggle:text-on-surface transition-colors">
+                          Active
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-4 pt-2">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {isSubmitting ? (
+                      <Skeleton className="h-4 w-20 bg-white/20" />
+                    ) : editingCategory ? (
+                      "Update category"
+                    ) : (
+                      "Create category"
+                    )}
+                  </Button>
+                  {editingCategory ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => syncEditingForm(null)}
+                      className="h-12 rounded-2xl px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high active:scale-95"
+                    >
+                      Cancel edit
+                    </Button>
+                  ) : null}
+                </div>
+              </form>
+            </FormProvider>
+          </div>
 
           <div className="space-y-6">
-            <div className="rounded-4xl bg-primary/5 border border-primary/10 p-8 shadow-inner relative overflow-hidden group/tree-header">
+            <div className="rounded-4xl bg-primary/5 border border-primary/10 p-6 sm:p-8 shadow-inner relative overflow-hidden group/tree-header">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none transition-colors group-hover/tree-header:bg-primary/20"></div>
-              <div className="flex items-center gap-5 relative z-10">
-                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-sm border border-primary/10">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
+                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-sm border border-primary/10 w-fit">
                   <Layers3 className="size-6" />
                 </div>
                 <div>
@@ -430,6 +433,15 @@ function AdminCategoriesPage(): JSX.Element {
                     Drag cards to reorganize the academic hierarchy.
                   </p>
                 </div>
+                {editingCategory && (
+                  <Button
+                    size="sm"
+                    onClick={() => syncEditingForm(null)}
+                    className="h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-bold transition-all ml-auto"
+                  >
+                    Add new domain
+                  </Button>
+                )}
               </div>
               <div className="mt-8 flex flex-wrap gap-3 relative z-10">
                 <Badge
@@ -447,10 +459,11 @@ function AdminCategoriesPage(): JSX.Element {
               </div>
             </div>
 
-            <div className="bg-surface-container-low/30 rounded-4xl p-2 border border-outline-variant/10 shadow-inner min-h-[500px]">
+            <div className="bg-surface-container-low/30 rounded-4xl p-2 border border-outline-variant/10 shadow-inner min-h-125">
               <CategoryTree
                 categories={categories}
                 draggedCategoryId={draggedCategoryId}
+                editingCategoryId={editingCategory?.id}
                 onDelete={(category) => void handleDelete(category)}
                 onDragCategory={setDraggedCategoryId}
                 onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}

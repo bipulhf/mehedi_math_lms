@@ -190,12 +190,12 @@ function AdminAnalyticsPage(): JSX.Element {
         </div>
         <div className="p-8 sm:p-10 grid gap-6 md:grid-cols-2">
           {data.completions.length === 0 ? (
-            <div className="col-span-full py-12 text-center opacity-40 font-light italic italic font-headline">No completion signals detected yet.</div>
+            <div className="col-span-full py-12 text-center opacity-40 font-light italic font-headline">No completion signals detected yet.</div>
           ) : (
             data.completions.map((row) => (
               <div
                 key={row.courseId}
-                className="group p-6 rounded-3xl bg-surface-container-low/30 border border-outline-variant/20 hover:border-primary/30 transition-all hover:bg-primary/[0.01]"
+                className="group p-6 rounded-3xl bg-surface-container-low/30 border border-outline-variant/20 hover:border-primary/30 transition-all hover:bg-primary/2"
               >
                 <div className="flex items-center justify-between gap-4 mb-4">
                   <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors">{row.courseTitle}</span>

@@ -347,7 +347,7 @@ function AdminSmsPage() {
             </div>
           ) : history.length === 0 ? (
             <div className="p-20 text-center">
-              <p className="text-sm font-light text-on-surface/40 italic italic font-headline">
+              <p className="text-sm font-light text-on-surface/40 italic font-headline">
                 The dispatch log is empty.
               </p>
             </div>
