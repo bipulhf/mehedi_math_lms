@@ -11,10 +11,12 @@ import {
 } from "@/lib/api/admin";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import mmaLogo from "@/assets/mma-logo.svg";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/dashboard/admin/sms")({
   component: AdminSmsPage
@@ -80,10 +82,10 @@ function AdminSmsPage() {
 
     const target =
       targetMode === "all_students"
-        ? ({ kind: "all_students" as const })
+        ? { kind: "all_students" as const }
         : targetMode === "role"
-          ? ({ kind: "role" as const, role: targetRole })
-          : ({ kind: "course" as const, courseId: courseId.trim() });
+          ? { kind: "role" as const, role: targetRole }
+          : { kind: "course" as const, courseId: courseId.trim() };
 
     const parsed = adminSendSmsSchema.safeParse({
       message: message.trim(),
@@ -99,7 +101,9 @@ function AdminSmsPage() {
     setSubmitting(true);
     try {
       const result = await adminSendBulkSms(parsed.data);
-      toast.success(`Batch queued (${result.batchId.slice(0, 8)}…). Run the SMS worker to deliver.`);
+      toast.success(
+        `Batch queued (${result.batchId.slice(0, 8)}…). Run the SMS worker to deliver.`
+      );
       setMessage("");
       const page = await listAdminSmsHistory({ limit: 20, page: 1 });
       setHistory(page.data);
@@ -112,9 +116,26 @@ function AdminSmsPage() {
 
   if (isPending || !session) {
     return (
-      <Card>
-        <CardContent className="p-8 text-sm text-on-surface/60">Loading…</CardContent>
-      </Card>
+      <div className="space-y-8 animate-pulse">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+          <div className="flex items-center gap-4 mb-8">
+            <Skeleton className="size-12 rounded-2xl bg-surface-container-highest" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48 bg-surface-container-highest" />
+              <Skeleton className="h-4 w-96 bg-surface-container-highest" />
+            </div>
+          </div>
+          <div className="space-y-6 max-w-xl">
+            <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
+            <div className="flex gap-4">
+              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
+              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
+              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
+            </div>
+            <Skeleton className="h-12 w-48 bg-surface-container-highest rounded-2xl" />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -123,161 +144,288 @@ function AdminSmsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="flex w-12 h-12 items-center justify-center rounded-2xl bg-surface-container-high border border-outline/20">
-              <img src={mmaLogo} alt="" className="h-8 w-8 brightness-[0.92]" />
-            </div>
-            <div>
-              <CardTitle className="font-display text-xl">Bulk SMS (Onecodesoft)</CardTitle>
-              <CardDescription>
-                Sends the same message to every matched number. Student phones come from student profiles
-                (teachers from teacher profiles).
-              </CardDescription>
-            </div>
+    <div className="space-y-8">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+
+        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
+          <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-surface-container-high border border-outline-variant/30 shadow-sm relative overflow-hidden group/logo">
+            <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
+            <img src={mmaLogo} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {providerOk === false ? (
-            <p className="rounded-lg border border-amber-800/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-950">
-              Set <code className="text-xs">ONECODESOFT_API_KEY</code> and{" "}
-              <code className="text-xs">ONECODESOFT_SENDER_ID</code> on the API server before sending.
+          <div>
+            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+              Bulk SMS Dispatch
+            </h3>
+            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+              Dispatch synchronized announcements across the academic network. Target specific
+              cohorts or broadcast to all active scholars.
             </p>
-          ) : null}
-          {providerOk === true ? (
-            <p className="text-sm text-green-800">SMS provider credentials detected on the API.</p>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {providerOk === false ? (
+            <div className="rounded-3xl border border-amber-500/20 bg-amber-500/5 px-6 py-4 flex items-center gap-4 text-amber-600 animate-in fade-in slide-in-from-top-2">
+              <div className="size-2 rounded-full bg-amber-500 animate-pulse"></div>
+              <p className="text-xs font-bold uppercase tracking-widest leading-none">
+                Provider Configuration Missing:{" "}
+                <span className="text-on-surface/60 normal-case font-medium ml-2 italic underline underline-offset-4 decoration-amber-500/30">
+                  ONECODESOFT API credentials required.
+                </span>
+              </p>
+            </div>
+          ) : providerOk === true ? (
+            <div className="rounded-3xl border border-green-500/20 bg-green-500/5 px-6 py-4 flex items-center gap-4 text-green-600 animate-in fade-in slide-in-from-top-2">
+              <div className="size-2 rounded-full bg-green-500"></div>
+              <p className="text-xs font-bold uppercase tracking-widest leading-none">
+                System Active:{" "}
+                <span className="text-on-surface/60 normal-case font-medium ml-2">
+                  SMS Gateway connected and verified.
+                </span>
+              </p>
+            </div>
           ) : null}
 
-          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4 max-w-xl">
-            <div className="space-y-2">
-              <Label htmlFor="sms-body">Message</Label>
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-8 max-w-3xl">
+            <div className="space-y-3">
+              <Label
+                htmlFor="sms-body"
+                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+              >
+                Message Content
+              </Label>
               <textarea
                 id="sms-body"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                placeholder="Draft your announcement here..."
                 required
                 maxLength={1000}
-                rows={4}
-                className="w-full rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 py-3 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-container/20 min-h-[96px] resize-y"
+                rows={5}
+                className="w-full rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 px-6 py-4 text-base text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all font-body resize-none shadow-inner placeholder:text-on-surface/20"
               />
             </div>
-            <div className="space-y-2">
-              <span className="text-sm font-medium text-on-surface">Recipients</span>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <label className="inline-flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="sms-aud"
-                    checked={targetMode === "all_students"}
-                    onChange={() => setTargetMode("all_students")}
-                  />
-                  All active students
-                </label>
-                <label className="inline-flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="sms-aud"
-                    checked={targetMode === "role"}
-                    onChange={() => setTargetMode("role")}
-                  />
-                  By role
-                </label>
-                <label className="inline-flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="sms-aud"
-                    checked={targetMode === "course"}
-                    onChange={() => setTargetMode("course")}
-                  />
-                  Course enrollees
-                </label>
+
+            <div className="space-y-4">
+              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">
+                Recipient Targeting
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[
+                  { id: "all_students", label: "All Students" },
+                  { id: "role", label: "By Staff Role" },
+                  { id: "course", label: "Course Enrollees" }
+                ].map((mode) => (
+                  <label
+                    key={mode.id}
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/mode",
+                      targetMode === mode.id
+                        ? "bg-primary/5 border-primary/30 shadow-sm"
+                        : "bg-surface-container-low/30 border-outline-variant/20 hover:border-outline-variant/40"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "size-4 rounded-full border-2 flex items-center justify-center transition-all",
+                        targetMode === mode.id
+                          ? "border-primary bg-primary"
+                          : "border-outline-variant group-hover/mode:border-on-surface/30"
+                      )}
+                    >
+                      {targetMode === mode.id && (
+                        <div className="size-1.5 rounded-full bg-white"></div>
+                      )}
+                    </div>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      name="sms-aud"
+                      checked={targetMode === mode.id}
+                      onChange={() => setTargetMode(mode.id as "all_students" | "role" | "course")}
+                    />
+                    <span
+                      className={cn(
+                        "text-sm font-bold tracking-tight transition-colors",
+                        targetMode === mode.id ? "text-primary" : "text-on-surface/60"
+                      )}
+                    >
+                      {mode.label}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
-            {targetMode === "role" ? (
-              <div className="space-y-2">
-                <Label htmlFor="sms-role">Role</Label>
-                <select
-                  id="sms-role"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value as UserRole)}
-                  className="h-12 w-full rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.14)]"
-                >
-                  {userRoleValues.map((value) => (
-                    <option key={value} value={value}>
-                      {value}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-on-surface/58">
-                  ACCOUNTANT and ADMIN users have no profile phone in this system — batches may be empty or
-                  mostly skipped.
-                </p>
-              </div>
-            ) : null}
-            {targetMode === "course" ? (
-              <div className="space-y-2">
-                <Label htmlFor="sms-course">Course ID</Label>
-                <Input
-                  id="sms-course"
-                  value={courseId}
-                  onChange={(e) => setCourseId(e.target.value)}
-                  placeholder="UUID"
-                  required
-                />
-              </div>
-            ) : null}
-            <Button type="submit" disabled={submitting || providerOk === false}>
-              {submitting ? "Queuing…" : "Queue bulk SMS"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent batches</CardTitle>
-          <CardDescription>Delivery runs asynchronously via the SMS worker.</CardDescription>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end animate-in fade-in slide-in-from-left-4 duration-500">
+              {targetMode === "role" && (
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="sms-role"
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                  >
+                    Staff Role Filter
+                  </Label>
+                  <select
+                    id="sms-role"
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value as UserRole)}
+                    className="h-12 w-full rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    {userRoleValues.map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {targetMode === "course" && (
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="sms-course"
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+                  >
+                    Target Course UUID
+                  </Label>
+                  <Input
+                    id="sms-course"
+                    className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
+                    value={courseId}
+                    onChange={(e) => setCourseId(e.target.value)}
+                    placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+                    required
+                  />
+                </div>
+              )}
+              <Button
+                type="submit"
+                disabled={submitting || providerOk === false}
+                className="h-14 rounded-3xl px-10 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 disabled:grayscale"
+              >
+                {submitting ? (
+                  <Skeleton className="h-4 w-20 bg-white/20" />
+                ) : (
+                  "Queue batch dispatch"
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center justify-between">
+          <div>
+            <h4 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none">
+              Dispatch History
+            </h4>
+            <p className="mt-2 text-sm text-on-surface-variant font-light">
+              Asynchronous delivery logs processed by the academic SMS worker.
+            </p>
+          </div>
+          {history.length > 0 && (
+            <Badge
+              tone="blue"
+              className="rounded-full px-4 font-bold text-[0.65rem] uppercase tracking-widest"
+            >
+              {history.length} batches
+            </Badge>
+          )}
+        </div>
+
+        <div className="overflow-x-auto">
           {historyLoading ? (
-            <p className="text-sm text-on-surface/60">Loading history…</p>
+            <div className="p-12 space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="h-14 w-full rounded-2xl bg-surface-container-high/50"
+                />
+              ))}
+            </div>
           ) : history.length === 0 ? (
-            <p className="text-sm text-on-surface/60">No batches yet.</p>
+            <div className="p-20 text-center">
+              <p className="text-sm font-light text-on-surface/40 italic italic font-headline">
+                The dispatch log is empty.
+              </p>
+            </div>
           ) : (
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full text-left whitespace-nowrap">
               <thead>
-                <tr className="border-b border-outline-variant text-on-surface/55">
-                  <th className="py-2 pr-3 font-medium">When</th>
-                  <th className="py-2 pr-3 font-medium">Target</th>
-                  <th className="py-2 pr-3 font-medium">Status</th>
-                  <th className="py-2 pr-3 font-medium text-right">Sent</th>
-                  <th className="py-2 pr-3 font-medium text-right">Failed</th>
-                  <th className="py-2 font-medium text-right">Skipped</th>
+                <tr className="bg-surface-container-low/30 border-b border-outline-variant/20 font-bold text-[0.65rem] uppercase tracking-widest text-on-surface/50">
+                  <th className="px-10 py-5">Dispatch Time</th>
+                  <th className="px-10 py-5">Targeting Parameter</th>
+                  <th className="px-10 py-5">State</th>
+                  <th className="px-10 py-5 text-right">Sent</th>
+                  <th className="px-10 py-5 text-right">Failed</th>
+                  <th className="px-10 py-5 text-right font-light opacity-50">Skipped</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((row) => (
-                  <tr key={row.id} className="border-b border-outline-variant/40">
-                    <td className="py-2 pr-3 text-on-surface/80">
-                      {new Date(row.createdAt).toLocaleString()}
+                  <tr
+                    key={row.id}
+                    className="group border-b border-outline-variant/10 transition-colors hover:bg-primary/[0.02]"
+                  >
+                    <td className="px-10 py-6">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+                          {new Date(row.createdAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric"
+                          })}
+                        </span>
+                        <span className="text-[0.6rem] uppercase tracking-widest text-on-surface/40 font-bold mt-1">
+                          {new Date(row.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                      </div>
                     </td>
-                    <td className="py-2 pr-3">
-                      {row.targetKind}
-                      {row.targetRole ? ` · ${row.targetRole}` : ""}
+                    <td className="px-10 py-6">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-on-surface/70 uppercase tracking-tighter">
+                          {row.targetKind.replace("_", " ")}
+                        </span>
+                        {row.targetRole && (
+                          <Badge tone="gray" className="scale-75 origin-left">
+                            {row.targetRole}
+                          </Badge>
+                        )}
+                      </div>
                     </td>
-                    <td className="py-2 pr-3 font-medium">{row.status}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{row.sentCount}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums">{row.failedCount}</td>
-                    <td className="py-2 text-right tabular-nums">{row.skippedCount}</td>
+                    <td className="px-10 py-6">
+                      <span
+                        className={cn(
+                          "text-[0.65rem] font-bold uppercase tracking-widest px-3 py-1 rounded-full border",
+                          row.status === "COMPLETED"
+                            ? "bg-green-500/10 border-green-500/30 text-green-600"
+                            : "bg-amber-500/10 border-amber-500/30 text-amber-600"
+                        )}
+                      >
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="px-10 py-6 text-right tabular-nums font-bold text-on-surface">
+                      {row.sentCount}
+                    </td>
+                    <td className="px-10 py-6 text-right tabular-nums font-bold text-red-500/70">
+                      {row.failedCount}
+                    </td>
+                    <td className="px-10 py-6 text-right tabular-nums text-on-surface/30 font-light">
+                      {row.skippedCount}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

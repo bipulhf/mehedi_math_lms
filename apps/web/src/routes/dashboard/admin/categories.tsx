@@ -7,11 +7,10 @@ import { createCategorySchema } from "@mma/shared";
 
 import { CategorySelector } from "@/components/categories/category-selector";
 import { CategoryTree } from "@/components/categories/category-tree";
-import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -245,36 +244,67 @@ function AdminCategoriesPage(): JSX.Element {
   };
 
   if (isLoading) {
-    return <DataTableSkeleton columns={4} rows={6} />;
+    return (
+      <div className="space-y-8">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
+           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
+           <div className="grid gap-8 xl:grid-cols-2">
+              <div className="space-y-6">
+                 {Array.from({ length: 5 }).map((_, i) => (
+                   <div key={i} className="space-y-2">
+                     <Skeleton className="h-3 w-16 bg-surface-container-highest" />
+                     <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
+                   </div>
+                 ))}
+              </div>
+              <div className="space-y-6">
+                 <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
+                 {Array.from({ length: 4 }).map((_, i) => (
+                   <div key={i} className="flex gap-4">
+                      <Skeleton className="size-10 rounded-full bg-surface-container-highest" />
+                      <div className="space-y-2 flex-1">
+                         <Skeleton className="h-4 w-1/3 bg-surface-container-highest" />
+                         <Skeleton className="h-3 w-2/3 bg-surface-container-highest" />
+                      </div>
+                   </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Category atelier</CardTitle>
-          <CardDescription>
+    <div className="space-y-8">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+        <div className="mb-8">
+          <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Category atelier</h3>
+          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
             Build the academic taxonomy, shape parent-child relationships, and keep course browsing organized.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <form className="space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="category-name">Name</Label>
-              <Input id="category-name" error={errors.name?.message} {...register("name")} />
+          </p>
+        </div>
+        
+        <div className="grid gap-10 xl:grid-cols-[0.95fr_1.05fr]">
+          <form className="space-y-6" onSubmit={onSubmit}>
+            <div className="space-y-3">
+              <Label htmlFor="category-name" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Name</Label>
+              <Input id="category-name" className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body" error={errors.name?.message} {...register("name")} />
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="category-slug">Slug</Label>
-                <Input id="category-slug" error={errors.slug?.message} {...register("slug")} />
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label htmlFor="category-slug" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Slug</Label>
+                <Input id="category-slug" className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body" error={errors.slug?.message} {...register("slug")} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="category-icon">Icon</Label>
-                <Input id="category-icon" error={errors.icon?.message} {...register("icon")} />
+              <div className="space-y-3">
+                <Label htmlFor="category-icon" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Icon (Lucide name)</Label>
+                <Input id="category-icon" className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body" error={errors.icon?.message} {...register("icon")} />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category-parent">Parent category</Label>
+            <div className="space-y-3">
+              <Label htmlFor="category-parent" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Parent category</Label>
               <CategorySelector
                 id="category-parent"
                 categories={availableParentCategories}
@@ -283,76 +313,80 @@ function AdminCategoriesPage(): JSX.Element {
                 onChange={(value) => setValue("parentId", value, { shouldDirty: true, shouldValidate: true })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category-description">Description</Label>
-              <Textarea id="category-description" error={errors.description?.message} {...register("description")} />
+            <div className="space-y-3">
+              <Label htmlFor="category-description" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Description</Label>
+              <Textarea id="category-description" className="min-h-24 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body" error={errors.description?.message} {...register("description")} />
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="category-sort-order">Sort order</Label>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <Label htmlFor="category-sort-order" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Sort order</Label>
                 <Input
                   id="category-sort-order"
                   type="number"
+                  className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
                   error={errors.sortOrder?.message}
                   {...register("sortOrder", { valueAsNumber: true })}
                 />
               </div>
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-                <div className="flex items-center justify-between">
+              <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 p-5 shadow-inner">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold text-on-surface">Visibility</p>
-                    <p className="text-sm text-on-surface/62">Inactive categories stay hidden from public browsing.</p>
+                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/80">Visibility</p>
+                    <p className="text-[0.65rem] text-on-surface/50 font-light mt-1">Hidden from public if inactive.</p>
                   </div>
-                  <label className="inline-flex items-center gap-2 text-sm font-medium text-on-surface">
-                    <input type="checkbox" {...register("isActive")} />
-                    Active
+                  <label className="inline-flex items-center gap-3 cursor-pointer group/toggle">
+                    <input type="checkbox" className="sr-only peer" {...register("isActive")} />
+                    <div className="relative w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+                    <span className="text-xs font-bold uppercase tracking-tighter text-on-surface/70 peer-checked:text-secondary group-hover/toggle:text-on-surface transition-colors">Active</span>
                   </label>
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <span className="h-4 w-16 rounded-full bg-white/25" aria-hidden="true" /> : null}
-                {isSubmitting ? "Saving category" : editingCategory ? "Update category" : "Create category"}
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Button type="submit" disabled={isSubmitting} className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {isSubmitting ? <Skeleton className="h-4 w-20 bg-white/20" /> : editingCategory ? "Update category" : "Create category"}
               </Button>
               {editingCategory ? (
-                <Button type="button" variant="outline" onClick={() => syncEditingForm(null)}>
+                <Button type="button" variant="outline" onClick={() => syncEditingForm(null)} className="h-12 rounded-2xl px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high active:scale-95">
                   Cancel edit
                 </Button>
               ) : null}
             </div>
           </form>
 
-          <div className="space-y-4">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-surface-container-highest p-3 text-secondary-container">
-                  <Layers3 className="size-4" />
+          <div className="space-y-6">
+            <div className="rounded-4xl bg-primary/5 border border-primary/10 p-8 shadow-inner relative overflow-hidden group/tree-header">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none transition-colors group-hover/tree-header:bg-primary/20"></div>
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-sm border border-primary/10">
+                  <Layers3 className="size-6" />
                 </div>
                 <div>
-                  <p className="font-semibold text-on-surface">Tree view</p>
-                  <p className="text-sm text-on-surface/62">
-                    Drag cards into the top-level canvas or onto another category to reorganize the hierarchy.
+                  <h5 className="font-headline text-xl font-extrabold text-on-surface tracking-tight leading-none">Tree view</h5>
+                  <p className="mt-2 text-sm text-on-surface-variant font-light leading-relaxed">
+                    Drag cards to reorganize the academic hierarchy.
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge tone="green">{categories.length} root categories</Badge>
-                <Badge tone="blue">{flattenCategoryIds(categories).length} total categories</Badge>
+              <div className="mt-8 flex flex-wrap gap-3 relative z-10">
+                <Badge tone="green" className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-green-500/20 shadow-sm">{categories.length} root domains</Badge>
+                <Badge tone="blue" className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-blue-500/20 shadow-sm">{flattenCategoryIds(categories).length} total nodes</Badge>
               </div>
             </div>
 
-            <CategoryTree
-              categories={categories}
-              draggedCategoryId={draggedCategoryId}
-              onDelete={(category) => void handleDelete(category)}
-              onDragCategory={setDraggedCategoryId}
-              onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
-              onEdit={syncEditingForm}
-            />
+            <div className="bg-surface-container-low/30 rounded-4xl p-2 border border-outline-variant/10 shadow-inner min-h-[500px]">
+              <CategoryTree
+                categories={categories}
+                draggedCategoryId={draggedCategoryId}
+                onDelete={(category) => void handleDelete(category)}
+                onDragCategory={setDraggedCategoryId}
+                onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
+                onEdit={syncEditingForm}
+              />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
