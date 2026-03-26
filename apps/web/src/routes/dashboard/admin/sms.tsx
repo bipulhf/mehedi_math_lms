@@ -367,7 +367,7 @@ function AdminSmsPage() {
                 {history.map((row) => (
                   <tr
                     key={row.id}
-                    className="group border-b border-outline-variant/10 transition-colors hover:bg-primary/[0.02]"
+                    className="group border-b border-outline-variant/10 transition-colors hover:bg-primary/2"
                   >
                     <td className="px-10 py-6">
                       <div className="flex flex-col">

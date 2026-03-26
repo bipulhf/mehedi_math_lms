@@ -157,8 +157,8 @@ function AdminBugsPage(): JSX.Element {
             </thead>
             <tbody>
               {bugs.map((bug) => (
-                <tr key={bug.id} className="group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/[0.02]">
-                  <td className="px-10 py-6 min-w-[300px]">
+                <tr key={bug.id} className="group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/2">
+                  <td className="px-10 py-6 min-w-75">
                     <div className="flex flex-col max-w-sm">
                       <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">{bug.title}</span>
                       <span className="text-xs text-on-surface-variant font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>

@@ -170,7 +170,7 @@ function AdminUsersPage(): JSX.Element {
         </div>
 
         <form
-          className="grid gap-6 lg:grid-cols-[1.2fr_1.2fr_0.8fr_auto] items-end pb-4"
+          className="grid gap-6 lg:grid-cols-[1.2fr_1.2fr_0.8fr_auto] items-start"
           onSubmit={onCreate}
         >
           <div className="space-y-3">
@@ -219,13 +219,15 @@ function AdminUsersPage(): JSX.Element {
               <option value="ACCOUNTANT">Accountant</option>
             </Select>
           </div>
-          <Button
-            className="h-12 rounded-2xl px-6 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <Skeleton className="h-4 w-16 bg-white/20" /> : "Create account"}
-          </Button>
+          <div className="lg:pt-[1.7rem] flex items-end">
+            <Button
+              className="h-12 rounded-2xl px-10 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] w-full"
+              type="submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <Skeleton className="h-4 w-16 bg-white/20" /> : "Create account"}
+            </Button>
+          </div>
         </form>
 
         {createdPassword ? (
@@ -330,7 +332,7 @@ function AdminUsersPage(): JSX.Element {
                   <tr
                     key={user.id}
                     className={cn(
-                      "group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/[0.02]",
+                      "group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/2",
                       !user.isActive && "opacity-60 grayscale-[0.2]"
                     )}
                   >
