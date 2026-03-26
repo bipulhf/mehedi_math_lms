@@ -1,5 +1,6 @@
 import { createPasswordHash } from "@mma/auth/server";
 import { accounts, and, db, eq, users } from "@mma/db";
+import { generateUniqueSlug } from "./slug";
 import { z } from "zod";
 
 const seedEnvSchema = z.object({
@@ -8,6 +9,18 @@ const seedEnvSchema = z.object({
 });
 
 const seedEnv = seedEnvSchema.parse(process.env);
+
+async function createUniqueUserSlug(name: string, excludeUserId?: string): Promise<string> {
+  return generateUniqueSlug(name, async (candidate) => {
+    const existingUser = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.slug, candidate))
+      .limit(1);
+
+    return existingUser[0] !== undefined && existingUser[0].id !== excludeUserId;
+  });
+}
 
 async function seedAdmin(): Promise<void> {
   const existingUser = await db
@@ -19,12 +32,14 @@ async function seedAdmin(): Promise<void> {
   let userId = existingUser[0]?.id;
 
   if (!userId) {
+    const slug = await createUniqueUserSlug("Platform Administrator");
+
     const insertedUsers = await db
       .insert(users)
       .values({
         email: seedEnv.ADMIN_EMAIL,
         name: "Platform Administrator",
-        slug: "platform-administrator",
+        slug,
         role: "ADMIN",
         banned: false,
         emailVerified: true,
@@ -43,11 +58,13 @@ async function seedAdmin(): Promise<void> {
   }
 
   if (existingUser[0]?.id) {
+    const slug = await createUniqueUserSlug("Platform Administrator", userId);
+
     await db
       .update(users)
       .set({
         name: "Platform Administrator",
-        slug: "platform-administrator",
+        slug,
         role: "ADMIN",
         banned: false,
         banReason: null,

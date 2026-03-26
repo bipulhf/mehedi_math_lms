@@ -16,7 +16,8 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
-    "db:seed": "turbo run db:seed"
+    "db:seed": "turbo run db:seed",
+    "db:backfill-user-slugs": "turbo run db:backfill-user-slugs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

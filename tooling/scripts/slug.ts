@@ -1,7 +1,7 @@
 const NON_SLUG = /[^a-z0-9]+/gi;
 const DEFAULT_MAX_SLUG_LENGTH = 255;
 
-export function slugifySegment(value: string): string {
+function slugifySegment(value: string): string {
   const base = value
     .trim()
     .toLowerCase()
@@ -18,7 +18,7 @@ function truncateSlugBase(base: string, maxLength: number): string {
   return truncatedBase.length > 0 ? truncatedBase : "item";
 }
 
-export function buildSerialSlugCandidate(
+function buildSerialSlugCandidate(
   value: string,
   duplicateIndex = 1,
   maxLength = DEFAULT_MAX_SLUG_LENGTH
@@ -55,13 +55,4 @@ export async function generateUniqueSlug(
 
     duplicateIndex += 1;
   }
-}
-
-export function slugifyWithRandomSuffix(value: string): string {
-  const base = slugifySegment(value);
-  const c = globalThis.crypto;
-  const suffix =
-    c !== undefined && "randomUUID" in c ? c.randomUUID().slice(0, 8) : String(Date.now());
-
-  return `${base}-${suffix}`;
 }

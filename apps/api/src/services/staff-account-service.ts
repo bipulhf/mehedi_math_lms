@@ -1,3 +1,4 @@
+import { generateUniqueSlug } from "@mma/shared";
 import { createPasswordHash } from "@mma/auth/server";
 
 import { queues } from "@/lib/queues";
@@ -21,16 +22,15 @@ export interface CreatedStaffAccount {
   temporaryPassword: string;
 }
 
-function createSlug(name: string): string {
-  const normalizedName = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+async function createUniqueStaffSlug(
+  staffAccountRepository: StaffAccountRepository,
+  name: string
+): Promise<string> {
+  return generateUniqueSlug(name, async (candidate) => {
+    const existingUser = await staffAccountRepository.findBySlug(candidate);
 
-  const suffix = crypto.randomUUID().slice(0, 8);
-
-  return `${normalizedName || "staff"}-${suffix}`;
+    return existingUser !== null;
+  });
 }
 
 function createTemporaryPassword(): string {
@@ -54,7 +54,7 @@ export class StaffAccountService {
       name: input.name,
       passwordHash,
       role: input.role,
-      slug: createSlug(input.name)
+      slug: await createUniqueStaffSlug(this.staffAccountRepository, input.name.trim())
     });
 
     await queues.email.add("staff-account-invite", {

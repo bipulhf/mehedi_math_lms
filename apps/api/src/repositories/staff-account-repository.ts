@@ -31,6 +31,16 @@ export class StaffAccountRepository {
     return existingUser[0] ?? null;
   }
 
+  public async findBySlug(slug: string): Promise<Pick<StaffAccountRecord, "id"> | null> {
+    const existingUser = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.slug, slug))
+      .limit(1);
+
+    return existingUser[0] ?? null;
+  }
+
   public async create(input: CreateStaffAccountInput): Promise<StaffAccountRecord> {
     return db.transaction(async (transaction) => {
       const insertedUsers = await transaction

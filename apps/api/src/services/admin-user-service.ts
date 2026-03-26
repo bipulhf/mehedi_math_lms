@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import { generateUniqueSlug, type UserRole } from "@mma/shared";
 
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import {
@@ -22,6 +22,17 @@ export class AdminUserService {
     private readonly staffAccountService: StaffAccountService
   ) {}
 
+  private async createUniqueUserSlug(
+    name: string,
+    excludeUserId?: string | undefined
+  ): Promise<string> {
+    return generateUniqueSlug(name, async (candidate) => {
+      const existingUser = await this.adminUserRepository.findBySlug(candidate);
+
+      return existingUser !== null && existingUser.id !== excludeUserId;
+    });
+  }
+
   public async listUsers(
     query: AdminUsersQuery
   ): Promise<{ items: readonly AdminUserListRecord[]; total: number }> {
@@ -42,7 +53,10 @@ export class AdminUserService {
     return this.staffAccountService.createStaffAccount(input);
   }
 
-  public async updateUser(userId: string, input: UpdateAdminUserInput): Promise<AdminUserListRecord> {
+  public async updateUser(
+    userId: string,
+    input: UpdateAdminUserInput
+  ): Promise<AdminUserListRecord> {
     if (input.email) {
       const existingUser = await this.adminUserRepository.findByEmail(input.email);
 
@@ -61,7 +75,18 @@ export class AdminUserService {
       throw new ForbiddenError("Admin roles cannot be reassigned from this endpoint");
     }
 
-    const updatedUser = await this.adminUserRepository.updateUser(userId, input);
+    const nextName = input.name?.trim();
+    const shouldRegenerateSlug = nextName !== undefined && nextName !== currentUser.name;
+    const slug =
+      shouldRegenerateSlug || currentUser.slug === null
+        ? await this.createUniqueUserSlug(nextName ?? currentUser.name, userId)
+        : undefined;
+
+    const updatedUser = await this.adminUserRepository.updateUser(userId, {
+      ...input,
+      name: nextName,
+      slug
+    });
 
     if (!updatedUser) {
       throw new NotFoundError("User not found");
@@ -94,7 +119,10 @@ export class AdminUserService {
     return updatedUser;
   }
 
-  public async softDeleteUser(targetUserId: string, currentUserId: string): Promise<AdminUserListRecord> {
+  public async softDeleteUser(
+    targetUserId: string,
+    currentUserId: string
+  ): Promise<AdminUserListRecord> {
     if (targetUserId === currentUserId) {
       throw new ForbiddenError("You cannot delete your own account");
     }

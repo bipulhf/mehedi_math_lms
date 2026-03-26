@@ -69,6 +69,7 @@ export interface UpdateAdminUserInput {
   email?: string | undefined;
   name?: string | undefined;
   role?: "STUDENT" | "TEACHER" | "ACCOUNTANT" | undefined;
+  slug?: string | undefined;
 }
 
 function buildUserFilters(query: AdminUsersQuery): SQL<unknown> | undefined {
@@ -125,10 +126,7 @@ export class AdminUserRepository {
       .limit(query.limit)
       .offset(offset);
 
-    const totalRows = await db
-      .select({ value: count() })
-      .from(users)
-      .where(whereClause);
+    const totalRows = await db.select({ value: count() }).from(users).where(whereClause);
 
     return {
       items: rows.map((row) => ({
@@ -227,13 +225,23 @@ export class AdminUserRepository {
     return rows[0] ?? null;
   }
 
-  public async updateUser(userId: string, input: UpdateAdminUserInput): Promise<AdminUserListRecord | null> {
+  public async findBySlug(slug: string): Promise<{ id: string } | null> {
+    const rows = await db.select({ id: users.id }).from(users).where(eq(users.slug, slug)).limit(1);
+
+    return rows[0] ?? null;
+  }
+
+  public async updateUser(
+    userId: string,
+    input: UpdateAdminUserInput
+  ): Promise<AdminUserListRecord | null> {
     const updatedRows = await db
       .update(users)
       .set({
         email: input.email,
         name: input.name,
         role: input.role,
+        slug: input.slug,
         updatedAt: new Date()
       })
       .where(eq(users.id, userId))

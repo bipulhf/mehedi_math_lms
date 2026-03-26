@@ -1,6 +1,7 @@
 import type { UserRole } from "@mma/shared";
 import {
   basicProfileInputSchema,
+  generateUniqueSlug,
   studentProfileInputSchema,
   teacherProfileInputSchema
 } from "@mma/shared";
@@ -96,16 +97,6 @@ function normalizeOptionalDate(value: string | undefined): Date | null {
   return value.trim().length > 0 ? new Date(value) : null;
 }
 
-function createSlug(name: string): string {
-  const normalizedName = name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return normalizedName || `user-${crypto.randomUUID().slice(0, 8)}`;
-}
-
 function mapStudentProfile(profile: StudentProfileRecord | null): StudentProfileResponse | null {
   if (!profile) {
     return null;
@@ -174,6 +165,17 @@ function mapTeacherCourse(course: TeacherCourseRecord): TeacherCourseResponse {
 export class ProfileService {
   public constructor(private readonly profileRepository: ProfileRepository) {}
 
+  private async createUniqueUserSlug(
+    name: string,
+    excludeUserId?: string | undefined
+  ): Promise<string> {
+    return generateUniqueSlug(name, async (candidate) => {
+      const existingUser = await this.profileRepository.findBySlug(candidate);
+
+      return existingUser !== null && existingUser.id !== excludeUserId;
+    });
+  }
+
   public async getOwnProfile(userId: string): Promise<OwnProfileResponse> {
     const profile = await this.profileRepository.findByUserId(userId);
 
@@ -184,7 +186,22 @@ export class ProfileService {
     return mapUserProfile(profile);
   }
 
-  public async updateStudentProfile(userId: string, input: StudentProfileInput): Promise<OwnProfileResponse> {
+  public async updateStudentProfile(
+    userId: string,
+    input: StudentProfileInput
+  ): Promise<OwnProfileResponse> {
+    const currentProfile = await this.profileRepository.findByUserId(userId);
+
+    if (!currentProfile) {
+      throw new NotFoundError("Profile not found");
+    }
+
+    const nextName = input.name.trim();
+    const nextSlug =
+      currentProfile.slug === null || currentProfile.name !== nextName
+        ? await this.createUniqueUserSlug(nextName, userId)
+        : currentProfile.slug;
+
     const updatedProfile = await this.profileRepository.saveStudentProfile(userId, {
       address: normalizeOptionalString(input.address),
       classOrGrade: normalizeOptionalString(input.classOrGrade),
@@ -192,10 +209,10 @@ export class ProfileService {
       guardianName: normalizeOptionalString(input.guardianName),
       guardianPhone: normalizeOptionalString(input.guardianPhone),
       institution: normalizeOptionalString(input.institution),
-      name: input.name.trim(),
+      name: nextName,
       phone: normalizeOptionalString(input.phone),
       profilePhoto: normalizeOptionalString(input.profilePhoto),
-      slug: createSlug(input.name)
+      slug: nextSlug
     });
 
     if (!updatedProfile) {
@@ -205,14 +222,29 @@ export class ProfileService {
     return mapUserProfile(updatedProfile);
   }
 
-  public async updateTeacherProfile(userId: string, input: TeacherProfileInput): Promise<OwnProfileResponse> {
+  public async updateTeacherProfile(
+    userId: string,
+    input: TeacherProfileInput
+  ): Promise<OwnProfileResponse> {
+    const currentProfile = await this.profileRepository.findByUserId(userId);
+
+    if (!currentProfile) {
+      throw new NotFoundError("Profile not found");
+    }
+
+    const nextName = input.name.trim();
+    const nextSlug =
+      currentProfile.slug === null || currentProfile.name !== nextName
+        ? await this.createUniqueUserSlug(nextName, userId)
+        : currentProfile.slug;
+
     const updatedProfile = await this.profileRepository.saveTeacherProfile(userId, {
       bio: normalizeOptionalString(input.bio),
-      name: input.name.trim(),
+      name: nextName,
       phone: normalizeOptionalString(input.phone),
       profilePhoto: normalizeOptionalString(input.profilePhoto),
       qualifications: normalizeOptionalString(input.qualifications),
-      slug: createSlug(input.name),
+      slug: nextSlug,
       socialLinks: normalizeOptionalString(input.socialLinks),
       specializations: normalizeOptionalString(input.specializations)
     });
@@ -224,11 +256,26 @@ export class ProfileService {
     return mapUserProfile(updatedProfile);
   }
 
-  public async updateBasicProfile(userId: string, input: BasicProfileInput): Promise<OwnProfileResponse> {
+  public async updateBasicProfile(
+    userId: string,
+    input: BasicProfileInput
+  ): Promise<OwnProfileResponse> {
+    const currentProfile = await this.profileRepository.findByUserId(userId);
+
+    if (!currentProfile) {
+      throw new NotFoundError("Profile not found");
+    }
+
+    const nextName = input.name.trim();
+    const nextSlug =
+      currentProfile.slug === null || currentProfile.name !== nextName
+        ? await this.createUniqueUserSlug(nextName, userId)
+        : currentProfile.slug;
+
     const updatedProfile = await this.profileRepository.saveBasicProfile(userId, {
-      name: input.name.trim(),
+      name: nextName,
       profilePhoto: normalizeOptionalString(input.profilePhoto),
-      slug: createSlug(input.name)
+      slug: nextSlug
     });
 
     if (!updatedProfile) {
@@ -258,10 +305,9 @@ export class ProfileService {
     return this.mapPublicTeacherProfile(teacherProfile);
   }
 
-  private mapPublicTeacherProfile(teacherProfile: NonNullable<
-    Awaited<ReturnType<ProfileRepository["findPublicTeacherById"]>>
-  >): PublicTeacherProfileResponse {
-
+  private mapPublicTeacherProfile(
+    teacherProfile: NonNullable<Awaited<ReturnType<ProfileRepository["findPublicTeacherById"]>>>
+  ): PublicTeacherProfileResponse {
     const publishedCourses = teacherProfile.courses
       .filter((course) => course.status === "PUBLISHED")
       .map(mapTeacherCourse);

@@ -2,6 +2,7 @@ import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
 import {
   createCourseSchema,
+  generateUniqueSlug,
   listCoursesQuerySchema,
   rejectCourseSchema,
   updateCourseSchema
@@ -53,16 +54,6 @@ function normalizeOptionalUrl(value: string | undefined): string | null {
   return trimmedValue.length > 0 ? trimmedValue : null;
 }
 
-function createSlug(title: string): string {
-  return (
-    title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `course-${crypto.randomUUID().slice(0, 8)}`
-  );
-}
-
 function formatPrice(value: number): string {
   return value.toFixed(2);
 }
@@ -95,21 +86,15 @@ export class CourseService {
     private readonly categoryRepository: CategoryRepository
   ) {}
 
-  private async createUniqueSlug(title: string, excludeCourseId?: string | undefined): Promise<string> {
-    const baseSlug = createSlug(title);
-    let candidate = baseSlug;
-    let suffix = 2;
-
-    while (true) {
+  private async createUniqueSlug(
+    title: string,
+    excludeCourseId?: string | undefined
+  ): Promise<string> {
+    return generateUniqueSlug(title, async (candidate) => {
       const existingCourse = await this.courseRepository.findBySlug(candidate);
 
-      if (!existingCourse || existingCourse.id === excludeCourseId) {
-        return candidate;
-      }
-
-      candidate = `${baseSlug}-${suffix}`;
-      suffix += 1;
-    }
+      return existingCourse !== null && existingCourse.id !== excludeCourseId;
+    });
   }
 
   private async validateCategory(categoryId: string): Promise<void> {
@@ -144,7 +129,11 @@ export class CourseService {
     }
   }
 
-  private ensureCanManageCourse(course: CourseRecord, currentUserId: string, currentUserRole: UserRole): void {
+  private ensureCanManageCourse(
+    course: CourseRecord,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): void {
     if (currentUserRole === "ADMIN") {
       return;
     }
@@ -157,7 +146,11 @@ export class CourseService {
     }
   }
 
-  private ensureCanViewCourse(course: CourseRecord, currentUserId?: string | undefined, currentUserRole?: UserRole | undefined): void {
+  private ensureCanViewCourse(
+    course: CourseRecord,
+    currentUserId?: string | undefined,
+    currentUserRole?: UserRole | undefined
+  ): void {
     if (course.status === "PUBLISHED") {
       return;
     }
@@ -239,7 +232,9 @@ export class CourseService {
       const assignedCourseIds = await this.courseRepository.getAssignedCourseIds(currentUserId);
 
       if (assignedCourseIds.length > 0) {
-        extraClauses.push(or(eq(courses.creatorId, currentUserId), inArray(courses.id, [...assignedCourseIds]))!);
+        extraClauses.push(
+          or(eq(courses.creatorId, currentUserId), inArray(courses.id, [...assignedCourseIds]))!
+        );
       } else {
         extraClauses.push(eq(courses.creatorId, currentUserId));
       }
@@ -306,7 +301,7 @@ export class CourseService {
       isExamOnly: input.isExamOnly,
       price: formatPrice(input.price),
       reviewFeedback: null,
-      slug: await this.createUniqueSlug(input.title),
+      slug: await this.createUniqueSlug(input.title.trim()),
       title: input.title.trim()
     });
 
@@ -341,15 +336,19 @@ export class CourseService {
       await this.validateCategory(input.categoryId);
     }
 
+    const trimmedTitle = input.title?.trim();
+    const shouldRegenerateSlug = trimmedTitle !== undefined && trimmedTitle !== course.title;
+
     const updatedCourse = await this.courseRepository.update(id, {
       categoryId: input.categoryId,
-      coverImageUrl: input.coverImageUrl === undefined ? undefined : normalizeOptionalUrl(input.coverImageUrl),
+      coverImageUrl:
+        input.coverImageUrl === undefined ? undefined : normalizeOptionalUrl(input.coverImageUrl),
       description: input.description?.trim(),
       isExamOnly: input.isExamOnly,
       price: input.price === undefined ? undefined : formatPrice(input.price),
       reviewFeedback: course.status === "PENDING" ? null : undefined,
-      slug: input.title ? await this.createUniqueSlug(input.title, id) : undefined,
-      title: input.title?.trim()
+      slug: shouldRegenerateSlug ? await this.createUniqueSlug(trimmedTitle, id) : undefined,
+      title: trimmedTitle
     });
 
     if (!updatedCourse) {
@@ -359,7 +358,11 @@ export class CourseService {
     return mapCourse(updatedCourse);
   }
 
-  public async deleteCourse(id: string, currentUserId: string, currentUserRole: UserRole): Promise<{ id: string }> {
+  public async deleteCourse(
+    id: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<{ id: string }> {
     const course = await this.courseRepository.findById(id);
 
     if (!course) {
@@ -383,7 +386,11 @@ export class CourseService {
     return { id: archivedCourse.id };
   }
 
-  public async submitCourse(id: string, currentUserId: string, currentUserRole: UserRole): Promise<CourseDetailResponse> {
+  public async submitCourse(
+    id: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<CourseDetailResponse> {
     const course = await this.courseRepository.findById(id);
 
     if (!course) {
@@ -495,7 +502,9 @@ export class CourseService {
     return mapCourse(updatedCourse);
   }
 
-  public async listTeacherDirectory(search?: string | undefined): Promise<readonly TeacherDirectoryRecord[]> {
+  public async listTeacherDirectory(
+    search?: string | undefined
+  ): Promise<readonly TeacherDirectoryRecord[]> {
     return this.courseRepository.listTeacherDirectory(search);
   }
 }

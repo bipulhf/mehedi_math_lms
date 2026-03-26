@@ -2,40 +2,34 @@
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
-      ],
+      "dependsOn": ["^lint"],
       "outputs": []
     },
     "typecheck": {
-      "dependsOn": [
-        "^typecheck"
-      ],
+      "dependsOn": ["^typecheck"],
       "outputs": []
     },
     "db:generate": {
       "cache": false,
-      "outputs": [
-        "packages/db/src/migrations/**"
-      ]
+      "outputs": ["packages/db/src/migrations/**"]
     },
     "db:migrate": {
       "cache": false,
       "outputs": []
     },
     "db:seed": {
+      "cache": false,
+      "outputs": []
+    },
+    "db:backfill-user-slugs": {
       "cache": false,
       "outputs": []
     }

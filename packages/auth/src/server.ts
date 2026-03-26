@@ -4,8 +4,9 @@ import { admin } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { accounts, db, sessions, users, verificationTokens } from "@mma/db";
+import { accounts, db, eq, sessions, users, verificationTokens } from "@mma/db";
 import * as schema from "@mma/db/schema";
+import { generateUniqueSlug } from "@mma/shared";
 import { z } from "zod";
 
 const authEnvSchema = z.object({
@@ -34,6 +35,18 @@ const isGoogleConfigured =
 interface AuthUserFields extends UserWithRole {
   profileCompleted?: boolean;
   isActive?: boolean;
+}
+
+async function createUniqueUserSlug(name: string): Promise<string> {
+  return generateUniqueSlug(name, async (candidate) => {
+    const existingUser = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.slug, candidate))
+      .limit(1);
+
+    return existingUser.length > 0;
+  });
 }
 
 export const auth = betterAuth({
@@ -120,6 +133,19 @@ export const auth = betterAuth({
   },
   verification: {
     modelName: "verification_tokens"
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              slug: await createUniqueUserSlug(typeof user.name === "string" ? user.name : "")
+            }
+          };
+        }
+      }
+    }
   },
   plugins: [
     admin({

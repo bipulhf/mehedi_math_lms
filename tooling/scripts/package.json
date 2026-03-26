@@ -8,11 +8,13 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:seed": "bun --env-file ../../.env seed.ts"
+    "db:seed": "bun --env-file ../../.env seed.ts",
+    "db:backfill-user-slugs": "bun --env-file ../../.env backfill-user-slugs.ts"
   },
   "dependencies": {
     "@mma/auth": "workspace:*",
     "@mma/db": "workspace:*",
+    "@mma/shared": "workspace:*",
     "drizzle-orm": "^0.45.1",
     "zod": "^4.3.6"
   }

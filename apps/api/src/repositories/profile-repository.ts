@@ -75,7 +75,7 @@ export interface StudentProfileInputRecord {
   name: string;
   phone: string | null;
   profilePhoto: string | null;
-  slug: string;
+  slug: string | null;
 }
 
 export interface TeacherProfileInputRecord {
@@ -84,7 +84,7 @@ export interface TeacherProfileInputRecord {
   phone: string | null;
   profilePhoto: string | null;
   qualifications: string | null;
-  slug: string;
+  slug: string | null;
   socialLinks: string | null;
   specializations: string | null;
 }
@@ -92,7 +92,7 @@ export interface TeacherProfileInputRecord {
 export interface BasicProfileInputRecord {
   name: string;
   profilePhoto: string | null;
-  slug: string;
+  slug: string | null;
 }
 
 function mapProfileUserRecord(
@@ -170,6 +170,16 @@ export class ProfileRepository {
     });
 
     return mapProfileUserRecord(user);
+  }
+
+  public async findBySlug(slug: string): Promise<{ id: string } | null> {
+    const rows = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.slug, slug), isNotNull(users.slug)))
+      .limit(1);
+
+    return rows[0] ?? null;
   }
 
   public async findPublicTeacherBySlug(slug: string): Promise<PublicTeacherProfileRecord | null> {
@@ -265,7 +275,10 @@ export class ProfileRepository {
     };
   }
 
-  public async saveStudentProfile(userId: string, input: StudentProfileInputRecord): Promise<ProfileUserRecord | null> {
+  public async saveStudentProfile(
+    userId: string,
+    input: StudentProfileInputRecord
+  ): Promise<ProfileUserRecord | null> {
     await db.transaction(async (transaction) => {
       await transaction
         .update(users)
@@ -273,7 +286,7 @@ export class ProfileRepository {
           image: input.profilePhoto,
           name: input.name,
           profileCompleted: true,
-          slug: input.slug,
+          slug: input.slug ?? undefined,
           updatedAt: new Date()
         })
         .where(eq(users.id, userId));
@@ -319,7 +332,10 @@ export class ProfileRepository {
     return this.findByUserId(userId);
   }
 
-  public async saveTeacherProfile(userId: string, input: TeacherProfileInputRecord): Promise<ProfileUserRecord | null> {
+  public async saveTeacherProfile(
+    userId: string,
+    input: TeacherProfileInputRecord
+  ): Promise<ProfileUserRecord | null> {
     await db.transaction(async (transaction) => {
       await transaction
         .update(users)
@@ -327,7 +343,7 @@ export class ProfileRepository {
           image: input.profilePhoto,
           name: input.name,
           profileCompleted: true,
-          slug: input.slug,
+          slug: input.slug ?? undefined,
           updatedAt: new Date()
         })
         .where(eq(users.id, userId));
@@ -369,14 +385,17 @@ export class ProfileRepository {
     return this.findByUserId(userId);
   }
 
-  public async saveBasicProfile(userId: string, input: BasicProfileInputRecord): Promise<ProfileUserRecord | null> {
+  public async saveBasicProfile(
+    userId: string,
+    input: BasicProfileInputRecord
+  ): Promise<ProfileUserRecord | null> {
     await db
       .update(users)
       .set({
         image: input.profilePhoto,
         name: input.name,
         profileCompleted: true,
-        slug: input.slug,
+        slug: input.slug ?? undefined,
         updatedAt: new Date()
       })
       .where(eq(users.id, userId));
@@ -384,7 +403,9 @@ export class ProfileRepository {
     return this.findByUserId(userId);
   }
 
-  public async findPublishedCoursesByTeacherId(userId: string): Promise<readonly TeacherCourseRecord[]> {
+  public async findPublishedCoursesByTeacherId(
+    userId: string
+  ): Promise<readonly TeacherCourseRecord[]> {
     const teacherCourses = await db
       .select({
         coverImageUrl: courses.coverImageUrl,

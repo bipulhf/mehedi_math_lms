@@ -3,15 +3,13 @@ import type { z } from "zod";
 import {
   categoriesQuerySchema,
   createCategorySchema,
+  generateUniqueSlug,
   reorderCategoriesSchema,
   updateCategorySchema
 } from "@mma/shared";
 
-import {
-  CategoryRepository,
-  type CategoryRecord
-} from "@/repositories/category-repository";
-import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+import { CategoryRepository, type CategoryRecord } from "@/repositories/category-repository";
+import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CategoriesQuery = z.infer<typeof categoriesQuerySchema>;
 type CreateCategoryInput = z.infer<typeof createCategorySchema>;
@@ -42,14 +40,16 @@ function normalizeOptionalString(value: string | undefined): string | null {
   return trimmedValue.length > 0 ? trimmedValue : null;
 }
 
-function createSlug(name: string): string {
-  return (
-    name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `category-${crypto.randomUUID().slice(0, 8)}`
-  );
+async function createUniqueCategorySlug(
+  categoryRepository: CategoryRepository,
+  name: string,
+  excludeCategoryId?: string | undefined
+): Promise<string> {
+  return generateUniqueSlug(name, async (candidate) => {
+    const existingCategory = await categoryRepository.findBySlug(candidate);
+
+    return existingCategory !== null && existingCategory.id !== excludeCategoryId;
+  });
 }
 
 function mapNode(record: CategoryRecord, children: readonly CategoryTreeNode[]): CategoryTreeNode {
@@ -68,7 +68,10 @@ function mapNode(record: CategoryRecord, children: readonly CategoryTreeNode[]):
   };
 }
 
-function buildTree(records: readonly CategoryRecord[], parentId: string | null): readonly CategoryTreeNode[] {
+function buildTree(
+  records: readonly CategoryRecord[],
+  parentId: string | null
+): readonly CategoryTreeNode[] {
   return records
     .filter((record) => record.parentId === parentId)
     .map((record) => mapNode(record, buildTree(records, record.id)));
@@ -83,7 +86,9 @@ export class CategoryService {
   ): Promise<readonly CategoryTreeNode[]> {
     const categories = await this.categoryRepository.list();
     const shouldIncludeInactive = query.includeInactive && requesterRole === "ADMIN";
-    const visibleCategories = shouldIncludeInactive ? categories : categories.filter((category) => category.isActive);
+    const visibleCategories = shouldIncludeInactive
+      ? categories
+      : categories.filter((category) => category.isActive);
 
     if (query.flat) {
       return visibleCategories.map((category) => mapNode(category, []));
@@ -113,13 +118,8 @@ export class CategoryService {
   }
 
   public async createCategory(input: CreateCategoryInput): Promise<CategoryTreeNode> {
-    const slug = normalizeOptionalString(input.slug) ?? createSlug(input.name);
-    const existingCategory = await this.categoryRepository.findBySlug(slug);
-
-    if (existingCategory) {
-      throw new ConflictError("A category with this slug already exists");
-    }
-
+    const name = input.name.trim();
+    const slug = await createUniqueCategorySlug(this.categoryRepository, name);
     const parentId = normalizeOptionalString(input.parentId);
 
     if (parentId) {
@@ -139,7 +139,7 @@ export class CategoryService {
       description: normalizeOptionalString(input.description),
       icon: normalizeOptionalString(input.icon),
       isActive: input.isActive,
-      name: input.name.trim(),
+      name,
       parentId,
       slug,
       sortOrder: input.sortOrder
@@ -156,14 +156,14 @@ export class CategoryService {
     }
 
     const nextName = input.name?.trim() ?? currentCategory.name;
-    const nextSlug = normalizeOptionalString(input.slug) ?? currentCategory.slug ?? createSlug(nextName);
-    const existingSlugCategory = await this.categoryRepository.findBySlug(nextSlug);
-
-    if (existingSlugCategory && existingSlugCategory.id !== id) {
-      throw new ConflictError("A category with this slug already exists");
-    }
-
-    const nextParentId = input.parentId === undefined ? currentCategory.parentId : normalizeOptionalString(input.parentId);
+    const shouldRegenerateSlug = input.name !== undefined || !currentCategory.slug;
+    const nextSlug = shouldRegenerateSlug
+      ? await createUniqueCategorySlug(this.categoryRepository, nextName, id)
+      : currentCategory.slug;
+    const nextParentId =
+      input.parentId === undefined
+        ? currentCategory.parentId
+        : normalizeOptionalString(input.parentId);
 
     if (nextParentId === id) {
       throw new ValidationError("Category cannot be its own parent", [
@@ -205,7 +205,9 @@ export class CategoryService {
 
     const updatedCategory = await this.categoryRepository.update(id, {
       description:
-        input.description === undefined ? currentCategory.description : normalizeOptionalString(input.description),
+        input.description === undefined
+          ? currentCategory.description
+          : normalizeOptionalString(input.description),
       icon: input.icon === undefined ? currentCategory.icon : normalizeOptionalString(input.icon),
       isActive: input.isActive ?? currentCategory.isActive,
       name: nextName,
@@ -244,7 +246,9 @@ export class CategoryService {
     await this.categoryRepository.delete(id);
   }
 
-  public async reorderCategories(input: ReorderCategoriesInput): Promise<readonly CategoryTreeNode[]> {
+  public async reorderCategories(
+    input: ReorderCategoriesInput
+  ): Promise<readonly CategoryTreeNode[]> {
     const allCategories = await this.categoryRepository.list();
     const categoryIds = new Set(allCategories.map((category) => category.id));
     const parentMap = new Map(allCategories.map((category) => [category.id, category.parentId]));

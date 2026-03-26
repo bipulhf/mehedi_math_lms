@@ -15,7 +15,6 @@ export const createCategorySchema = z.object({
   isActive: z.boolean().default(true),
   name: z.string().trim().min(1).max(255),
   parentId: z.string().uuid().optional().or(z.literal("")),
-  slug: z.string().trim().min(1).max(255).optional().or(z.literal("")),
   sortOrder: z.number().int().min(0).default(0)
 });
 
@@ -25,7 +24,6 @@ export const updateCategorySchema = z.object({
   isActive: z.boolean().optional(),
   name: z.string().trim().min(1).max(255).optional(),
   parentId: z.string().uuid().optional().or(z.literal("")),
-  slug: z.string().trim().min(1).max(255).optional().or(z.literal("")),
   sortOrder: z.number().int().min(0).optional()
 });
 
