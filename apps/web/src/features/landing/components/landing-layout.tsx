@@ -1,10 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Search, ShoppingCart, Bell } from "lucide-react";
+import { Search } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthSession } from "@/hooks/use-auth-session";
 
 export function LandingLayout({ children }: PropsWithChildren) {
+  const { isPending, session } = useAuthSession();
   return (
     <div className="min-h-screen bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container relative">
       {/* Fixed background pattern */}
@@ -51,30 +54,33 @@ export function LandingLayout({ children }: PropsWithChildren) {
               />
             </div>
             <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all"
-              >
-                <ShoppingCart className="size-5" />
-              </button>
-              <button
-                type="button"
-                className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all relative"
-              >
-                <Bell className="size-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
-              </button>
               <div className="h-6 w-px bg-outline-variant/30 mx-2"></div>
-              <Button
-                variant="ghost"
-                asChild
-                className="font-manrope tracking-tight text-sm font-semibold text-on-surface-variant hover:text-on-surface hover:bg-transparent"
-              >
-                <Link to="/login">Log In</Link>
-              </Button>
-              <Button variant="gradient" asChild className="font-headline">
-                <Link to="/auth/sign-up">Get Started</Link>
-              </Button>
+              {isPending ? (
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-11 w-32 rounded-2xl bg-surface-container-high" />
+                </div>
+              ) : session ? (
+                <Button variant="gradient" asChild className="font-headline rounded-2xl px-6 h-11">
+                  <Link to="/dashboard">Go to Dashboard</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    asChild
+                    className="font-manrope tracking-tight text-sm font-semibold text-on-surface-variant hover:text-on-surface hover:bg-transparent"
+                  >
+                    <Link to="/auth/sign-in">Log In</Link>
+                  </Button>
+                  <Button
+                    variant="gradient"
+                    asChild
+                    className="font-headline rounded-2xl px-6 h-11"
+                  >
+                    <Link to="/auth/sign-up">Get Started</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
