@@ -19,6 +19,7 @@ import { listMessageConversations, MESSAGES_UNREAD_EVENT } from "@/lib/api/messa
 import type { UserRole } from "@mma/shared";
 
 interface DashboardLayoutProps extends PropsWithChildren {
+  isLoading?: boolean;
   role?: UserRole;
 }
 
@@ -61,7 +62,7 @@ const dashboardNavigation = {
   ]
 } as const;
 
-export function DashboardLayout({ children, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
+export function DashboardLayout({ children, isLoading, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
   const [messageUnreadCount, setMessageUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -107,7 +108,7 @@ export function DashboardLayout({ children, role = "ADMIN" }: DashboardLayoutPro
   }, [messageUnreadCount, role]);
 
   return (
-    <AppShell title="Dashboard Atelier" description={null} navItems={navItems}>
+    <AppShell title="Dashboard Atelier" description={null} isLoading={isLoading} navItems={navItems}>
       {children}
     </AppShell>
   );

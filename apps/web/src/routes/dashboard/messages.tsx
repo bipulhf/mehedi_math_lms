@@ -3,12 +3,10 @@ import { MessageSquareText, SendHorizontal, Wifi, WifiOff } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-
-import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -153,7 +151,7 @@ function DashboardMessagesPage(): JSX.Element {
     });
   }, [conversationSearch, conversations]);
 
-  const selectedThread = selectedConversationId ? threads[selectedConversationId] ?? null : null;
+  const selectedThread = selectedConversationId ? (threads[selectedConversationId] ?? null) : null;
 
   const visibleMessages = useMemo(() => {
     const items = selectedThread?.items ?? [];
@@ -203,7 +201,10 @@ function DashboardMessagesPage(): JSX.Element {
     setIsLoadingThread(true);
 
     try {
-      const thread = await getConversationMessages(conversationId, cursor ? { cursor, limit: 30 } : { limit: 30 });
+      const thread = await getConversationMessages(
+        conversationId,
+        cursor ? { cursor, limit: 30 } : { limit: 30 }
+      );
 
       setThreads((current) => {
         if (!cursor) {
@@ -420,7 +421,9 @@ function DashboardMessagesPage(): JSX.Element {
                   },
                   lastMessageAt: payload.data.createdAt,
                   unreadCount:
-                    selectedConversationId === payload.conversationId ? 0 : conversation.unreadCount + 1,
+                    selectedConversationId === payload.conversationId
+                      ? 0
+                      : conversation.unreadCount + 1,
                   updatedAt: payload.data.createdAt
                 }
               : conversation
@@ -460,7 +463,10 @@ function DashboardMessagesPage(): JSX.Element {
                 senderId: payload.data.senderId
               },
               lastMessageAt: payload.data.createdAt,
-              unreadCount: selectedConversationId === payload.conversationId ? 0 : existing.conversation.unreadCount + 1,
+              unreadCount:
+                selectedConversationId === payload.conversationId
+                  ? 0
+                  : existing.conversation.unreadCount + 1,
               updatedAt: payload.data.createdAt
             },
             items: existing.items.some((message) => message.id === payload.data.id)
@@ -591,7 +597,9 @@ function DashboardMessagesPage(): JSX.Element {
                 }
               : conversation
           )
-        ].sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime())
+        ].sort(
+          (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+        )
       );
       setComposerValue("");
       sendTypingEvent("typing:stop");
@@ -601,31 +609,78 @@ function DashboardMessagesPage(): JSX.Element {
   };
 
   if (isSessionPending || isLoadingConversations) {
-    return <DataTableSkeleton columns={3} rows={6} />;
+    return (
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[24rem_minmax(0,1fr)] h-[calc(100vh-8rem)]">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative flex flex-col overflow-hidden">
+          <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-outline-variant/20">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <Skeleton className="h-8 w-24 mb-2 bg-surface-container-highest" />
+                <Skeleton className="h-3 w-48 bg-surface-container-highest" />
+              </div>
+            </div>
+            <Skeleton className="rounded-2xl h-12 w-full bg-surface-container-high" />
+            <div className="space-y-3 rounded-3xl bg-surface-container-low/40 border border-outline-variant/20 p-4 shadow-inner">
+              <Skeleton className="h-3 w-20 mb-2 bg-surface-container-high" />
+              <Skeleton className="h-10 w-full rounded-xl bg-surface-container-high" />
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full rounded-3xl bg-surface-container-high" />
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative flex flex-col overflow-hidden">
+          <div className="p-8 sm:p-12 space-y-4 border-b border-outline-variant/20 shrink-0 bg-surface-container-lowest/50">
+            <Skeleton className="h-8 w-64 bg-surface-container-highest" />
+            <Skeleton className="h-4 w-48 bg-surface-container-highest" />
+          </div>
+          <div className="flex-1 flex flex-col p-6 sm:p-12 items-center justify-center">
+            <Skeleton className="w-[80%] max-w-lg h-64 rounded-4xl bg-surface-container-highest" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!session || !canUseMessaging) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Messaging unavailable</CardTitle>
-          <CardDescription>This workspace is reserved for teacher-student conversations.</CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors z-[-1]"></div>
+        <div className="mb-4">
+          <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+            Messaging unavailable
+          </h3>
+          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+            This workspace is reserved for teacher-student conversations.
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[20rem_minmax(0,1fr)]">
-      <Card className="overflow-hidden">
-        <CardHeader className="space-y-4">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[24rem_minmax(0,1fr)] h-[calc(100vh-8rem)]">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative flex flex-col overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors z-[-1]"></div>
+        <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-outline-variant/20">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <CardTitle>Inbox</CardTitle>
-              <CardDescription>Quiet, direct conversations with live delivery and read states.</CardDescription>
+              <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+                Inbox
+              </h3>
+              <p className="mt-2 text-xs text-on-surface-variant font-light leading-relaxed">
+                Quiet, direct conversations with live delivery and read states.
+              </p>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-2 text-xs text-on-surface/68">
-              {isSocketConnected ? <Wifi className="size-3.5 text-emerald-600" /> : <WifiOff className="size-3.5 text-rose-600" />}
+            <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-low/50 border border-outline-variant/20 px-3 py-2 text-xs text-on-surface/68 shadow-inner">
+              {isSocketConnected ? (
+                <Wifi className="size-3.5 text-emerald-600" />
+              ) : (
+                <WifiOff className="size-3.5 text-rose-600" />
+              )}
               <span>{isSocketConnected ? "Live" : "Offline"}</span>
             </div>
           </div>
@@ -633,13 +688,17 @@ function DashboardMessagesPage(): JSX.Element {
             placeholder="Search conversations"
             value={conversationSearch}
             onChange={(event) => setConversationSearch(event.target.value)}
+            className="rounded-2xl h-12 bg-surface-container-low/50 border-outline-variant/30"
           />
-          <div className="space-y-2 rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-on-surface/54">Start new</p>
+          <div className="space-y-3 rounded-3xl bg-surface-container-low/40 border border-outline-variant/20 p-4 shadow-inner">
+            <p className="text-xs font-bold uppercase tracking-widest text-on-surface/54">
+              Start new
+            </p>
             <Input
               placeholder={currentUserRole === "STUDENT" ? "Find a teacher" : "Find a student"}
               value={participantSearch}
               onChange={(event) => setParticipantSearch(event.target.value)}
+              className="rounded-xl h-10 bg-surface border-outline-variant/30"
             />
             {participantResults.length > 0 ? (
               <div className="space-y-2">
@@ -647,7 +706,7 @@ function DashboardMessagesPage(): JSX.Element {
                   <button
                     key={participant.id}
                     type="button"
-                    className="flex w-full items-center justify-between rounded-[calc(var(--radius)-0.25rem)] bg-surface px-3 py-3 text-left transition-colors hover:bg-surface-container-highest"
+                    className="flex w-full items-center justify-between rounded-2xl bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-container-highest shadow-sm border border-outline-variant/10"
                     onClick={() => void handleStartConversation(participant.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -656,7 +715,9 @@ function DashboardMessagesPage(): JSX.Element {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-on-surface">{participant.name}</p>
-                        <p className="text-xs text-on-surface/60">{participant.isOnline ? "Online now" : "Offline"}</p>
+                        <p className="text-xs text-on-surface/60">
+                          {participant.isOnline ? "Online now" : "Offline"}
+                        </p>
                       </div>
                     </div>
                     <Badge tone={roleTone(participant.role)}>{participant.role}</Badge>
@@ -665,25 +726,27 @@ function DashboardMessagesPage(): JSX.Element {
               </div>
             ) : null}
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {filteredConversations.length > 0 ? (
             filteredConversations.map((conversation) => (
               <button
                 key={conversation.id}
                 type="button"
                 className={cn(
-                  "w-full rounded-[calc(var(--radius)-0.125rem)] px-3 py-3 text-left transition-all duration-150 ease-out",
+                  "w-full rounded-3xl px-4 py-4 text-left transition-all duration-300 ease-out border",
                   selectedConversationId === conversation.id
-                    ? "bg-surface-container-highest shadow-[0_12px_30px_-22px_rgba(19,27,46,0.28)]"
-                    : "bg-surface-container-low hover:bg-surface-container-highest"
+                    ? "bg-surface border-outline-variant/40 shadow-md ring-1 ring-primary/10"
+                    : "bg-surface-container-lowest/50 border-transparent hover:bg-surface-container-low/80 hover:border-outline-variant/20 hover:shadow-sm"
                 )}
                 onClick={() => setSelectedConversationId(conversation.id)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate font-semibold text-on-surface">{conversation.user.name}</span>
+                      <span className="truncate font-semibold text-on-surface">
+                        {conversation.user.name}
+                      </span>
                       <span
                         className={cn(
                           "size-2 rounded-full",
@@ -701,31 +764,35 @@ function DashboardMessagesPage(): JSX.Element {
                         {new Date(conversation.lastMessageAt).toLocaleDateString()}
                       </span>
                     ) : null}
-                    {conversation.unreadCount > 0 ? <Badge tone="violet">{conversation.unreadCount}</Badge> : null}
+                    {conversation.unreadCount > 0 ? (
+                      <Badge tone="violet">{conversation.unreadCount}</Badge>
+                    ) : null}
                   </div>
                 </div>
               </button>
             ))
           ) : (
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+            <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/20 p-6 text-sm leading-7 text-on-surface-variant font-light text-center">
               No conversations yet. Start a teacher-student chat from the search panel above.
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="min-h-168">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative flex flex-col overflow-hidden">
         {selectedThread ? (
           <>
-            <CardHeader className="space-y-4 border-b border-outline-variant/60">
+            <div className="p-6 sm:px-8 space-y-4 border-b border-outline-variant/20 shrink-0 bg-surface-container-lowest/50 backdrop-blur-md z-10">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-12 items-center justify-center rounded-full bg-surface-container-highest text-sm font-semibold text-on-surface">
+                  <div className="flex items-center gap-4">
+                    <div className="flex size-14 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-inner text-sm font-headline font-bold text-primary">
                       {initials(selectedThread.conversation.user.name)}
                     </div>
                     <div>
-                      <CardTitle>{selectedThread.conversation.user.name}</CardTitle>
+                      <h3 className="font-headline text-xl font-extrabold text-on-surface">
+                        {selectedThread.conversation.user.name}
+                      </h3>
                       <div className="mt-1 flex items-center gap-2">
                         <Badge tone={roleTone(selectedThread.conversation.user.role)}>
                           {selectedThread.conversation.user.role}
@@ -747,11 +814,12 @@ function DashboardMessagesPage(): JSX.Element {
                     placeholder="Search messages"
                     value={messageSearch}
                     onChange={(event) => setMessageSearch(event.target.value)}
+                    className="rounded-2xl h-11 bg-surface-container-low/50 border-outline-variant/30"
                   />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4">
+            </div>
+            <div className="flex-1 flex flex-col p-6 sm:px-8 overflow-hidden">
               {selectedThread.nextCursor ? (
                 <Button
                   type="button"
@@ -769,22 +837,22 @@ function DashboardMessagesPage(): JSX.Element {
 
               <div
                 ref={messagesViewportRef}
-                className="flex max-h-128 flex-col gap-3 overflow-y-auto rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4"
+                className="flex-1 flex flex-col gap-4 overflow-y-auto rounded-3xl bg-surface-container-low/30 border border-outline-variant/10 p-6 scroll-smooth"
               >
                 {isLoadingThread ? (
-                  <div className="space-y-3">
-                    <div className="h-20 rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest/60" />
-                    <div className="ml-auto h-20 w-3/4 rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest/60" />
+                  <div className="space-y-4">
+                    <div className="h-20 rounded-2xl bg-surface-container-highest/40 w-2/3" />
+                    <div className="ml-auto h-20 w-3/4 rounded-2xl bg-surface-container-highest/40" />
                   </div>
                 ) : visibleMessages.length > 0 ? (
                   visibleMessages.map((message) => (
                     <div
                       key={message.id}
                       className={cn(
-                        "max-w-[88%] rounded-[calc(var(--radius)-0.125rem)] px-4 py-3 shadow-[0_10px_24px_-20px_rgba(19,27,46,0.28)]",
+                        "max-w-[85%] rounded-3xl px-5 py-4 shadow-sm border",
                         message.isOwn
-                          ? "ml-auto bg-secondary-container text-surface"
-                          : "bg-surface text-on-surface"
+                          ? "ml-auto bg-primary text-primary-foreground border-primary/20 rounded-tr-sm"
+                          : "bg-surface text-on-surface border-outline-variant/20 rounded-tl-sm"
                       )}
                     >
                       <div className="space-y-2">
@@ -796,54 +864,75 @@ function DashboardMessagesPage(): JSX.Element {
                           )}
                         >
                           <span>{formatTimestamp(message.createdAt)}</span>
-                          <span>{message.isOwn ? (message.readAt ? "Seen" : "Sent") : message.sender.name}</span>
+                          <span>
+                            {message.isOwn
+                              ? message.readAt
+                                ? "Seen"
+                                : "Sent"
+                              : message.sender.name}
+                          </span>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface p-4 text-sm leading-7 text-on-surface/68">
+                  <div className="rounded-2xl bg-surface-container-low/50 border border-outline-variant/20 p-6 text-sm leading-7 text-on-surface-variant font-light text-center">
                     No messages match the current filter.
                   </div>
                 )}
               </div>
 
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
+              <div className="rounded-4xl bg-surface-container-low/50 border border-outline-variant/20 p-4 mt-6 shrink-0 shadow-inner">
                 <Textarea
-                  placeholder="Write a message"
-                  className="min-h-28 bg-surface"
+                  placeholder="Write a message..."
+                  className="min-h-24 bg-surface border-transparent focus-visible:ring-0 resize-none text-base rounded-3xl p-4 shadow-sm"
                   value={composerValue}
                   onChange={(event) => handleComposerChange(event.target.value)}
                 />
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="text-sm text-on-surface/58">Messages are permanent and cannot be deleted.</p>
-                  <Button type="button" disabled={isSending || composerValue.trim().length === 0} onClick={() => void handleSend()}>
+                <div className="mt-4 flex items-center justify-between gap-3 px-2">
+                  <p className="text-xs text-on-surface-variant font-light">
+                    Messages are permanent and cannot be deleted.
+                  </p>
+                  <Button
+                    type="button"
+                    className="rounded-full px-6 h-12 font-headline font-semibold shadow-md transition-transform hover:scale-105"
+                    disabled={isSending || composerValue.trim().length === 0}
+                    onClick={() => void handleSend()}
+                  >
                     <SendHorizontal className="mr-2 size-4" />
                     Send
                   </Button>
                 </div>
               </div>
-            </CardContent>
+            </div>
           </>
         ) : (
           <>
-            <CardHeader>
-              <CardTitle>Conversation workspace</CardTitle>
-              <CardDescription>Select a thread or start a new one to begin messaging.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex min-h-80 flex-col items-center justify-center rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-6 text-center">
-                <MessageSquareText className="size-10 text-on-surface/40" />
-                <p className="mt-4 text-lg font-semibold text-on-surface">No conversation selected</p>
-                <p className="mt-2 max-w-md text-sm leading-7 text-on-surface/62">
-                  Search for a {currentUserRole === "STUDENT" ? "teacher" : "student"} on the left to start a direct
-                  conversation.
+            <div className="p-8 sm:p-12 space-y-4 border-b border-outline-variant/20 shrink-0 bg-surface-container-lowest/50">
+              <h3 className="font-headline text-2xl font-extrabold text-on-surface">
+                Conversation workspace
+              </h3>
+              <p className="text-sm text-on-surface-variant font-light">
+                Select a thread or start a new one to begin messaging.
+              </p>
+            </div>
+            <div className="flex-1 flex flex-col p-6 sm:p-12 items-center justify-center">
+              <div className="flex flex-col items-center justify-center rounded-4xl bg-surface-container-low/30 border border-outline-variant/10 p-12 text-center max-w-lg w-full shadow-inner">
+                <div className="w-20 h-20 rounded-full bg-surface-container-highest flex items-center justify-center mb-6 shadow-md border border-outline-variant/20 text-on-surface/60">
+                  <MessageSquareText className="size-8" />
+                </div>
+                <h4 className="font-headline text-xl font-bold text-on-surface">
+                  No conversation selected
+                </h4>
+                <p className="mt-3 text-sm leading-relaxed text-on-surface-variant font-light">
+                  Search for a {currentUserRole === "STUDENT" ? "teacher" : "student"} on the left
+                  to start a direct conversation.
                 </p>
               </div>
-            </CardContent>
+            </div>
           </>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

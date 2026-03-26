@@ -3,11 +3,10 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -87,60 +86,79 @@ function PaymentsPage(): JSX.Element {
   };
 
   if (isLoading) {
-    return <DataTableSkeleton columns={canManagePayments ? 6 : 5} rows={6} />;
+    return (
+      <div className="space-y-6">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
+           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest" />
+        </div>
+        {canManagePayments && (
+          <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden">
+                <Skeleton className="h-4 w-24 mb-3 bg-surface-container-highest" />
+                <Skeleton className="h-9 w-32 bg-surface-container-highest" />
+              </div>
+            ))}
+          </section>
+        )}
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+           <div className="p-0">
+             <div className="bg-surface-container-low h-12 w-full" />
+             <div className="p-4 space-y-4">
+               {Array.from({ length: 6 }).map((_, i) => (
+                 <Skeleton key={i} className="h-16 w-full rounded-2xl bg-surface-container-high" />
+               ))}
+             </div>
+           </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{canManagePayments ? "Payment operations" : "Payment history"}</CardTitle>
-          <CardDescription>
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+        <div className="mb-0">
+          <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+            {canManagePayments ? "Payment operations" : "Payment history"}
+          </h3>
+          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
             {canManagePayments
               ? "Track revenue, review transactions, and handle refunds from the accounting surface."
               : "Review your tuition payments, gateway outcomes, and enrollment transaction timeline."}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+          </p>
+        </div>
+      </div>
 
       {canManagePayments && stats ? (
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-on-surface/62">Total revenue</p>
-              <p className="mt-2 text-3xl font-semibold text-on-surface">BDT {stats.totalRevenue.toFixed(2)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-on-surface/62">Successful payments</p>
-              <p className="mt-2 text-3xl font-semibold text-on-surface">{stats.successfulPayments}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-on-surface/62">Pending payments</p>
-              <p className="mt-2 text-3xl font-semibold text-on-surface">{stats.pendingPayments}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-on-surface/62">Refunded value</p>
-              <p className="mt-2 text-3xl font-semibold text-on-surface">BDT {stats.refundedRevenue.toFixed(2)}</p>
-            </CardContent>
-          </Card>
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            { label: "Total revenue", value: `BDT ${stats.totalRevenue.toFixed(2)}` },
+            { label: "Successful payments", value: stats.successfulPayments },
+            { label: "Pending payments", value: stats.pendingPayments },
+            { label: "Refunded value", value: `BDT ${stats.refundedRevenue.toFixed(2)}` }
+          ].map((stat, i) => (
+            <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden group">
+              <div className="absolute -top-8 -right-8 w-32 h-32 bg-secondary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-secondary/10 transition-colors z-[-1]"></div>
+              <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/54">{stat.label}</p>
+              <p className="mt-2 text-2xl font-headline font-extrabold text-on-surface">{stat.value}</p>
+            </div>
+          ))}
         </section>
       ) : null}
 
       {canManagePayments ? (
-        <Card>
-          <CardContent className="grid gap-4 p-6 md:grid-cols-[0.5fr]">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+          <div className="grid gap-4 md:grid-cols-[0.4fr]">
             <div className="space-y-2">
-              <Label htmlFor="payment-status-filter">Status</Label>
+              <Label htmlFor="payment-status-filter" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Filter by Status</Label>
               <Select
                 id="payment-status-filter"
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
+                className="bg-surface-container-low/50 rounded-2xl border-outline-variant/30"
               >
                 <option value="">All statuses</option>
                 <option value="PENDING">Pending</option>
@@ -149,61 +167,66 @@ function PaymentsPage(): JSX.Element {
                 <option value="REFUNDED">Refunded</option>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : null}
 
-      <Card>
-        <CardContent className="p-0">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+        <div className="p-0">
           {items.length === 0 ? (
-            <div className="p-6 text-sm leading-7 text-on-surface/68">No payments found for the current view.</div>
+            <div className="p-10 text-center text-sm leading-7 text-on-surface-variant font-light italic">
+              No payments found for the current view.
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-surface-container-low text-on-surface/68">
+                <thead className="bg-surface-container-low/50 text-on-surface/54">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Course</th>
-                    {canManagePayments ? <th className="px-4 py-3 font-medium">Student</th> : null}
-                    <th className="px-4 py-3 font-medium">Amount</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Transaction</th>
-                    <th className="px-4 py-3 font-medium">Created</th>
-                    {canManagePayments ? <th className="px-4 py-3 font-medium">Action</th> : null}
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Course</th>
+                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Student</th> : null}
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Amount</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Status</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Transaction</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Created</th>
+                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Action</th> : null}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-outline-variant/20">
                   {items.map((item) => (
-                    <tr key={item.id} className="border-t border-outline-variant align-top">
-                      <td className="px-4 py-4">
+                    <tr key={item.id} className="align-top group/row hover:bg-surface-container-low/30 transition-colors">
+                      <td className="px-6 py-5">
                         <div className="space-y-1">
-                          <p className="font-medium text-on-surface">{item.course.title}</p>
-                          <p className="text-xs text-on-surface/54">{item.course.id}</p>
+                          <p className="font-headline font-bold text-on-surface group-hover/row:text-primary transition-colors">{item.course.title}</p>
+                          <p className="text-[0.65rem] font-mono text-on-surface-variant bg-surface-container-low/50 px-2 py-0.5 rounded-md inline-block">{item.course.id}</p>
                         </div>
                       </td>
                       {canManagePayments ? (
-                        <td className="px-4 py-4">
+                        <td className="px-6 py-5">
                           <div className="space-y-1">
-                            <p className="font-medium text-on-surface">{item.user?.name ?? "Unknown"}</p>
-                            <p className="text-xs text-on-surface/54">{item.user?.email ?? "Unknown"}</p>
+                            <p className="font-semibold text-on-surface">{item.user?.name ?? "Unknown"}</p>
+                            <p className="text-xs text-on-surface-variant/70 font-light">{item.user?.email ?? "Unknown"}</p>
                           </div>
                         </td>
                       ) : null}
-                      <td className="px-4 py-4 text-on-surface">BDT {Number(item.amount).toFixed(2)}</td>
-                      <td className="px-4 py-4">
-                        <Badge tone={paymentTone(item.status)}>{item.status}</Badge>
+                      <td className="px-6 py-5 font-headline font-extrabold text-on-surface">
+                         <span className="text-[0.7rem] text-on-surface-variant mr-1">BDT</span>
+                         {Number(item.amount).toFixed(2)}
                       </td>
-                      <td className="px-4 py-4 text-xs text-on-surface/62">{item.transactionId}</td>
-                      <td className="px-4 py-4 text-on-surface/62">
-                        {new Date(item.createdAt).toLocaleString()}
+                      <td className="px-6 py-5">
+                        <Badge tone={paymentTone(item.status)} className="rounded-full px-3">{item.status}</Badge>
+                      </td>
+                      <td className="px-6 py-5 text-[0.7rem] font-mono text-on-surface-variant opacity-70">{item.transactionId}</td>
+                      <td className="px-6 py-5 text-xs text-on-surface-variant font-light">
+                        {new Date(item.createdAt).toLocaleString("en-GB", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </td>
                       {canManagePayments ? (
-                        <td className="px-4 py-4">
+                        <td className="px-6 py-5">
                           {item.status === "SUCCESS" ? (
-                            <Button size="sm" variant="outline" onClick={() => void handleRefund(item.id)}>
+                            <Button size="sm" variant="outline" className="rounded-xl font-headline font-semibold px-4 h-9 border-outline-variant/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>
                               Refund
                             </Button>
                           ) : (
-                            <span className="text-xs text-on-surface/54">No action</span>
+                            <span className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/30">N/A</span>
                           )}
                         </td>
                       ) : null}
@@ -213,8 +236,8 @@ function PaymentsPage(): JSX.Element {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

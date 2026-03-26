@@ -149,7 +149,6 @@ export function NotificationBell(): JSX.Element | null {
     setOpen((current) => !current);
   };
 
-
   const handleMarkAll = async (): Promise<void> => {
     await markAllNotificationsRead();
     await refreshUnread();
@@ -196,7 +195,12 @@ export function NotificationBell(): JSX.Element | null {
         >
           <div className="flex items-center justify-between gap-2 border-b border-outline-variant/50 pb-3">
             <p className="text-sm font-semibold text-on-surface">Notifications</p>
-            <Button type="button" variant="outline" className="h-8 text-xs" onClick={() => void handleMarkAll()}>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-8 text-xs"
+              onClick={() => void handleMarkAll()}
+            >
               Mark all read
             </Button>
           </div>
@@ -218,7 +222,9 @@ export function NotificationBell(): JSX.Element | null {
                   onClick={() => void handleItemClick(record)}
                 >
                   <p className="text-sm font-semibold text-on-surface">{record.title}</p>
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface/62">{record.body}</p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface/62">
+                    {record.body}
+                  </p>
                   <p className="mt-2 text-[0.65rem] text-on-surface/45">{record.type}</p>
                 </button>
               ))

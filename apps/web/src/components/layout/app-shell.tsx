@@ -1,9 +1,12 @@
-import { Link } from "@tanstack/react-router";
-import { BookOpen, MessageSquareText, type LucideIcon } from "lucide-react";
-import type { JSX, PropsWithChildren } from "react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, LogOut, MessageSquareText, type LucideIcon } from "lucide-react";
+import { useState, type JSX, type PropsWithChildren } from "react";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { authClient } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 export interface AppShellNavItem {
   badge?: number | undefined;
@@ -14,11 +17,30 @@ export interface AppShellNavItem {
 
 interface AppShellProps extends PropsWithChildren {
   description: string | null;
+  isLoading?: boolean | undefined;
   navItems: readonly AppShellNavItem[];
   title: string;
 }
 
-export function AppShell({ children, description, navItems, title }: AppShellProps): JSX.Element {
+export function AppShell({ children, isLoading, navItems, title }: AppShellProps): JSX.Element {
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async (): Promise<void> => {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+
+    try {
+      await authClient.signOut();
+      await router.navigate({ to: "/auth/sign-in" });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container relative flex flex-col overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       {/* Background patterns and glowing orbs */}
@@ -36,50 +58,46 @@ export function AppShell({ children, description, navItems, title }: AppShellPro
           <div className="mb-10 space-y-4 px-2 pt-2">
             <div>
               <p className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
-                {title}
-              </p>
-              <p className="mt-1 max-w-[24ch] text-sm leading-6 text-on-surface-variant font-light">
-                {description}
+                Mehedi&apos;s Math Academy
               </p>
             </div>
           </div>
 
           <nav className="space-y-2 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            {navItems.map((item) => {
-              const Icon = item.icon;
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex h-12 items-center gap-3 rounded-2xl px-4 py-3">
+                  <Skeleton className="size-5 rounded bg-surface-container-highest" />
+                  <Skeleton className="h-4 w-24 bg-surface-container-highest" />
+                </div>
+              ))
+            ) : (
+              navItems.map((item) => {
+                const Icon = item.icon;
 
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className="group flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-on-surface/68 transition-all duration-300 ease-out hover:bg-surface-container-high hover:text-on-surface [&.active]:bg-primary [&.active]:text-white [&.active]:shadow-md [&.active]:hover:bg-primary"
-                  activeProps={{ className: "active" }}
-                  activeOptions={{ exact: item.to === "/dashboard" }}
-                >
-                  <Icon className="size-5 transition-transform group-hover:scale-110" />
-                  <span>{item.label}</span>
-                  {item.badge && item.badge > 0 ? (
-                    <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-surface-container-highest px-2 py-1 text-[0.65rem] font-bold text-on-surface group-[.active]:bg-white/20 group-[.active]:text-white">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className="group flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-on-surface/68 transition-all duration-300 ease-out hover:bg-surface-container-high hover:text-on-surface [&.active]:bg-primary [&.active]:text-white [&.active]:shadow-md [&.active]:hover:bg-primary"
+                    activeProps={{ className: "active" }}
+                    activeOptions={{ exact: item.to === "/dashboard" }}
+                  >
+                    <Icon className="size-5 transition-transform group-hover:scale-110" />
+                    <span>{item.label}</span>
+                    {item.badge && item.badge > 0 ? (
+                      <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-surface-container-highest px-2 py-1 text-[0.65rem] font-bold text-on-surface group-[.active]:bg-white/20 group-[.active]:text-white">
+                        {item.badge}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })
+            )}
           </nav>
-
-          <div className="mt-8 rounded-3xl bg-linear-to-br from-surface-container-low/50 to-surface-container-lowest p-5 border border-outline-variant/30 relative overflow-hidden shadow-sm">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/10 rounded-full blur-xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
-            <div className="flex items-center gap-3 relative z-10">
-              <BookOpen className="size-5 text-secondary" />
-              <p className="text-sm font-headline font-semibold text-on-surface">
-                Academic Atelier
-              </p>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-on-surface-variant font-light relative z-10">
-              Your frictionless environment for mastery and deep work.
-            </p>
-          </div>
+          <Button variant={"outline"} onClick={() => router.navigate({ to: "/courses" })}>
+            <ArrowLeft /> Courses Page
+          </Button>
         </aside>
 
         <div className="space-y-6 flex flex-col">
@@ -97,6 +115,15 @@ export function AppShell({ children, description, navItems, title }: AppShellPro
                 >
                   <MessageSquareText className="size-5" />
                 </Link>
+                <Button
+                  type="button"
+                  onClick={() => void handleSignOut()}
+                  disabled={isSigningOut}
+                  className="inline-flex size-12 items-center justify-center rounded-2xl bg-surface-container-lowest border border-outline-variant/30 text-on-surface transition-all duration-300 hover:bg-surface-container-high hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                  aria-label="Log out"
+                >
+                  <LogOut className="size-5" />
+                </Button>
               </div>
             </div>
           </header>

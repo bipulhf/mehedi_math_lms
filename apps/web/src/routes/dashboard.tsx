@@ -35,7 +35,7 @@ function DashboardRoute(): JSX.Element {
 
   if (isPending || !session) {
     return (
-      <DashboardLayout>
+      <DashboardLayout isLoading={isPending}>
         <ProfilePageSkeleton />
       </DashboardLayout>
     );
