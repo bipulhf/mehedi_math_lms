@@ -340,6 +340,15 @@ export function StudentProfileForm({
     }
   };
 
+  const handleStudentFormSubmit = handleSubmit(async (values) => {
+    if (step < studentSteps.length - 1) {
+      await onNext();
+      return;
+    }
+
+    await onSubmit(values);
+  });
+
   return (
     <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
       <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
@@ -349,7 +358,7 @@ export function StudentProfileForm({
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={studentSteps} />
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleStudentFormSubmit}>
           <StudentStepFields
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}
@@ -424,6 +433,15 @@ export function TeacherProfileForm({
     }
   };
 
+  const handleTeacherFormSubmit = handleSubmit(async (values) => {
+    if (step < teacherSteps.length - 1) {
+      await onNext();
+      return;
+    }
+
+    await onSubmit(values);
+  });
+
   return (
     <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
       <div className="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-secondary/10 duration-1000"></div>
@@ -433,7 +451,7 @@ export function TeacherProfileForm({
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={teacherSteps} />
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleTeacherFormSubmit}>
           <TeacherStepFields
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}

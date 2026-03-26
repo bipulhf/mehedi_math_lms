@@ -84,16 +84,13 @@ function AdminAnalyticsPage(): JSX.Element {
 
   if (isPending || session?.session.role !== "ADMIN" || (isLoading && !data)) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
-        </div>
+      <div className="space-y-8 animate-in fade-in duration-700">
+        <Skeleton className="h-48 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
         <div className="grid gap-6 xl:grid-cols-2">
-           <Skeleton className="h-[400px] w-full bg-surface-container-highest rounded-4xl" />
-           <Skeleton className="h-[400px] w-full bg-surface-container-highest rounded-4xl" />
+           <Skeleton className="h-100 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
+           <Skeleton className="h-100 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
         </div>
-        <Skeleton className="h-[300px] w-full bg-surface-container-highest rounded-4xl" />
+        <Skeleton className="h-75 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
       </div>
     );
   }
@@ -106,14 +103,15 @@ function AdminAnalyticsPage(): JSX.Element {
     <div className="space-y-8">
       <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
-        <div className="flex items-center gap-6">
-          <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 text-primary shadow-sm relative overflow-hidden group/icon">
-            <Activity className="size-8 relative z-10 animate-pulse" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          <div className="flex size-16 shrink-0 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 text-primary shadow-inner relative overflow-hidden group/icon">
+             <div className="absolute inset-0 bg-primary/5 animate-pulse" />
+             <Activity className="size-8 relative z-10" />
           </div>
-          <div>
-            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Academic Analytics</h3>
-            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-              Real-time intelligence on enrollment velocity, fiscal performance, and scholarly engagement across the platform.
+          <div className="space-y-2">
+            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Platform Intelligence</h3>
+            <p className="text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed italic">
+              Macroscopic insights into the academic ecosystem — monitoring enrollment velocity, fiscal trends, and demographic cohorts.
             </p>
           </div>
         </div>
@@ -130,7 +128,7 @@ function AdminAnalyticsPage(): JSX.Element {
               <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly Trend</p>
             </div>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
                 <defs>
@@ -161,7 +159,7 @@ function AdminAnalyticsPage(): JSX.Element {
               <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly totals</p>
             </div>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
                 <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" vertical={false} opacity={0.5} />
@@ -229,7 +227,7 @@ function AdminAnalyticsPage(): JSX.Element {
             <p className="text-sm text-on-surface-variant font-light opacity-60">Demographic cohorts organized by academic grade.</p>
           </div>
         </div>
-        <div className="p-8 sm:p-10 h-[400px]">
+        <div className="p-8 sm:p-10 h-100">
           {data.demographics.length === 0 ? (
             <div className="h-full flex items-center justify-center opacity-40 font-light italic font-headline">No demographic data in the repository.</div>
           ) : (

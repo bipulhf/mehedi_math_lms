@@ -1,8 +1,24 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import {
+  Search,
+  UserPlus,
+  Trash2,
+  UserCheck,
+  UserX,
+  Eye,
+  Calendar,
+  Mail,
+  Shield,
+  Fingerprint,
+  Loader2,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createAdminUserSchema } from "@mma/shared";
+
 import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -27,18 +43,9 @@ export const Route = createFileRoute("/dashboard/admin/users" as never)({
 } as never);
 
 function roleTone(role: AdminUserListItem["role"]): "blue" | "gray" | "green" | "violet" {
-  if (role === "ADMIN") {
-    return "violet";
-  }
-
-  if (role === "TEACHER") {
-    return "blue";
-  }
-
-  if (role === "ACCOUNTANT") {
-    return "gray";
-  }
-
+  if (role === "ADMIN") return "violet";
+  if (role === "TEACHER") return "blue";
+  if (role === "ACCOUNTANT") return "gray";
   return "green";
 }
 
@@ -53,12 +60,9 @@ function AdminUsersPage(): JSX.Element {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+
   const form = useZodForm<CreateAdminUserInput>({
-    defaultValues: {
-      email: "",
-      name: "",
-      role: "TEACHER"
-    },
+    defaultValues: { email: "", name: "", role: "TEACHER" },
     schema: createAdminUserSchema
   });
   const {
@@ -70,7 +74,6 @@ function AdminUsersPage(): JSX.Element {
 
   const loadUsers = async (): Promise<void> => {
     setIsLoading(true);
-
     try {
       const response = await listAdminUsers({
         limit: 10,
@@ -79,7 +82,6 @@ function AdminUsersPage(): JSX.Element {
         search,
         status
       });
-
       setUsers(response.data);
       setTotalPages(response.pagination.pages);
     } finally {
@@ -93,7 +95,6 @@ function AdminUsersPage(): JSX.Element {
 
   const onCreate = handleSubmit(async (values) => {
     setIsSubmitting(true);
-
     try {
       const createdUser = await createAdminUser(values);
       setCreatedPassword(createdUser.temporaryPassword);
@@ -107,22 +108,19 @@ function AdminUsersPage(): JSX.Element {
 
   const handleStatusToggle = async (user: AdminUserListItem): Promise<void> => {
     const nextStatus = !user.isActive;
-    const actionLabel = nextStatus ? "activate" : "deactivate";
-
-    if (!window.confirm(`Are you sure you want to ${actionLabel} ${user.name}?`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to ${nextStatus ? "activate" : "deactivate"} ${user.name}?`
+      )
+    )
       return;
-    }
-
     await updateAdminUserStatus(user.id, { isActive: nextStatus });
     toast.success(`User ${nextStatus ? "activated" : "deactivated"}`);
     await loadUsers();
   };
 
   const handleDelete = async (user: AdminUserListItem): Promise<void> => {
-    if (!window.confirm(`Soft delete ${user.name}? This will disable access.`)) {
-      return;
-    }
-
+    if (!window.confirm(`Soft delete ${user.name}? This will disable access.`)) return;
     await deleteAdminUser(user.id);
     toast.success("User deleted");
     await loadUsers();
@@ -130,24 +128,19 @@ function AdminUsersPage(): JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
-          <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-          <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
-          <div className="grid gap-6 lg:grid-cols-4">
+      <div className="space-y-8 p-4 sm:p-0">
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl w-full overflow-hidden">
+          <Skeleton className="h-8 w-48 mb-8 bg-surface-container-highest" />
+          <div className="grid gap-6 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-3 w-16 bg-surface-container-highest" />
-                <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
-              </div>
+              <Skeleton key={i} className="h-12 w-full bg-surface-container-highest rounded-2xl" />
             ))}
           </div>
         </div>
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative overflow-hidden">
-          <Skeleton className="h-8 w-48 mb-6 bg-surface-container-highest" />
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-4 border border-outline-variant/40 shadow-xl overflow-hidden">
           <div className="space-y-4">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full bg-surface-container-highest rounded-2xl" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full bg-surface-container-highest rounded-2xl" />
             ))}
           </div>
         </div>
@@ -156,304 +149,457 @@ function AdminUsersPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
-        <div className="mb-8">
-          <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
-            Account management
-          </h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-            Create teacher and accountant accounts, control access, and inspect user state from one
-            surface.
-          </p>
+    <div className="space-y-8 animate-in fade-in duration-700 p-4 sm:p-0">
+      {/* Creation Surface */}
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-all duration-1000 z-[-1]" />
+
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <UserPlus className="size-5" />
+              </div>
+              <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+                Staff Access Control
+              </h3>
+            </div>
+            <p className="text-sm text-on-surface-variant font-light max-w-xl leading-relaxed">
+              Onboard new academic or operational staff. Temporary credentials will be generated
+              securely.
+            </p>
+          </div>
         </div>
 
         <form
-          className="grid gap-6 lg:grid-cols-[1.2fr_1.2fr_0.8fr_auto] items-start"
+          className="grid gap-6 lg:grid-cols-[1.2fr_1.2fr_1fr_auto] items-start"
           onSubmit={onCreate}
         >
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label
               htmlFor="create-name"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 ml-1"
             >
-              Name
+              Full Name
             </Label>
             <Input
               id="create-name"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+              placeholder="e.g. John Doe"
+              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-4"
               error={errors.name?.message}
               {...register("name")}
             />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label
               htmlFor="create-email"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 ml-1"
             >
-              Email
+              Email Address
             </Label>
             <Input
               id="create-email"
               type="email"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+              placeholder="john@example.com"
+              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-4"
               error={errors.email?.message}
               {...register("email")}
             />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label
               htmlFor="create-role"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
+              className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 ml-1"
             >
-              Role
+              Assigned Role
             </Label>
             <Select
               id="create-role"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30"
               error={errors.role?.message}
               {...register("role")}
             >
-              <option value="TEACHER">Teacher</option>
-              <option value="ACCOUNTANT">Accountant</option>
+              <option value="TEACHER">Instructor/Teacher</option>
+              <option value="ACCOUNTANT">Financial/Accountant</option>
             </Select>
           </div>
-          <div className="lg:pt-[1.7rem] flex items-end">
+          <div className="lg:pt-[1.7rem]">
             <Button
-              className="h-12 rounded-2xl px-10 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] w-full"
+              className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] w-full lg:w-fit"
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? <Skeleton className="h-4 w-16 bg-white/20" /> : "Create account"}
+              {isSubmitting ? (
+                <Loader2 className="size-5 animate-spin mx-auto" />
+              ) : (
+                "Authorize Staff"
+              )}
             </Button>
           </div>
         </form>
 
-        {createdPassword ? (
-          <div className="mt-6 rounded-3xl bg-secondary/5 border border-secondary/20 p-6 shadow-inner animate-in fade-in slide-in-from-top-4 duration-500">
-            <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-2">
-              Temporary password generated
-            </p>
-            <p className="text-2xl font-mono font-bold text-on-surface tracking-wider">
-              {createdPassword}
-            </p>
-            <p className="mt-2 text-xs text-on-surface/50 font-light italic">
-              Please copy this immediately. It won&apos;t be shown again.
-            </p>
+        {createdPassword && (
+          <div className="mt-8 rounded-3xl bg-secondary/5 border border-secondary/20 p-6 animate-in slide-in-from-top-4 duration-500 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-center sm:text-left">
+              <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-secondary">
+                Sensitive Credential Generated
+              </p>
+              <p className="font-mono text-3xl font-bold text-on-surface tracking-widest">
+                {createdPassword}
+              </p>
+            </div>
+            <div className="px-5 py-3 rounded-2xl bg-secondary/10 text-secondary text-xs italic font-medium max-w-xs text-center">
+              Copy now. This key is transient and encrypted for security.
+            </div>
           </div>
-        ) : null}
+        )}
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
-        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h4 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none">
-              User directory
-            </h4>
-            <p className="mt-2 text-sm text-on-surface-variant font-light">
-              Search, filter, and act on active or inactive accounts.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-3xl">
-            <div className="flex-1">
-              <Input
-                id="search-users"
-                placeholder="Search by name or email..."
-                className="h-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
+      {/* List Surface */}
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+        <div className="p-8 border-b border-outline-variant/30">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-8">
+            <div>
+              <h4 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none mb-2">
+                User Registry
+              </h4>
+              <p className="text-sm text-on-surface-variant font-light">
+                Global directory for all platform participants.
+              </p>
             </div>
-            <div className="w-full sm:w-40">
-              <Select
-                id="filter-role"
-                className="h-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body"
-                value={role}
-                onChange={(event) => {
-                  setRole(event.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="">All roles</option>
-                <option value="STUDENT">Student</option>
-                <option value="TEACHER">Teacher</option>
-                <option value="ACCOUNTANT">Accountant</option>
-                <option value="ADMIN">Admin</option>
-              </Select>
-            </div>
-            <div className="w-full sm:w-40">
-              <Select
-                id="filter-status"
-                className="h-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body"
-                value={status}
-                onChange={(event) => {
-                  setStatus(event.target.value as "all" | "active" | "inactive");
-                  setPage(1);
-                }}
-              >
-                <option value="all">All statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </Select>
-            </div>
-          </div>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="bg-surface-container-low/30 border-b border-outline-variant/20">
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
-                  User Details
-                </th>
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
-                  Role
-                </th>
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
-                  Status
-                </th>
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
-                  Profile
-                </th>
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
-                  Created
-                </th>
-                <th className="px-8 py-5 text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50 text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => {
-                const isOwnAccount = session?.user.id === user.id;
+            <div className="flex flex-col sm:flex-row gap-3 flex-1 max-w-4xl">
+              <div className="relative flex-1 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-on-surface/30 group-focus-within:text-primary transition-colors" />
+                <Input
+                  placeholder="Search identity..."
+                  className="h-12 pl-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body transition-all focus:bg-surface-container-low"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select
+                  className="h-12 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
+                  value={role}
+                  onChange={(e) => {
+                    setRole(e.target.value);
+                    setPage(1);
+                  }}
+                >
+                  <option value="">All Roles</option>
+                  <option value="STUDENT">Student</option>
+                  <option value="TEACHER">Instructor</option>
+                  <option value="ACCOUNTANT">Accountant</option>
+                  <option value="ADMIN">Administrator</option>
+                </Select>
+                <Select
+                  className="h-12 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
+                  value={status}
+                  onChange={(e) => {
+                    setStatus(e.target.value as "all" | "active" | "inactive");
+                    setPage(1);
+                  }}
+                >
+                  <option value="all">Any Status</option>
+                  <option value="active">Operational</option>
+                  <option value="inactive">Suspended</option>
+                </Select>
+              </div>
+            </div>
+          </div>
 
-                return (
-                  <tr
-                    key={user.id}
+          {/* Mobile List View - Cards */}
+          <div className="xl:hidden grid gap-4 grid-cols-1 md:grid-cols-2">
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className={cn(
+                  "p-5 rounded-3xl border border-outline-variant/30 flex flex-col gap-5 transition-all",
+                  user.isActive
+                    ? "bg-surface-container-low/20"
+                    : "bg-neutral-500/5 opacity-60 grayscale-[0.3]"
+                )}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col">
+                    <span className="font-headline text-lg font-extrabold text-on-surface leading-tight">
+                      {user.name}
+                    </span>
+                    <span className="text-xs text-on-surface-variant/70 font-medium flex items-center gap-1.5 mt-1">
+                      <Mail className="size-3" /> {user.email}
+                    </span>
+                  </div>
+                  <Badge tone={roleTone(user.role)} className="rounded-xl px-2.5 py-1">
+                    {user.role}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/10">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[0.6rem] uppercase tracking-widest text-on-surface/40 font-bold">
+                      Profile Info
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {user.profileCompleted ? (
+                        <CheckCircle2 className="size-3 text-green-500" />
+                      ) : (
+                        <AlertCircle className="size-3 text-amber-500" />
+                      )}
+                      <span className="text-xs font-semibold">
+                        {user.profileCompleted ? "Complete" : "Ongoing"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[0.6rem] uppercase tracking-widest text-on-surface/40 font-bold">
+                      Member Since
+                    </span>
+                    <span className="text-xs font-semibold">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 h-10 rounded-xl font-bold uppercase tracking-widest text-[0.65rem] border-outline-variant/40"
+                  >
+                    <Link to="/dashboard/admin/users/$id" params={{ id: user.id }}>
+                      Manage Profile
+                    </Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={session?.user.id === user.id}
+                    onClick={() => handleStatusToggle(user)}
                     className={cn(
-                      "group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/2",
-                      !user.isActive && "opacity-60 grayscale-[0.2]"
+                      "h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[0.65rem] transition-all",
+                      user.isActive
+                        ? "text-red-500/80 hover:bg-red-50"
+                        : "text-green-500/80 hover:bg-green-50"
                     )}
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex flex-col">
-                        <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors">
-                          {user.name}
-                        </span>
-                        <span className="text-xs text-on-surface-variant font-light mt-0.5">
-                          {user.email}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <Badge
-                        tone={roleTone(user.role)}
-                        className="rounded-full px-3 font-semibold text-[0.65rem]"
-                      >
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="px-8 py-6">
-                      <Badge
-                        tone={user.isActive ? "green" : "red"}
-                        className="rounded-full px-3 font-semibold text-[0.65rem]"
-                      >
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span
-                        className={cn(
-                          "text-[0.65rem] font-bold uppercase tracking-widest",
-                          user.profileCompleted
-                            ? "text-green-600/70 dark:text-green-400/70"
-                            : "text-amber-600/70 dark:text-amber-400/70"
-                        )}
-                      >
-                        {user.profileCompleted ? "Completed" : "Pending"}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="text-xs text-on-surface/40 font-bold uppercase tracking-tighter">
-                        {new Date(user.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric"
-                        })}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="h-9 rounded-xl border-outline-variant/30 hover:bg-surface-container-high transition-all"
-                        >
-                          <Link to="/dashboard/admin/users/$id" params={{ id: user.id }}>
-                            View
-                          </Link>
-                        </Button>
-                        <div className="relative group/actions">
-                          <span
-                            title={isOwnAccount ? "Cannot deactivate your own account" : undefined}
+                    {user.isActive ? (
+                      <UserX className="size-4" />
+                    ) : (
+                      <UserCheck className="size-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden xl:block overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="bg-surface-container-low/10 border-b border-outline-variant/20">
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30">
+                    User Identity
+                  </th>
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30">
+                    Role & Rank
+                  </th>
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30">
+                    System Status
+                  </th>
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30">
+                    Data Integrity
+                  </th>
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30">
+                    Onboarding
+                  </th>
+                  <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/30 text-right">
+                    Operations
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/10">
+                {users.map((user) => {
+                  const isOwn = session?.user.id === user.id;
+                  return (
+                    <tr
+                      key={user.id}
+                      className={cn(
+                        "group transition-all duration-300 hover:bg-primary/[0.03]",
+                        !user.isActive && "opacity-60 grayscale-[0.1]"
+                      )}
+                    >
+                      <td className="px-10 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="size-10 rounded-full bg-surface-container-low border border-outline-variant/20 flex items-center justify-center font-headline font-bold text-primary group-hover:scale-110 transition-transform">
+                            {user.name.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+                              {user.name}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-xs text-on-surface/40 font-medium">
+                              <Mail className="size-3" /> {user.email}
+                              <span className="mx-1 opacity-30">•</span>
+                              <Fingerprint className="size-3" />{" "}
+                              <code className="text-[0.6rem] tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">
+                                {user.id.slice(-8)}
+                              </code>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-10 py-6">
+                        <div className="flex items-center gap-2.5">
+                          <Shield
+                            className={cn(
+                              "size-4 opacity-40",
+                              roleTone(user.role) === "violet"
+                                ? "text-violet-500"
+                                : "text-on-surface"
+                            )}
+                          />
+                          <Badge
+                            tone={roleTone(user.role)}
+                            className="rounded-full px-3 py-1 font-bold text-[0.6rem] uppercase tracking-widest"
                           >
-                            <Button
-                              size="sm"
-                              type="button"
-                              variant="ghost"
-                              disabled={isOwnAccount}
-                              onClick={() => void handleStatusToggle(user)}
-                              className="h-9 rounded-xl hover:bg-surface-container-high transition-all font-semibold text-xs"
-                            >
-                              {user.isActive ? "Deactivate" : "Activate"}
-                            </Button>
+                            {user.role}
+                          </Badge>
+                        </div>
+                      </td>
+                      <td className="px-10 py-6">
+                        <div className="flex items-center gap-2 p-1.5 pl-0 pr-4 rounded-full w-fit">
+                          <div
+                            className={cn(
+                              "size-2 rounded-full",
+                              user.isActive
+                                ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+                                : "bg-red-500"
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              "text-xs font-bold uppercase tracking-wider",
+                              user.isActive ? "text-green-600/80" : "text-red-500/80"
+                            )}
+                          >
+                            {user.isActive ? "Operational" : "Suspended"}
                           </span>
                         </div>
-                        {!isOwnAccount ? (
+                      </td>
+                      <td className="px-10 py-6">
+                        <div
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-2xl text-[0.65rem] font-bold uppercase tracking-wider w-fit",
+                            user.profileCompleted
+                              ? "bg-green-500/10 text-green-600"
+                              : "bg-amber-500/10 text-amber-600"
+                          )}
+                        >
+                          {user.profileCompleted ? (
+                            <CheckCircle2 className="size-3.5" />
+                          ) : (
+                            <AlertCircle className="size-3.5" />
+                          )}
+                          {user.profileCompleted ? "Full" : "Partial"}
+                        </div>
+                      </td>
+                      <td className="px-10 py-6">
+                        <div className="flex items-center gap-2 text-on-surface/40">
+                          <Calendar className="size-3.5 opacity-50" />
+                          <span className="text-[0.7rem] font-bold uppercase tracking-tighter">
+                            {new Date(user.createdAt).toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric"
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-10 py-6 text-right">
+                        <div className="flex items-center justify-end gap-2 pr-2">
+                          <Button
+                            asChild
+                            size="sm"
+                            variant="ghost"
+                            className="size-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                          >
+                            <Link
+                              to="/dashboard/admin/users/$id"
+                              params={{ id: user.id }}
+                              title="View Identity"
+                            >
+                              <Eye className="size-4" />
+                            </Link>
+                          </Button>
                           <Button
                             size="sm"
-                            type="button"
                             variant="ghost"
-                            onClick={() => void handleDelete(user)}
-                            className="h-9 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all font-semibold text-xs"
+                            disabled={isOwn}
+                            onClick={() => void handleStatusToggle(user)}
+                            className={cn(
+                              "size-9 rounded-xl transition-all shadow-sm",
+                              user.isActive
+                                ? "hover:bg-red-50 hover:text-red-500"
+                                : "hover:bg-green-50 hover:text-green-500"
+                            )}
+                            title={user.isActive ? "Suspend Access" : "Restore Access"}
                           >
-                            Delete
+                            {user.isActive ? (
+                              <UserX className="size-4" />
+                            ) : (
+                              <UserCheck className="size-4" />
+                            )}
                           </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {!isOwn && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => void handleDelete(user)}
+                              className="size-9 rounded-xl text-red-500/40 hover:text-red-500 hover:bg-red-50 transition-all font-semibold"
+                              title="Archive Record"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div className="p-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-on-surface/40">
-            Page <span className="text-on-surface">{page}</span> of{" "}
-            <span className="text-on-surface">{totalPages}</span>
-          </p>
-          <div className="flex gap-3">
+        {/* Improved Pagination */}
+        <div className="p-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-6 bg-surface-container-low/5">
+          <div className="flex items-center gap-3">
+            <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-on-surface/40">
+              Page Registry:{" "}
+              <span className="text-on-surface px-2 py-1 rounded-md bg-surface-container-low font-mono text-xs">
+                {page} / {totalPages}
+              </span>
+            </p>
+          </div>
+          <div className="flex gap-4">
             <Button
               size="sm"
-              type="button"
               variant="outline"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              className="h-10 px-6 rounded-xl border-outline-variant/30 font-bold text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+              className="h-11 px-8 rounded-2xl border-outline-variant/30 font-extrabold text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[-2px] active:scale-95 disabled:opacity-30 disabled:hover:translate-x-0"
             >
-              Previous
+              Back
             </Button>
             <Button
               size="sm"
-              type="button"
               variant="outline"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="h-10 px-6 rounded-xl border-outline-variant/30 font-bold text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+              className="h-11 px-8 rounded-2xl border-outline-variant/30 font-extrabold text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[2px] active:scale-95 disabled:opacity-30 disabled:hover:translate-x-0"
             >
               Next
             </Button>

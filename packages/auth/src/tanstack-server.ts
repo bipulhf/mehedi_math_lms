@@ -31,6 +31,7 @@ const trustedOrigins = [
 const isGoogleConfigured =
   parsedAuthEnv.GOOGLE_CLIENT_ID !== "replace-me" &&
   parsedAuthEnv.GOOGLE_CLIENT_SECRET !== "replace-me";
+const isDevelopment = process.env.NODE_ENV === "development";
 
 interface AuthUserFields extends UserWithRole {
   profileCompleted?: boolean;
@@ -73,7 +74,7 @@ export const auth = betterAuth({
       }
     : undefined,
   rateLimit: {
-    enabled: true,
+    enabled: !isDevelopment,
     window: 15 * 60,
     max: 100,
     customRules: {

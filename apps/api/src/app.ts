@@ -30,7 +30,9 @@ app.use(
 );
 app.use("*", bodyLimit({ maxSize: env.BODY_LIMIT_BYTES }));
 app.use("*", compress());
-app.use("/api/*", createRateLimitMiddleware());
+if (env.NODE_ENV !== "development") {
+  app.use("/api/*", createRateLimitMiddleware());
+}
 app.use("/api/v1/*", sessionContextMiddleware);
 
 app.onError(onError);
