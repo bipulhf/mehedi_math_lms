@@ -3,11 +3,17 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { UserRole } from "@mma/shared";
+import { z } from "zod";
 
 import { ProfilePageSkeleton, RoleProfileForm } from "@/components/profile/profile-editor";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import { useZodForm } from "@/lib/forms/use-zod-form";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { authClient } from "@/lib/auth";
 import type {
   BasicProfileInput,
   OwnProfileData,
@@ -26,12 +32,42 @@ export const Route = createFileRoute("/dashboard/profile")({
   errorComponent: RouteErrorView
 });
 
+const changePasswordSchema = z
+  .object({
+    confirmNewPassword: z.string().min(8, "Confirm password must be at least 8 characters"),
+    currentPassword: z.string().min(8, "Current password must be at least 8 characters"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters")
+  })
+  .refine((values) => values.newPassword === values.confirmNewPassword, {
+    message: "New password and confirm password must match",
+    path: ["confirmNewPassword"]
+  })
+  .refine((values) => values.currentPassword !== values.newPassword, {
+    message: "New password must be different from current password",
+    path: ["newPassword"]
+  });
+
 function DashboardProfilePage(): JSX.Element {
   const router = useRouter();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [profile, setProfile] = useState<OwnProfileData | null>(null);
+  const passwordForm = useZodForm<z.infer<typeof changePasswordSchema>>({
+    defaultValues: {
+      confirmNewPassword: "",
+      currentPassword: "",
+      newPassword: ""
+    },
+    schema: changePasswordSchema
+  });
+  const {
+    formState: { errors: passwordErrors },
+    handleSubmit: handlePasswordSubmit,
+    register: registerPassword,
+    reset: resetPasswordForm
+  } = passwordForm;
 
   useEffect(() => {
     if (isSessionPending || !session) {
@@ -89,6 +125,27 @@ function DashboardProfilePage(): JSX.Element {
     }
   };
 
+  const handlePasswordChange = handlePasswordSubmit(async (values) => {
+    setIsPasswordSubmitting(true);
+    try {
+      const response = await authClient.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        revokeOtherSessions: true
+      });
+
+      if (response.error) {
+        toast.error(response.error.message ?? "Failed to change password");
+        return;
+      }
+
+      resetPasswordForm();
+      toast.success("Password updated successfully");
+    } finally {
+      setIsPasswordSubmitting(false);
+    }
+  });
+
   if (isSessionPending || isLoading || !session) {
     return <ProfilePageSkeleton />;
   }
@@ -110,9 +167,12 @@ function DashboardProfilePage(): JSX.Element {
         <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
           <div className="mb-8 text-center sm:text-left">
-            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Public teacher card</h3>
+            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+              Public teacher card
+            </h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-              The public teacher page uses your bio, qualifications, specializations, and published courses.
+              The public teacher page uses your bio, qualifications, specializations, and published
+              courses.
             </p>
           </div>
           <button
@@ -126,6 +186,63 @@ function DashboardProfilePage(): JSX.Element {
           </button>
         </div>
       ) : null}
+
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+        <div className="absolute -top-12 -left-12 w-48 h-48 bg-secondary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-secondary/10 z-[-1]"></div>
+        <div className="mb-8 text-center sm:text-left">
+          <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+            Change password
+          </h3>
+          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+            Use your current password and set a stronger one to keep your account secure.
+          </p>
+        </div>
+
+        <form className="space-y-6" onSubmit={handlePasswordChange}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="current-password">Current password</Label>
+              <PasswordInput
+                id="current-password"
+                autoComplete="current-password"
+                error={passwordErrors.currentPassword?.message}
+                {...registerPassword("currentPassword")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New password</Label>
+              <PasswordInput
+                id="new-password"
+                autoComplete="new-password"
+                error={passwordErrors.newPassword?.message}
+                {...registerPassword("newPassword")}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-password">Confirm new password</Label>
+              <PasswordInput
+                id="confirm-new-password"
+                autoComplete="new-password"
+                error={passwordErrors.confirmNewPassword?.message}
+                {...registerPassword("confirmNewPassword")}
+              />
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-outline-variant/20 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-on-surface/50 font-light">
+              This updates your credential login password. Other sessions will be signed out.
+            </p>
+            <Button
+              className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md"
+              type="submit"
+              disabled={isPasswordSubmitting}
+            >
+              {isPasswordSubmitting ? "Updating..." : "Update password"}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

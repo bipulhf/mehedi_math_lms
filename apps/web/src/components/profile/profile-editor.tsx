@@ -488,7 +488,7 @@ export function BasicProfileForm({
   const profilePhotoValue = watch("profilePhoto");
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group max-w-2xl mx-auto">
+    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
       <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
       <div className="mb-10 text-center sm:text-left">
         <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
@@ -594,7 +594,11 @@ export function ProfilePageSkeleton(): JSX.Element {
       <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden opacity-50">
         <Skeleton className="h-8 w-48 bg-surface-container-high mb-4" />
         <Skeleton className="h-5 w-full max-w-lg bg-surface-container-high mb-8" />
-        <Skeleton className="h-12 w-64 rounded-2xl bg-surface-container-high" />
+        <div className="grid gap-6 md:grid-cols-2">
+          <Skeleton className="h-20 rounded-2xl bg-surface-container-high md:col-span-2" />
+          <Skeleton className="h-20 rounded-2xl bg-surface-container-high md:col-span-2" />
+          <Skeleton className="h-12 w-full sm:w-48 rounded-2xl bg-surface-container-high" />
+        </div>
       </div>
     </div>
   );
