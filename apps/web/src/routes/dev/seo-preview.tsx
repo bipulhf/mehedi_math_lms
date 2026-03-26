@@ -24,7 +24,8 @@ export const Route = createFileRoute("/dev/seo-preview")({
   },
   head: () =>
     seo({
-      description: "Inspect how Mehedi's Math Academy meta tags render before publishing to production.",
+      description:
+        "Inspect how Mehedi's Math Academy meta tags render before publishing to production.",
       path: "/dev/seo-preview",
       title: "SEO preview (dev)"
     }),
@@ -37,9 +38,7 @@ function DevSeoPreviewPage(): JSX.Element {
   const search = Route.useSearch();
   const [path, setPath] = useState(search.path ?? "/");
   const [title, setTitle] = useState(search.title ?? "Sample page");
-  const [description, setDescription] = useState(
-    search.description ?? siteConfig.description
-  );
+  const [description, setDescription] = useState(search.description ?? siteConfig.description);
 
   const preview = useMemo(
     () =>
@@ -65,11 +64,19 @@ function DevSeoPreviewPage(): JSX.Element {
           </div>
           <div className="space-y-2">
             <Label htmlFor="seo-title">Title</Label>
-            <Input id="seo-title" value={title} onChange={(event) => setTitle(event.target.value)} />
+            <Input
+              id="seo-title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="seo-description">Description</Label>
-            <Input id="seo-description" value={description} onChange={(event) => setDescription(event.target.value)} />
+            <Input
+              id="seo-description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
           </div>
           <Button type="button" variant="outline" onClick={() => setPath("/")}>
             Reset sample
@@ -78,26 +85,46 @@ function DevSeoPreviewPage(): JSX.Element {
         <div className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4 text-sm">
           <p className="font-semibold text-on-surface">Computed meta</p>
           <ul className="space-y-2 text-on-surface/80">
-            {preview.meta.map((tag, index) => (
-              <li key={`meta-${index}`} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
-                {JSON.stringify(tag)}
-              </li>
-            ))}
+            {preview.meta.map((tag) => {
+              const tagKey =
+                "name" in tag && typeof tag.name === "string"
+                  ? `meta-name-${tag.name}`
+                  : "property" in tag && typeof tag.property === "string"
+                    ? `meta-property-${tag.property}`
+                    : "title" in tag && typeof tag.title === "string"
+                      ? `meta-title-${tag.title}`
+                      : `meta-${JSON.stringify(tag)}`;
+
+              return (
+                <li key={tagKey} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
+                  {JSON.stringify(tag)}
+                </li>
+              );
+            })}
           </ul>
           {preview.scripts !== undefined && preview.scripts.length > 0 ? (
             <>
               <p className="font-semibold text-on-surface">JSON-LD (scripts)</p>
               <ul className="space-y-2 text-on-surface/80">
-                {preview.scripts.map((tag, index) => (
-                  <li key={`script-${index}`} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
-                    {JSON.stringify(tag)}
-                  </li>
-                ))}
+                {preview.scripts.map((tag) => {
+                  const tagKey =
+                    "type" in tag && typeof tag.type === "string"
+                      ? `script-${tag.type}-${JSON.stringify(tag.children ?? tag)}`
+                      : `script-${JSON.stringify(tag)}`;
+
+                  return (
+                    <li key={tagKey} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
+                      {JSON.stringify(tag)}
+                    </li>
+                  );
+                })}
               </ul>
             </>
           ) : null}
           <p className="font-semibold text-on-surface">Canonical</p>
-          <pre className="overflow-x-auto rounded-md bg-surface px-3 py-2 text-xs">{JSON.stringify(preview.links, null, 2)}</pre>
+          <pre className="overflow-x-auto rounded-md bg-surface px-3 py-2 text-xs">
+            {JSON.stringify(preview.links, null, 2)}
+          </pre>
         </div>
       </div>
     </PublicLayout>

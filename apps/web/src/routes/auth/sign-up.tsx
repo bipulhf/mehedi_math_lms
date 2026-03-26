@@ -2,14 +2,15 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { seo } from "@/lib/seo";
+import { Loader2 } from "lucide-react";
 
 export const signUpSearchSchema = z.object({
   courseSlug: z.string().trim().min(1).optional()
@@ -122,9 +123,8 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="new-password"
             error={errors.password?.message}
             {...register("password")}
@@ -132,9 +132,8 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Confirm password</Label>
-          <Input
+          <PasswordInput
             id="confirmPassword"
-            type="password"
             autoComplete="new-password"
             error={errors.confirmPassword?.message}
             {...register("confirmPassword")}
@@ -145,13 +144,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? (
-            <span
-              className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"
-              aria-hidden="true"
-            />
-          ) : null}
-          {isSubmitting ? "Creating student account..." : "Create student account"}
+          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Create student account"}
         </Button>
       </form>
 

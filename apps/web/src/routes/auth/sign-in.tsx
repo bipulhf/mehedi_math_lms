@@ -2,14 +2,15 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { seo } from "@/lib/seo";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
@@ -75,25 +76,14 @@ export function SignInPage(): JSX.Element {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            error={errors.password?.message}
-            {...register("password")}
-          />
+          <PasswordInput id="password" error={errors.password?.message} {...register("password")} />
         </div>
         <Button
           className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all"
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <span
-              className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"
-              aria-hidden="true"
-            />
-          ) : null}
-          {isSubmitting ? "Signing in..." : "Continue to workspace"}
+          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Sign In"}
         </Button>
       </form>
 

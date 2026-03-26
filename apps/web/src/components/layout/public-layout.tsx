@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles } from "lucide-react";
 import type { JSX, PropsWithChildren } from "react";
-
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site";
 
