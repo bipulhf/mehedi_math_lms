@@ -7,6 +7,7 @@ import {
 import type { JSX } from "react";
 import { useState } from "react";
 import type { FieldErrors } from "react-hook-form";
+import { Loader2 } from "lucide-react";
 
 import { ProfilePhotoUploadField } from "@/components/profile/profile-photo-upload-field";
 import type {
@@ -17,7 +18,6 @@ import type {
 } from "@/lib/api/profiles";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -102,22 +102,27 @@ function StepRail({
   steps: readonly { description: string; label: string }[];
 }): JSX.Element {
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-3 mb-8">
       {steps.map((step, index) => (
         <div
           key={step.label}
           className={[
-            "rounded-[calc(var(--radius)-0.125rem)] border px-4 py-3 transition-all duration-150 ease-out",
+            "rounded-2xl border px-5 py-5 transition-all duration-300 ease-out",
             index === activeStep
-              ? "border-secondary-container/25 bg-secondary-container/8"
-              : "border-outline-variant bg-surface-container-low"
+              ? "border-primary/30 bg-primary/5 shadow-inner scale-[1.02]"
+              : "border-outline-variant/30 bg-surface-container-low opacity-60"
           ].join(" ")}
         >
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-on-surface/50">
-            Step {index + 1}
-          </p>
-          <p className="mt-1 font-semibold text-on-surface">{step.label}</p>
-          <p className="mt-1 text-sm leading-6 text-on-surface/62">{step.description}</p>
+          <div className="flex items-center gap-3">
+            <div className={["flex size-6 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-colors", index === activeStep ? "bg-primary text-white" : "bg-outline-variant/30 text-on-surface/50"].join(" ")}>
+              {index + 1}
+            </div>
+            <p className="text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
+              Step {index + 1}
+            </p>
+          </div>
+          <p className="mt-4 font-headline text-lg font-semibold text-on-surface">{step.label}</p>
+          <p className="mt-1 text-sm leading-6 text-on-surface-variant font-light">{step.description}</p>
         </div>
       ))}
     </div>
@@ -166,7 +171,13 @@ function StudentStepFields({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="student-dob">Date of birth</Label>
-          <Input id="student-dob" type="date" error={errors.dateOfBirth?.message} {...register("dateOfBirth")} />
+          <Input
+            id="student-dob"
+            type="date"
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 10)).toISOString().split("T")[0]}
+            error={errors.dateOfBirth?.message}
+            {...register("dateOfBirth")}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="student-guardian-name">Guardian name</Label>
@@ -330,14 +341,15 @@ export function StudentProfileForm({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
+      <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+      </div>
+      <div className="space-y-6">
         <StepRail activeStep={step} steps={studentSteps} />
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           <StudentStepFields
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}
@@ -345,26 +357,26 @@ export function StudentProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-            <Button type="button" variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
+            <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
-            <div className="flex gap-3">
+            <div className="flex gap-3 w-full sm:w-auto">
               {step < studentSteps.length - 1 ? (
-                <Button type="button" onClick={() => void onNext()}>
+                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" onClick={() => void onNext()}>
                   Continue
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <span className="h-4 w-16 rounded-full bg-white/25" aria-hidden="true" /> : null}
-                  {isSubmitting ? "Saving profile" : "Save profile"}
+                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                  {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
             </div>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -413,14 +425,15 @@ export function TeacherProfileForm({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
+      <div className="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-secondary/10 duration-1000"></div>
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+      </div>
+      <div className="space-y-6">
         <StepRail activeStep={step} steps={teacherSteps} />
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           <TeacherStepFields
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}
@@ -428,26 +441,26 @@ export function TeacherProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-            <Button type="button" variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
+            <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
-            <div className="flex gap-3">
+            <div className="flex gap-3 w-full sm:w-auto">
               {step < teacherSteps.length - 1 ? (
-                <Button type="button" onClick={() => void onNext()}>
+                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" onClick={() => void onNext()}>
                   Continue
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <span className="h-4 w-16 rounded-full bg-white/25" aria-hidden="true" /> : null}
-                  {isSubmitting ? "Saving profile" : "Save profile"}
+                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                  {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
             </div>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -475,37 +488,38 @@ export function BasicProfileForm({
   const profilePhotoValue = watch("profilePhoto");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="basic-name">Display name</Label>
-              <Input id="basic-name" error={errors.name?.message} {...register("name")} />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <ProfilePhotoUploadField
-                id="basic-photo"
-                label="Profile photo"
-                error={errors.profilePhoto?.message}
-                value={profilePhotoValue ?? ""}
-                onValueChange={(value) =>
-                  setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })
-                }
-              />
-            </div>
+    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group max-w-2xl mx-auto">
+      <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+      </div>
+      <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="basic-name">Display name</Label>
+            <Input id="basic-name" error={errors.name?.message} {...register("name")} />
           </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <span className="h-4 w-16 rounded-full bg-white/25" aria-hidden="true" /> : null}
-            {isSubmitting ? "Saving profile" : "Save profile"}
+          <div className="space-y-2 md:col-span-2">
+            <ProfilePhotoUploadField
+              id="basic-photo"
+              label="Profile photo"
+              error={errors.profilePhoto?.message}
+              value={profilePhotoValue ?? ""}
+              onValueChange={(value) =>
+                setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })
+              }
+            />
+          </div>
+        </div>
+        <div className="pt-8 mt-8 border-t border-outline-variant/20 flex justify-end">
+          <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+            {isSubmitting ? "Saving profile..." : "Save profile"}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </div>
   );
 }
 
@@ -556,26 +570,32 @@ export function RoleProfileForm({
 
 export function ProfilePageSkeleton(): JSX.Element {
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="space-y-3">
-          <Skeleton className="h-6 w-44" />
-          <Skeleton className="h-4 w-full max-w-xl" />
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="space-y-6">
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden">
+        <div className="space-y-4 mb-10">
+          <Skeleton className="h-8 w-64 bg-surface-container-high" />
+          <Skeleton className="h-5 w-full max-w-xl bg-surface-container-high" />
+        </div>
+        <div className="space-y-8">
           <div className="grid gap-3 sm:grid-cols-3">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
+            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
+            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
+            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Skeleton className="h-20 md:col-span-2" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-20" />
-            <Skeleton className="h-36 md:col-span-2" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high md:col-span-2" />
+            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high" />
+            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high" />
+            <Skeleton className="h-36 w-full rounded-2xl bg-surface-container-high md:col-span-2" />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden opacity-50">
+        <Skeleton className="h-8 w-48 bg-surface-container-high mb-4" />
+        <Skeleton className="h-5 w-full max-w-lg bg-surface-container-high mb-8" />
+        <Skeleton className="h-12 w-64 rounded-2xl bg-surface-container-high" />
+      </div>
     </div>
   );
 }

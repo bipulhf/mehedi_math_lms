@@ -15,7 +15,16 @@ export const profileIdParamsSchema = z.object({
 export const studentProfileInputSchema = z.object({
   name: nonEmptyStringSchema.max(255),
   phone: optionalPhoneSchema,
-  dateOfBirth: optionalDateSchema,
+  dateOfBirth: optionalDateSchema.refine(
+    (val) => {
+      if (!val) return true;
+      const date = new Date(val);
+      const tenYearsAgo = new Date();
+      tenYearsAgo.setFullYear(tenYearsAgo.getFullYear() - 10);
+      return date <= tenYearsAgo;
+    },
+    { message: "Student must be at least 10 years old" }
+  ),
   guardianName: optionalShortTextSchema,
   guardianPhone: optionalPhoneSchema,
   institution: optionalShortTextSchema,

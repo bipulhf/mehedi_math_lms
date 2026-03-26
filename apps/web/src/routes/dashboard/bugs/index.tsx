@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BugReportRecord } from "@/lib/api/bugs";
 import { listMyBugReports } from "@/lib/api/bugs";
@@ -53,9 +54,14 @@ function MyBugReportsPage(): JSX.Element {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>My bug reports</CardTitle>
-        <CardDescription>Track what you submitted, what is being investigated, and what has already been resolved.</CardDescription>
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <CardTitle>My bug reports</CardTitle>
+          <CardDescription>Track what you submitted, what is being investigated, and what has already been resolved.</CardDescription>
+        </div>
+        <Button asChild>
+          <Link to="/dashboard/bugs/report">Report Bug</Link>
+        </Button>
       </CardHeader>
       <CardContent className="space-y-3">
         {bugs.length > 0 ? (

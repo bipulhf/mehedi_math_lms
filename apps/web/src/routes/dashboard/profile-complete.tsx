@@ -39,6 +39,10 @@ function CompleteProfilePage(): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profile, setProfile] = useState<OwnProfileData | null>(null);
 
+  const getPostCompletionHref = (): string => {
+    return search.courseSlug ? `/courses/${search.courseSlug}` : "/dashboard/profile";
+  };
+
   useEffect(() => {
     if (isSessionPending || !session) {
       return;
@@ -73,16 +77,7 @@ function CompleteProfilePage(): JSX.Element {
     setProfile(nextProfile);
     await refetchSession();
     toast.success(message);
-
-    if (search.courseSlug) {
-      await router.navigate({
-        to: "/courses/$slug",
-        params: { slug: search.courseSlug }
-      });
-      return;
-    }
-
-    await router.navigate({ to: "/dashboard/profile" });
+    window.location.assign(getPostCompletionHref());
   };
 
   const handleStudentSubmit = async (values: StudentProfileInput): Promise<void> => {

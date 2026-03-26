@@ -47,8 +47,7 @@ const dashboardNavigation = {
     { icon: BookCopy, label: "My Courses", to: "/dashboard/my-courses" },
     { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
     { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
-    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
-    { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
+    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" }
   ],
   TEACHER: [
     { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
@@ -56,17 +55,13 @@ const dashboardNavigation = {
     { icon: BookCopy, label: "Courses", to: "/dashboard/courses" },
     { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
     { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
-    { icon: Users, label: "Students", to: "/dashboard" },
+    { icon: Users, label: "Students", to: "/dashboard/students" },
     { icon: ChartColumn, label: "Analytics", to: "/dashboard/analytics" },
-    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" },
-    { icon: Settings, label: "Report Bug", to: "/dashboard/bugs/report" }
+    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" }
   ]
 } as const;
 
-export function DashboardLayout({
-  children,
-  role = "ADMIN"
-}: DashboardLayoutProps): JSX.Element {
+export function DashboardLayout({ children, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
   const [messageUnreadCount, setMessageUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -112,11 +107,7 @@ export function DashboardLayout({
   }, [messageUnreadCount, role]);
 
   return (
-    <AppShell
-      title="Dashboard Atelier"
-      description="A glassmorphic academic cockpit tuned for calm oversight and clear action."
-      navItems={navItems}
-    >
+    <AppShell title="Dashboard Atelier" description={null} navItems={navItems}>
       {children}
     </AppShell>
   );

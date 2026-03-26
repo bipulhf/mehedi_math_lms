@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { UserRole } from "@mma/shared";
 
 import { ProfilePageSkeleton, RoleProfileForm } from "@/components/profile/profile-editor";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { RouteErrorView } from "@/components/common/route-error";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type {
@@ -94,7 +94,7 @@ function DashboardProfilePage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <RoleProfileForm
         description="Keep your profile current so enrollment, teacher visibility, and course interactions stay accurate across the academy."
         initialProfile={profile}
@@ -106,39 +106,25 @@ function DashboardProfilePage(): JSX.Element {
         title="Your profile"
       />
 
-      {profile?.user.role === "STUDENT" ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy scope</CardTitle>
-            <CardDescription>
-              Student profiles remain private to the student and administrators.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-sm leading-7 text-on-surface/70">
-            Your guardian, academic, and address information is stored for onboarding, enrollment operations,
-            and academic support workflows.
-          </CardContent>
-        </Card>
-      ) : null}
-
       {profile?.user.role === "TEACHER" ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Public teacher card</CardTitle>
-            <CardDescription>
+        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+          <div className="mb-8 text-center sm:text-left">
+            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Public teacher card</h3>
+            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
               The public teacher page uses your bio, qualifications, specializations, and published courses.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <button
-              className="text-sm font-semibold text-secondary-container"
-              type="button"
-              onClick={() => void router.navigate({ to: "/teachers/$id", params: { id: profile.user.id } })}
-            >
-              Preview public teacher profile
-            </button>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <button
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-surface-container-highest px-8 font-headline font-semibold text-sm text-on-surface transition-all duration-300 hover:bg-surface-container-high hover:shadow-sm"
+            type="button"
+            onClick={() =>
+              void router.navigate({ to: "/teachers/$id", params: { id: profile.user.id } })
+            }
+          >
+            Preview public teacher profile
+          </button>
+        </div>
       ) : null}
     </div>
   );
