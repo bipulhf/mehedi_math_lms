@@ -51,10 +51,16 @@ export function LandingLayout({ children }: PropsWithChildren) {
               />
             </div>
             <div className="flex items-center gap-4">
-              <button className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all">
+              <button
+                type="button"
+                className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all"
+              >
                 <ShoppingCart className="size-5" />
               </button>
-              <button className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all relative">
+              <button
+                type="button"
+                className="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all relative"
+              >
                 <Bell className="size-5" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
               </button>
@@ -64,10 +70,10 @@ export function LandingLayout({ children }: PropsWithChildren) {
                 asChild
                 className="font-manrope tracking-tight text-sm font-semibold text-on-surface-variant hover:text-on-surface hover:bg-transparent"
               >
-                <Link to="/auth/sign-in">Log In</Link>
+                <Link to="/login">Log In</Link>
               </Button>
               <Button variant="gradient" asChild className="font-headline">
-                <Link to="/auth/sign-in">Get Started</Link>
+                <Link to="/auth/sign-up">Get Started</Link>
               </Button>
             </div>
           </div>

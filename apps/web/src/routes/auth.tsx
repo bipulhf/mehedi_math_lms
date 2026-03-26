@@ -12,8 +12,8 @@ export const Route = createFileRoute("/auth")({
 function AuthRoute(): JSX.Element {
   return (
     <AuthLayout
-      title="Sign in to continue"
-      description="Email, Google OAuth, and role-aware dashboard flows are already wired into the shared auth foundation."
+      title="Access your academy account"
+      description="Sign in or create your student account to enter the academy workspace, manage your profile, and continue into role-aware dashboard flows."
     >
       <Outlet />
     </AuthLayout>

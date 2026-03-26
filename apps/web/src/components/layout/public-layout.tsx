@@ -26,10 +26,10 @@ export function PublicLayout({
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost">
-              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/login">Log in</Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/auth/sign-in">Sign in</Link>
+              <Link to="/auth/sign-up">Student signup</Link>
             </Button>
           </div>
         </div>
@@ -46,17 +46,19 @@ export function PublicLayout({
               <h1 className="font-display text-[clamp(2.75rem,8vw,5.25rem)] font-semibold leading-[0.95] tracking-[-0.05em]">
                 {title}
               </h1>
-              <p className="max-w-[62ch] text-base leading-8 text-on-surface/68 sm:text-lg">{subtitle}</p>
+              <p className="max-w-[62ch] text-base leading-8 text-on-surface/68 sm:text-lg">
+                {subtitle}
+              </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link to="/auth/sign-in">
-                  Explore the learning studio
+                <Link to="/auth/sign-up">
+                  Create your student account
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/dashboard">Preview dashboard surfaces</Link>
+                <Link to="/login">Already have an account? Log in</Link>
               </Button>
             </div>
           </section>

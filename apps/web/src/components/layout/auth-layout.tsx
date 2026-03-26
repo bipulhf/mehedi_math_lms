@@ -47,8 +47,6 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
 
         {/* Right Side Form Card */}
         <div className="bg-surface-container-lowest/90 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-[0_24px_64px_-16px_rgba(19,27,46,0.15)] relative self-start z-10 w-full group">
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 rounded-full blur-2xl pointer-events-none z-[-1] transition-all duration-700 group-hover:bg-primary/20"></div>
-
           <div className="mb-10 text-center sm:text-left">
             <h2 className="font-headline text-3xl sm:text-4xl font-extrabold tracking-tight text-on-surface">
               {title}

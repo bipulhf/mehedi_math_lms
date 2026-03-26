@@ -204,16 +204,12 @@ export function CoursePlayer({
 
     return items;
   }, [content, testsByChapterId]);
-  const allLectures = useMemo(
-    () => content.flatMap((chapter) => chapter.lectures),
-    [content]
-  );
+  const allLectures = useMemo(() => content.flatMap((chapter) => chapter.lectures), [content]);
   const selectedItem = useMemo(
     () => navigationItems.find((item) => item.id === selectedItemId) ?? null,
     [navigationItems, selectedItemId]
   );
-  const selectedLecture =
-    selectedItem?.kind === "lecture" ? selectedItem.lecture : null;
+  const selectedLecture = selectedItem?.kind === "lecture" ? selectedItem.lecture : null;
   const selectedChapter = useMemo(() => {
     if (!selectedItem) {
       return null;
@@ -222,7 +218,7 @@ export function CoursePlayer({
     return content.find((chapter) => chapter.id === selectedItem.chapterId) ?? null;
   }, [content, selectedItem]);
   const selectedLectureProgress = selectedLecture
-    ? progressByLectureId.get(selectedLecture.id) ?? null
+    ? (progressByLectureId.get(selectedLecture.id) ?? null)
     : null;
   const selectedIndex = navigationItems.findIndex((item) => item.id === selectedItemId);
 
@@ -235,7 +231,7 @@ export function CoursePlayer({
       progress.nextLectureId &&
       navigationItems.some((item) => item.id === `lecture:${progress.nextLectureId}`)
         ? `lecture:${progress.nextLectureId}`
-        : navigationItems[0]?.id ?? null;
+        : (navigationItems[0]?.id ?? null);
     setSelectedItemId(nextLectureId);
   }, [navigationItems, progress.nextLectureId, selectedItemId]);
 
@@ -292,12 +288,11 @@ export function CoursePlayer({
     }
   };
 
-  const embedVideoUrl =
-    selectedLecture?.videoUrl ? getEmbedVideoUrl(selectedLecture.videoUrl) : null;
+  const embedVideoUrl = selectedLecture?.videoUrl
+    ? getEmbedVideoUrl(selectedLecture.videoUrl)
+    : null;
   const canUseNativeVideo =
-    selectedLecture?.type !== "TEXT" &&
-    Boolean(selectedLecture?.videoUrl) &&
-    !embedVideoUrl;
+    selectedLecture?.type !== "TEXT" && Boolean(selectedLecture?.videoUrl) && !embedVideoUrl;
 
   return (
     <div className="space-y-4">
@@ -315,23 +310,35 @@ export function CoursePlayer({
                 <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-on-surface md:text-4xl">
                   {course.title}
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-on-surface/66">{course.description}</p>
+                <p className="max-w-3xl text-sm leading-7 text-on-surface/66">
+                  {course.description}
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Completed</p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">{progress.completedLectures}</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
+                    Completed
+                  </p>
+                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                    {progress.completedLectures}
+                  </p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Lectures</p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">{progress.totalLectures}</p>
+                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                    {progress.totalLectures}
+                  </p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Progress</p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">{progress.completionPercentage}%</p>
+                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                    {progress.completionPercentage}%
+                  </p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Assessments</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
+                    Assessments
+                  </p>
                   <p className="mt-2 text-xl font-semibold text-on-surface">
                     {assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
                   </p>
@@ -347,7 +354,7 @@ export function CoursePlayer({
               <Button
                 type="button"
                 size="sm"
-                variant={playerMode === "learn" ? "primary" : "outline"}
+                variant={playerMode === "learn" ? "default" : "outline"}
                 onClick={() => setPlayerMode("learn")}
               >
                 Lessons & tests
@@ -355,7 +362,7 @@ export function CoursePlayer({
               <Button
                 type="button"
                 size="sm"
-                variant={playerMode === "notices" ? "primary" : "outline"}
+                variant={playerMode === "notices" ? "default" : "outline"}
                 onClick={() => setPlayerMode("notices")}
               >
                 <Megaphone className="size-4" />
@@ -373,276 +380,307 @@ export function CoursePlayer({
       ) : null}
 
       {playerMode === "learn" ? (
-      <div className="grid gap-4 xl:grid-cols-[0.34fr_0.66fr]">
-        <FadeIn>
-          <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle>Course navigator</CardTitle>
-              <CardDescription>
-                Browse chapters, jump between lectures, and launch chapter tests with keyboard arrows.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {content.map((chapter) => (
-                <div key={chapter.id} className="space-y-3">
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant/70 bg-surface px-4 py-3">
-                    <p className="font-semibold text-on-surface">{chapter.title}</p>
-                    {chapter.description ? (
-                      <p className="mt-1 text-sm leading-6 text-on-surface/62">{chapter.description}</p>
-                    ) : null}
-                  </div>
-
-                  <div className="grid gap-2">
-                    {chapter.lectures.map((lecture) => {
-                      const lectureProgress = progressByLectureId.get(lecture.id);
-                      const isSelected = selectedItemId === `lecture:${lecture.id}`;
-
-                      return (
-                        <button
-                          key={lecture.id}
-                          className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                            isSelected
-                              ? "border-secondary-container bg-secondary-container/10"
-                              : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
-                          }`}
-                          type="button"
-                          onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-on-surface">{lecture.title}</p>
-                            <p className="text-xs text-on-surface/58">
-                              {lecture.type === "TEXT" ? "Reading" : "Video"} ·{" "}
-                              {lecture.videoDuration ? `${lecture.videoDuration} min` : "Self-paced"}
-                            </p>
-                          </div>
-                          {lectureProgress?.isCompleted ? (
-                            <CheckCircle2 className="size-4 shrink-0 text-secondary-container" />
-                          ) : (
-                            <Circle className="size-4 shrink-0 text-on-surface/42" />
-                          )}
-                        </button>
-                      );
-                    })}
-
-                    {(testsByChapterId.get(chapter.id) ?? []).map((test) => {
-                      const isSelected = selectedItemId === `test:${test.id}`;
-
-                      return (
-                        <button
-                          key={test.id}
-                          className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                            isSelected
-                              ? "border-secondary-container bg-secondary-container/10"
-                              : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
-                          }`}
-                          type="button"
-                          onClick={() => setSelectedItemId(`test:${test.id}`)}
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-on-surface">{test.title}</p>
-                            <p className="text-xs text-on-surface/58">
-                              Assessment · {test.questionCount} questions · {test.totalMarks} marks
-                            </p>
-                          </div>
-                          <BookOpen className="size-4 shrink-0 text-on-surface/52" />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        <FadeIn delayClassName="animation-delay-100">
-          {selectedLecture && selectedChapter ? (
-            <div className="space-y-4">
-              <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
-                <CardHeader>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={selectedLectureProgress?.isCompleted ? "green" : "blue"}>
-                      {selectedLectureProgress?.isCompleted ? "Completed" : "Active lecture"}
-                    </Badge>
-                    <Badge tone="gray">{selectedLecture.type === "TEXT" ? "Reading" : "Video"}</Badge>
-                  </div>
-                  <CardTitle>{selectedLecture.title}</CardTitle>
-                  <CardDescription>
-                    {selectedChapter.title}
-                    {selectedLecture.videoDuration ? ` · ${selectedLecture.videoDuration} min` : ""}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {selectedLecture.description ? (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
-                      {selectedLecture.description}
-                    </div>
-                  ) : null}
-
-                  {selectedLecture.type === "TEXT" ? (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-8 text-on-surface whitespace-pre-wrap">
-                      {selectedLecture.content}
-                    </div>
-                  ) : embedVideoUrl ? (
-                    <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
-                      <div className="aspect-video">
-                        <iframe
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="h-full w-full"
-                          src={embedVideoUrl}
-                          title={selectedLecture.title}
-                        />
-                      </div>
-                    </div>
-                  ) : canUseNativeVideo && selectedLecture.videoUrl ? (
-                    <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
-                      <video
-                        className="aspect-video w-full"
-                        controls
-                        src={selectedLecture.videoUrl}
-                        onEnded={() => void handleMarkComplete(true)}
-                      />
-                    </div>
-                  ) : (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-7 text-on-surface/68">
-                      This lecture uses an external video source that could not be embedded directly.
-                      {selectedLecture.videoUrl ? (
-                        <a
-                          className="ml-2 font-semibold text-secondary-container underline-offset-4 hover:underline"
-                          href={selectedLecture.videoUrl}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          Open video
-                        </a>
+        <div className="grid gap-4 xl:grid-cols-[0.34fr_0.66fr]">
+          <FadeIn>
+            <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle>Course navigator</CardTitle>
+                <CardDescription>
+                  Browse chapters, jump between lectures, and launch chapter tests with keyboard
+                  arrows.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {content.map((chapter) => (
+                  <div key={chapter.id} className="space-y-3">
+                    <div className="rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant/70 bg-surface px-4 py-3">
+                      <p className="font-semibold text-on-surface">{chapter.title}</p>
+                      {chapter.description ? (
+                        <p className="mt-1 text-sm leading-6 text-on-surface/62">
+                          {chapter.description}
+                        </p>
                       ) : null}
                     </div>
-                  )}
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button
-                      disabled={Boolean(selectedLectureProgress?.isCompleted) || isMarkingComplete}
-                      onClick={() => void handleMarkComplete()}
-                    >
-                      {selectedLectureProgress?.isCompleted
-                        ? "Completed"
-                        : isMarkingComplete
-                          ? "Saving progress"
-                          : "Mark as complete"}
-                    </Button>
-                    <Button
-                      asChild
-                      variant="outline"
-                    >
-                      <Link to="/courses/$slug" params={{ slug: course.slug }}>
-                        Course overview
-                      </Link>
-                    </Button>
-                    {selectedLectureProgress?.lastViewedAt ? (
-                      <div className="flex items-center gap-2 text-sm text-on-surface/58">
-                        <Clock3 className="size-4" />
-                        <span>
-                          Last updated {new Date(selectedLectureProgress.lastViewedAt).toLocaleString()}
-                        </span>
+                    <div className="grid gap-2">
+                      {chapter.lectures.map((lecture) => {
+                        const lectureProgress = progressByLectureId.get(lecture.id);
+                        const isSelected = selectedItemId === `lecture:${lecture.id}`;
+
+                        return (
+                          <button
+                            key={lecture.id}
+                            className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
+                              isSelected
+                                ? "border-secondary-container bg-secondary-container/10"
+                                : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                            }`}
+                            type="button"
+                            onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-on-surface">
+                                {lecture.title}
+                              </p>
+                              <p className="text-xs text-on-surface/58">
+                                {lecture.type === "TEXT" ? "Reading" : "Video"} ·{" "}
+                                {lecture.videoDuration
+                                  ? `${lecture.videoDuration} min`
+                                  : "Self-paced"}
+                              </p>
+                            </div>
+                            {lectureProgress?.isCompleted ? (
+                              <CheckCircle2 className="size-4 shrink-0 text-secondary-container" />
+                            ) : (
+                              <Circle className="size-4 shrink-0 text-on-surface/42" />
+                            )}
+                          </button>
+                        );
+                      })}
+
+                      {(testsByChapterId.get(chapter.id) ?? []).map((test) => {
+                        const isSelected = selectedItemId === `test:${test.id}`;
+
+                        return (
+                          <button
+                            key={test.id}
+                            className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
+                              isSelected
+                                ? "border-secondary-container bg-secondary-container/10"
+                                : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                            }`}
+                            type="button"
+                            onClick={() => setSelectedItemId(`test:${test.id}`)}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-medium text-on-surface">{test.title}</p>
+                              <p className="text-xs text-on-surface/58">
+                                Assessment · {test.questionCount} questions · {test.totalMarks}{" "}
+                                marks
+                              </p>
+                            </div>
+                            <BookOpen className="size-4 shrink-0 text-on-surface/52" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </FadeIn>
+
+          <FadeIn delayClassName="animation-delay-100">
+            {selectedLecture && selectedChapter ? (
+              <div className="space-y-4">
+                <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+                  <CardHeader>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge tone={selectedLectureProgress?.isCompleted ? "green" : "blue"}>
+                        {selectedLectureProgress?.isCompleted ? "Completed" : "Active lecture"}
+                      </Badge>
+                      <Badge tone="gray">
+                        {selectedLecture.type === "TEXT" ? "Reading" : "Video"}
+                      </Badge>
+                    </div>
+                    <CardTitle>{selectedLecture.title}</CardTitle>
+                    <CardDescription>
+                      {selectedChapter.title}
+                      {selectedLecture.videoDuration
+                        ? ` · ${selectedLecture.videoDuration} min`
+                        : ""}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {selectedLecture.description ? (
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
+                        {selectedLecture.description}
                       </div>
                     ) : null}
-                  </div>
-                </CardContent>
-              </Card>
 
-              <MaterialLinks materials={selectedLecture.materials} title="Lecture materials" />
-              <MaterialLinks materials={selectedChapter.materials} title="Chapter materials" />
-              <LectureDiscussion lectureId={selectedLecture.id} />
+                    {selectedLecture.type === "TEXT" ? (
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-8 text-on-surface whitespace-pre-wrap">
+                        {selectedLecture.content}
+                      </div>
+                    ) : embedVideoUrl ? (
+                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
+                        <div className="aspect-video">
+                          <iframe
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="h-full w-full"
+                            src={embedVideoUrl}
+                            title={selectedLecture.title}
+                          />
+                        </div>
+                      </div>
+                    ) : canUseNativeVideo && selectedLecture.videoUrl ? (
+                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
+                        <video
+                          className="aspect-video w-full"
+                          controls
+                          src={selectedLecture.videoUrl}
+                          onEnded={() => void handleMarkComplete(true)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-7 text-on-surface/68">
+                        This lecture uses an external video source that could not be embedded
+                        directly.
+                        {selectedLecture.videoUrl ? (
+                          <a
+                            className="ml-2 font-semibold text-secondary-container underline-offset-4 hover:underline"
+                            href={selectedLecture.videoUrl}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            Open video
+                          </a>
+                        ) : null}
+                      </div>
+                    )}
 
-              <Card>
-                <CardContent className="flex flex-wrap justify-between gap-3 p-4">
-                  <Button
-                    variant="outline"
-                    disabled={selectedIndex <= 0}
-                    onClick={() => setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)}
-                  >
-                    <ArrowLeft className="size-4" />
-                    Previous
-                  </Button>
-                  <Button
-                    disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
-                    onClick={() => setSelectedItemId(navigationItems[selectedIndex + 1]?.id ?? null)}
-                  >
-                    Next
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          ) : selectedItem?.kind === "test" ? (
-            <div className="space-y-4">
-              <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
-                <CardHeader>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge tone="violet">Assessment</Badge>
-                    <Badge tone="gray">{selectedItem.test.type}</Badge>
-                  </div>
-                  <CardTitle>{selectedItem.test.title}</CardTitle>
-                  <CardDescription>
-                    {selectedItem.test.questionCount} questions · {selectedItem.test.totalMarks} marks
-                    {selectedItem.test.durationInMinutes
-                      ? ` · ${selectedItem.test.durationInMinutes} min`
-                      : " · Untimed"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {selectedItem.test.description ? (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
-                      {selectedItem.test.description}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        disabled={
+                          Boolean(selectedLectureProgress?.isCompleted) || isMarkingComplete
+                        }
+                        onClick={() => void handleMarkComplete()}
+                      >
+                        {selectedLectureProgress?.isCompleted
+                          ? "Completed"
+                          : isMarkingComplete
+                            ? "Saving progress"
+                            : "Mark as complete"}
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/courses/$slug" params={{ slug: course.slug }}>
+                          Course overview
+                        </Link>
+                      </Button>
+                      {selectedLectureProgress?.lastViewedAt ? (
+                        <div className="flex items-center gap-2 text-sm text-on-surface/58">
+                          <Clock3 className="size-4" />
+                          <span>
+                            Last updated{" "}
+                            {new Date(selectedLectureProgress.lastViewedAt).toLocaleString()}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Questions</p>
-                      <p className="mt-2 text-xl font-semibold text-on-surface">
-                        {selectedItem.test.questionCount}
-                      </p>
-                    </div>
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Marks</p>
-                      <p className="mt-2 text-xl font-semibold text-on-surface">{selectedItem.test.totalMarks}</p>
-                    </div>
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Passing</p>
-                      <p className="mt-2 text-xl font-semibold text-on-surface">
-                        {selectedItem.test.passingScore ?? "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button asChild>
-                      <Link to="/dashboard/tests/$testId" params={{ testId: selectedItem.test.id }}>
-                        <PlayCircle className="size-4" />
-                        Open assessment
-                      </Link>
-                    </Button>
+                  </CardContent>
+                </Card>
+
+                <MaterialLinks materials={selectedLecture.materials} title="Lecture materials" />
+                <MaterialLinks materials={selectedChapter.materials} title="Chapter materials" />
+                <LectureDiscussion lectureId={selectedLecture.id} />
+
+                <Card>
+                  <CardContent className="flex flex-wrap justify-between gap-3 p-4">
                     <Button
                       variant="outline"
                       disabled={selectedIndex <= 0}
-                      onClick={() => setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)}
+                      onClick={() =>
+                        setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
+                      }
                     >
                       <ArrowLeft className="size-4" />
-                      Previous item
+                      Previous
                     </Button>
-                  </div>
+                    <Button
+                      disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
+                      onClick={() =>
+                        setSelectedItemId(navigationItems[selectedIndex + 1]?.id ?? null)
+                      }
+                    >
+                      Next
+                      <ArrowRight className="size-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : selectedItem?.kind === "test" ? (
+              <div className="space-y-4">
+                <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+                  <CardHeader>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge tone="violet">Assessment</Badge>
+                      <Badge tone="gray">{selectedItem.test.type}</Badge>
+                    </div>
+                    <CardTitle>{selectedItem.test.title}</CardTitle>
+                    <CardDescription>
+                      {selectedItem.test.questionCount} questions · {selectedItem.test.totalMarks}{" "}
+                      marks
+                      {selectedItem.test.durationInMinutes
+                        ? ` · ${selectedItem.test.durationInMinutes} min`
+                        : " · Untimed"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {selectedItem.test.description ? (
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
+                        {selectedItem.test.description}
+                      </div>
+                    ) : null}
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
+                          Questions
+                        </p>
+                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                          {selectedItem.test.questionCount}
+                        </p>
+                      </div>
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
+                          Marks
+                        </p>
+                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                          {selectedItem.test.totalMarks}
+                        </p>
+                      </div>
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
+                          Passing
+                        </p>
+                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                          {selectedItem.test.passingScore ?? "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button asChild>
+                        <Link
+                          to="/dashboard/tests/$testId"
+                          params={{ testId: selectedItem.test.id }}
+                        >
+                          <PlayCircle className="size-4" />
+                          Open assessment
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        disabled={selectedIndex <= 0}
+                        onClick={() =>
+                          setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
+                        }
+                      >
+                        <ArrowLeft className="size-4" />
+                        Previous item
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-6 text-sm leading-7 text-on-surface/68">
+                  No course content is available yet.
                 </CardContent>
               </Card>
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-sm leading-7 text-on-surface/68">
-                No course content is available yet.
-              </CardContent>
-            </Card>
-          )}
-        </FadeIn>
-      </div>
+            )}
+          </FadeIn>
+        </div>
       ) : null}
     </div>
   );

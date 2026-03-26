@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,7 +28,7 @@ const signInSchema = z.object({
   password: z.string().min(8)
 });
 
-function SignInPage(): JSX.Element {
+export function SignInPage(): JSX.Element {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
@@ -82,9 +82,16 @@ function SignInPage(): JSX.Element {
             {...register("password")}
           />
         </div>
-        <Button className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all" type="submit" disabled={isSubmitting}>
+        <Button
+          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all"
+          type="submit"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
-            <span className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin" aria-hidden="true" />
+            <span
+              className="mr-2 h-4 w-4 rounded-full border-2 border-white/20 border-t-white animate-spin"
+              aria-hidden="true"
+            />
           ) : null}
           {isSubmitting ? "Signing in..." : "Continue to workspace"}
         </Button>
@@ -105,8 +112,13 @@ function SignInPage(): JSX.Element {
           Continue with Google
         </Button>
         <p className="text-sm leading-6 text-on-surface/62">
-          Public student signup arrives in the next phases. This page already follows the shared
-          React Hook Form + Zod pattern.
+          New student?{" "}
+          <Link
+            className="font-semibold text-secondary-container hover:underline"
+            to="/auth/sign-up"
+          >
+            Create your account
+          </Link>
         </p>
       </div>
     </div>

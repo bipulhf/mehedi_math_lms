@@ -823,15 +823,15 @@ erDiagram
 
 **Public pages that require SEO:**
 
-| Page                   | Route                | Dynamic Data                                             |
-| ---------------------- | -------------------- | -------------------------------------------------------- |
-| Homepage / Landing     | `/`                  | Static + featured courses                                |
-| Course Catalog         | `/courses`           | Category filters, pagination                             |
-| Course Detail          | `/courses/:slug`     | Title, description, cover image, price, teachers, rating |
-| Category Listing       | `/categories/:slug`  | Category name, courses in category                       |
-| Teacher Public Profile | `/teachers/:slug`    | Teacher name, bio, courses, photo                        |
-| Login / Signup         | `/login`, `/signup`  | Static                                                   |
-| About / Contact        | `/about`, `/contact` | Static                                                   |
+| Page                   | Route                     | Dynamic Data                                             |
+| ---------------------- | ------------------------- | -------------------------------------------------------- |
+| Homepage / Landing     | `/`                       | Static + featured courses                                |
+| Course Catalog         | `/courses`                | Category filters, pagination                             |
+| Course Detail          | `/courses/:slug`          | Title, description, cover image, price, teachers, rating |
+| Category Listing       | `/categories/:slug`       | Category name, courses in category                       |
+| Teacher Public Profile | `/teachers/:slug`         | Teacher name, bio, courses, photo                        |
+| Login / Signup         | `/login`, `/auth/sign-up` | Static                                                   |
+| About / Contact        | `/about`, `/contact`      | Static                                                   |
 
 **Key tasks:**
 

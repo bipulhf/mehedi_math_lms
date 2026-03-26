@@ -48,8 +48,8 @@ function MockPaymentPage(): JSX.Element {
         <CardHeader>
           <CardTitle>Mock gateway</CardTitle>
           <CardDescription>
-            SSLCommerz credentials are not configured, so this local payment gateway lets you finish the
-            Phase 13 flow during development.
+            SSLCommerz credentials are not configured, so this local payment gateway lets you finish
+            the Phase 13 flow during development.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -61,7 +61,7 @@ function MockPaymentPage(): JSX.Element {
             {actions.map((action) => (
               <Button
                 key={action.label}
-                variant={action.label === "Simulate success" ? "primary" : "outline"}
+                variant={action.label === "Simulate success" ? "default" : "outline"}
                 onClick={() => {
                   window.location.href = action.href;
                 }}

@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { UserRole } from "@mma/shared";
+import { z } from "zod";
 
 import { ProfilePageSkeleton, RoleProfileForm } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -20,13 +21,19 @@ import {
   updateTeacherProfile
 } from "@/lib/api/profiles";
 
+const searchSchema = z.object({
+  courseSlug: z.string().trim().min(1).optional()
+});
+
 export const Route = createFileRoute("/dashboard/profile-complete")({
+  validateSearch: (search) => searchSchema.parse(search),
   component: CompleteProfilePage,
   errorComponent: RouteErrorView
 });
 
 function CompleteProfilePage(): JSX.Element {
   const router = useRouter();
+  const search = Route.useSearch();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +45,14 @@ function CompleteProfilePage(): JSX.Element {
     }
 
     if (session.session.profileCompleted) {
+      if (search.courseSlug) {
+        void router.navigate({
+          to: "/courses/$slug",
+          params: { slug: search.courseSlug }
+        });
+        return;
+      }
+
       void router.navigate({ to: "/dashboard/profile" });
       return;
     }
@@ -52,12 +67,21 @@ function CompleteProfilePage(): JSX.Element {
         setIsLoading(false);
       }
     })();
-  }, [isSessionPending, router, session]);
+  }, [isSessionPending, router, search.courseSlug, session]);
 
   const finishFlow = async (nextProfile: OwnProfileData, message: string): Promise<void> => {
     setProfile(nextProfile);
     await refetchSession();
     toast.success(message);
+
+    if (search.courseSlug) {
+      await router.navigate({
+        to: "/courses/$slug",
+        params: { slug: search.courseSlug }
+      });
+      return;
+    }
+
     await router.navigate({ to: "/dashboard/profile" });
   };
 

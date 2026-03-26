@@ -21,11 +21,7 @@ import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
 import { breadcrumbJsonLd, courseJsonLd, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
-import {
-  getCourseReviewSummary,
-  listCourseReviews,
-  submitCourseReview
-} from "@/lib/api/reviews";
+import { getCourseReviewSummary, listCourseReviews, submitCourseReview } from "@/lib/api/reviews";
 import { siteConfig } from "@/lib/site";
 
 export const Route = createFileRoute("/courses/$slug")({
@@ -95,12 +91,12 @@ export const Route = createFileRoute("/courses/$slug")({
 
 function StarRow({ rating }: { rating: number }): JSX.Element {
   return (
-    <div className="flex gap-0.5" aria-label={`Rating ${rating} out of 5`}>
-      {Array.from({ length: 5 }, (_, index) => (
+    <div className="flex gap-0.5" role="img" aria-label={`Rating ${rating} out of 5`}>
+      {[1, 2, 3, 4, 5].map((starNumber) => (
         <Star
-          key={index}
+          key={`rating-star-${rating}-${starNumber}`}
           className={`size-4 ${
-            index < rating ? "fill-amber-400 text-amber-400" : "text-on-surface/24"
+            starNumber <= rating ? "fill-amber-400 text-amber-400" : "text-on-surface/24"
           }`}
         />
       ))}
@@ -126,7 +122,7 @@ function CourseDetailPage(): JSX.Element {
 
   useEffect(() => {
     setReviewSummary(loaderReviewSummary);
-  }, [course.id, loaderReviewSummary]);
+  }, [loaderReviewSummary]);
 
   useEffect(() => {
     if (isSessionPending || session?.session.role !== "STUDENT") {
@@ -253,7 +249,9 @@ function CourseDetailPage(): JSX.Element {
                   </span>
                 </div>
               ) : null}
-              <p className="max-w-4xl text-base leading-7 text-on-surface/70">{course.description}</p>
+              <p className="max-w-4xl text-base leading-7 text-on-surface/70">
+                {course.description}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -276,7 +274,11 @@ function CourseDetailPage(): JSX.Element {
                 >
                   {teacher.slug ? (
                     <p className="font-semibold text-on-surface">
-                      <Link className="text-secondary-container underline-offset-4 hover:underline" to="/teachers/$slug" params={{ slug: teacher.slug }}>
+                      <Link
+                        className="text-secondary-container underline-offset-4 hover:underline"
+                        to="/teachers/$slug"
+                        params={{ slug: teacher.slug }}
+                      >
                         {teacher.name}
                       </Link>
                     </p>
@@ -308,9 +310,16 @@ function CourseDetailPage(): JSX.Element {
               {isSessionPending ? (
                 <div className="h-11 animate-pulse rounded-md bg-surface-container-low" />
               ) : !session ? (
-                <Button asChild className="w-full">
-                  <Link to="/auth/sign-in">Sign in to enroll</Link>
-                </Button>
+                <div className="grid gap-3">
+                  <Button asChild className="w-full">
+                    <Link to="/auth/sign-up" search={{ courseSlug: course.slug }}>
+                      Create a student account to enroll
+                    </Link>
+                  </Button>
+                  <Button asChild className="w-full" variant="outline">
+                    <Link to="/login">Already have an account? Sign in</Link>
+                  </Button>
+                </div>
               ) : session.session.role !== "STUDENT" ? (
                 <Button className="w-full" disabled>
                   Student enrollment only
@@ -322,7 +331,11 @@ function CourseDetailPage(): JSX.Element {
                   </Link>
                 </Button>
               ) : (
-                <Button className="w-full" disabled={isSubmittingEnrollment} onClick={() => void handleEnroll()}>
+                <Button
+                  className="w-full"
+                  disabled={isSubmittingEnrollment}
+                  onClick={() => void handleEnroll()}
+                >
                   {isSubmittingEnrollment
                     ? "Preparing checkout"
                     : enrollment?.latestPaymentStatus === "PENDING"
@@ -349,13 +362,18 @@ function CourseDetailPage(): JSX.Element {
           <Card>
             <CardHeader>
               <CardTitle>Learner reviews</CardTitle>
-              <CardDescription>Transparent feedback from students who finished the journey.</CardDescription>
+              <CardDescription>
+                Transparent feedback from students who finished the journey.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {session?.session.role === "STUDENT" &&
               enrollment?.status === "COMPLETED" &&
               !enrollment.hasReview ? (
-                <form className="space-y-4 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4" onSubmit={(event) => void handleReviewSubmit(event)}>
+                <form
+                  className="space-y-4 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4"
+                  onSubmit={(event) => void handleReviewSubmit(event)}
+                >
                   <div>
                     <p className="font-semibold text-on-surface">Share your experience</p>
                     <p className="text-sm text-on-surface/62">Ratings are public once submitted.</p>
@@ -393,14 +411,20 @@ function CourseDetailPage(): JSX.Element {
                 </form>
               ) : null}
 
-              {session?.session.role === "STUDENT" && enrollment?.status === "COMPLETED" && enrollment.hasReview ? (
-                <p className="text-sm text-on-surface/68">You already shared a review for this course.</p>
+              {session?.session.role === "STUDENT" &&
+              enrollment?.status === "COMPLETED" &&
+              enrollment.hasReview ? (
+                <p className="text-sm text-on-surface/68">
+                  You already shared a review for this course.
+                </p>
               ) : null}
 
               {reviewsLoading ? (
                 <div className="h-24 animate-pulse rounded-md bg-surface-container-low" />
               ) : reviews.length === 0 ? (
-                <p className="text-sm text-on-surface/62">No reviews yet. Be the first after you complete the course.</p>
+                <p className="text-sm text-on-surface/62">
+                  No reviews yet. Be the first after you complete the course.
+                </p>
               ) : (
                 <ul className="space-y-4">
                   {reviews.map((review) => (
@@ -416,7 +440,9 @@ function CourseDetailPage(): JSX.Element {
                         {new Date(review.createdAt).toLocaleString()}
                       </p>
                       {review.comment ? (
-                        <p className="mt-3 text-sm leading-7 text-on-surface/80">{review.comment}</p>
+                        <p className="mt-3 text-sm leading-7 text-on-surface/80">
+                          {review.comment}
+                        </p>
                       ) : null}
                     </li>
                   ))}

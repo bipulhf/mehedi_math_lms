@@ -60,7 +60,7 @@ export class SitemapService {
     pushUrl(`${base}/about`, today, "monthly", "0.5");
     pushUrl(`${base}/contact`, today, "monthly", "0.5");
     pushUrl(`${base}/login`, today, "monthly", "0.4");
-    pushUrl(`${base}/signup`, today, "monthly", "0.4");
+    pushUrl(`${base}/auth/sign-up`, today, "monthly", "0.4");
 
     for (const row of courseRows) {
       pushUrl(`${base}/courses/${row.slug}`, row.updatedAt, "weekly", "0.9");
