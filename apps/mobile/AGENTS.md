@@ -7,6 +7,7 @@ bun run start      # expo start
 bun run android
 bun run ios
 bun run lint
+bun run test       # jest-expo — see "Tests" below
 bun run typecheck
 bunx expo-doctor   # 20/20 as of this writing — keep it that way
 ```
@@ -19,10 +20,13 @@ The staged plan for this workspace — what is verified, what is not, and the or
 app/                     Expo Router file routes. (tabs)/ is the signed-in shell.
 src/lib/                 env, api-client, api, auth, session-store, query, hooks
 src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
+src/components/*.tsx     Composed pieces: lecture player, comments, reviews, route error
 src/theme/tokens.ts      The Digital Atelier palette, radii, spacing and type scale
 ```
 
-`app/` holds routes only. Anything reusable belongs in `src/`.
+`app/` holds routes only. Anything reusable belongs in `src/` — including the
+screen tests, because Expo Router would treat a `*.test.tsx` under `app/` as a
+route.
 
 ## Talking to the API
 
@@ -58,6 +62,25 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 
 **Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `mma://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
 
+A **401 from any product request clears the stored cookie**. A session can end while the app is backgrounded, and without this every screen would keep replaying a dead cookie with nothing telling the app to ask for a sign-in.
+
+## Payments
+
+Enrolment checkout has the same shape of problem, and `src/lib/payment.ts` solves it the same way. The gateway's own callbacks are server-to-server and have to land on a real origin, so checkout tells the API where to send the _browser_ afterwards: `callbackOrigin` plus `callbackPath`, the latter pointing at `/api/payment-return` on the web app with this app's deep link in its query. The API merges `paymentId` and `status` into that URL, the web route redirects into `mma://payment-callback?…`, and `openAuthSessionAsync` closes the sheet on it.
+
+The outcome is never taken as proof of anything: on return the app invalidates the enrolment queries and re-reads access from the server. Cancelling is silent, the same rule sign-in follows.
+
+**Deep links need a route.** `app/auth-callback.tsx` and `app/payment-callback.tsx` exist because Android delivers `mma://…` through `Linking` as well as resolving the browser session, and Expo Router would otherwise show `+not-found` at the exact moment the flow succeeded.
+
+## Tests
+
+`jest-expo` with `@testing-library/react-native`. `bun test` cannot run this workspace — it has no React Native renderer, and the value here is in the screens.
+
+- `jest.setup.ts` stubs the native modules whose _behaviour_ is read: SecureStore (an in-memory map, so `session-store.ts` is exercised for real), Linking, WebBrowser, AsyncStorage and the four Reanimated members `SkeletonBlock` uses.
+- Pure logic lives in `src/lib/*` and is tested directly. `resolveOrigins` and `resolveLectureVideo` are exported as pure functions specifically so the branches can be asserted without reloading a module.
+- `src/screens.test.tsx` renders routes: skeleton, then content, then empty state.
+- React logs "not wrapped in act(…)" for queries that settle after the assertion they were not being awaited for. It is noise from TanStack Query's `setTimeout(0)` batching, not a failing expectation.
+
 ## Server state
 
 TanStack Query, with the same rules as the web app: keys come from `queryKeys` in `src/lib/query.ts`, retry is off for 4xx and for all mutations. The cache is persisted to AsyncStorage through `PersistQueryClientProvider`, so the app opens with content rather than skeletons — that persistence is why `gcTime` is a full day.
@@ -72,13 +95,19 @@ No spinners. Standards §12 applies to mobile as written — "every screen, ever
 
 `FlashList` for every list, with a memoised row component and `useCallback` for `renderItem` / `keyExtractor` — FlashList recycles rows, so an unmemoised item re-renders the whole visible window on each keystroke. `expo-image` for every image; its disk cache is what makes the catalogue usable on a second launch.
 
-## Deliberate boundaries
+## Video, profile and messaging
 
-Three things are intentionally *not* reimplemented on mobile, and each carries a note in the code:
+These were the three deliberate boundaries. All three are closed, and how they were closed is the part worth keeping.
 
-- **Video playback.** The player screen tracks and marks progress; it does not ship a second video stack.
-- **Profile completion.** A long, role-specific, schema-validated form. The app points at the web page rather than duplicating it.
-- **Realtime messaging.** The conversation screen polls every 10s rather than holding a WebSocket, which would reconnect on every backgrounding.
+- **Video playback** is `expo-video`, and `src/lib/lecture-video.ts` decides what a lecture is: a media file plays here, a YouTube or Vimeo link is a page with a player on it and opens in the browser. The host list matches `apps/web/src/components/courses/course-player.tsx` — keep them together. Progress comes from a `timeUpdate` listener at 95%, latched locally as well as on the server. The manual "mark as watched" button stayed, because a reading or an external video still needs one.
+- **Profile completion** is native, and the note that used to sit here — that the session cookie would replay in a browser — was wrong. It replays on _requests this app makes_. A browser opened from the app has no cookie and arrives signed out, which is why there is no browser hop for this and none for certificates either. Fields, schema and initial values live in `src/lib/profile-form.ts`, one thing rather than three that can drift.
+- **Realtime messaging** holds an `AppState`-driven socket. Connect and disconnect follow foreground and background, not mount: a socket held across a backgrounding is a dead socket that still looks connected. **The poll was not deleted** — `refetchInterval` is 10s whenever the socket is down, because on a bad network that is the correct behaviour.
+
+## Boundaries that remain
+
+- **No uploads.** Two features are shaped by its absence: the profile form has no photo field, and a bug report carries no screenshot. Both are optional in the shared schemas. Adding uploads means the signed-upload flow, an image picker and permissions on two platforms.
+- **No teacher or admin tooling.** This is a student client. Authoring, moderation and analytics stay on the web.
+- **No offline writes.** The persisted cache makes reading offline work; a queue of pending mutations is a different product.
 
 ## Monorepo notes
 

@@ -81,10 +81,7 @@ async function persistCookie(setCookie: string | null): Promise<void> {
   }
 }
 
-export async function signInWithEmail(input: {
-  email: string;
-  password: string;
-}): Promise<void> {
+export async function signInWithEmail(input: { email: string; password: string }): Promise<void> {
   const { setCookie } = await authRequest("sign-in/email", {
     body: JSON.stringify(input),
     method: "POST"

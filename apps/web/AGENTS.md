@@ -15,7 +15,7 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
-src/routes/api/      Server route handlers (currently only the Better Auth catch-all).
+src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
 src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input.
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
@@ -56,7 +56,7 @@ drift out of sync with the query it is meant to invalidate.
 Retry is off for 4xx and off for all mutations: the ky `afterResponse` hook has
 already raised a toast, and a retry raises a second one.
 
-`src/stores/ui-store.ts` (Zustand) is for genuinely global *UI* state only --
+`src/stores/ui-store.ts` (Zustand) is for genuinely global _UI_ state only --
 currently the unread-message badge, which the messages page owns and the sidebar
 renders. Never put server data there.
 
@@ -123,6 +123,12 @@ Auth gating is **client-side**, in the layout route. `src/routes/dashboard.tsx` 
 `src/lib/auth.ts` re-exports `authClient` from `@mma/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@mma/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
 
 Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`. Role lives at `session.session.role`.
+
+## The two hops for the mobile app
+
+`src/routes/api/mobile-auth-handoff.ts` and `src/routes/api/payment-return.ts` exist for the same reason: the Expo app opens a browser for something it cannot do itself — an OAuth round trip, a payment gateway — and that browser ends up holding state the app cannot read. React Native has no cookie jar, and the gateway's callbacks are server-to-server. Each route is the last hop: it takes a deep link on the query string and 302s into it.
+
+Both take the redirect target from a query parameter, so both go through `isAllowedAppRedirect` in `src/lib/app-link.ts`. **Do not inline that check or widen the scheme list.** Without it either route would bounce a signed-in user — one-time token and all — to any host an attacker named.
 
 ## Styling
 

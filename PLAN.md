@@ -95,18 +95,18 @@ The 2 August audit below produced fourteen design decisions, recorded in [CONTEX
 
 What changed since the audit, and which phase sections below it supersedes:
 
-| Change | ADR | Supersedes |
-| ------ | --- | ---------- |
-| Enrolments are created only once payment clears; `payments.course_id`; refund cancels; entitlement (`cancelled_at`) split from progress (`status`) | 0001 | Phase 13 |
-| Settlement verifies the gateway's validation status and the paid amount; `SSLCOMMERZ_SANDBOX_MODE` parsed with `z.stringbool()` | 0001 | Phase 13 |
-| Completion = every lecture watched **and** every published test passed, caused by a student action, latching. Exam-only courses can complete | 0005 | Phases 12, 14 |
-| Course authority on `course_teachers.role` (OWNER/TEACHER); a course always has an owner | 0006 | Phases 9, 10 |
-| Withdraw/restore replaces delete; exam-only is enforced, not decorative | -- | Phase 9 |
-| Admins can create admins behind re-authentication; the last admin cannot be deactivated | 0002 | Phase 7 |
-| User deletion removed -- deactivation is the only terminal state | 0003 | Phase 7 |
-| Reporting a conversation unlocks admin review of it, audited; messages can be hidden, not deleted | 0004 | Phase 16 |
-| Domain events raise notifications (notice, payment, course approval, bug status) | -- | Phases 17, 18 |
-| 84 unit tests, a `test` task in Turbo, and `tsconfig.build.json` so tests typecheck without being emitted | -- | Cross-cutting |
+| Change                                                                                                                                             | ADR  | Supersedes    |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ------------- |
+| Enrolments are created only once payment clears; `payments.course_id`; refund cancels; entitlement (`cancelled_at`) split from progress (`status`) | 0001 | Phase 13      |
+| Settlement verifies the gateway's validation status and the paid amount; `SSLCOMMERZ_SANDBOX_MODE` parsed with `z.stringbool()`                    | 0001 | Phase 13      |
+| Completion = every lecture watched **and** every published test passed, caused by a student action, latching. Exam-only courses can complete       | 0005 | Phases 12, 14 |
+| Course authority on `course_teachers.role` (OWNER/TEACHER); a course always has an owner                                                           | 0006 | Phases 9, 10  |
+| Withdraw/restore replaces delete; exam-only is enforced, not decorative                                                                            | --   | Phase 9       |
+| Admins can create admins behind re-authentication; the last admin cannot be deactivated                                                            | 0002 | Phase 7       |
+| User deletion removed -- deactivation is the only terminal state                                                                                   | 0003 | Phase 7       |
+| Reporting a conversation unlocks admin review of it, audited; messages can be hidden, not deleted                                                  | 0004 | Phase 16      |
+| Domain events raise notifications (notice, payment, course approval, bug status)                                                                   | --   | Phases 17, 18 |
+| 84 unit tests, a `test` task in Turbo, and `tsconfig.build.json` so tests typecheck without being emitted                                          | --   | Cross-cutting |
 
 **Five migrations are applied**: `0000` initial, `0001` enrolment/payment split, `0002` course teacher
 role, `0003` owner backfill, `0004` moderation tables. 34 tables.
@@ -118,15 +118,15 @@ role, `0003` owner backfill, `0004` moderation tables. 34 tables.
 The 2 August audit left a backlog: four phases short of complete, three cross-cutting concerns open, and a
 polish list. **All of it is now built.** Nothing in the 21-phase plan is outstanding.
 
-| Change | Closes | Commit |
-| ------ | ------ | ------ |
-| `file-processing` worker consumes `extract-video-metadata`, with an ISO base media container parser (there is no ffmpeg on the API host) and a backfill script | Phase 11 | `be59710` |
-| Read-through Redis cache over the public catalogue, the category tree, analytics aggregates and lecture comment threads, invalidated through a key index | Phase 15, `xc-caching` | `cc83fc0` |
-| Message moderation UI: report dialog, admin queue at `/dashboard/admin/message-reports`, per-message hide, tombstones for participants | Phase 16 | `c904d47` |
-| TanStack Query owns every server read on the web; Zustand holds the unread badge; the `window` CustomEvent bus is gone | `xc-state-management` | `0ed4a1f`, `cdbfd7d`, `2d23dc7` |
-| 15 API integration tests over the real Hono app and 12 Playwright E2E specs | `xc-testing` | `86d384a` |
-| `/sitemap.xml` and `/robots.txt` on the public origin, a real 404 component, the missing §12 skeletons, `pendingComponent`, image CLS, and the dead-code sweep | Polish backlog | `7cfe99a` |
-| The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@mma/shared`, TanStack Query, FlashList and expo-image | Phase 21 | `e0e8b34` |
+| Change                                                                                                                                                         | Closes                 | Commit                          |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------- |
+| `file-processing` worker consumes `extract-video-metadata`, with an ISO base media container parser (there is no ffmpeg on the API host) and a backfill script | Phase 11               | `be59710`                       |
+| Read-through Redis cache over the public catalogue, the category tree, analytics aggregates and lecture comment threads, invalidated through a key index       | Phase 15, `xc-caching` | `cc83fc0`                       |
+| Message moderation UI: report dialog, admin queue at `/dashboard/admin/message-reports`, per-message hide, tombstones for participants                         | Phase 16               | `c904d47`                       |
+| TanStack Query owns every server read on the web; Zustand holds the unread badge; the `window` CustomEvent bus is gone                                         | `xc-state-management`  | `0ed4a1f`, `cdbfd7d`, `2d23dc7` |
+| 15 API integration tests over the real Hono app and 12 Playwright E2E specs                                                                                    | `xc-testing`           | `86d384a`                       |
+| `/sitemap.xml` and `/robots.txt` on the public origin, a real 404 component, the missing §12 skeletons, `pendingComponent`, image CLS, and the dead-code sweep | Polish backlog         | `7cfe99a`                       |
+| The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@mma/shared`, TanStack Query, FlashList and expo-image            | Phase 21               | `e0e8b34`                       |
 
 Two changes reach beyond one workspace and are worth knowing about:
 
@@ -147,18 +147,18 @@ tables above, the tables are what the code does.
 and found what the 3 August rewrite had erased: things asked for and never built. Every finding is now
 closed.
 
-| Change | Closes |
-| ------ | ------ |
-| `og:image` rasterises to a 1200×630 PNG. It was `image/svg+xml`, which Facebook, X, LinkedIn, WhatsApp, Slack and iMessage all reject — every share of every page fell back to a bare text card | A2 |
-| The homepage reads real data through a new public `GET /api/v1/landing`: featured courses, live category counts, the teachers who actually teach here, real aggregates. It had been hardcoded fiction over eleven images hotlinked from a Google AI-Studio scratch CDN | A1 |
-| 126 validator tests in `@mma/shared`, and Playwright coverage of enrolment and payment. Writing the first caught a live defect: `.partial()` does not strip a `.default()`, so every course patch silently cleared `isExamOnly` | D |
-| `/login` and `/signup` canonicalise to their `/auth/*` originals instead of each claiming to be one | A6 |
-| Mobile: Manrope and Inter actually bundled and loaded (the type scale was silently falling back to the system font), the boot spinner replaced by a Reanimated skeleton, and Google sign-in added — its absence was a lockout, not a missing convenience | A3, A4, A5, A8 |
-| Validation red, chart colours and six sectioning dividers back on the theme; error boundaries on the last two routes | B2, B3, B4 |
-| The five files over the 800-line ceiling split along seams that already existed | B7 |
-| The dead `email` queue deleted, the WebSocket apps moved into the `websocket/` directory scaffolded for them, and the empty `apps/web/src/providers/` removed | A7, C2, C3 |
-| Route files renamed `courses-route.ts` so all four backend layers agree; the `pendingComponent`, feature-structure, mobile default-export and env-tier rules decided and written down rather than left as drift | B1, B5, B6, B8, C1 |
-| `z.coerce.boolean()` replaced by a shared `booleanQueryParamSchema` on `flat`, `includeInactive` and `mine`. `Boolean("false")` is `true`, so `?flat=false` meant flat and every other value did too | found on the way |
+| Change                                                                                                                                                                                                                                                                 | Closes             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `og:image` rasterises to a 1200×630 PNG. It was `image/svg+xml`, which Facebook, X, LinkedIn, WhatsApp, Slack and iMessage all reject — every share of every page fell back to a bare text card                                                                        | A2                 |
+| The homepage reads real data through a new public `GET /api/v1/landing`: featured courses, live category counts, the teachers who actually teach here, real aggregates. It had been hardcoded fiction over eleven images hotlinked from a Google AI-Studio scratch CDN | A1                 |
+| 126 validator tests in `@mma/shared`, and Playwright coverage of enrolment and payment. Writing the first caught a live defect: `.partial()` does not strip a `.default()`, so every course patch silently cleared `isExamOnly`                                        | D                  |
+| `/login` and `/signup` canonicalise to their `/auth/*` originals instead of each claiming to be one                                                                                                                                                                    | A6                 |
+| Mobile: Manrope and Inter actually bundled and loaded (the type scale was silently falling back to the system font), the boot spinner replaced by a Reanimated skeleton, and Google sign-in added — its absence was a lockout, not a missing convenience               | A3, A4, A5, A8     |
+| Validation red, chart colours and six sectioning dividers back on the theme; error boundaries on the last two routes                                                                                                                                                   | B2, B3, B4         |
+| The five files over the 800-line ceiling split along seams that already existed                                                                                                                                                                                        | B7                 |
+| The dead `email` queue deleted, the WebSocket apps moved into the `websocket/` directory scaffolded for them, and the empty `apps/web/src/providers/` removed                                                                                                          | A7, C2, C3         |
+| Route files renamed `courses-route.ts` so all four backend layers agree; the `pendingComponent`, feature-structure, mobile default-export and env-tier rules decided and written down rather than left as drift                                                        | B1, B5, B6, B8, C1 |
+| `z.coerce.boolean()` replaced by a shared `booleanQueryParamSchema` on `flat`, `includeInactive` and `mine`. `Boolean("false")` is `true`, so `?flat=false` meant flat and every other value did too                                                                   | found on the way   |
 
 Current state: **lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 134 shared tests, 34 Playwright tests,
 all passing.**
@@ -173,29 +173,29 @@ code does not do). Anything not listed under Remaining is built and wired end to
 
 ### Phase status at a glance
 
-| Phase | Title                                | Status         | Outstanding work                                              |
-| ----- | ------------------------------------ | -------------- | ------------------------------------------------------------- |
-| 1     | Monorepo Setup                       | ✅ Complete    | --                                                             |
-| 2     | Database Schema + Drizzle            | ✅ Complete    | --                                                             |
-| 3     | Backend Core (Hono)                  | ✅ Complete    | The `/api/v1/users/*` 501 stub was deleted, not built out       |
-| 4     | Authentication (Better Auth)         | ✅ Complete    | --                                                             |
-| 5     | Frontend Foundation + Design System  | ✅ Complete    | `pendingComponent` now on every route with a loader             |
-| 6     | User and Profile Management          | ✅ Complete    | --                                                             |
-| 7     | Admin Dashboard + Bug Reports        | ✅ Complete    | Admin creation (ADR-0002), deletion removed (ADR-0003)         |
-| 8     | Category Management                  | ✅ Complete    | --                                                             |
-| 9     | Course CRUD + Approval               | ✅ Complete    | Ownership (ADR-0006), withdraw/restore, exam-only enforced     |
-| 10    | Chapters, Lectures, Materials        | ✅ Complete    | --                                                             |
-| 11    | File Upload + Media (S3)             | ✅ Complete    | Worker written; thumbnail variants still not generated          |
-| 12    | Tests and Assessments                | ✅ Complete    | `passingScore` is now evaluated (ADR-0005)                     |
-| 13    | Enrollment + Payment (SSLCommerz)    | ✅ Complete    | Reworked per ADR-0001; env flag fixed; still never run against a live gateway |
-| 14    | Course Player                        | ✅ Complete    | Completion rule reworked (ADR-0005); the chunked tracker is in place on web and mobile |
-| 15    | Community and Discussion             | ✅ Complete    | Threads are Redis-cached as records and invalidated on write    |
-| 16    | Real-time Messaging (WebSocket)      | ✅ Complete    | Moderation is end to end (ADR-0004); blocking remains out of scope |
-| 17    | Notification System (FCM + in-app)   | ✅ Complete    | Domain events now raise notifications                          |
-| 18    | SMS, Noticeboard, Bulk Comms         | ✅ Complete    | Onecodesoft never exercised against the live gateway           |
-| 19    | Analytics, Reviews, PDF, Certificates| ✅ Complete    | --                                                             |
-| 20    | SEO Optimization                     | ✅ Complete    | Crawler files now served from the public origin too             |
-| 21    | React Native Mobile App              | ✅ Complete    | Built on `@mma/shared`; playback and profile completion stay on web |
+| Phase | Title                                 | Status      | Outstanding work                                                                       |
+| ----- | ------------------------------------- | ----------- | -------------------------------------------------------------------------------------- |
+| 1     | Monorepo Setup                        | ✅ Complete | --                                                                                     |
+| 2     | Database Schema + Drizzle             | ✅ Complete | --                                                                                     |
+| 3     | Backend Core (Hono)                   | ✅ Complete | The `/api/v1/users/*` 501 stub was deleted, not built out                              |
+| 4     | Authentication (Better Auth)          | ✅ Complete | --                                                                                     |
+| 5     | Frontend Foundation + Design System   | ✅ Complete | `pendingComponent` now on every route with a loader                                    |
+| 6     | User and Profile Management           | ✅ Complete | --                                                                                     |
+| 7     | Admin Dashboard + Bug Reports         | ✅ Complete | Admin creation (ADR-0002), deletion removed (ADR-0003)                                 |
+| 8     | Category Management                   | ✅ Complete | --                                                                                     |
+| 9     | Course CRUD + Approval                | ✅ Complete | Ownership (ADR-0006), withdraw/restore, exam-only enforced                             |
+| 10    | Chapters, Lectures, Materials         | ✅ Complete | --                                                                                     |
+| 11    | File Upload + Media (S3)              | ✅ Complete | Worker written; thumbnail variants still not generated                                 |
+| 12    | Tests and Assessments                 | ✅ Complete | `passingScore` is now evaluated (ADR-0005)                                             |
+| 13    | Enrollment + Payment (SSLCommerz)     | ✅ Complete | Reworked per ADR-0001; env flag fixed; still never run against a live gateway          |
+| 14    | Course Player                         | ✅ Complete | Completion rule reworked (ADR-0005); the chunked tracker is in place on web and mobile |
+| 15    | Community and Discussion              | ✅ Complete | Threads are Redis-cached as records and invalidated on write                           |
+| 16    | Real-time Messaging (WebSocket)       | ✅ Complete | Moderation is end to end (ADR-0004); blocking remains out of scope                     |
+| 17    | Notification System (FCM + in-app)    | ✅ Complete | Domain events now raise notifications                                                  |
+| 18    | SMS, Noticeboard, Bulk Comms          | ✅ Complete | Onecodesoft never exercised against the live gateway                                   |
+| 19    | Analytics, Reviews, PDF, Certificates | ✅ Complete | --                                                                                     |
+| 20    | SEO Optimization                      | ✅ Complete | Crawler files now served from the public origin too                                    |
+| 21    | React Native Mobile App               | ✅ Complete | Built on `@mma/shared`; playback and profile completion stay on web                    |
 
 ### Cross-cutting gaps (not owned by any single phase)
 
@@ -232,6 +232,7 @@ These were the items that cut across the whole codebase.
    genuinely unfinished item from the original audit backlog. The `email` case was resolved by removing the
    enqueue: no transport is installed, so staff credentials reach the new user via the creation response,
    read off by the admin and passed along out of band.
+
 5. **No `pendingComponent` anywhere.** 0 of 49 route files use TanStack Router's `pendingComponent`, which
    §12 requires for page-level skeletons. Skeletons are rendered inline from component state instead.
    `errorComponent` is in place on 47 of 49 route files, so error boundaries are effectively complete.
@@ -400,37 +401,37 @@ mehedi_math_academy/
 Every dependency was bumped to its latest stable release on 2 August 2026. This table reflects what is in
 the lockfile, not what the March 2026 plan proposed. Rows where reality diverged from the plan are flagged.
 
-| Layer         | Technology                     | Installed Range   | Notes                                                                    |
-| ------------- | ------------------------------ | ----------------- | ------------------------------------------------------------------------ |
-| Runtime       | Bun                            | 1.3.11            | `packageManager` pin in root `package.json`                              |
-| Monorepo      | Turborepo + Bun workspaces     | ^2.10.8           | `apps/*`, `packages/*`, `tooling/*`                                      |
-| Language      | TypeScript                     | ^6.0.3            | TS 7 was trialled and reverted -- typescript-eslint has no TS 7 support  |
-| Lint          | ESLint + typescript-eslint     | ^10.8.0 / ^8.65.0 | Flat config in `packages/config/eslint.config.mjs`                       |
-| Frontend      | TanStack Router / Start        | ^1.170.18 / ^1.168.34 | React 19.2.8                                                         |
-| Bundler       | Vite                           | ^8.2.0            | `@vitejs/plugin-react` ^6.0.5                                            |
-| UI Library    | shadcn/ui                      | `components.json` | 9 primitives vendored so far                                             |
-| Styling       | Tailwind CSS v4                | ^4.3.3            | `@theme` in `styles/app.css`, no config file                             |
-| Forms         | React Hook Form + Zod          | ^7.84.0 / ^4.4.3  | via `lib/forms/use-zod-form.ts`                                          |
-| HTTP Client   | ky                             | ^2                | **v2**, not the planned v1 -- hook signatures are the state-object form  |
-| Server state  | *(none)*                       | --                | ⚠️ TanStack Query was planned but never installed                        |
-| Global UI state | *(none)*                     | --                | ⚠️ Zustand was planned but never installed                               |
-| Backend       | Hono                           | ^4.12.33          | Bun runtime                                                              |
-| Database      | PostgreSQL                     | 18.x              | via `pg` ^8.22.0 Pool                                                    |
-| ORM           | Drizzle ORM / drizzle-kit      | ^0.45.2 / ^0.31.10 | `drizzle-orm/node-postgres`                                             |
-| Auth          | Better Auth + Drizzle adapter  | ^1.6.25           | `admin()` and `customSession()` plugins                                  |
-| Cache         | ioredis                        | ^6                | **v6** (RESP3 default); fall back to `protocol: 2` if queues misbehave   |
-| Queue         | BullMQ                         | ^6                | 4 queues declared, 2 workers written                                     |
-| Storage       | AWS S3 SDK v3                  | ^3.1101.0         | `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`                    |
-| Payments      | *hand-rolled SSLCommerz*       | --                | ⚠️ `sslcommerz-lts` not used; direct REST calls + mock mode              |
-| Notifications | firebase-admin / firebase      | ^14 / ^12         | Web SW `importScripts` pinned to 12.17.0 -- update by hand on each bump  |
-| PDF           | pdf-lib (API) / @react-pdf/renderer (web) | ^1.17.1 / ^4.5.1 | ⚠️ Server-side generation uses pdf-lib                       |
-| Mobile        | React Native 0.86.2 + Expo SDK 57 | SDK 57         | ⚠️ Plan said SDK 54; React 19.2.3, Reanimated 4.5.1                      |
-| WebSocket     | Hono WebSocket                 | built-in (`hono/ws`) | Two separate WS apps, outside the main middleware chain               |
-| Validation    | Zod                            | ^4.4.3            | Shared via `@mma/shared`                                                 |
-| Logging       | pino                           | ^10.3.1           | Structured JSON logs                                                     |
-| Charts        | Recharts                       | ^3.10.1           | Bar, Line, Pie in admin analytics                                        |
-| Icons         | lucide-react                   | ^1.28.0           |                                                                          |
-| Toasts        | sonner                         | ^2.0.7            | Driven by the ky `afterResponse` hook                                    |
+| Layer           | Technology                                | Installed Range       | Notes                                                                   |
+| --------------- | ----------------------------------------- | --------------------- | ----------------------------------------------------------------------- |
+| Runtime         | Bun                                       | 1.3.11                | `packageManager` pin in root `package.json`                             |
+| Monorepo        | Turborepo + Bun workspaces                | ^2.10.8               | `apps/*`, `packages/*`, `tooling/*`                                     |
+| Language        | TypeScript                                | ^6.0.3                | TS 7 was trialled and reverted -- typescript-eslint has no TS 7 support |
+| Lint            | ESLint + typescript-eslint                | ^10.8.0 / ^8.65.0     | Flat config in `packages/config/eslint.config.mjs`                      |
+| Frontend        | TanStack Router / Start                   | ^1.170.18 / ^1.168.34 | React 19.2.8                                                            |
+| Bundler         | Vite                                      | ^8.2.0                | `@vitejs/plugin-react` ^6.0.5                                           |
+| UI Library      | shadcn/ui                                 | `components.json`     | 9 primitives vendored so far                                            |
+| Styling         | Tailwind CSS v4                           | ^4.3.3                | `@theme` in `styles/app.css`, no config file                            |
+| Forms           | React Hook Form + Zod                     | ^7.84.0 / ^4.4.3      | via `lib/forms/use-zod-form.ts`                                         |
+| HTTP Client     | ky                                        | ^2                    | **v2**, not the planned v1 -- hook signatures are the state-object form |
+| Server state    | _(none)_                                  | --                    | ⚠️ TanStack Query was planned but never installed                       |
+| Global UI state | _(none)_                                  | --                    | ⚠️ Zustand was planned but never installed                              |
+| Backend         | Hono                                      | ^4.12.33              | Bun runtime                                                             |
+| Database        | PostgreSQL                                | 18.x                  | via `pg` ^8.22.0 Pool                                                   |
+| ORM             | Drizzle ORM / drizzle-kit                 | ^0.45.2 / ^0.31.10    | `drizzle-orm/node-postgres`                                             |
+| Auth            | Better Auth + Drizzle adapter             | ^1.6.25               | `admin()` and `customSession()` plugins                                 |
+| Cache           | ioredis                                   | ^6                    | **v6** (RESP3 default); fall back to `protocol: 2` if queues misbehave  |
+| Queue           | BullMQ                                    | ^6                    | 4 queues declared, 2 workers written                                    |
+| Storage         | AWS S3 SDK v3                             | ^3.1101.0             | `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`                   |
+| Payments        | _hand-rolled SSLCommerz_                  | --                    | ⚠️ `sslcommerz-lts` not used; direct REST calls + mock mode             |
+| Notifications   | firebase-admin / firebase                 | ^14 / ^12             | Web SW `importScripts` pinned to 12.17.0 -- update by hand on each bump |
+| PDF             | pdf-lib (API) / @react-pdf/renderer (web) | ^1.17.1 / ^4.5.1      | ⚠️ Server-side generation uses pdf-lib                                  |
+| Mobile          | React Native 0.86.2 + Expo SDK 57         | SDK 57                | ⚠️ Plan said SDK 54; React 19.2.3, Reanimated 4.5.1                     |
+| WebSocket       | Hono WebSocket                            | built-in (`hono/ws`)  | Two separate WS apps, outside the main middleware chain                 |
+| Validation      | Zod                                       | ^4.4.3                | Shared via `@mma/shared`                                                |
+| Logging         | pino                                      | ^10.3.1               | Structured JSON logs                                                    |
+| Charts          | Recharts                                  | ^3.10.1               | Bar, Line, Pie in admin analytics                                       |
+| Icons           | lucide-react                              | ^1.28.0               |                                                                         |
+| Toasts          | sonner                                    | ^2.0.7                | Driven by the ky `afterResponse` hook                                   |
 
 ---
 
@@ -1153,6 +1154,7 @@ erDiagram
   Net effect: `sslcommerz-service.ts` will always target `sandbox.sslcommerz.com` no matter what the
   environment says. Fix by parsing the flag as `z.enum(["true","false"]).transform(v => v === "true")` (or
   `z.stringbool()`), settling on one variable name, and documenting it in `.env.example`.
+
 - The live SSLCommerz gateway has never been exercised -- only sandbox and the built-in mock. Validate the
   IPN callbacks against a real store before launch.
 
@@ -1284,7 +1286,7 @@ erDiagram
 - `messages` table has no `deletedAt` and no delete endpoint exists -- the "messages cannot be deleted"
   rule holds at the schema level.
 - `routes/dashboard/messages.tsx` implements the conversation sidebar and thread, live delivery, typing
-  indicators, read receipts, presence, conversation search *and* in-thread message search, and an unread
+  indicators, read receipts, presence, conversation search _and_ in-thread message search, and an unread
   badge. `lib/ws-url.ts` resolves the socket endpoint.
 
 **Remaining:**
@@ -1580,8 +1582,16 @@ erDiagram
   configuration that makes that work.
 - It pins its own TypeScript (`~6.0.3`) rather than inheriting the root one; `expo install --fix` owns that
   pin and will move it to whatever the installed SDK expects.
-- Three things are deliberately not reimplemented here — video playback, profile completion, and realtime
-  messaging — each with a note in the code. See `apps/mobile/AGENTS.md`.
+- ~~Three things are deliberately not reimplemented here — video playback, profile completion, and realtime
+  messaging~~ — all three closed on 3 August 2026 while working through `docs/mobile-plan.md`. Playback is
+  `expo-video` with progress driven from `timeUpdate`; the profile form is native (a browser opened from
+  the app arrives signed out, because the session cookie lives in this app's keychain); messaging holds an
+  `AppState`-driven socket and falls back to the poll when it is down.
+- The parity gaps are closed too: lecture comments, course reviews, certificate download and share, course
+  notices, bug reports, and price filters on the catalogue.
+- It has tests: `jest-expo` plus `@testing-library/react-native`, so `bun run test` covers three workspaces.
+- **Nothing in it has been run on a device.** Everything above typechecks, lints, bundles and passes its
+  tests; none of that is evidence that a screen renders. See `docs/mobile-plan.md`, Stage 0.
 
 **Key tasks:**
 
@@ -1660,7 +1670,7 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 - Redis is wired throughout: BullMQ queues, the rate limiter, WebSocket pub/sub, the health probe, the
   sitemap, and now `lib/cache.ts`.
 - The public course catalogue, the category tree, analytics aggregates and lecture comment threads are
-  read through `lib/cache.ts`. Only the *public* catalogue is cached — "mine" and the admin view are
+  read through `lib/cache.ts`. Only the _public_ catalogue is cached — "mine" and the admin view are
   per-user and carry unpublished courses.
 - Invalidation is explicit and index-based: every cached key is also a member of a Redis set, so a
   mutation can drop exactly what it staled without `SCAN` or `KEYS`. Analytics is TTL-only; the reasoning
@@ -1689,7 +1699,11 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
   and a forged gateway callback for an unknown payment is a 404 rather than a redirect that settles it.
   They are outside the Turbo `test` task on purpose: that task must run with nothing else on the machine,
   and these need the API, Postgres and Redis.
-- Still uncovered: `apps/mobile` has no tests, and `apps/web` has no component tests.
+- `apps/mobile` is covered by `jest-expo` and `@testing-library/react-native` as of 3 August 2026: the
+  pure logic (`resolveOrigins`, `resolveLectureVideo`, the checkout outcome reader, the profile form) plus
+  screen smoke tests that render each route's skeleton, content and empty state. `bun test` cannot run
+  that workspace — it has no React Native renderer — so it has its own runner behind the same Turbo task.
+- Still uncovered: `apps/web` has no component tests.
 
 ---
 
@@ -1831,7 +1845,7 @@ apps/web/src/
 
 > ⚠️ **Not implemented.** Neither TanStack Query nor Zustand is installed. Server data is fetched with
 > `useEffect` + `useState` (112 `useEffect` call sites) or through TanStack Router loaders. Treat this
-> section as the target state, not a description of the code. React Hook Form + Zod (below) *is* in place.
+> section as the target state, not a description of the code. React Hook Form + Zod (below) _is_ in place.
 
 - **Server state:** TanStack Query (React Query) for all API data. No `useState` for server-fetched data.
 - **Form state:** React Hook Form with Zod resolver. No manual form state management.
@@ -1932,21 +1946,21 @@ Audited 2 August 2026, completed 3 August 2026. The ones added on the 3rd live t
 `components/common/skeletons.tsx`, because several have more than one caller; the feature-specific ones
 stay beside their component.
 
-| Feature            | Required Skeletons                                         | Status                                         |
-| ------------------ | ---------------------------------------------------------- | ---------------------------------------------- |
-| Course catalog     | `CourseCardSkeleton`, `CourseGridSkeleton` (grid of cards) | ✅ `CourseGridSkeleton` + `CourseListSkeleton` |
-| Course detail      | `CourseDetailSkeleton` (hero + description + sidebar)      | ✅ also the route's `pendingComponent`         |
-| Course player      | `PlayerSkeleton` (video area + sidebar nav)                | ✅ as `CoursePlayerSkeleton`                   |
+| Feature            | Required Skeletons                                         | Status                                                    |
+| ------------------ | ---------------------------------------------------------- | --------------------------------------------------------- |
+| Course catalog     | `CourseCardSkeleton`, `CourseGridSkeleton` (grid of cards) | ✅ `CourseGridSkeleton` + `CourseListSkeleton`            |
+| Course detail      | `CourseDetailSkeleton` (hero + description + sidebar)      | ✅ also the route's `pendingComponent`                    |
+| Course player      | `PlayerSkeleton` (video area + sidebar nav)                | ✅ as `CoursePlayerSkeleton`                              |
 | Course editing     | (not originally listed)                                    | ✅ `CourseEditorSkeleton`, `CourseContentBuilderSkeleton` |
-| Dashboard          | `DashboardStatsSkeleton`, `RecentActivitySkeleton`         | ✅ as `StatsGridSkeleton` + `RecentActivitySkeleton` |
-| User table (admin) | `DataTableSkeleton` (rows with column placeholders)        | ✅                                             |
-| Profile            | `ProfilePageSkeleton` (avatar + form fields)               | ✅                                             |
-| Messages           | `ConversationListSkeleton`, `MessageThreadSkeleton`        | ✅                                             |
-| Comments           | `CommentThreadSkeleton` (nested comment shapes)            | ✅                                             |
-| Notifications      | `NotificationListSkeleton`                                 | ✅                                             |
-| Category tree      | `CategoryTreeSkeleton`                                     | ✅                                             |
-| Test/exam          | `TestBuilderSkeleton`, `TestTakingSkeleton`                | ✅                                             |
-| Analytics          | `ChartSkeleton`, `StatsGridSkeleton`                       | ✅ both, used by three analytics pages         |
+| Dashboard          | `DashboardStatsSkeleton`, `RecentActivitySkeleton`         | ✅ as `StatsGridSkeleton` + `RecentActivitySkeleton`      |
+| User table (admin) | `DataTableSkeleton` (rows with column placeholders)        | ✅                                                        |
+| Profile            | `ProfilePageSkeleton` (avatar + form fields)               | ✅                                                        |
+| Messages           | `ConversationListSkeleton`, `MessageThreadSkeleton`        | ✅                                                        |
+| Comments           | `CommentThreadSkeleton` (nested comment shapes)            | ✅                                                        |
+| Notifications      | `NotificationListSkeleton`                                 | ✅                                                        |
+| Category tree      | `CategoryTreeSkeleton`                                     | ✅                                                        |
+| Test/exam          | `TestBuilderSkeleton`, `TestTakingSkeleton`                | ✅                                                        |
+| Analytics          | `ChartSkeleton`, `StatsGridSkeleton`                       | ✅ both, used by three analytics pages                    |
 
 ### 13. CSS and Styling Rules
 
@@ -2022,8 +2036,14 @@ rather than a task.
   with no backfill. This database was empty and verified so before applying. BLOCKERS.md carries the
   manual three-step sequence for any deployment that has rows.
 - **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
-- **`apps/mobile` has no tests**, and `apps/web` has no component tests. (`packages/shared` validators
-  are covered as of 3 August 2026.)
+- **`apps/web` has no component tests.** (`packages/shared` validators and `apps/mobile` are covered as of
+  3 August 2026.)
+- **Nothing in `apps/mobile` has ever executed.** It typechecks, lints, bundles (4.8MB Hermes, 33 assets)
+  and passes 60 tests, and none of that is a device. `docs/mobile-plan.md` Stage 0 is the first thing to do
+  with a phone in hand.
+- **`callbackOrigin` on enrolment is trusted as given.** An authenticated student can set the post-payment
+  redirect to any origin. `callbackPath` is constrained to a path _on_ that origin, so it adds nothing, but
+  the origin itself predates this and is still unvalidated.
 - ~~**The `email` queue has neither producer nor consumer.**~~ Deleted on 3 August 2026. The Stage 5
   enqueue had been removed deliberately, but the queue itself was left declared — holding a Redis
   connection and appearing in dashboards as a queue that never drains. Reinstate it with its transport,
