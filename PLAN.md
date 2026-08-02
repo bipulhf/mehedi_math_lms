@@ -2,6 +2,7 @@
 name: LMS Platform Build Plan
 overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
 lastAudited: 2026-08-02
+lastImplemented: 2026-08-02
 todos:
   - id: phase-01
     content: "Phase 1: Monorepo Setup and Project Foundation (Turborepo + Bun + shared configs)"
@@ -36,6 +37,9 @@ todos:
   - id: phase-11
     content: "Phase 11: File Upload and Media Management (AWS S3 presigned URLs, video/image/doc) -- video metadata worker still missing"
     status: in_progress
+  - id: phase-11-worker
+    content: "Phase 11 remainder: write the file-processing worker; extract-video-metadata jobs are still queued and never consumed"
+    status: pending
   - id: phase-12
     content: "Phase 12: Tests and Assessments (MCQ auto-grade, written manual grade, timer)"
     status: completed
@@ -48,6 +52,9 @@ todos:
   - id: phase-15
     content: "Phase 15: Community and Discussion System (threaded comments per lecture) -- Redis cache for hot threads not built"
     status: in_progress
+  - id: phase-16-moderation-ui
+    content: "Phase 16 remainder: message moderation has a complete API but no web UI, so students cannot actually report a conversation"
+    status: pending
   - id: phase-16
     content: "Phase 16: Real-time Messaging System (WebSocket 1-to-1, no delete)"
     status: completed
@@ -70,8 +77,8 @@ todos:
     content: "Cross-cutting: adopt TanStack Query for server state and Zustand for global UI state (neither is installed; all fetching is useEffect + useState)"
     status: pending
   - id: xc-testing
-    content: "Cross-cutting: testing (Bun unit tests, API integration tests, Playwright E2E) -- zero test files exist"
-    status: pending
+    content: "Cross-cutting: testing -- 84 unit tests now cover the payment, completion, ownership, admin, and moderation services; API integration tests and Playwright E2E still absent"
+    status: in_progress
   - id: xc-caching
     content: "Cross-cutting: Redis caching for course listings, category tree, and analytics aggregates (only the sitemap is cached today)"
     status: in_progress
@@ -82,6 +89,36 @@ isProject: false
 
 **Site Name:** Mehedi's Math Academy
 **Domain:** mehedismathacademy.com
+
+---
+
+## Implementation Record -- 2 August 2026
+
+The 2 August audit below produced fourteen design decisions, recorded in [CONTEXT.md](./CONTEXT.md) and
+[docs/adr/](./docs/adr/), and sequenced in [docs/implementation-plan.md](./docs/implementation-plan.md).
+**All nine stages of that plan have been implemented.** See [SUMMARY.md](./SUMMARY.md) for the outcome and
+[BLOCKERS.md](./BLOCKERS.md) for every judgement call made along the way.
+
+What changed since the audit, and which phase sections below it supersedes:
+
+| Change | ADR | Supersedes |
+| ------ | --- | ---------- |
+| Enrolments are created only once payment clears; `payments.course_id`; refund cancels; entitlement (`cancelled_at`) split from progress (`status`) | 0001 | Phase 13 |
+| Settlement verifies the gateway's validation status and the paid amount; `SSLCOMMERZ_SANDBOX_MODE` parsed with `z.stringbool()` | 0001 | Phase 13 |
+| Completion = every lecture watched **and** every published test passed, caused by a student action, latching. Exam-only courses can complete | 0005 | Phases 12, 14 |
+| Course authority on `course_teachers.role` (OWNER/TEACHER); a course always has an owner | 0006 | Phases 9, 10 |
+| Withdraw/restore replaces delete; exam-only is enforced, not decorative | -- | Phase 9 |
+| Admins can create admins behind re-authentication; the last admin cannot be deactivated | 0002 | Phase 7 |
+| User deletion removed -- deactivation is the only terminal state | 0003 | Phase 7 |
+| Reporting a conversation unlocks admin review of it, audited; messages can be hidden, not deleted | 0004 | Phase 16 |
+| Domain events raise notifications (notice, payment, course approval, bug status) | -- | Phases 17, 18 |
+| 84 unit tests, a `test` task in Turbo, and `tsconfig.build.json` so tests typecheck without being emitted | -- | Cross-cutting |
+
+**Five migrations are applied**: `0000` initial, `0001` enrolment/payment split, `0002` course teacher
+role, `0003` owner backfill, `0004` moderation tables. 34 tables.
+
+**Everything below this section is the original plan plus the 2 August audit.** Where it disagrees with the
+table above, the table is what the code does.
 
 ---
 
@@ -101,17 +138,17 @@ code does not do). Anything not listed under Remaining is built and wired end to
 | 4     | Authentication (Better Auth)         | ✅ Complete    | --                                                             |
 | 5     | Frontend Foundation + Design System  | ✅ Complete    | Route groups + `pendingComponent` not used (see Deviations)    |
 | 6     | User and Profile Management          | ✅ Complete    | --                                                             |
-| 7     | Admin Dashboard + Bug Reports        | ✅ Complete    | --                                                             |
+| 7     | Admin Dashboard + Bug Reports        | ✅ Complete    | Admin creation (ADR-0002), deletion removed (ADR-0003)         |
 | 8     | Category Management                  | ✅ Complete    | --                                                             |
-| 9     | Course CRUD + Approval               | ✅ Complete    | --                                                             |
+| 9     | Course CRUD + Approval               | ✅ Complete    | Ownership (ADR-0006), withdraw/restore, exam-only enforced     |
 | 10    | Chapters, Lectures, Materials        | ✅ Complete    | --                                                             |
 | 11    | File Upload + Media (S3)             | 🟡 In progress | `file-processing` worker never written; video metadata jobs pile up |
-| 12    | Tests and Assessments                | ✅ Complete    | --                                                             |
-| 13    | Enrollment + Payment (SSLCommerz)    | ✅ Complete    | ⚠️ sandbox/live env flag is broken; never run against the live gateway |
-| 14    | Course Player                        | ✅ Complete    | DESIGN.md "chunked" progress bar rendered as a plain bar       |
+| 12    | Tests and Assessments                | ✅ Complete    | `passingScore` is now evaluated (ADR-0005)                     |
+| 13    | Enrollment + Payment (SSLCommerz)    | ✅ Complete    | Reworked per ADR-0001; env flag fixed; still never run against a live gateway |
+| 14    | Course Player                        | ✅ Complete    | Completion rule reworked (ADR-0005); "chunked" progress bar still a plain bar |
 | 15    | Community and Discussion             | 🟡 In progress | Redis cache for hot comment threads not built                  |
-| 16    | Real-time Messaging (WebSocket)      | ✅ Complete    | --                                                             |
-| 17    | Notification System (FCM + in-app)   | ✅ Complete    | --                                                             |
+| 16    | Real-time Messaging (WebSocket)      | 🟡 In progress | Moderation API built (ADR-0004) but **no web UI** — students cannot report |
+| 17    | Notification System (FCM + in-app)   | ✅ Complete    | Domain events now raise notifications                          |
 | 18    | SMS, Noticeboard, Bulk Comms         | ✅ Complete    | Onecodesoft never exercised against the live gateway           |
 | 19    | Analytics, Reviews, PDF, Certificates| ✅ Complete    | --                                                             |
 | 20    | SEO Optimization                     | ✅ Complete    | `/sitemap.xml` + `/robots.txt` are served by the API origin only |
@@ -125,15 +162,17 @@ These are the items that cut across the whole codebase. They are the real remain
    `useEffect` + `useState` (112 `useEffect` call sites in `apps/web/src`). Coding Standards §7 mandates
    TanStack Query for server state and Zustand for global UI state. Consequence: no request dedupe, no
    background refetch, no cache invalidation, hand-rolled loading and error state in every route.
-2. **No tests of any kind.** Zero `*.test.ts`, `*.test.tsx`, or `*.spec.ts` files in the repo. No
-   `playwright.config.*`, no Bun test script in any workspace, no CI test task in `turbo.json`.
-   The "Testing (Progressive, Per Phase)" cross-cutting concern was never started.
+2. **~~No tests of any kind.~~ Partly addressed.** 84 unit tests now cover commerce, progress, test,
+   course, staff-account, admin-user, and message services, with a `test` script in `@mma/api` and a `test`
+   task in `turbo.json`. Still missing: API integration tests against a live server, and Playwright E2E.
+   Nothing outside `apps/api` has any test coverage.
 3. **Redis caching is almost unused.** `apps/api/src/lib/redis.ts` is consumed only by BullMQ queues
    (`lib/queues.ts`), the rate limiter (`middleware/rate-limit.ts`), the WebSocket pub/sub services
    (`message-realtime-service.ts`, `notification-realtime-service.ts`), the health check, and
    `sitemap-service.ts`. Course listings, the category tree, and analytics aggregates hit Postgres on
    every request.
-4. **Two BullMQ queues have a producer but no consumer.** `queueNames` declares `email`, `notification`,
+4. **One BullMQ queue has a producer but no consumer** (was two; the `email` enqueue was removed in
+   Stage 5, so that queue is now inert with neither producer nor consumer). `queueNames` declares `email`, `notification`,
    `sms`, and `file-processing`, but only `workers/notification-worker.ts` and `workers/sms-worker.ts`
    exist. Both orphaned queues are actively written to:
    - `upload-service.ts:263` enqueues `extract-video-metadata` onto `file-processing` on every confirmed
@@ -141,11 +180,10 @@ These are the items that cut across the whole codebase. They are the real remain
    - `staff-account-service.ts:61` enqueues `staff-account-invite` onto `email` with the new staff member's
      temporary password in the payload.
 
-   Those jobs accumulate in Redis and are never processed. The `email` case matters twice over: no mail
-   transport is installed anywhere in the repo (no nodemailer, Resend, or SES client), and a plaintext
-   temporary password is being parked in Redis indefinitely. Until an email worker exists, staff
-   credentials reach the new user only by the admin reading them off the creation response and passing
-   them along out of band.
+   `extract-video-metadata` jobs still accumulate in Redis and are never processed — this is the one
+   genuinely unfinished item from the original audit backlog. The `email` case was resolved by removing the
+   enqueue: no transport is installed, so staff credentials reach the new user via the creation response,
+   read off by the admin and passed along out of band.
 5. **No `pendingComponent` anywhere.** 0 of 49 route files use TanStack Router's `pendingComponent`, which
    §12 requires for page-level skeletons. Skeletons are rendered inline from component state instead.
    `errorComponent` is in place on 47 of 49 route files, so error boundaries are effectively complete.
