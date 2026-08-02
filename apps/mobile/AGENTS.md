@@ -11,6 +11,8 @@ bun run typecheck
 bunx expo-doctor   # 20/20 as of this writing — keep it that way
 ```
 
+The staged plan for this workspace — what is verified, what is not, and the order to close it in — is [`docs/mobile-plan.md`](../../docs/mobile-plan.md). Read it before starting anything larger than a fix.
+
 ## Layout
 
 ```

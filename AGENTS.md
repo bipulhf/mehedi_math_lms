@@ -86,5 +86,6 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 ## Reference documents
 
 - `PLAN.md` — phased build roadmap (large; aspirational, not a spec of current state)
+- `docs/mobile-plan.md` — the staged plan for `apps/mobile`, from "it compiles" to a shippable build
 - `DESIGN.md` — UI and product design direction
 - `README.md` — setup and command reference
