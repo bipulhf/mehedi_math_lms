@@ -10,8 +10,8 @@ import { sessionContextMiddleware } from "@/middleware/session-context";
 import { requestLoggerMiddleware } from "@/middleware/request-logger";
 import { requestIdMiddleware } from "@/middleware/request-id";
 import { createRateLimitMiddleware } from "@/middleware/rate-limit";
-import { healthRoutes } from "@/routes/health.route";
-import { siteSeoRoutes } from "@/routes/site-seo.route";
+import { healthRoutes } from "@/routes/health-route";
+import { siteSeoRoutes } from "@/routes/site-seo-route";
 import { v1Routes } from "@/routes/v1";
 import { error } from "@/utils/response";
 

@@ -15,10 +15,10 @@ Listens on `env.API_PORT` (default `3001`) in development. The `PORT=3010` in th
 
 ## Layering
 
-Every HTTP feature flows through four layers. Do not skip one.
+Every HTTP feature flows through four layers. Do not skip one. **Every layer file is `<name>-<layer>.ts`** — dashes, not dots. The build plan originally specified `course.route.ts`; the routes followed it and the other three layers did not, so the repo agreed with neither the plan nor itself until the routes were renamed to match the majority. Do not reintroduce the dotted form.
 
 ```
-routes/v1/*.route.ts   Hono router. Parses input with a @mma/shared Zod schema. Attaches auth middleware.
+routes/v1/*-route.ts   Hono router. Parses input with a @mma/shared Zod schema. Attaches auth middleware.
 controllers/*.ts       Class. Calls one service, wraps the result in success()/paginated(). No business logic.
 services/*.ts          Class. Business rules, authorization decisions, domain mapping. Throws AppError subclasses.
 repositories/*.ts      Class. Drizzle queries only. Returns plain records. No business rules, no HTTP types.
@@ -61,7 +61,7 @@ Do not catch-and-return an error response inside a service. Throw, and let the h
 
 Schemas come from `@mma/shared`. Two patterns coexist:
 
-1. **Inline parse in the route** (dominant, e.g. `categories.route.ts`) — `schema.parse(await context.req.json())`, result passed to the controller as a typed argument. A raw `ZodError` from this path is caught by `onError` and surfaces as a 500 in development / generic 500 in production.
+1. **Inline parse in the route** (dominant, e.g. `categories-route.ts`) — `schema.parse(await context.req.json())`, result passed to the controller as a typed argument. A raw `ZodError` from this path is caught by `onError` and surfaces as a 500 in development / generic 500 in production.
 2. **`validateJson` / `validateQuery` / `validateParams` middleware** (`src/middleware/validate.ts`) — wraps `ZodError` into a `ValidationError` with field-level `issues`, producing a proper 400.
 
 Prefer the middleware when you need clean 400s with field errors. Match the surrounding file when extending an existing router.

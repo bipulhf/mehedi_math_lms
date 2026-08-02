@@ -1,29 +1,29 @@
 import { Hono } from "hono";
 
 import type { AppBindings } from "@/types/app-bindings";
-import { publicConfigRoutes } from "@/routes/public-config.route";
+import { publicConfigRoutes } from "@/routes/public-config-route";
 
-import { adminRoutes } from "./admin.route";
-import { analyticsRoutes } from "./analytics.route";
-import { authRoutes } from "./auth.route";
-import { bugsRoutes } from "./bugs.route";
-import { categoriesRoutes } from "./categories.route";
-import { chaptersRoutes } from "./chapters.route";
-import { commentsRoutes } from "./comments.route";
-import { coursesRoutes } from "./courses.route";
-import { enrollmentsRoutes } from "./enrollments.route";
-import { landingRoutes } from "./landing.route";
-import { lecturesRoutes } from "./lectures.route";
-import { messagesRoutes } from "./messages.route";
-import { noticesRoutes } from "./notices.route";
-import { notificationsRoutes } from "./notifications.route";
-import { ogImageRoutes } from "./og-image.route";
-import { paymentsRoutes } from "./payments.route";
-import { progressRoutes } from "./progress.route";
-import { profilesRoutes } from "./profiles.route";
-import { questionsRoutes } from "./questions.route";
-import { testsRoutes } from "./tests.route";
-import { uploadRoutes } from "./upload.route";
+import { adminRoutes } from "./admin-route";
+import { analyticsRoutes } from "./analytics-route";
+import { authRoutes } from "./auth-route";
+import { bugsRoutes } from "./bugs-route";
+import { categoriesRoutes } from "./categories-route";
+import { chaptersRoutes } from "./chapters-route";
+import { commentsRoutes } from "./comments-route";
+import { coursesRoutes } from "./courses-route";
+import { enrollmentsRoutes } from "./enrollments-route";
+import { landingRoutes } from "./landing-route";
+import { lecturesRoutes } from "./lectures-route";
+import { messagesRoutes } from "./messages-route";
+import { noticesRoutes } from "./notices-route";
+import { notificationsRoutes } from "./notifications-route";
+import { ogImageRoutes } from "./og-image-route";
+import { paymentsRoutes } from "./payments-route";
+import { progressRoutes } from "./progress-route";
+import { profilesRoutes } from "./profiles-route";
+import { questionsRoutes } from "./questions-route";
+import { testsRoutes } from "./tests-route";
+import { uploadRoutes } from "./upload-route";
 
 export const v1Routes = new Hono<AppBindings>();
 
