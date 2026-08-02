@@ -43,6 +43,53 @@ export const websocketClientEventSchema = z.discriminatedUnion("type", [
   })
 ]);
 
+/**
+ * What the server pushes down the same socket.
+ *
+ * Declared here rather than in a client, because there are two of them now and
+ * a field added on the server has to reach both. Only the client event is
+ * parsed with a schema — the server's own output is trusted, and this is a type
+ * rather than a validator for that reason.
+ *
+ * @see apps/api/src/services/message-realtime-service.ts
+ */
+export type WebsocketServerEvent =
+  | {
+      conversationId: string;
+      data: {
+        content: string;
+        createdAt: string;
+        id: string;
+        readAt: string | null;
+        senderId: string;
+      };
+      type: "message:new";
+    }
+  | {
+      conversationId: string;
+      data: {
+        readAt: string;
+        readMessageIds: readonly string[];
+        userId: string;
+      };
+      type: "message:read";
+    }
+  | {
+      conversationId: string;
+      data: {
+        userId: string;
+      };
+      type: "typing:start" | "typing:stop";
+    }
+  | {
+      conversationId: string;
+      data: {
+        isOnline: boolean;
+        userId: string;
+      };
+      type: "presence:update";
+    };
+
 export type MessagesConversationQuery = z.infer<typeof messagesConversationQuerySchema>;
 export type MessageParticipantsQuery = z.infer<typeof messageParticipantsQuerySchema>;
 export type MessageConversationIdParams = z.infer<typeof messageConversationIdParamsSchema>;

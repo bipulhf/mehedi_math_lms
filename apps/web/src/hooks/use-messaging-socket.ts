@@ -1,3 +1,4 @@
+import type { WebsocketServerEvent } from "@mma/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -11,42 +12,11 @@ import {
 import { queryKeys } from "@/lib/query/keys";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 
-export type MessagingSocketEvent =
-  | {
-      conversationId: string;
-      data: {
-        content: string;
-        createdAt: string;
-        id: string;
-        readAt: string | null;
-        senderId: string;
-      };
-      type: "message:new";
-    }
-  | {
-      conversationId: string;
-      data: {
-        readAt: string;
-        readMessageIds: readonly string[];
-        userId: string;
-      };
-      type: "message:read";
-    }
-  | {
-      conversationId: string;
-      data: {
-        userId: string;
-      };
-      type: "typing:start" | "typing:stop";
-    }
-  | {
-      conversationId: string;
-      data: {
-        isOnline: boolean;
-        userId: string;
-      };
-      type: "presence:update";
-    };
+/**
+ * Moved to `@mma/shared` when the mobile client grew a socket of its own. The
+ * alias stays so this file reads the same as it did.
+ */
+export type MessagingSocketEvent = WebsocketServerEvent;
 
 export function totalUnread(conversations: readonly MessageConversation[]): number {
   return conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0);
