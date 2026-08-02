@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { booleanQueryParamSchema } from "./common";
+
 const idSchema = z.string().uuid();
 
 export const courseStatusSchema = z.enum(["DRAFT", "PENDING", "PUBLISHED", "ARCHIVED"]);
@@ -54,7 +56,7 @@ export const listCoursesQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(50).default(12),
   maxPrice: z.coerce.number().min(0).max(999999).optional(),
   minPrice: z.coerce.number().min(0).max(999999).optional(),
-  mine: z.coerce.boolean().optional(),
+  mine: booleanQueryParamSchema.optional(),
   page: z.coerce.number().int().positive().default(1),
   search: z.string().trim().max(100).optional(),
   status: courseStatusSchema.optional()

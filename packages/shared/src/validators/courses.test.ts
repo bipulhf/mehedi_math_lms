@@ -116,6 +116,13 @@ describe("listCoursesQuerySchema", () => {
     expect(listCoursesQuerySchema.safeParse({ limit: "51" }).success).toBe(false);
   });
 
+  test("`mine=false` narrows nothing, instead of coercing to true", () => {
+    expect(listCoursesQuerySchema.parse({ mine: "false" }).mine).toBe(false);
+    expect(listCoursesQuerySchema.parse({ mine: "true" }).mine).toBe(true);
+    expect(listCoursesQuerySchema.parse({}).mine).toBe(undefined);
+    expect(listCoursesQuerySchema.safeParse({ mine: "maybe" }).success).toBe(false);
+  });
+
   test("rejects a category id that is not a uuid", () => {
     expect(listCoursesQuerySchema.safeParse({ categoryId: OTHER_UUID }).success).toBe(true);
     expect(listCoursesQuerySchema.safeParse({ categoryId: "algebra" }).success).toBe(false);

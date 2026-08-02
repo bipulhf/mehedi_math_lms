@@ -16,9 +16,13 @@
 > | D | `test: cover the shared validators and the enrolment and payment flows` |
 > | B1, B6, B8, C1, F | `docs: reconcile PLAN.md with the code and settle the open rules` |
 >
-> One thing found on the way that DRIFT did not predict: `.partial()` does not strip a `.default()`, so
-> `updateCourseSchema` carried `isExamOnly: false` into every patch and any course update silently
-> cleared the exam-only flag. The first validator test written caught it.
+> Two things found on the way that DRIFT did not predict, both in the same family — a Zod helper that
+> looks like it does the obvious thing and does not:
+>
+> - `.partial()` does not strip a `.default()`, so `updateCourseSchema` carried `isExamOnly: false` into
+>   every patch and any course update silently cleared the exam-only flag.
+> - `z.coerce.boolean()` is `Boolean(input)`, so `?flat=false` parsed as `true` — as did every other
+>   non-empty value. `flat`, `includeInactive` and `mine` now use a shared `booleanQueryParamSchema`.
 
 What the **initial** build plan asked for, and where the working tree does not match it.
 

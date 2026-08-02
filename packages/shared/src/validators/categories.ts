@@ -1,12 +1,14 @@
 import { z } from "zod";
 
+import { booleanQueryParamSchema } from "./common";
+
 export const categoryIdParamsSchema = z.object({
   id: z.string().uuid()
 });
 
 export const categoriesQuerySchema = z.object({
-  flat: z.coerce.boolean().default(false),
-  includeInactive: z.coerce.boolean().default(false)
+  flat: booleanQueryParamSchema.default(false),
+  includeInactive: booleanQueryParamSchema.default(false)
 });
 
 export const createCategorySchema = z.object({

@@ -65,6 +65,26 @@ describe("categoriesQuerySchema", () => {
   test("returns the tree, active only, by default", () => {
     expect(categoriesQuerySchema.parse({})).toEqual({ flat: false, includeInactive: false });
   });
+
+  test("a flag turned off in the URL stays off", () => {
+    // Under z.coerce.boolean() every one of these read as true, because that
+    // is Boolean(input). ?flat=false meant flat.
+    expect(categoriesQuerySchema.parse({ flat: "false", includeInactive: "false" })).toEqual({
+      flat: false,
+      includeInactive: false
+    });
+  });
+
+  test("a flag turned on in the URL reads as on", () => {
+    expect(categoriesQuerySchema.parse({ flat: "true", includeInactive: "1" })).toEqual({
+      flat: true,
+      includeInactive: true
+    });
+  });
+
+  test("a value that means nothing is rejected rather than guessed", () => {
+    expect(categoriesQuerySchema.safeParse({ flat: "maybe" }).success).toBe(false);
+  });
 });
 
 describe("categoryIdParamsSchema", () => {

@@ -19,14 +19,17 @@ Zod v4. Only dependency.
 
 These schemas are the contract in both directions — the API validates requests with them and the web app resolves its React Hook Form fields against them — so a loosened `.min()` or a dropped `.uuid()` changes what the server accepts *and* what the client blocks, in one edit. Tests here exist to make that edit visible. When you add or relax a rule, assert both sides of it: the value that now passes and the neighbouring one that must still fail.
 
-One trap the suite already pins: `.partial()` does **not** strip a `.default()`. `updateCourseSchema` is derived from a defaults-free field shape for exactly that reason — deriving it from `createCourseSchema` made every course patch carry `isExamOnly: false`.
+Two traps the suite already pins:
+
+- `.partial()` does **not** strip a `.default()`. `updateCourseSchema` is derived from a defaults-free field shape for exactly that reason — deriving it from `createCourseSchema` made every course patch carry `isExamOnly: false`.
+- `z.coerce.boolean()` is `Boolean(input)`, so **every** non-empty query string — including `"false"` — becomes `true`. Use `booleanQueryParamSchema` from `common.ts` for any flag that arrives in a URL.
 
 ## Rules
 
 - **This package must stay runtime-agnostic.** It runs in the browser bundle, in Bun on the server, and in scripts. No `node:` imports, no DB access, no `process.env`, no Hono or React types.
 - A schema defined here is the single definition of that shape. The API parses requests with it (`apps/api/src/routes/v1/*.route.ts`), and the web client derives its input types from it (`type CreateCategoryInput = z.infer<typeof createCategorySchema>`). Do not redeclare an equivalent interface on either side.
 - New validator module: create `src/validators/<feature>.ts`, then add the `export *` line to `src/validators/index.ts`. It will not be reachable otherwise.
-- Reuse the primitives in `src/validators/common.ts` — `idSchema` (uuid), `emailSchema`, `nonEmptyStringSchema`, `paginationSchema` (page/limit with defaults and a max of 100).
+- Reuse the primitives in `src/validators/common.ts` — `idSchema` (uuid), `emailSchema`, `nonEmptyStringSchema`, `paginationSchema` (page/limit with defaults and a max of 100), `booleanQueryParamSchema` (a flag in a query string).
 - Naming: `createXSchema`, `updateXSchema`, `xQuerySchema`, `xIdParamsSchema`, `slugParamsSchema`.
 
 ## Roles

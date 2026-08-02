@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { emailSchema, idSchema, nonEmptyStringSchema, paginationSchema } from "./common";
+import {
+  booleanQueryParamSchema,
+  emailSchema,
+  idSchema,
+  nonEmptyStringSchema,
+  paginationSchema
+} from "./common";
 
 /**
  * These schemas are the shared contract: the API validates requests with them
@@ -38,6 +44,34 @@ describe("nonEmptyStringSchema", () => {
   test("trims before measuring, so whitespace is not content", () => {
     expect(nonEmptyStringSchema.parse("  hello  ")).toBe("hello");
     expect(nonEmptyStringSchema.safeParse("   ").success).toBe(false);
+  });
+});
+
+describe("booleanQueryParamSchema", () => {
+  test('reads the word "false" as false — the whole reason this is not z.coerce.boolean()', () => {
+    // Boolean("false") is true. A flag turned off in a URL must stay off.
+    expect(booleanQueryParamSchema.parse("false")).toBe(false);
+    expect(booleanQueryParamSchema.parse("0")).toBe(false);
+    expect(booleanQueryParamSchema.parse("no")).toBe(false);
+    expect(booleanQueryParamSchema.parse("off")).toBe(false);
+  });
+
+  test("reads the affirmative spellings as true", () => {
+    expect(booleanQueryParamSchema.parse("true")).toBe(true);
+    expect(booleanQueryParamSchema.parse("1")).toBe(true);
+    expect(booleanQueryParamSchema.parse("yes")).toBe(true);
+    expect(booleanQueryParamSchema.parse("on")).toBe(true);
+  });
+
+  test("accepts a real boolean, for callers that build the object in code", () => {
+    expect(booleanQueryParamSchema.parse(true)).toBe(true);
+    expect(booleanQueryParamSchema.parse(false)).toBe(false);
+  });
+
+  test("rejects a value that means nothing rather than guessing", () => {
+    expect(booleanQueryParamSchema.safeParse("maybe").success).toBe(false);
+    expect(booleanQueryParamSchema.safeParse("").success).toBe(false);
+    expect(booleanQueryParamSchema.safeParse(1).success).toBe(false);
   });
 });
 

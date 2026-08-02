@@ -158,8 +158,9 @@ closed.
 | The five files over the 800-line ceiling split along seams that already existed | B7 |
 | The dead `email` queue deleted, the WebSocket apps moved into the `websocket/` directory scaffolded for them, and the empty `apps/web/src/providers/` removed | A7, C2, C3 |
 | Route files renamed `courses-route.ts` so all four backend layers agree; the `pendingComponent`, feature-structure, mobile default-export and env-tier rules decided and written down rather than left as drift | B1, B5, B6, B8, C1 |
+| `z.coerce.boolean()` replaced by a shared `booleanQueryParamSchema` on `flat`, `includeInactive` and `mine`. `Boolean("false")` is `true`, so `?flat=false` meant flat and every other value did too | found on the way |
 
-Current state: **lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 126 shared tests, 34 Playwright tests,
+Current state: **lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 134 shared tests, 34 Playwright tests,
 all passing.**
 
 ---
@@ -1672,11 +1673,12 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 - **122 tests in `@mma/api`**: unit tests over commerce, progress, assessment, course, staff-account,
   admin-user, message, cache and video-metadata logic, plus 17 integration tests that drive the real Hono
   app through `app.request`.
-- **126 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
+- **134 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
   the contract in both directions — the API validates requests with them and the web app resolves its
   forms against them — so a loosened `.min()` or a dropped `.uuid()` now fails a test instead of silently
   changing both sides at once. Writing them caught a live defect: `.partial()` does not strip a
-  `.default()`, so every course patch was carrying `isExamOnly: false`.
+  `.default()`, so every course patch was carrying `isExamOnly: false`; the same sweep caught
+  `z.coerce.boolean()` reading `?flat=false` as `true`.
 - Both run under `bun run test`. They need Postgres and Redis.
 - The integration tests are deliberately anonymous. Their job is to prove that every guarded route still
   refuses a caller with no session — a guard that quietly stopped guarding would pass every unit test in
