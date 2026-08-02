@@ -5,6 +5,7 @@ import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import type { TestRepository } from "@/repositories/test-repository";
 import type { ProgressService } from "@/services/progress-service";
+import { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { TestService } from "@/services/test-service";
 import { ForbiddenError, ValidationError } from "@/utils/errors";
 
@@ -126,13 +127,22 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
     }
   } as unknown as ProgressService;
 
+  // The guards are the real ones over the stub repositories: the access rules
+  // are part of what these tests exercise.
+  const access = new AssessmentAccessGuards(
+    testRepository,
+    contentRepository,
+    courseRepository,
+    enrollmentRepository
+  );
+
   return {
     calls,
     service: new TestService(
       testRepository,
       contentRepository,
-      courseRepository,
       enrollmentRepository,
+      access,
       progressService
     )
   };

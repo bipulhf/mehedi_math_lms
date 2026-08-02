@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
+import type { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import type {
   ConversationMessageRecord,
-  ConversationRecord,
-  MessageRepository
-} from "@/repositories/message-repository";
+  ConversationRecord
+} from "@/repositories/message-record-mappers";
+import type { MessageRepository } from "@/repositories/message-repository";
 import { MessageService } from "@/services/message-service";
 import type { MessageRealtimeService } from "@/services/message-realtime-service";
 import { ConflictError, ForbiddenError, NotFoundError } from "@/utils/errors";
@@ -57,6 +58,17 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Messa
   } as unknown as ConversationRecord;
 
   const messageRepository = {
+    findConversationById: async () => conversation,
+    findMessageById: async () => (overrides.messageMissing ? null : message),
+    hideMessage: async (messageId: string, hiddenById: string) => {
+      calls.hidden.push({ hiddenById, messageId });
+
+      return overrides.hiddenAt ? null : { ...message, hiddenAt: new Date() };
+    },
+    listMessagesByConversation: async () => [message]
+  } as unknown as MessageRepository;
+
+  const conversationReportRepository = {
     createConversationReport: async (input: { reason: string; reporterId: string }) => {
       calls.reports.push(input);
 
@@ -70,25 +82,24 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Messa
         resolvedById: null
       };
     },
-    findConversationById: async () => conversation,
-    findMessageById: async () => (overrides.messageMissing ? null : message),
     hasOpenReport: async () => overrides.hasOpenReport ?? false,
-    hideMessage: async (messageId: string, hiddenById: string) => {
-      calls.hidden.push({ hiddenById, messageId });
-
-      return overrides.hiddenAt ? null : { ...message, hiddenAt: new Date() };
-    },
-    listMessagesByConversation: async () => [message],
     recordAdminAccess: async (conversationId: string, adminId: string) => {
       calls.accessLog.push({ adminId, conversationId });
     }
-  } as unknown as MessageRepository;
+  } as unknown as ConversationReportRepository;
 
   const messageRealtimeService = {
     getOnlineUserIds: async () => new Set<string>()
   } as unknown as MessageRealtimeService;
 
-  return { calls, service: new MessageService(messageRepository, messageRealtimeService) };
+  return {
+    calls,
+    service: new MessageService(
+      messageRepository,
+      conversationReportRepository,
+      messageRealtimeService
+    )
+  };
 }
 
 describe("MessageService.reportConversation", () => {

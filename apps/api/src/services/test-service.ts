@@ -11,21 +11,40 @@ import type {
   updateTestSchema
 } from "@mma/shared";
 
-import type { ContentRepository} from "@/repositories/content-repository";
-import { type ChapterRecord } from "@/repositories/content-repository";
-import type { CourseRepository} from "@/repositories/course-repository";
-import { type CourseRecord } from "@/repositories/course-repository";
+import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
-import type {
-  TestRepository} from "@/repositories/test-repository";
+import type { SubmissionSummaryRecord, TestRepository } from "@/repositories/test-repository";
+import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import {
-  type QuestionOptionRecord,
-  type QuestionRecord,
-  type SubmissionSummaryRecord,
-  type TestRecord
-} from "@/repositories/test-repository";
+  gradeAnswers,
+  validateQuestionAgainstTest,
+  validateQuestionInput
+} from "@/services/assessment-grading";
+import {
+  mapSubmissionDetail,
+  mapSubmissionSummary,
+  normalizeOptionalString,
+  type AssessmentOption,
+  type AssessmentQuestion,
+  type AssessmentTestDetail,
+  type AssessmentChapterSummary,
+  type AssessmentTestSummary,
+  type SubmissionDetail,
+  type SubmissionSummary
+} from "@/services/assessment-views";
 import type { ProgressService } from "@/services/progress-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+
+export type {
+  AssessmentChapterSummary,
+  AssessmentOption,
+  AssessmentQuestion,
+  AssessmentTestDetail,
+  AssessmentTestSummary,
+  SubmissionAnswerView,
+  SubmissionDetail,
+  SubmissionSummary
+} from "@/services/assessment-views";
 
 type CreateTestInput = z.infer<typeof createTestSchema>;
 type UpdateTestInput = z.infer<typeof updateTestSchema>;
@@ -36,125 +55,12 @@ type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 type SubmitTestInput = z.infer<typeof submitTestSchema>;
 type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
 
-export interface AssessmentOption {
-  id: string;
-  isCorrect: boolean | null;
-  optionText: string;
-  sortOrder: number;
-}
-
-export interface AssessmentQuestion {
-  expectedAnswer: string | null;
-  id: string;
-  marks: number;
-  options: readonly AssessmentOption[];
-  questionText: string;
-  sortOrder: number;
-  type: "MCQ" | "WRITTEN";
-}
-
-export interface AssessmentTestSummary {
-  chapterId: string;
-  description: string | null;
-  durationInMinutes: number | null;
-  id: string;
-  isPublished: boolean;
-  passingScore: number | null;
-  questionCount: number;
-  title: string;
-  totalMarks: number;
-  type: "MCQ" | "WRITTEN" | "MIXED";
-}
-
-export interface AssessmentChapterSummary {
-  chapterId: string;
-  chapterTitle: string;
-  tests: readonly AssessmentTestSummary[];
-}
-
-export interface SubmissionAnswerView {
-  awardedMarks: number | null;
-  id: string;
-  isCorrect: boolean | null;
-  questionId: string;
-  selectedOptionId: string | null;
-  writtenAnswer: string | null;
-}
-
-export interface SubmissionSummary {
-  createdAt: string;
-  feedback: string | null;
-  gradedAt: string | null;
-  id: string;
-  maxScore: number | null;
-  score: number | null;
-  startedAt: string | null;
-  status: "STARTED" | "SUBMITTED" | "GRADED";
-  submittedAt: string | null;
-  user: {
-    email: string;
-    id: string;
-    name: string;
-  };
-}
-
-export interface SubmissionDetail extends SubmissionSummary {
-  answers: readonly SubmissionAnswerView[];
-  gradedById: string | null;
-  testId: string;
-}
-
-export interface AssessmentTestDetail extends AssessmentTestSummary {
-  questions: readonly AssessmentQuestion[];
-}
-
-function normalizeOptionalString(value: string | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const trimmedValue = value.trim();
-
-  return trimmedValue.length > 0 ? trimmedValue : null;
-}
-
-function mapSubmissionSummary(record: SubmissionSummaryRecord): SubmissionSummary {
-  return {
-    createdAt: record.createdAt.toISOString(),
-    feedback: record.feedback,
-    gradedAt: record.gradedAt?.toISOString() ?? null,
-    id: record.id,
-    maxScore: record.maxScore,
-    score: record.score,
-    startedAt: record.startedAt?.toISOString() ?? null,
-    status: record.status,
-    submittedAt: record.submittedAt?.toISOString() ?? null,
-    user: {
-      email: record.userEmail,
-      id: record.userId,
-      name: record.userName
-    }
-  };
-}
-
-function mapSubmissionDetail(
-  record: SubmissionSummaryRecord,
-  answers: readonly SubmissionAnswerView[]
-): SubmissionDetail {
-  return {
-    ...mapSubmissionSummary(record),
-    answers,
-    gradedById: record.gradedById,
-    testId: record.testId
-  };
-}
-
 export class TestService {
   public constructor(
     private readonly testRepository: TestRepository,
     private readonly contentRepository: ContentRepository,
-    private readonly courseRepository: CourseRepository,
     private readonly enrollmentRepository: EnrollmentRepository,
+    private readonly access: AssessmentAccessGuards,
     private readonly progressService: ProgressService
   ) {}
 
@@ -180,139 +86,6 @@ export class TestService {
     }
 
     await this.progressService.promoteIfFinished(chapter.courseId, enrollment);
-  }
-
-  private async requireStudentCourseAccess(
-    courseId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<void> {
-    if (currentUserRole !== "STUDENT") {
-      throw new ForbiddenError("You do not have permission to access course assessments");
-    }
-
-    const hasAccess = await this.enrollmentRepository.hasCourseAccess(currentUserId, courseId);
-
-    if (!hasAccess) {
-      throw new ForbiddenError("You do not have access to this course assessments");
-    }
-  }
-
-  private async requireManageableCourse(
-    courseId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<CourseRecord> {
-    const course = await this.courseRepository.findById(courseId);
-
-    if (!course) {
-      throw new NotFoundError("Course not found");
-    }
-
-    if (currentUserRole === "ADMIN") {
-      return course;
-    }
-
-    const canManage =
-      course.creator.id === currentUserId ||
-      course.teachers.some((teacher) => teacher.id === currentUserId);
-
-    if (!canManage) {
-      throw new ForbiddenError("You do not have permission to manage course assessments");
-    }
-
-    return course;
-  }
-
-  private async requireManageableChapter(
-    chapterId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<ChapterRecord> {
-    const chapter = await this.contentRepository.findChapterById(chapterId);
-
-    if (!chapter) {
-      throw new NotFoundError("Chapter not found");
-    }
-
-    await this.requireManageableCourse(chapter.courseId, currentUserId, currentUserRole);
-
-    return chapter;
-  }
-
-  private async requireManageableTest(
-    testId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<TestRecord & { chapter: ChapterRecord }> {
-    const test = await this.testRepository.findTestById(testId);
-
-    if (!test) {
-      throw new NotFoundError("Test not found");
-    }
-
-    const chapter = await this.requireManageableChapter(test.chapterId, currentUserId, currentUserRole);
-
-    return {
-      ...test,
-      chapter
-    };
-  }
-
-  private async requireAccessibleTest(
-    testId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<TestRecord & { chapter: ChapterRecord }> {
-    const test = await this.testRepository.findTestById(testId);
-
-    if (!test) {
-      throw new NotFoundError("Test not found");
-    }
-
-    const chapter = await this.contentRepository.findChapterById(test.chapterId);
-
-    if (!chapter) {
-      throw new NotFoundError("Chapter not found");
-    }
-
-    if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.requireManageableChapter(chapter.id, currentUserId, currentUserRole);
-      return {
-        ...test,
-        chapter
-      };
-    }
-
-    await this.requireStudentCourseAccess(chapter.courseId, currentUserId, currentUserRole);
-
-    if (!test.isPublished) {
-      throw new ForbiddenError("This test is not available yet");
-    }
-
-    return {
-      ...test,
-      chapter
-    };
-  }
-
-  private async requireManageableQuestion(
-    questionId: string,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<QuestionRecord & { test: TestRecord }> {
-    const question = await this.testRepository.findQuestionById(questionId);
-
-    if (!question) {
-      throw new NotFoundError("Question not found");
-    }
-
-    const test = await this.requireManageableTest(question.testId, currentUserId, currentUserRole);
-
-    return {
-      ...question,
-      test
-    };
   }
 
   private async loadTestQuestions(
@@ -354,145 +127,15 @@ export class TestService {
     };
   }
 
-  private validateQuestionAgainstTest(
-    testType: TestRecord["type"],
-    questionType: AssessmentQuestion["type"] | CreateQuestionInput["type"] | UpdateQuestionInput["type"]
-  ): void {
-    if (!questionType) {
-      return;
-    }
-
-    if (testType === "MCQ" && questionType !== "MCQ") {
-      throw new ValidationError("MCQ tests can only include MCQ questions", [
-        {
-          field: "type",
-          message: "Question type must be MCQ"
-        }
-      ]);
-    }
-
-    if (testType === "WRITTEN" && questionType !== "WRITTEN") {
-      throw new ValidationError("Written tests can only include written questions", [
-        {
-          field: "type",
-          message: "Question type must be WRITTEN"
-        }
-      ]);
-    }
-  }
-
-  private validateQuestionInput(input: CreateQuestionInput | UpdateQuestionInput): void {
-    const questionType = input.type;
-    const options = input.options;
-
-    if (questionType === "MCQ" && options) {
-      if (options.length < 2) {
-        throw new ValidationError("MCQ questions need at least 2 options", [
-          {
-            field: "options",
-            message: "Add at least 2 options"
-          }
-        ]);
-      }
-
-      if (!options.some((option) => option.isCorrect)) {
-        throw new ValidationError("MCQ questions require a correct option", [
-          {
-            field: "options",
-            message: "Mark at least one option as correct"
-          }
-        ]);
-      }
-    }
-  }
-
-  private gradeAnswers(
-    questions: readonly QuestionRecord[],
-    options: readonly QuestionOptionRecord[],
-    answers: SubmitTestInput["answers"] | SaveSubmissionAnswersInput["answers"]
-  ): {
-    autoGradedScore: number;
-    hasWrittenQuestions: boolean;
-    maxScore: number;
-    normalizedAnswers: readonly {
-      awardedMarks?: number | null | undefined;
-      isCorrect?: boolean | null | undefined;
-      questionId: string;
-      selectedOptionId?: string | null | undefined;
-      writtenAnswer?: string | null | undefined;
-    }[];
-  } {
-    const questionMap = new Map(questions.map((question) => [question.id, question]));
-    const optionMap = new Map(options.map((option) => [option.id, option]));
-    let autoGradedScore = 0;
-    let hasWrittenQuestions = false;
-
-    const normalizedAnswers = answers.map((answer) => {
-      const question = questionMap.get(answer.questionId);
-
-      if (!question) {
-        throw new ValidationError("Answer references an invalid question", [
-          {
-            field: "answers",
-            message: "One or more answers do not belong to this test"
-          }
-        ]);
-      }
-
-      if (question.type === "MCQ") {
-        const selectedOption = answer.selectedOptionId
-          ? optionMap.get(answer.selectedOptionId)
-          : null;
-
-        if (!selectedOption || selectedOption.questionId !== question.id) {
-          throw new ValidationError("Choose a valid option", [
-            {
-              field: "answers",
-              message: "Selected option does not belong to the question"
-            }
-          ]);
-        }
-
-        const awardedMarks = selectedOption.isCorrect ? question.marks : 0;
-        autoGradedScore += awardedMarks;
-
-        return {
-          awardedMarks,
-          isCorrect: selectedOption.isCorrect,
-          questionId: question.id,
-          selectedOptionId: selectedOption.id,
-          writtenAnswer: null
-        };
-      }
-
-      hasWrittenQuestions = true;
-
-      return {
-        awardedMarks: null,
-        isCorrect: null,
-        questionId: question.id,
-        selectedOptionId: null,
-        writtenAnswer: normalizeOptionalString(answer.writtenAnswer)
-      };
-    });
-
-    return {
-      autoGradedScore,
-      hasWrittenQuestions,
-      maxScore: questions.reduce((sum, question) => sum + question.marks, 0),
-      normalizedAnswers
-    };
-  }
-
   public async listCourseAssessments(
     courseId: string,
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly AssessmentChapterSummary[]> {
     if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+      await this.access.requireManageableCourse(courseId, currentUserId, currentUserRole);
     } else {
-      await this.requireStudentCourseAccess(courseId, currentUserId, currentUserRole);
+      await this.access.requireStudentCourseAccess(courseId, currentUserId, currentUserRole);
     }
 
     const chapters = await this.contentRepository.listCourseChapters(courseId);
@@ -543,7 +186,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentTestSummary> {
-    await this.requireManageableChapter(chapterId, currentUserId, currentUserRole);
+    await this.access.requireManageableChapter(chapterId, currentUserId, currentUserRole);
     const existingTests = await this.testRepository.listTestsByChapterId(chapterId);
     const record = await this.testRepository.createTest({
       chapterId,
@@ -576,12 +219,12 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentTestSummary> {
-    const test = await this.requireManageableTest(testId, currentUserId, currentUserRole);
+    const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
     const nextType = input.type ?? test.type;
     const existingQuestions = await this.testRepository.listQuestionsByTestId(testId);
 
     for (const question of existingQuestions) {
-      this.validateQuestionAgainstTest(nextType, question.type);
+      validateQuestionAgainstTest(nextType, question.type);
     }
 
     const record = await this.testRepository.updateTest(testId, {
@@ -612,7 +255,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<{ id: string }> {
-    await this.requireManageableTest(testId, currentUserId, currentUserRole);
+    await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
     await this.testRepository.deleteTest(testId);
 
     return { id: testId };
@@ -623,7 +266,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentTestDetail> {
-    const test = await this.requireAccessibleTest(testId, currentUserId, currentUserRole);
+    const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const includeAnswers = currentUserRole === "ADMIN" || currentUserRole === "TEACHER";
     const { questions, totalMarks } = await this.loadTestQuestions(test.id, includeAnswers);
 
@@ -648,9 +291,9 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentQuestion> {
-    const test = await this.requireManageableTest(testId, currentUserId, currentUserRole);
-    this.validateQuestionAgainstTest(test.type, input.type);
-    this.validateQuestionInput(input);
+    const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
+    validateQuestionAgainstTest(test.type, input.type);
+    validateQuestionInput(input);
 
     const existingQuestions = await this.testRepository.listQuestionsByTestId(testId);
     const question = await this.testRepository.createQuestion({
@@ -689,10 +332,10 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentQuestion> {
-    const question = await this.requireManageableQuestion(questionId, currentUserId, currentUserRole);
+    const question = await this.access.requireManageableQuestion(questionId, currentUserId, currentUserRole);
     const nextType = input.type ?? question.type;
-    this.validateQuestionAgainstTest(question.test.type, nextType);
-    this.validateQuestionInput({
+    validateQuestionAgainstTest(question.test.type, nextType);
+    validateQuestionInput({
       expectedAnswer: input.expectedAnswer ?? question.expectedAnswer ?? "",
       marks: input.marks ?? question.marks,
       options:
@@ -743,7 +386,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<{ id: string }> {
-    await this.requireManageableQuestion(questionId, currentUserId, currentUserRole);
+    await this.access.requireManageableQuestion(questionId, currentUserId, currentUserRole);
     await this.testRepository.deleteQuestion(questionId);
 
     return { id: questionId };
@@ -755,7 +398,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentTestDetail> {
-    await this.requireManageableTest(testId, currentUserId, currentUserRole);
+    await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
     const questions = await this.testRepository.listQuestionsByTestId(testId);
     const questionIds = new Set(questions.map((question) => question.id));
 
@@ -778,7 +421,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    await this.requireAccessibleTest(testId, currentUserId, currentUserRole);
+    await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
 
     let submission = await this.testRepository.findLatestSubmissionByTestAndUser(testId, currentUserId);
 
@@ -845,7 +488,7 @@ export class TestService {
     const options = await this.testRepository.listOptionsByQuestionIds(
       questions.map((question) => question.id)
     );
-    const graded = this.gradeAnswers(questions, options, input.answers);
+    const graded = gradeAnswers(questions, options, input.answers);
     await this.testRepository.replaceSubmissionAnswers({
       answers: graded.normalizedAnswers,
       submissionId
@@ -860,7 +503,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    await this.requireAccessibleTest(testId, currentUserId, currentUserRole);
+    await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
 
     let submission = await this.testRepository.findLatestSubmissionByTestAndUser(testId, currentUserId);
 
@@ -872,7 +515,7 @@ export class TestService {
     const options = await this.testRepository.listOptionsByQuestionIds(
       questions.map((question) => question.id)
     );
-    const graded = this.gradeAnswers(questions, options, input.answers);
+    const graded = gradeAnswers(questions, options, input.answers);
     await this.testRepository.replaceSubmissionAnswers({
       answers: graded.normalizedAnswers,
       submissionId: submission.id
@@ -917,7 +560,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly SubmissionSummary[]> {
-    await this.requireManageableTest(testId, currentUserId, currentUserRole);
+    await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
     const submissions = await this.testRepository.listSubmissionsByTestId(testId);
 
     return submissions.map(mapSubmissionSummary);
@@ -941,7 +584,7 @@ export class TestService {
     }
 
     if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.requireManageableTest(test.id, currentUserId, currentUserRole);
+      await this.access.requireManageableTest(test.id, currentUserId, currentUserRole);
     } else if (submission.userId !== currentUserId) {
       throw new ForbiddenError("You do not have permission to view this submission");
     }
@@ -980,7 +623,7 @@ export class TestService {
       throw new NotFoundError("Submission not found");
     }
 
-    await this.requireManageableTest(submission.testId, currentUserId, currentUserRole);
+    await this.access.requireManageableTest(submission.testId, currentUserId, currentUserRole);
 
     const questions = await this.testRepository.listQuestionsByTestId(submission.testId);
     const questionMap = new Map(questions.map((question) => [question.id, question]));

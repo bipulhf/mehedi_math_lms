@@ -35,6 +35,7 @@ import { CourseRepository } from "@/repositories/course-repository";
 import { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { HealthRepository } from "@/repositories/health-repository";
 import { LandingRepository } from "@/repositories/landing-repository";
+import { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import { MessageRepository } from "@/repositories/message-repository";
 import { NoticeRepository } from "@/repositories/notice-repository";
 import { NotificationRepository } from "@/repositories/notification-repository";
@@ -48,6 +49,7 @@ import { TestRepository } from "@/repositories/test-repository";
 import { UploadRepository } from "@/repositories/upload-repository";
 import { AdminDashboardService } from "@/services/admin-dashboard-service";
 import { AnalyticsService } from "@/services/analytics-service";
+import { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { AdminUserService } from "@/services/admin-user-service";
 import { AuthGuardService } from "@/services/auth-guard-service";
 import { BugReportService } from "@/services/bug-report-service";
@@ -88,6 +90,7 @@ const contentRepository = new ContentRepository();
 const courseRepository = new CourseRepository();
 const enrollmentRepository = new EnrollmentRepository();
 const messageRepository = new MessageRepository();
+const conversationReportRepository = new ConversationReportRepository();
 const notificationRepository = new NotificationRepository();
 const noticeRepository = new NoticeRepository();
 const smsRepository = new SmsRepository();
@@ -107,7 +110,11 @@ const notificationRealtimeService = new NotificationRealtimeService(
   process.env.REDIS_URL ?? "redis://localhost:6379"
 );
 const fcmPushService = new FcmPushService();
-const messageService = new MessageService(messageRepository, messageRealtimeService);
+const messageService = new MessageService(
+  messageRepository,
+  conversationReportRepository,
+  messageRealtimeService
+);
 const notificationService = new NotificationService(
   notificationRepository,
   enrollmentRepository,
@@ -155,11 +162,17 @@ const progressService = new ProgressService(
 );
 // TestService promotes an enrolment through ProgressService once grading
 // finishes, which is how an Exam-Only Course completes at all. ADR-0005.
-const testService = new TestService(
+const assessmentAccessGuards = new AssessmentAccessGuards(
   testRepository,
   contentRepository,
   courseRepository,
+  enrollmentRepository
+);
+const testService = new TestService(
+  testRepository,
+  contentRepository,
   enrollmentRepository,
+  assessmentAccessGuards,
   progressService
 );
 const uploadService = new UploadService(uploadRepository);

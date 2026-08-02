@@ -1,7 +1,5 @@
 import {
   and,
-  conversationAccessLog,
-  conversationReports,
   conversations,
   count,
   db,
@@ -16,157 +14,25 @@ import {
   users
 } from "@mma/db";
 
-import type { UserRole } from "@mma/shared";
+import {
+  mapMessage,
+  mapParticipant,
+  normalizeParticipantPair,
+  type ConversationMessageRecord,
+  type ConversationRecord,
+  type MessageParticipantRecord,
+  type MessageRow,
+  type ParticipantUserRow
+} from "@/repositories/message-record-mappers";
 
-interface ParticipantUserRow {
-  email: string;
-  id: string;
-  image: string | null;
-  isActive: boolean;
-  name: string;
-  role: string;
-  studentProfile: {
-    profilePhoto: string | null;
-  } | null;
-  teacherProfile: {
-    profilePhoto: string | null;
-  } | null;
-}
+export type {
+  ConversationMessageRecord,
+  ConversationRecord,
+  ConversationReportListRecord,
+  ConversationReportRecord,
+  MessageParticipantRecord
+} from "@/repositories/message-record-mappers";
 
-interface MessageUserRow {
-  id: string;
-  image: string | null;
-  name: string;
-  role: string;
-  studentProfile: {
-    profilePhoto: string | null;
-  } | null;
-  teacherProfile: {
-    profilePhoto: string | null;
-  } | null;
-}
-
-interface MessageRow {
-  content: string;
-  conversationId: string;
-  createdAt: Date;
-  hiddenAt: Date | null;
-  id: string;
-  readAt: Date | null;
-  sender: MessageUserRow;
-  senderId: string;
-}
-
-export interface MessageParticipantRecord {
-  email: string;
-  id: string;
-  image: string | null;
-  isActive: boolean;
-  name: string;
-  role: UserRole;
-}
-
-export interface ConversationReportRecord {
-  conversationId: string;
-  createdAt: Date;
-  id: string;
-  reason: string;
-  reporterId: string;
-  resolvedAt: Date | null;
-  resolvedById: string | null;
-}
-
-/** A report with the people attached, so the admin queue is readable without a second round trip. */
-export interface ConversationReportListRecord extends ConversationReportRecord {
-  participants: readonly { id: string; name: string; role: UserRole }[];
-  reporter: { id: string; name: string; role: UserRole };
-}
-
-export interface ConversationMessageRecord {
-  content: string;
-  conversationId: string;
-  createdAt: Date;
-  /** Set when an admin removed this message from view after a report. */
-  hiddenAt: Date | null;
-  id: string;
-  readAt: Date | null;
-  sender: MessageParticipantRecord;
-  senderId: string;
-}
-
-export interface ConversationRecord {
-  createdAt: Date;
-  id: string;
-  lastMessage: ConversationMessageRecord | null;
-  lastMessageAt: Date | null;
-  participantOne: MessageParticipantRecord;
-  participantTwo: MessageParticipantRecord;
-  unreadCount: number;
-  updatedAt: Date;
-}
-
-function resolveProfileImage(
-  user:
-    | {
-        image: string | null;
-        studentProfile: { profilePhoto: string | null } | null;
-        teacherProfile: { profilePhoto: string | null } | null;
-      }
-    | MessageUserRow
-    | ParticipantUserRow
-): string | null {
-  return user.teacherProfile?.profilePhoto ?? user.studentProfile?.profilePhoto ?? user.image;
-}
-
-function mapParticipant(user: ParticipantUserRow): MessageParticipantRecord {
-  return {
-    email: user.email,
-    id: user.id,
-    image: resolveProfileImage(user),
-    isActive: user.isActive,
-    name: user.name,
-    role: user.role as UserRole
-  };
-}
-
-function mapMessageParticipant(user: MessageUserRow): MessageParticipantRecord {
-  return {
-    email: "",
-    id: user.id,
-    image: resolveProfileImage(user),
-    isActive: true,
-    name: user.name,
-    role: user.role as UserRole
-  };
-}
-
-function mapMessage(row: MessageRow): ConversationMessageRecord {
-  return {
-    content: row.content,
-    conversationId: row.conversationId,
-    createdAt: row.createdAt,
-    hiddenAt: row.hiddenAt,
-    id: row.id,
-    readAt: row.readAt,
-    sender: mapMessageParticipant(row.sender),
-    senderId: row.senderId
-  };
-}
-
-function normalizeParticipantPair(userAId: string, userBId: string): {
-  participantOneId: string;
-  participantTwoId: string;
-} {
-  return userAId < userBId
-    ? {
-        participantOneId: userAId,
-        participantTwoId: userBId
-      }
-    : {
-        participantOneId: userBId,
-        participantTwoId: userAId
-      };
-}
 
 export class MessageRepository {
   public async findActiveUserById(userId: string): Promise<MessageParticipantRecord | null> {
@@ -685,114 +551,6 @@ export class MessageRepository {
     return rows.map((row) => mapMessage(row as MessageRow));
   }
 
-  /** Record a participant's report. Reporting is what unlocks admin access. */
-  public async createConversationReport(input: {
-    conversationId: string;
-    reason: string;
-    reporterId: string;
-  }): Promise<ConversationReportRecord> {
-    const [record] = await db
-      .insert(conversationReports)
-      .values({
-        conversationId: input.conversationId,
-        reason: input.reason,
-        reporterId: input.reporterId
-      })
-      .returning();
-
-    if (!record) {
-      throw new Error("Failed to create conversation report");
-    }
-
-    return record;
-  }
-
-  /**
-   * Whether an unresolved report exists. This is the entire basis of an admin's
-   * right to read a conversation — no open report, no access. ADR-0004.
-   */
-  public async hasOpenReport(conversationId: string): Promise<boolean> {
-    const [row] = await db
-      .select({ id: conversationReports.id })
-      .from(conversationReports)
-      .where(
-        and(
-          eq(conversationReports.conversationId, conversationId),
-          isNull(conversationReports.resolvedAt)
-        )
-      )
-      .limit(1);
-
-    return Boolean(row);
-  }
-
-  public async listOpenReports(): Promise<readonly ConversationReportListRecord[]> {
-    const rows = await db.query.conversationReports.findMany({
-      orderBy: [desc(conversationReports.createdAt)],
-      where: isNull(conversationReports.resolvedAt),
-      with: {
-        conversation: {
-          columns: { id: true },
-          with: {
-            participantOne: { columns: { id: true, name: true, role: true } },
-            participantTwo: { columns: { id: true, name: true, role: true } }
-          }
-        },
-        reporter: { columns: { id: true, name: true, role: true } }
-      }
-    });
-
-    return rows.map((row) => ({
-      conversationId: row.conversationId,
-      createdAt: row.createdAt,
-      id: row.id,
-      participants: [
-        {
-          id: row.conversation.participantOne.id,
-          name: row.conversation.participantOne.name,
-          role: row.conversation.participantOne.role as UserRole
-        },
-        {
-          id: row.conversation.participantTwo.id,
-          name: row.conversation.participantTwo.name,
-          role: row.conversation.participantTwo.role as UserRole
-        }
-      ],
-      reason: row.reason,
-      reporter: {
-        id: row.reporter.id,
-        name: row.reporter.name,
-        role: row.reporter.role as UserRole
-      },
-      reporterId: row.reporterId,
-      resolvedAt: row.resolvedAt,
-      resolvedById: row.resolvedById
-    }));
-  }
-
-  public async resolveReport(
-    reportId: string,
-    resolvedById: string
-  ): Promise<ConversationReportRecord | null> {
-    const [record] = await db
-      .update(conversationReports)
-      .set({
-        resolvedAt: new Date(),
-        resolvedById
-      })
-      .where(and(eq(conversationReports.id, reportId), isNull(conversationReports.resolvedAt)))
-      .returning();
-
-    return record ?? null;
-  }
-
-  /** Every admin read of a reported conversation, recorded. ADR-0004. */
-  public async recordAdminAccess(conversationId: string, adminId: string): Promise<void> {
-    await db.insert(conversationAccessLog).values({
-      adminId,
-      conversationId
-    });
-  }
 
   /**
    * Remove a message from view. The content column is deliberately untouched —

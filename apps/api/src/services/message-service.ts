@@ -1,12 +1,12 @@
 import type { UserRole } from "@mma/shared";
 
+import type { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import type {
-  MessageRepository} from "@/repositories/message-repository";
-import {
-  type ConversationMessageRecord,
-  type ConversationRecord,
-  type MessageParticipantRecord
-} from "@/repositories/message-repository";
+  ConversationMessageRecord,
+  ConversationRecord,
+  MessageParticipantRecord
+} from "@/repositories/message-record-mappers";
+import type { MessageRepository } from "@/repositories/message-repository";
 import type { MessageRealtimeService } from "@/services/message-realtime-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -126,6 +126,7 @@ function mapMessageView(
 export class MessageService {
   public constructor(
     private readonly messageRepository: MessageRepository,
+    private readonly conversationReportRepository: ConversationReportRepository,
     private readonly messageRealtimeService: MessageRealtimeService
   ) {}
 
@@ -199,13 +200,13 @@ export class MessageService {
       throw new NotFoundError("Conversation not found");
     }
 
-    const isReported = await this.messageRepository.hasOpenReport(conversationId);
+    const isReported = await this.conversationReportRepository.hasOpenReport(conversationId);
 
     if (!isReported) {
       throw new ForbiddenError("This conversation has not been reported");
     }
 
-    await this.messageRepository.recordAdminAccess(conversationId, adminId);
+    await this.conversationReportRepository.recordAdminAccess(conversationId, adminId);
 
     return conversation;
   }
@@ -338,7 +339,7 @@ export class MessageService {
   ): Promise<{ conversationId: string; id: string }> {
     await this.requireConversationAccess(conversationId, currentUserId, currentUserRole);
 
-    const report = await this.messageRepository.createConversationReport({
+    const report = await this.conversationReportRepository.createConversationReport({
       conversationId,
       reason: input.reason.trim(),
       reporterId: currentUserId
@@ -404,7 +405,7 @@ export class MessageService {
   }
 
   public async listOpenReports(): Promise<readonly ConversationReportView[]> {
-    const reports = await this.messageRepository.listOpenReports();
+    const reports = await this.conversationReportRepository.listOpenReports();
 
     return reports.map((report) => ({
       conversationId: report.conversationId,
@@ -418,7 +419,7 @@ export class MessageService {
   }
 
   public async resolveReport(reportId: string, adminId: string): Promise<{ id: string }> {
-    const resolved = await this.messageRepository.resolveReport(reportId, adminId);
+    const resolved = await this.conversationReportRepository.resolveReport(reportId, adminId);
 
     if (!resolved) {
       throw new NotFoundError("Open report not found");
