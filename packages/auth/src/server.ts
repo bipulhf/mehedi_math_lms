@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
-import { admin } from "better-auth/plugins";
+import { admin, oneTimeToken } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
@@ -25,7 +25,10 @@ const trustedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:8081",
-  "exp://127.0.0.1:8081"
+  "exp://127.0.0.1:8081",
+  // The Expo app's deep-link scheme (app.json `scheme`). The mobile Google
+  // flow finishes by redirecting the in-app browser back into the app.
+  "mma://"
 ];
 
 const isGoogleConfigured =
@@ -152,6 +155,15 @@ export const auth = betterAuth({
     admin({
       defaultRole: "STUDENT",
       adminRoles: ["ADMIN"]
+    }),
+    // How a native sign-in gets a session out of the in-app browser. The web
+    // app mints a short-lived, single-use token at /api/mobile-auth-handoff and
+    // hands it to the app over the deep link; the app exchanges it for the
+    // session cookie. `disableClientRequest` keeps minting server-side only.
+    oneTimeToken({
+      disableClientRequest: true,
+      expiresIn: 3,
+      storeToken: "hashed"
     }),
     customSession(async ({ session, user }) => {
       const authUser = user as AuthUserFields;

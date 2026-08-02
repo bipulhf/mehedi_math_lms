@@ -8,12 +8,12 @@ import { Pressable, StyleSheet, View } from "react-native";
 import {
   Badge,
   Body,
-  BootIndicator,
   Card,
   CoverImage,
   EmptyState,
   Heading,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -78,7 +78,7 @@ export default function LearningScreen(): JSX.Element {
   const keyExtractor = useCallback((item: StudentEnrollment) => item.id, []);
 
   if (isSessionPending) {
-    return <BootIndicator />;
+    return <ScreenSkeleton rows={2} />;
   }
 
   if (!session) {

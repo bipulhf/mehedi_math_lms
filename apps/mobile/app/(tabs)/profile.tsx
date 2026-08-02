@@ -6,12 +6,12 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import {
   Badge,
   Body,
-  BootIndicator,
   Button,
   Caption,
   Card,
   Heading,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -32,7 +32,7 @@ export default function ProfileScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <BootIndicator />;
+    return <ScreenSkeleton rows={2} />;
   }
 
   if (!session) {

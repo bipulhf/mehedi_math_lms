@@ -7,12 +7,12 @@ import { Pressable, StyleSheet, View } from "react-native";
 
 import {
   Body,
-  BootIndicator,
   Caption,
   Card,
   EmptyState,
   Heading,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -64,7 +64,7 @@ export default function NotificationsScreen(): JSX.Element {
   const keyExtractor = useCallback((item: NotificationRecord) => item.id, []);
 
   if (isSessionPending) {
-    return <BootIndicator />;
+    return <ScreenSkeleton rows={3} />;
   }
 
   if (!session) {

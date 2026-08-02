@@ -51,13 +51,29 @@ export const spacing = {
   xxxl: 48
 } as const;
 
+/**
+ * The exact family names registered by `useFonts` in `app/_layout.tsx`.
+ *
+ * One family per weight, deliberately: React Native does not synthesise a bold
+ * for a custom family on Android, so `fontWeight: "700"` over `"Manrope"`
+ * silently renders regular. Reach for a family here instead of a weight.
+ */
+export const fonts = {
+  body: "Inter_400Regular",
+  bodyMedium: "Inter_500Medium",
+  bodySemiBold: "Inter_600SemiBold",
+  displayBold: "Manrope_700Bold",
+  displayExtraBold: "Manrope_800ExtraBold",
+  displaySemiBold: "Manrope_600SemiBold"
+} as const;
+
 export const typography = {
-  body: { fontFamily: "Inter", fontSize: 15, lineHeight: 22 },
-  caption: { fontFamily: "Inter", fontSize: 12, lineHeight: 16 },
-  display: { fontFamily: "Manrope", fontSize: 30, lineHeight: 36 },
-  heading: { fontFamily: "Manrope", fontSize: 22, lineHeight: 28 },
-  label: { fontFamily: "Manrope", fontSize: 13, lineHeight: 18 },
-  title: { fontFamily: "Manrope", fontSize: 17, lineHeight: 24 }
+  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
+  caption: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16 },
+  display: { fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 36 },
+  heading: { fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 28 },
+  label: { fontFamily: fonts.displaySemiBold, fontSize: 13, lineHeight: 18 },
+  title: { fontFamily: fonts.displayBold, fontSize: 17, lineHeight: 24 }
 } as const;
 
 export const shadow = {

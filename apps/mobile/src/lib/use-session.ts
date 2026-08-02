@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchSession, signInWithEmail, signOut, signUpWithEmail, type MobileSession } from "@/src/lib/auth";
+import {
+  fetchSession,
+  signInWithEmail,
+  signInWithGoogle,
+  signOut,
+  signUpWithEmail,
+  type MobileSession
+} from "@/src/lib/auth";
 
 const SESSION_QUERY_KEY = ["session"] as const;
 
@@ -25,6 +32,17 @@ export function useSignIn() {
 
   return useMutation({
     mutationFn: signInWithEmail,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+    }
+  });
+}
+
+export function useGoogleSignIn() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: signInWithGoogle,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
     }

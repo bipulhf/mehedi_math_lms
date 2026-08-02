@@ -33,17 +33,36 @@ Two origins, and confusing them is the most likely mistake here:
 
 Never call `fetch` directly for product data. Use `src/lib/api-client.ts`, which unwraps the `{ status, message?, data }` envelope and throws `ApiError` carrying the API's own message. Add endpoints to `src/lib/api.ts`, one function each. **Check the actual route in `apps/api/src/routes/v1/` before adding one** — several paths are not where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`, `tests/submissions/:id/answers`, `tests/:testId/submit`).
 
+## Named exports, with one forced exception
+
+The repo rule is **named exports only** (root `AGENTS.md` §3). Expo Router requires a `export default` per file in `app/`, and there is no way around it — the router loads a route module and reads its default. So every file under `app/` has exactly one default export, which is its screen, and nothing else in this workspace does. Do not "fix" those, and do not add a default export anywhere in `src/`.
+
+## Typography
+
+`src/theme/tokens.ts` names one font family per weight (`Inter_400Regular`, `Manrope_700Bold`, …) and `app/_layout.tsx` registers exactly those with `useFonts`, holding the splash screen until they resolve.
+
+Two traps this avoids, both silent:
+
+- React Native substitutes the system font for an unresolvable family **without warning**, so a missing `useFonts` call looks like a working app in the wrong typeface.
+- Android does not synthesise a bold for a custom family. `fontWeight: "700"` over `"Manrope"` renders regular. Pick the family, not the weight — there are no `fontWeight` values left in this workspace.
+
 ## Auth
 
 React Native has no cookie jar, so the app stores Better Auth's session cookie itself: `src/lib/session-store.ts` keeps it in **expo-secure-store** (it is a bearer credential, not a preference) and every request replays it as a `Cookie` header. `src/lib/auth.ts` wraps the endpoints; `src/lib/use-session.ts` is the hook screens use.
 
 A rejected cookie is treated as "signed out", not as an error — it is cleared so the next launch does not retry it.
 
+**Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `mma://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
+
 ## Server state
 
 TanStack Query, with the same rules as the web app: keys come from `queryKeys` in `src/lib/query.ts`, retry is off for 4xx and for all mutations. The cache is persisted to AsyncStorage through `PersistQueryClientProvider`, so the app opens with content rather than skeletons — that persistence is why `gcTime` is a full day.
 
 The session query is the one exception: `staleTime: 0`, because showing a signed-out user a signed-in shell is worse than a brief wait.
+
+## Loading states
+
+No spinners. Standards §12 applies to mobile as written — "every screen, every component, every data-fetching boundary". `SkeletonBlock` pulses on Reanimated's UI thread, so it keeps 60fps while the JS thread is busy with the very work it is standing in for, and `ScreenSkeleton` covers the pre-session boot state that used to be an `ActivityIndicator`.
 
 ## Lists and images
 

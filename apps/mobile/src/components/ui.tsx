@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import type { JSX, ReactNode } from "react";
+import { useEffect } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -11,8 +11,15 @@ import {
   type TextInputProps,
   type ViewStyle
 } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming
+} from "react-native-reanimated";
 
-import { colors, radius, shadow, spacing, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius, shadow, spacing, typography } from "@/src/theme/tokens";
 
 /**
  * The primitives every screen is built from. Deliberately small: the web app's
@@ -176,18 +183,31 @@ export function EmptyState({ message, title }: { message: string; title: string 
 }
 
 /**
- * The one place a spinner is allowed: a full-screen boot, where there is no
- * layout to draw a skeleton of yet.
+ * The shape a screen shows before its session resolves. Standards §12 admits
+ * no spinners on any data-fetching boundary, web or mobile, so even the boot
+ * state is a skeleton of the screen that is about to arrive.
  */
-export function BootIndicator(): JSX.Element {
+export function ScreenSkeleton({ rows = 3 }: { rows?: number }): JSX.Element {
   return (
-    <View style={styles.boot}>
-      <ActivityIndicator color={colors.primary} size="large" />
+    <View style={styles.screenSkeleton}>
+      <SkeletonBlock height={28} width="45%" />
+      {Array.from({ length: rows }).map((_, index) => (
+        <Card key={index}>
+          <SkeletonBlock height={18} width="60%" />
+          <View style={{ height: spacing.sm }} />
+          <SkeletonBlock height={14} />
+        </Card>
+      ))}
     </View>
   );
 }
 
-/** Skeleton block. Every list and detail screen builds its own shape from these. */
+/**
+ * Skeleton block. Every list and detail screen builds its own shape from these.
+ *
+ * The pulse runs on Reanimated's UI thread, so it keeps its 60fps while the
+ * JS thread is busy doing the very work the skeleton is standing in for.
+ */
 export function SkeletonBlock({
   height,
   style,
@@ -197,7 +217,23 @@ export function SkeletonBlock({
   style?: StyleProp<ViewStyle>;
   width?: number | `${number}%`;
 }): JSX.Element {
-  return <View style={[styles.skeleton, { height, width: width ?? "100%" }, style]} />;
+  const pulse = useSharedValue(0.45);
+
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withTiming(1, { duration: 750, easing: Easing.inOut(Easing.quad) }),
+      -1,
+      true
+    );
+  }, [pulse]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
+
+  return (
+    <Animated.View
+      style={[styles.skeleton, { height, width: width ?? "100%" }, animatedStyle, style]}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
@@ -211,17 +247,17 @@ const styles = StyleSheet.create({
   badgePositive: { backgroundColor: "#d7f0e2" },
   badgeText: {
     color: colors.onSecondaryContainer,
-    fontSize: typography.caption.fontSize,
-    fontWeight: "700"
+    fontFamily: fonts.displayBold,
+    fontSize: typography.caption.fontSize
   },
   badgeWarning: { backgroundColor: "#ffe6bf" },
   body: {
     color: colors.onSurface,
+    fontFamily: fonts.body,
     fontSize: typography.body.fontSize,
     lineHeight: typography.body.lineHeight
   },
   bodyMuted: { color: colors.onSurfaceVariant },
-  boot: { alignItems: "center", flex: 1, justifyContent: "center" },
   button: {
     alignItems: "center",
     backgroundColor: colors.primary,
@@ -232,7 +268,7 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonGhost: { backgroundColor: "transparent" },
-  buttonLabel: { color: colors.onPrimary, fontSize: 15, fontWeight: "700" },
+  buttonLabel: { color: colors.onPrimary, fontFamily: fonts.displayBold, fontSize: 15 },
   buttonLabelOnSurface: { color: colors.onSurface },
   buttonOutline: {
     backgroundColor: "transparent",
@@ -240,7 +276,11 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   buttonPressed: { opacity: 0.85 },
-  caption: { color: colors.onSurfaceVariant, fontSize: typography.caption.fontSize },
+  caption: {
+    color: colors.onSurfaceVariant,
+    fontFamily: fonts.body,
+    fontSize: typography.caption.fontSize
+  },
   card: {
     backgroundColor: colors.surfaceContainerLowest,
     borderColor: colors.outlineVariant,
@@ -259,23 +299,33 @@ const styles = StyleSheet.create({
   field: { gap: spacing.xs },
   fieldLabel: {
     color: colors.onSurfaceVariant,
+    fontFamily: fonts.displaySemiBold,
     fontSize: typography.caption.fontSize,
-    fontWeight: "700",
     letterSpacing: 0.6,
     textTransform: "uppercase"
   },
-  heading: { color: colors.onSurface, fontSize: typography.display.fontSize, fontWeight: "800" },
+  heading: {
+    color: colors.onSurface,
+    fontFamily: fonts.displayExtraBold,
+    fontSize: typography.display.fontSize
+  },
   input: {
     backgroundColor: colors.surfaceContainerLow,
     borderColor: colors.outlineVariant,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     color: colors.onSurface,
+    fontFamily: fonts.body,
     fontSize: 15,
     minHeight: 48,
     paddingHorizontal: spacing.lg
   },
   screen: { backgroundColor: colors.background, flex: 1 },
+  screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
   skeleton: { backgroundColor: colors.surfaceContainerHigh, borderRadius: radius.md },
-  title: { color: colors.onSurface, fontSize: typography.title.fontSize, fontWeight: "700" }
+  title: {
+    color: colors.onSurface,
+    fontFamily: fonts.displayBold,
+    fontSize: typography.title.fontSize
+  }
 });

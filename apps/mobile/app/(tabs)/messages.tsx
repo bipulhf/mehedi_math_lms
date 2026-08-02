@@ -8,12 +8,12 @@ import { Pressable, StyleSheet, View } from "react-native";
 import {
   Badge,
   Body,
-  BootIndicator,
   Caption,
   Card,
   EmptyState,
   Heading,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -69,7 +69,7 @@ export default function MessagesScreen(): JSX.Element {
   const keyExtractor = useCallback((item: MessageConversation) => item.id, []);
 
   if (isSessionPending) {
-    return <BootIndicator />;
+    return <ScreenSkeleton rows={4} />;
   }
 
   if (!session) {

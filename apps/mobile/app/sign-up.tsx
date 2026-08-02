@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
+import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { Body, Button, Card, Field, Heading, Screen } from "@/src/components/ui";
 import { useSignUp } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -88,6 +89,8 @@ export default function SignUpScreen(): JSX.Element {
                 label="Create account"
                 onPress={handleSubmit}
               />
+
+              <GoogleSignInButton />
             </View>
           </Card>
         </ScrollView>

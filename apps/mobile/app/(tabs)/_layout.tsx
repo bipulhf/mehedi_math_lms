@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { getNotificationUnreadCount, listConversations } from "@/src/lib/api";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { colors, radius, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius, typography } from "@/src/theme/tokens";
 
 /**
  * Text glyphs rather than an icon pack: the tab bar is the only place the app
@@ -60,7 +60,7 @@ export default function TabsLayout(): JSX.Element {
       screenOptions={{
         headerShadowVisible: false,
         headerStyle: { backgroundColor: colors.background },
-        headerTitleStyle: { fontWeight: "700" },
+        headerTitleStyle: { fontFamily: fonts.displayBold },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.onSurfaceVariant,
         tabBarStyle: {
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     right: -12,
     top: -4
   },
-  badgeText: { color: colors.onError, fontSize: 10, fontWeight: "700" },
+  badgeText: { color: colors.onError, fontFamily: fonts.displayBold, fontSize: 10 },
   glyph: { color: colors.onSurfaceVariant, fontSize: typography.title.fontSize },
   glyphFocused: { color: colors.primary }
 });

@@ -19,6 +19,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ApiMobileAuthHandoffRouteImport } from './routes/api/mobile-auth-handoff'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
@@ -110,6 +111,11 @@ const SignupRoute = SignupRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileAuthHandoffRoute = ApiMobileAuthHandoffRouteImport.update({
+  id: '/api/mobile-auth-handoff',
+  path: '/api/mobile-auth-handoff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -397,6 +404,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -452,6 +460,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -508,6 +517,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/mobile-auth-handoff'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/mobile-auth-handoff'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -615,6 +626,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/mobile-auth-handoff'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -670,6 +682,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiMobileAuthHandoffRoute: typeof ApiMobileAuthHandoffRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   DevSeoPreviewRoute: typeof DevSeoPreviewRoute
   TeachersSlugRoute: typeof TeachersSlugRoute
@@ -747,6 +760,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile-auth-handoff': {
+      id: '/api/mobile-auth-handoff'
+      path: '/api/mobile-auth-handoff'
+      fullPath: '/api/mobile-auth-handoff'
+      preLoaderRoute: typeof ApiMobileAuthHandoffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -1201,6 +1221,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiMobileAuthHandoffRoute: ApiMobileAuthHandoffRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   DevSeoPreviewRoute: DevSeoPreviewRoute,
   TeachersSlugRoute: TeachersSlugRoute,
