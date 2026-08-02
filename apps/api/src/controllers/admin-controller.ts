@@ -10,9 +10,13 @@ export class AdminController {
 
   public async createStaffAccount(
     context: Context<AppBindings>,
-    input: CreateStaffAccountRequest
+    input: CreateStaffAccountRequest,
+    currentUserId: string
   ): Promise<Response> {
-    const createdStaffAccount = await this.staffAccountService.createStaffAccount(input);
+    const createdStaffAccount = await this.staffAccountService.createStaffAccount(
+      input,
+      currentUserId
+    );
 
     return success(context, createdStaffAccount, 201, "Staff account created successfully");
   }

@@ -5,10 +5,12 @@ import { userRoleSchema } from "../types/roles";
 export const userListStatusValues = ["all", "active", "inactive"] as const;
 export const userListStatusSchema = z.enum(userListStatusValues);
 
-export const staffRoleValues = ["TEACHER", "ACCOUNTANT"] as const;
+// ADMIN is creatable so a second administrator can be minted without shell
+// access. Doing so requires the caller to re-enter their password. ADR-0002.
+export const staffRoleValues = ["TEACHER", "ACCOUNTANT", "ADMIN"] as const;
 export const staffRoleSchema = z.enum(staffRoleValues);
 
-export const manageableUserRoleValues = ["STUDENT", "TEACHER", "ACCOUNTANT"] as const;
+export const manageableUserRoleValues = ["STUDENT", "TEACHER", "ACCOUNTANT", "ADMIN"] as const;
 export const manageableUserRoleSchema = z.enum(manageableUserRoleValues);
 
 export const bugReportStatusValues = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"] as const;
@@ -33,6 +35,8 @@ export const adminUsersQuerySchema = paginationQuerySchema.extend({
 });
 
 export const createAdminUserSchema = z.object({
+  /** The calling admin's own password. Required only when role is ADMIN. */
+  confirmPassword: z.string().min(1).max(128).optional(),
   email: z.email(),
   name: z.string().trim().min(1).max(255),
   role: staffRoleSchema

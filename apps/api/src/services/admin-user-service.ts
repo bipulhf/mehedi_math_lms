@@ -51,8 +51,11 @@ export class AdminUserService {
     return user;
   }
 
-  public async createUser(input: CreateStaffAccountRequest): Promise<CreatedStaffAccount> {
-    return this.staffAccountService.createStaffAccount(input);
+  public async createUser(
+    input: CreateStaffAccountRequest,
+    currentUserId: string
+  ): Promise<CreatedStaffAccount> {
+    return this.staffAccountService.createStaffAccount(input, currentUserId);
   }
 
   public async updateUser(
@@ -106,6 +109,20 @@ export class AdminUserService {
       throw new ForbiddenError("You cannot deactivate your own account");
     }
 
+    // The admin role must never be emptied — there would be no way back into
+    // the platform without shell access. ADR-0002.
+    if (isActive === false) {
+      const targetRole = await this.adminUserRepository.findRoleById(targetUserId);
+
+      if (targetRole === "ADMIN") {
+        const activeAdmins = await this.adminUserRepository.countActiveAdmins();
+
+        if (activeAdmins <= 1) {
+          throw new ForbiddenError("You cannot deactivate the last remaining admin");
+        }
+      }
+    }
+
     const updatedUser = await this.adminUserRepository.updateUserStatus(
       targetUserId,
       isActive,
@@ -119,24 +136,5 @@ export class AdminUserService {
     await this.authSessionRepository.deleteByUserId(targetUserId);
 
     return updatedUser;
-  }
-
-  public async softDeleteUser(
-    targetUserId: string,
-    currentUserId: string
-  ): Promise<AdminUserListRecord> {
-    if (targetUserId === currentUserId) {
-      throw new ForbiddenError("You cannot delete your own account");
-    }
-
-    const user = await this.adminUserRepository.softDeleteUser(targetUserId);
-
-    if (!user) {
-      throw new NotFoundError("User not found");
-    }
-
-    await this.authSessionRepository.deleteByUserId(targetUserId);
-
-    return user;
   }
 }

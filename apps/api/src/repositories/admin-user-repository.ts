@@ -64,7 +64,7 @@ export interface AdminUserDetailRecord extends AdminUserListRecord {
 export interface UpdateAdminUserInput {
   email?: string | undefined;
   name?: string | undefined;
-  role?: "STUDENT" | "TEACHER" | "ACCOUNTANT" | undefined;
+  role?: "STUDENT" | "TEACHER" | "ACCOUNTANT" | "ADMIN" | undefined;
   slug?: string | undefined;
 }
 
@@ -300,7 +300,26 @@ export class AdminUserRepository {
     };
   }
 
-  public async softDeleteUser(userId: string): Promise<AdminUserListRecord | null> {
-    return this.updateUserStatus(userId, false, "Deleted by admin");
+  /**
+   * How many admins can still log in. Guards against emptying the role and
+   * locking everyone out of the platform. ADR-0002.
+   */
+  public async countActiveAdmins(): Promise<number> {
+    const [row] = await db
+      .select({ value: count() })
+      .from(users)
+      .where(and(eq(users.role, "ADMIN"), eq(users.isActive, true)));
+
+    return Number(row?.value ?? 0);
+  }
+
+  public async findRoleById(userId: string): Promise<UserRole | null> {
+    const [row] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    return row?.role ?? null;
   }
 }

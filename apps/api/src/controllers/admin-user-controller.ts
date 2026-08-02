@@ -30,9 +30,10 @@ export class AdminUserController {
 
   public async createUser(
     context: Context<AppBindings>,
-    input: CreateStaffAccountRequest
+    input: CreateStaffAccountRequest,
+    currentUserId: string
   ): Promise<Response> {
-    const createdUser = await this.adminUserService.createUser(input);
+    const createdUser = await this.adminUserService.createUser(input, currentUserId);
 
     return success(context, createdUser, 201, "Staff account created successfully");
   }
@@ -56,15 +57,5 @@ export class AdminUserController {
     const updatedUser = await this.adminUserService.updateUserStatus(userId, currentUserId, isActive);
 
     return success(context, updatedUser, 200, "User status updated successfully");
-  }
-
-  public async deleteUser(
-    context: Context<AppBindings>,
-    userId: string,
-    currentUserId: string
-  ): Promise<Response> {
-    const deletedUser = await this.adminUserService.softDeleteUser(userId, currentUserId);
-
-    return success(context, deletedUser, 200, "User deleted successfully");
   }
 }

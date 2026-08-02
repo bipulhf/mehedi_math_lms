@@ -2,7 +2,6 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Search,
   UserPlus,
-  Trash2,
   UserCheck,
   UserX,
   Eye,
@@ -31,7 +30,6 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminUserListItem, CreateAdminUserInput } from "@/lib/api/admin";
 import {
   createAdminUser,
-  deleteAdminUser,
   listAdminUsers,
   updateAdminUserStatus
 } from "@/lib/api/admin";
@@ -116,13 +114,6 @@ function AdminUsersPage(): JSX.Element {
       return;
     await updateAdminUserStatus(user.id, { isActive: nextStatus });
     toast.success(`User ${nextStatus ? "activated" : "deactivated"}`);
-    await loadUsers();
-  };
-
-  const handleDelete = async (user: AdminUserListItem): Promise<void> => {
-    if (!window.confirm(`Soft delete ${user.name}? This will disable access.`)) return;
-    await deleteAdminUser(user.id);
-    toast.success("User deleted");
     await loadUsers();
   };
 
@@ -553,17 +544,6 @@ function AdminUsersPage(): JSX.Element {
                               <UserCheck className="size-4" />
                             )}
                           </Button>
-                          {!isOwn && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => void handleDelete(user)}
-                              className="size-9 rounded-xl text-red-500/40 hover:text-red-500 hover:bg-red-50 transition-all font-semibold"
-                              title="Archive Record"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          )}
                         </div>
                       </td>
                     </tr>

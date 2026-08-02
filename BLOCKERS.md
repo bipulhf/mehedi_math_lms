@@ -122,6 +122,33 @@ URL. Renamed to `withdrawCourse`, added `restoreCourse`, and updated the single 
 Worth remembering for the remaining stages: renaming an endpoint does not fail the build. Grep the web
 client every time a route changes.
 
+### Stage 5 — the email queue enqueue is gone, as instructed
+
+`staff-account-service.ts` no longer enqueues `staff-account-invite`. The `email` queue has no worker and
+no mail transport is installed anywhere in the repo, so the job only parked a plaintext temporary password
+in Redis indefinitely. The password now reaches the new account holder solely through the creation
+response, which the admin passes on out of band.
+
+The `email` queue itself is still declared in `lib/queues.ts` and now has neither producer nor consumer.
+Left in place — removing it is a separate decision, and it will be wanted the moment a transport exists.
+
+### Stage 5 — verifyPassword throws on a malformed hash
+
+`better-auth`'s `verifyPassword` throws `Invalid password hash` rather than returning false when the
+stored credential is not in `salt:key` form. On the re-auth path that would surface as a 500 instead of a
+clean refusal. `verifyPasswordHash` in `packages/auth/src/server.ts` now catches and returns false — fail
+closed. Covered by a test.
+
+Found because a test stub used a fake hash string; worth keeping in mind that a corrupt row in `accounts`
+would have done the same thing in production.
+
+### Stage 5 — the admin UI called the removed delete endpoint
+
+Same class of break as Stage 4, and exactly what that note warned about. `apps/web` had
+`deleteAdminUser` posting to `DELETE admin/users/:id` behind a trash-can button. Both removed; the
+deactivate toggle already sitting next to it is now the only way to disable an account, which is what
+ADR-0003 intends.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member

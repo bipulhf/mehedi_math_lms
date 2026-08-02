@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { admin } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
@@ -175,4 +175,22 @@ export type AuthSession = AuthSessionPayload["session"];
 
 export async function createPasswordHash(password: string): Promise<string> {
   return hashPassword(password);
+}
+
+/**
+ * Confirms a password against a stored hash. Used to make an admin prove who
+ * they are before minting another admin — a hijacked session should not be
+ * enough on its own. ADR-0002.
+ */
+export async function verifyPasswordHash(input: {
+  hash: string;
+  password: string;
+}): Promise<boolean> {
+  try {
+    return await verifyPassword({ hash: input.hash, password: input.password });
+  } catch {
+    // A malformed stored hash throws rather than returning false. Fail closed:
+    // a corrupt credential is a failed confirmation, not a 500 on an auth path.
+    return false;
+  }
 }

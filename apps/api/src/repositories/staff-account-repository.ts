@@ -1,6 +1,11 @@
 import { accounts, db, eq, users } from "@mma/db";
 
-export type StaffRole = "TEACHER" | "ACCOUNTANT";
+/**
+ * Roles an Admin can create on someone's behalf. ADMIN is included so a second
+ * administrator can be minted from the UI rather than only by re-running the
+ * seed with shell access. Creating one demands re-authentication. ADR-0002.
+ */
+export type StaffRole = "TEACHER" | "ACCOUNTANT" | "ADMIN";
 
 export interface CreateStaffAccountInput {
   email: string;
@@ -21,6 +26,17 @@ export interface StaffAccountRecord {
 }
 
 export class StaffAccountRepository {
+  /** The caller's own credential hash, for the re-auth gate. ADR-0002. */
+  public async findPasswordHashByUserId(userId: string): Promise<string | null> {
+    const rows = await db
+      .select({ password: accounts.password })
+      .from(accounts)
+      .where(eq(accounts.userId, userId))
+      .limit(1);
+
+    return rows[0]?.password ?? null;
+  }
+
   public async findByEmail(email: string): Promise<Pick<StaffAccountRecord, "id"> | null> {
     const existingUser = await db
       .select({ id: users.id })

@@ -14,7 +14,7 @@ import {
 } from "@mma/shared";
 import type { z } from "zod";
 
-import { apiDelete, apiGet, apiPatch, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
+import { apiGet, apiPatch, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
 
 export interface AdminDashboardStats {
   activeCourses: number;
@@ -156,12 +156,6 @@ export async function updateAdminUserStatus(
     `admin/users/${id}/status`,
     values
   );
-
-  return response.data;
-}
-
-export async function deleteAdminUser(id: string): Promise<AdminUserListItem> {
-  const response = await apiDelete<AdminUserListItem>(`admin/users/${id}`);
 
   return response.data;
 }
