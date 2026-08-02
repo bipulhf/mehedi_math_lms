@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { ConversationListSkeleton, MessageThreadSkeleton } from "@/components/common/skeletons";
 import { ReportConversationDialog } from "@/components/messages/report-conversation-dialog";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useUiStore } from "@/stores/ui-store";
@@ -621,10 +622,8 @@ function DashboardMessagesPage(): JSX.Element {
               <Skeleton className="h-10 w-full rounded-xl bg-surface-container-high" />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full rounded-3xl bg-surface-container-high" />
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            <ConversationListSkeleton rows={5} />
           </div>
         </div>
 
@@ -845,10 +844,7 @@ function DashboardMessagesPage(): JSX.Element {
                 className="flex-1 flex flex-col gap-4 overflow-y-auto rounded-3xl bg-surface-container-low/30 border border-outline-variant/10 p-6 scroll-smooth"
               >
                 {isLoadingThread ? (
-                  <div className="space-y-4">
-                    <div className="h-20 rounded-2xl bg-surface-container-highest/40 w-2/3" />
-                    <div className="ml-auto h-20 w-3/4 rounded-2xl bg-surface-container-highest/40" />
-                  </div>
+                  <MessageThreadSkeleton />
                 ) : visibleMessages.length > 0 ? (
                   visibleMessages.map((message) => (
                     <div

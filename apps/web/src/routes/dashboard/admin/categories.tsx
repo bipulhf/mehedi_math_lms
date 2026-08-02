@@ -12,6 +12,7 @@ import { IconPicker } from "@/components/categories/icon-picker";
 import { CategorySelector } from "@/components/categories/category-selector";
 import { CategoryTree } from "@/components/categories/category-tree";
 import { RouteErrorView } from "@/components/common/route-error";
+import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -256,14 +257,7 @@ function AdminCategoriesPage(): JSX.Element {
           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
           <div className="grid gap-8 xl:grid-cols-2">
-            <div className="space-y-6">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-3 w-16 bg-surface-container-highest" />
-                  <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
-                </div>
-              ))}
-            </div>
+            <CategoryTreeSkeleton rows={6} />
             <div className="space-y-6">
               <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
               {Array.from({ length: 4 }).map((_, i) => (

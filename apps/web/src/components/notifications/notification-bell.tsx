@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 
+import { NotificationListSkeleton } from "@/components/common/skeletons";
 import { Button } from "@/components/ui/button";
 import { clientEnv } from "@/lib/env";
 import { tryRegisterWebPush } from "@/lib/firebase/web-push";
@@ -201,10 +202,7 @@ export function NotificationBell(): JSX.Element | null {
           </div>
           <div className="max-h-80 space-y-2 overflow-y-auto py-3">
             {isLoading ? (
-              <div className="space-y-2">
-                <div className="h-12 rounded-md bg-surface-container-low" />
-                <div className="h-12 rounded-md bg-surface-container-low" />
-              </div>
+              <NotificationListSkeleton rows={3} />
             ) : items.length > 0 ? (
               items.map((record) => (
                 <button

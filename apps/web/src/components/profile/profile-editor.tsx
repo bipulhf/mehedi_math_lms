@@ -7,7 +7,6 @@ import {
 import type { JSX } from "react";
 import { useState } from "react";
 import type { FieldErrors } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 
 import { ProfilePhotoUploadField } from "@/components/profile/profile-photo-upload-field";
 import type {
@@ -377,8 +376,7 @@ export function StudentProfileForm({
                 </Button>
               ) : (
                 <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  {isSubmitting ? "Saving profile..." : "Save profile"}
+                                    {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
             </div>
@@ -470,8 +468,7 @@ export function TeacherProfileForm({
                 </Button>
               ) : (
                 <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  {isSubmitting ? "Saving profile..." : "Save profile"}
+                                    {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
             </div>
@@ -532,8 +529,7 @@ export function BasicProfileForm({
         </div>
         <div className="pt-8 mt-8 border-t border-outline-variant/20 flex justify-end">
           <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-            {isSubmitting ? "Saving profile..." : "Save profile"}
+                        {isSubmitting ? "Saving profile..." : "Save profile"}
           </Button>
         </div>
       </form>

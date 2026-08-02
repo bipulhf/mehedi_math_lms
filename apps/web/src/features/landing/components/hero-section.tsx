@@ -38,6 +38,12 @@ export function HeroSection() {
           <div className="absolute -top-20 -right-20 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
           <div className="bg-surface-container-low rounded-[2rem] p-4 aspect-square overflow-hidden rotate-2 shadow-2xl shadow-primary/5">
             <img
+              decoding="async"
+              // Above the fold: this is the LCP element, so it must not be lazy.
+              fetchPriority="high"
+              height={720}
+              loading="eager"
+              width={720}
               alt="Minimalist modern library focused academic environment"
               className="w-full h-full object-cover rounded-[1.5rem] grayscale-[30%] hover:grayscale-0 transition-all duration-700"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBVM4ASBWMj4U5LbTxJZKBq2aHjKT2iW8f2Oo7eGXhsJqyUc9m8Wn2d7iHsYrQNU7q06wbg74jyS-pPiknWzBguaRPD0rzeGBf8PU6jpyjOdUy7R9O0L9AckRIhesoz6LRgRMW1rrMSj-kkrFqGlloWNVLORUtvQurV2hSu6qNAsKtICRwZhKjeeCXKLZm58Rqfb1aDZgQ5XeAnttI7U4FCYdG0PaKdfE3Ee28H_exuvR7IcJL2zO7gilwi7DACLuk3a5OR1DYGY0"

@@ -25,6 +25,10 @@ export function CourseCard({
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-container-low group-hover:aspect-[16/9] transition-all duration-700 m-2 rounded-3xl">
           {course.coverImageUrl ? (
             <img
+              decoding="async"
+              height={675}
+              loading="lazy"
+              width={1200}
               alt={course.title}
               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
               src={course.coverImageUrl}

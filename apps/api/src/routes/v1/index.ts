@@ -23,14 +23,12 @@ import { profilesRoutes } from "./profiles.route";
 import { questionsRoutes } from "./questions.route";
 import { testsRoutes } from "./tests.route";
 import { uploadRoutes } from "./upload.route";
-import { usersRoutes } from "./users.route";
 
 export const v1Routes = new Hono<AppBindings>();
 
 v1Routes.route("/public", publicConfigRoutes);
 v1Routes.route("/auth", authRoutes);
 v1Routes.route("/bugs", bugsRoutes);
-v1Routes.route("/users", usersRoutes);
 v1Routes.route("/profiles", profilesRoutes);
 v1Routes.route("/categories", categoriesRoutes);
 v1Routes.route("/comments", commentsRoutes);

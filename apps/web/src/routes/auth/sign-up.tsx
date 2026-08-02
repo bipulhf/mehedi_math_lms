@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { seo } from "@/lib/seo";
-import { Loader2 } from "lucide-react";
 
 export const signUpSearchSchema = z.object({
   courseSlug: z.string().trim().min(1).optional()
@@ -144,7 +143,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Create student account"}
+          {isSubmitting ? "Creating account" : "Create student account"}
         </Button>
       </form>
 

@@ -406,6 +406,8 @@ export function CourseEditor({
                   >
                     {values.coverImageUrl ? (
                       <img
+              decoding="async"
+              loading="lazy"
                         src={values.coverImageUrl}
                         className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         alt="Preview"

@@ -19,7 +19,7 @@ import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { TeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { getTeacherAnalyticsOverview } from "@/lib/api/analytics";
@@ -45,15 +45,10 @@ export const Route = createFileRoute("/dashboard/analytics")({
 function AnalyticsSkeleton(): JSX.Element {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <Skeleton className="h-48 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
-      <div className="grid gap-6 md:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 bg-surface-container-lowest rounded-3xl border border-outline-variant/40" />
-        ))}
-      </div>
+      <StatsGridSkeleton cards={3} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Skeleton className="h-100 bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
-        <Skeleton className="h-100 bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
+        <ChartSkeleton />
+        <ChartSkeleton />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { FadeIn } from "@/components/common/fade-in";
+import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PublicTeacherProfileData, TeacherCourseSummary } from "@/lib/api/profiles";
@@ -67,7 +68,8 @@ export const Route = createFileRoute("/teachers/$slug")({
     });
   },
   component: TeacherProfilePage,
-  errorComponent: RouteErrorView
+  errorComponent: RouteErrorView,
+  pendingComponent: ProfilePageSkeleton
 });
 
 function TeacherProfilePage(): JSX.Element {

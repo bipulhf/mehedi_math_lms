@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,7 @@ function TestSubmissionsPage(): JSX.Element {
 
   if (isLoading || !test) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-          Loading submission queue...
-        </CardContent>
-      </Card>
+      <DataTableSkeleton columns={4} rows={6} />
     );
   }
 

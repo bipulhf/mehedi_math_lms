@@ -42,7 +42,14 @@ export const Route = createFileRoute("/courses/")({
     return { coursesForLd: data };
   },
   component: CoursesCatalogPage,
-  errorComponent: RouteErrorView
+  errorComponent: RouteErrorView,
+  pendingComponent: () => (
+    <LandingLayout showGrid={false}>
+      <div className="mx-auto max-w-7xl px-8 py-12">
+        <CourseGridSkeleton />
+      </div>
+    </LandingLayout>
+  )
 });
 
 function flattenCategories(categories: readonly CategoryNode[]): readonly CategoryNode[] {

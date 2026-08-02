@@ -169,6 +169,8 @@ function AdminCoursesPage(): JSX.Element {
                 {course.coverImageUrl ? (
                   <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-outline-variant/20 bg-surface-container-low group-hover/card:shadow-lg transition-all duration-500">
                     <img
+              decoding="async"
+              loading="lazy"
                       alt={course.title}
                       className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
                       src={course.coverImageUrl}

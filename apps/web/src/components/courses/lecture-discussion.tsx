@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
+import { CommentThreadSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +44,8 @@ function Avatar({ comment }: { comment: LectureComment }): JSX.Element {
   if (comment.user.image) {
     return (
       <img
+              decoding="async"
+              loading="lazy"
         alt={comment.user.name}
         className="size-10 rounded-full object-cover"
         src={comment.user.image}
@@ -324,10 +327,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
         ) : null}
 
         {isLoading && comments.length === 0 ? (
-          <div className="space-y-3">
-            <div className="h-24 animate-pulse rounded-[calc(var(--radius)-0.125rem)] bg-surface" />
-            <div className="h-24 animate-pulse rounded-[calc(var(--radius)-0.125rem)] bg-surface" />
-          </div>
+          <CommentThreadSkeleton />
         ) : comments.length === 0 ? (
           <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface p-4 text-sm leading-7 text-on-surface/68">
             No comments yet. Start the lecture conversation here.

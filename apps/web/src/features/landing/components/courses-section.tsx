@@ -28,6 +28,8 @@ export function CoursesSection() {
           <div className="bg-surface-container-lowest rounded-4xl overflow-hidden group border border-outline-variant/5 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
             <div className="h-64 overflow-hidden relative">
               <img
+              decoding="async"
+              loading="lazy"
                 alt="Abstract glowing mathematical visualization"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuxi8QVUnzv_vPAJ1-7E8lR8_ZUR8oe2I65Ukig7XUBlYWMBvMa_l0ftn_1favNAMHExAghBx_EELUDJyEqfBDmtOBROmq59GUJOzLvaCKpJHPQtfjxKW4c-4INICYWE1_sgvSYGkhIhYOmtCnu-Z0Or76OBvhGOBEthJJlL0ubs2OFNifER8kv3U4ZhKh_6ENA5G3hh2pYSWrSJf9PRJk4nWgdmG_JrOQWyODzZb2gIpZEUizilVMmaKGC4hmhd_i_xC3luxeswk"
@@ -47,6 +49,8 @@ export function CoursesSection() {
               </div>
               <div className="flex items-center gap-4 py-4 border-y border-outline-variant/10">
                 <img
+              decoding="async"
+              loading="lazy"
                   alt="Portrait of professional male physics professor"
                   className="w-10 h-10 rounded-full object-cover"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1XCPr-wCxJWuw1NDixpdGQFSjD7P557MhFT4Vt5rc9iWzxWQjQTHQ_rvB_fBCUhRNk4Z4padVzXJsGWkN9g9XsoOXaR_BoOLIk78dS5wRm3p85YoFrnsZVkFJeUN--nugeobzTIfPi2ri4tUR5Mj2TxeYgH74rNmSA2StSWonwvjl3Uhl6JDOW2GJ8uktjoevlRT101V5p1Z8_bWkFedKFhjeKcNMqjWykHZ3mBF5XRd6OTZ1LjCFzDPfI0WFmr8cIUPdXaNAQBw"
@@ -70,6 +74,8 @@ export function CoursesSection() {
           <div className="bg-surface-container-lowest rounded-4xl overflow-hidden group border border-outline-variant/5 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
             <div className="h-64 overflow-hidden relative">
               <img
+              decoding="async"
+              loading="lazy"
                 alt="Clean desk workspace with high-end laptop showing coding interface"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxwUJ53lsOP-TYUdXsxZDR7bpE7ajC4zbM4bSeGfhlOHU_PCjdFE021UpM-1P4WUt5EqQ8f-CA8Ns8EYMu-W34Y2gMffJW7Yf74hyLxLij5CpgSvZ2kdvnAq2e_TXGBNLJDvtMz7KfEkpbU_oM3rtulxgIZcpuzkZV1QhwudLW0kX3dGuOcN8qQOf_6uEztyB1Oub33_IpLeL4D3ivqv9SpGgPkWtCZ-CFilFXJWGEz77BwRt8i_TxAwbE0WlsQm13tWMhMHFh2kM"
@@ -89,6 +95,8 @@ export function CoursesSection() {
               </div>
               <div className="flex items-center gap-4 py-4 border-y border-outline-variant/10">
                 <img
+              decoding="async"
+              loading="lazy"
                   alt="Close up portrait of a professional female software engineer"
                   className="w-10 h-10 rounded-full object-cover"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtD8A2WyW9oualtWZwWHESdssHP60IFUqFjAAx9jvLaoyP52AquLtaNoM23r9XG_LX8c9L3ZmYskZYpFrpXm2128-bZjMeJsypXsxmB9OVTuLYEnwLoK0YF_3an_QJ5Wtbo823sWgTDDUbRNoz0xeZYNfF1KnvLBD1F3M9vPzmrVhQh2Wj0GqzYhqDPWT9O1CNolSwjiRGLQml6K1Sk_Pw2STGeIVKlu-Xg5CNU-qwJULgciN_Sy7veK8PtmfqPN2cxBfC-ZRtWxM"
@@ -114,6 +122,8 @@ export function CoursesSection() {
           <div className="bg-surface-container-lowest rounded-4xl overflow-hidden group border border-outline-variant/5 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
             <div className="h-64 overflow-hidden relative">
               <img
+              decoding="async"
+              loading="lazy"
                 alt="A focused close up of an open journal"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_BZwPYmmwLgXBHKZOvtBprZSGAaRyBCW1Uy9aDuFVit8RNr2Djrdnw7eXdb5KoeeRyHVW68vdkfTpNzmSJmfOUIbZF3kcqjUJLfdOPt2FrxhUJLvQKMOTGGa-bQ73r5CaXZOrUYe2K4-2mj-LNvDHRyUI_YhQ4ERrWu3c4h-vvdv6ywsoQH_DNff_VulXggbm1Ua0aorrDyZvQaSKQnf-6BphQG3UJcfTkQHdKyjkJ8UgkeMll3cu_y3f43aYAW1YR7km0VQlEkc"
@@ -133,6 +143,8 @@ export function CoursesSection() {
               </div>
               <div className="flex items-center gap-4 py-4 border-y border-outline-variant/10">
                 <img
+              decoding="async"
+              loading="lazy"
                   alt="Portrait of an approachable academic man with glasses"
                   className="w-10 h-10 rounded-full object-cover"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6gJK8tIu6-LPfsFc7YDEgZ5HlKI70MeB1lB_4YyjjQ3qiiMPhHHhxZwyZf9YLiyJiKoyvZvfCa0H7N4JzhwBrkYIzqf-7vNRictonO0fxkr4vp9UbdFtjezCC8xHI7A_5LckwZYC6DrZq2dARMNNLqBIqtSNgvUwwZb8_6fwt5cR2WDOGeMJr0gihGleEUisA4lgBP53luMvQuptd_DL5TB5gosuEQZ3OglfFcwzLHoHjWPFzeFCrtRQIT2wbmMiasArtZIpikb4"

@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
@@ -74,12 +74,12 @@ function AdminAnalyticsPage(): JSX.Element {
   if (isPending || session?.session.role !== "ADMIN" || (isLoading && !data)) {
     return (
       <div className="space-y-8 animate-in fade-in duration-700">
-        <Skeleton className="h-48 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
+        <StatsGridSkeleton />
         <div className="grid gap-6 xl:grid-cols-2">
-           <Skeleton className="h-100 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
-           <Skeleton className="h-100 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
+          <ChartSkeleton />
+          <ChartSkeleton />
         </div>
-        <Skeleton className="h-75 w-full bg-surface-container-lowest rounded-4xl border border-outline-variant/40" />
+        <ChartSkeleton />
       </div>
     );
   }

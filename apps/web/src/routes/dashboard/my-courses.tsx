@@ -157,6 +157,8 @@ function MyCoursesPage(): JSX.Element {
                <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-xl pointer-events-none group-hover:bg-primary/10 transition-all duration-700 z-[-1]"></div>
               {enrollment.course.coverImageUrl ? (
                 <img
+              decoding="async"
+              loading="lazy"
                   alt={enrollment.course.title}
                   className="aspect-16/7 w-full object-cover border-b border-outline-variant/20"
                   src={enrollment.course.coverImageUrl}

@@ -1,5 +1,6 @@
 import { createRouter } from "@tanstack/react-router";
 
+import { RouteNotFoundView } from "./components/common/route-not-found";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter(): ReturnType<typeof createRouter> {
@@ -7,6 +8,8 @@ export function getRouter(): ReturnType<typeof createRouter> {
     routeTree,
     defaultPreload: "intent",
     defaultPendingMs: 150,
+    // Without this the router renders a bare "<p>Not Found</p>".
+    defaultNotFoundComponent: RouteNotFoundView,
     scrollRestoration: true
   });
 }

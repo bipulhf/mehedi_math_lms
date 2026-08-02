@@ -19,6 +19,10 @@ export function InstructorsSection() {
           <div className="relative mb-6 inline-block">
             <div className="absolute inset-0 bg-primary/10 rounded-full flex scale-0 group-hover:scale-100 transition-transform duration-500"></div>
             <img
+              decoding="async"
+              height={128}
+              loading="lazy"
+              width={128}
               alt="Professional portrait of Dr. Ryan Carter"
               className="w-32 h-32 rounded-full object-cover mx-auto relative z-10 border-4 border-white shadow-xl"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyzKppcbhs62oInA2xH9I9iJ-OezjeIIvbFKyuJsatSO3Ex2CbALsHA6nV9xo521e20pwZJdL5R7j1qTHRmkvEEUZV5T_2IlAhMTVNUtILnmmaH00sfqEKiA2zLhu6xIDg83A7oJ5_Y-clB8mHdVxM9XwF0JNDgTsCbPfTyMFNLL_hu-x_w5hRece4tMN_mXCyvBq2XkpBnEWoPv_4JDlYRhSAY_1rqkHckU6NBit04iR7nS8WNayptXUcpvDcdtUcp5WE363dBaw"
@@ -33,6 +37,10 @@ export function InstructorsSection() {
           <div className="relative mb-6 inline-block">
             <div className="absolute inset-0 bg-primary/10 rounded-full flex scale-0 group-hover:scale-100 transition-transform duration-500"></div>
             <img
+              decoding="async"
+              height={128}
+              loading="lazy"
+              width={128}
               alt="Professional portrait of Prof. Lina Wang"
               className="w-32 h-32 rounded-full object-cover mx-auto relative z-10 border-4 border-white shadow-xl"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4Vi2iG19iqa5At-iw2AHjsBvEwj_ilPiQlxFnj_D2j_vmbV_oB6f8UzS5eK1pfjbhRMbqIyEugzdVaESQ_vBFidFD_nAKCnYng9DmEOMRGMnXE8ePe485qG0nTNGIXaM_yUcV6Y9dCRzyP2fzDhcBjYdkxJQH6TLTFPSSKcTb7-wW_FrBV45D3gb1dNENuUVnTvFl6X0JquRuqKl36KnEL_NkOFK66RJGWybTbZsqMi8KP8Zyrtv0lKSFVPBXJtnRwrsS5KgwjDw"
@@ -47,6 +55,10 @@ export function InstructorsSection() {
           <div className="relative mb-6 inline-block">
             <div className="absolute inset-0 bg-primary/10 rounded-full flex scale-0 group-hover:scale-100 transition-transform duration-500"></div>
             <img
+              decoding="async"
+              height={128}
+              loading="lazy"
+              width={128}
               alt="Portrait of a young professional academic man"
               className="w-32 h-32 rounded-full object-cover mx-auto relative z-10 border-4 border-white shadow-xl"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNIakmORsy3LbuCtYHDO_uf7qHcpHdD-FQDTw7PIgYO_YPZO4gHKJFNj3bGahAyE69FL3gQ1ZJ7128-bP0NX7u1v6sjetzHTN6IehTJdgw2O2hIRq2tkHLS3zuZ4OLsNYx3txt6x7tP0jXU9htniZ4ehilo66F_EgSfKNUcX9J4bFbdqr6EGJTTU7i1fodLE5cj42M0ZTguW3YCHRVaMdDFpybJLPzwImOO7sJXdCF08R6Nfg15Ad_oeINCsdvyKw2lx7n3Em28KI"
@@ -61,6 +73,10 @@ export function InstructorsSection() {
           <div className="relative mb-6 inline-block">
             <div className="absolute inset-0 bg-primary/10 rounded-full flex scale-0 group-hover:scale-100 transition-transform duration-500"></div>
             <img
+              decoding="async"
+              height={128}
+              loading="lazy"
+              width={128}
               alt="Portrait of a sophisticated female professor"
               className="w-32 h-32 rounded-full object-cover mx-auto relative z-10 border-4 border-white shadow-xl"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7s3uhL5mQI1U-slP8Vmumz5MOwejTeJQfbSLb3lT8cw9HWPkZqeRy29sHr93lpO10stHJBZ9PCAeZQN5_vlCxwD_keMtrtBGNqXVExjuCrMA-87jg6pdyxs4jeFM6yu7KwqrkNhFB8WI0bRHrq-qwfalpNUJUPvqW_0T-SV0FXWFSxarB9-Uq_7mh062CtmUv7-do8WASqny0cNOUiFwMXaUZVERErzjstmw0yGWZuMMIUWD6F0NUEWf5XGQHUGNZHSgC7kuOlC4"

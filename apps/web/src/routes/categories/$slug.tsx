@@ -3,6 +3,7 @@ import type { JSX } from "react";
 
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
+import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CategoryNode } from "@/lib/api/categories";
@@ -69,7 +70,12 @@ export const Route = createFileRoute("/categories/$slug")({
     });
   },
   component: CategoryCoursesPage,
-  errorComponent: RouteErrorView
+  errorComponent: RouteErrorView,
+  pendingComponent: () => (
+    <div className="mx-auto max-w-7xl px-8 py-12">
+      <CourseGridSkeleton />
+    </div>
+  )
 });
 
 function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element {

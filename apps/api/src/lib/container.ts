@@ -11,7 +11,6 @@ import { CourseController } from "@/controllers/course-controller";
 import { EnrollmentController } from "@/controllers/enrollment-controller";
 import { HealthController } from "@/controllers/health-controller";
 import { MessageController } from "@/controllers/message-controller";
-import { NotImplementedController } from "@/controllers/not-implemented-controller";
 import { NoticeController } from "@/controllers/notice-controller";
 import { NotificationController } from "@/controllers/notification-controller";
 import { SmsController } from "@/controllers/sms-controller";
@@ -61,7 +60,6 @@ import { FcmPushService } from "@/services/fcm-push-service";
 import { MessageRealtimeService } from "@/services/message-realtime-service";
 import { MessageService } from "@/services/message-service";
 import { NoticeService } from "@/services/notice-service";
-import { NotImplementedService } from "@/services/not-implemented-service";
 import { NotificationRealtimeService } from "@/services/notification-realtime-service";
 import { NotificationService } from "@/services/notification-service";
 import { OgImageService } from "@/services/og-image-service";
@@ -147,7 +145,6 @@ const analyticsService = new AnalyticsService(analyticsRepository, courseReposit
 const contentService = new ContentService(contentRepository, courseRepository, enrollmentRepository);
 const courseService = new CourseService(courseRepository, categoryRepository, notificationService);
 const profileService = new ProfileService(profileRepository);
-const notImplementedService = new NotImplementedService();
 const progressService = new ProgressService(
   enrollmentRepository,
   contentRepository,
@@ -191,7 +188,6 @@ export {
   notificationRealtimeService,
   notificationService
 };
-export const notImplementedController = new NotImplementedController(notImplementedService);
 export const paymentController = new PaymentController(commerceService);
 export const progressController = new ProgressController(progressService);
 export const profileController = new ProfileController(profileService);

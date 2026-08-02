@@ -1,6 +1,6 @@
 import { db, eq, isNull, or, users } from "@mma/db";
+import { generateUniqueSlug } from "@mma/shared";
 
-import { generateUniqueSlug } from "./slug";
 
 interface UserRow {
   id: string;

@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,11 +169,7 @@ function StudentTestPage(): JSX.Element {
 
   if (isLoading || !test || !submission || !currentQuestion) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-          Loading test workspace...
-        </CardContent>
-      </Card>
+      <TestTakingSkeleton />
     );
   }
 

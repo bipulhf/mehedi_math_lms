@@ -136,7 +136,9 @@ function AdminSmsPage() {
         <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
           <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-surface-container-high border border-outline-variant/30 shadow-sm relative overflow-hidden group/logo">
             <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
-            <img src={mmaLogo} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
+            <img
+              decoding="async"
+              loading="lazy" src={mmaLogo} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
           </div>
           <div>
             <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">

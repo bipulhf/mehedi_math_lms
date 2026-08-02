@@ -10,7 +10,6 @@ import {
   Mail,
   Shield,
   Fingerprint,
-  Loader2,
   CheckCircle2,
   AlertCircle
 } from "lucide-react";
@@ -218,11 +217,7 @@ function AdminUsersPage(): JSX.Element {
               type="submit"
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Loader2 className="size-5 animate-spin mx-auto" />
-              ) : (
-                "Authorize Staff"
-              )}
+              {isSubmitting ? "Authorizing" : "Authorize Staff"}
             </Button>
           </div>
         </form>

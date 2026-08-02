@@ -82,7 +82,9 @@ function AdminBugDetailPage(): JSX.Element {
             </div>
             {bug.screenshotUrl ? (
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-                <img alt="Bug screenshot" className="max-h-128 rounded-(--radius) object-contain" src={bug.screenshotUrl} />
+                <img
+              decoding="async"
+              loading="lazy" alt="Bug screenshot" className="max-h-128 rounded-(--radius) object-contain" src={bug.screenshotUrl} />
               </div>
             ) : (
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">

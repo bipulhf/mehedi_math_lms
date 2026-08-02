@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,11 +99,7 @@ function GradeSubmissionPage(): JSX.Element {
 
   if (isLoading || !test || !submission) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-          Loading grading surface...
-        </CardContent>
-      </Card>
+      <TestTakingSkeleton />
     );
   }
 

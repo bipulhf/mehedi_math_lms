@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { JSX } from "react";
 
+import { RecentActivitySkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -124,19 +125,7 @@ function DashboardHomePage(): JSX.Element {
     if (isLoadingStats && !stats) {
       return (
         <div className="space-y-6">
-          <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-3xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden h-full">
-                <div className="space-y-4">
-                  <Skeleton className="size-12 rounded-2xl bg-surface-container-highest" />
-                  <div>
-                    <Skeleton className="h-3 w-16 mb-2 rounded bg-surface-container-highest" />
-                    <Skeleton className="h-8 w-24 rounded bg-surface-container-highest" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </section>
+          <StatsGridSkeleton />
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
               <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
@@ -147,14 +136,7 @@ function DashboardHomePage(): JSX.Element {
                 <Skeleton className="h-36 rounded-4xl bg-surface-container-highest" />
               </div>
             </div>
-            <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
-              <Skeleton className="h-8 w-40 mb-4 bg-surface-container-highest" />
-              <Skeleton className="h-4 w-full max-w-xs mb-8 bg-surface-container-highest" />
-              <div className="space-y-4">
-                <Skeleton className="h-16 rounded-3xl bg-surface-container-highest" />
-                <Skeleton className="h-16 rounded-3xl bg-surface-container-highest" />
-              </div>
-            </div>
+            <RecentActivitySkeleton rows={2} />
           </section>
         </div>
       );

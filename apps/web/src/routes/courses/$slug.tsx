@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { FadeIn } from "@/components/common/fade-in";
+import { CourseDetailSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -93,7 +94,13 @@ export const Route = createFileRoute("/courses/$slug")({
     });
   },
   component: CourseDetailPage,
-  errorComponent: RouteErrorView
+  errorComponent: RouteErrorView,
+  // Slow navigations show the page's own shape; fast ones skip it (defaultPendingMs).
+  pendingComponent: () => (
+    <LandingLayout showGrid={false}>
+      <CourseDetailSkeleton />
+    </LandingLayout>
+  )
 });
 
 function RatingSummary({ rating, count }: { rating: number; count: number }): JSX.Element {
@@ -198,6 +205,8 @@ function CourseDetailPage(): JSX.Element {
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/20">
                     {course.teachers[0]?.profilePhoto ? (
                       <img
+              decoding="async"
+              loading="lazy"
                         src={course.teachers[0].profilePhoto}
                         className="w-full h-full object-cover"
                         alt="Instructor"
@@ -230,6 +239,8 @@ function CourseDetailPage(): JSX.Element {
               <div className="relative rounded-4xl overflow-hidden aspect-video shadow-2xl group border-4 border-white">
                 {course.coverImageUrl ? (
                   <img
+              decoding="async"
+              loading="lazy"
                     src={course.coverImageUrl}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     alt="Course Preview"
@@ -327,6 +338,8 @@ function CourseDetailPage(): JSX.Element {
               <div className="w-12 h-20 md:w-20 md:h-20 rounded-3xl overflow-hidden shrink-0 rotate-2 shadow-2xl border-4 border-white transition-transform hover:rotate-0 duration-500">
                 {course.teachers[0]?.profilePhoto ? (
                   <img
+              decoding="async"
+              loading="lazy"
                     src={course.teachers[0].profilePhoto}
                     className="w-full h-full object-cover"
                     alt="Instructor Profile"

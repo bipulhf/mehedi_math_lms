@@ -2,9 +2,9 @@ import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { TestBuilderSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { AssessmentBuilder } from "@/components/tests/assessment-builder";
-import { Card, CardContent } from "@/components/ui/card";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
@@ -35,11 +35,7 @@ function CourseAssessmentsPage(): JSX.Element {
 
   if (isLoading || !course) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-          Loading assessment builder...
-        </CardContent>
-      </Card>
+      <TestBuilderSkeleton />
     );
   }
 

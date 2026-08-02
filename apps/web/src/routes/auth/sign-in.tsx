@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { seo } from "@/lib/seo";
-import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
@@ -83,7 +82,7 @@ export function SignInPage(): JSX.Element {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Sign In"}
+          {isSubmitting ? "Signing in" : "Sign In"}
         </Button>
       </form>
 

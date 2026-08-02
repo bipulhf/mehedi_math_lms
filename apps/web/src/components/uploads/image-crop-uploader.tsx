@@ -236,7 +236,9 @@ export function ImageCropUploader({
       </button>
       {value ? (
         <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3">
-          <img alt={previewAlt ?? "Upload preview"} className="max-h-64 rounded-(--radius) object-contain" src={value} />
+          <img
+              decoding="async"
+              loading="lazy" alt={previewAlt ?? "Upload preview"} className="max-h-64 rounded-(--radius) object-contain" src={value} />
         </div>
       ) : null}
       {cropModal ? (

@@ -149,6 +149,8 @@ function SendNotificationPage() {
           <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-surface-container-high border border-outline-variant/30 shadow-sm relative overflow-hidden group/logo">
             <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
             <img
+              decoding="async"
+              loading="lazy"
               src={mmaLogo}
               alt=""
               className="h-10 w-10 brightness-[0.92] contrast-[1.05] relative z-10"

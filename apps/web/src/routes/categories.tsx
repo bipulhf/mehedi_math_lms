@@ -9,6 +9,7 @@ import { PublicLayout } from "@/components/layout/public-layout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import { queryKeys } from "@/lib/query/keys";
@@ -42,7 +43,12 @@ export const Route = createFileRoute("/categories")({
     };
   },
   component: CategoriesPage,
-  errorComponent: RouteErrorView
+  errorComponent: RouteErrorView,
+  pendingComponent: () => (
+    <div className="mx-auto max-w-5xl px-8 py-16">
+      <CategoryTreeSkeleton rows={8} />
+    </div>
+  )
 });
 
 function PublicCategoryTree({

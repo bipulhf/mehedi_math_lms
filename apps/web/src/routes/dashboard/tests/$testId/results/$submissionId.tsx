@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,11 +35,7 @@ function SubmissionResultPage(): JSX.Element {
 
   if (isLoading || !test || !submission) {
     return (
-      <Card>
-        <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-          Loading result breakdown...
-        </CardContent>
-      </Card>
+      <TestTakingSkeleton />
     );
   }
 
