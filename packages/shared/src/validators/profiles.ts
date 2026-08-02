@@ -47,3 +47,7 @@ export const basicProfileInputSchema = z.object({
   name: nonEmptyStringSchema.max(255),
   profilePhoto: optionalUrlSchema
 });
+
+export type BasicProfileInput = z.infer<typeof basicProfileInputSchema>;
+export type StudentProfileInput = z.infer<typeof studentProfileInputSchema>;
+export type TeacherProfileInput = z.infer<typeof teacherProfileInputSchema>;
