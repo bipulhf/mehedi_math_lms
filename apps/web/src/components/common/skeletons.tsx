@@ -157,7 +157,7 @@ export function CommentThreadSkeleton({ rows = 3 }: { rows?: number }): JSX.Elem
           </div>
           {/* One indented reply, matching the two-level nesting cap. */}
           {index === 0 ? (
-            <div className="flex items-start gap-3 border-l border-outline-variant pl-4 md:pl-6">
+            <div className="flex items-start gap-3 border-l border-outline-variant/15 pl-4 md:pl-6">
               <Skeleton className="size-8 shrink-0 rounded-full" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-3 w-24" />

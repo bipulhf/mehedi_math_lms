@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { getAccountantAnalyticsOverview } from "@/lib/api/analytics";
+import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
 import {
   Bar,
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/dashboard/accountant/analytics")({
   errorComponent: RouteErrorView
 } as never);
 
-const chartStroke = "#6061ee";
+const chartStroke = chartTheme.accent;
 
 function AccountantAnalyticsPage(): JSX.Element {
   const router = useRouter();
@@ -117,7 +118,7 @@ function AccountantAnalyticsPage(): JSX.Element {
                   layout="vertical"
                   margin={{ bottom: 8, left: 8, right: 16, top: 8 }}
                 >
-                  <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" />
+                  <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
                   <XAxis fontSize={11} type="number" />
                   <YAxis dataKey="label" fontSize={10} type="category" width={100} />
                   <Tooltip />
@@ -138,7 +139,7 @@ function AccountantAnalyticsPage(): JSX.Element {
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statusChart} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                  <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" />
+                  <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
                   <XAxis dataKey="label" fontSize={11} />
                   <YAxis fontSize={11} width={40} />
                   <Tooltip />

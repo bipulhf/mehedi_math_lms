@@ -177,7 +177,7 @@ function CourseDetailPage(): JSX.Element {
   return (
     <LandingLayout showGrid={false}>
       {/* Hero Section */}
-      <section className="relative bg-surface overflow-hidden border-b border-outline-variant/50">
+      <section className="relative bg-surface overflow-hidden border-b border-outline-variant/15">
         <div className="max-w-7xl mx-auto px-8 py-20 lg:py-32 grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-8">
             <FadeIn>

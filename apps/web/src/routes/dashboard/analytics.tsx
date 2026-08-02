@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { chartTheme } from "@/lib/chart-theme";
 import type { TeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { getTeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
@@ -174,11 +175,11 @@ function TeacherAnalyticsPage(): JSX.Element {
               <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
                 <defs>
                    <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6061ee" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#6061ee" stopOpacity={0}/>
+                      <stop offset="5%" stopColor={chartTheme.accent} stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor={chartTheme.accent} stopOpacity={0}/>
                    </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
                 <XAxis 
                   dataKey="label" 
                   fontSize={10} 
@@ -203,14 +204,14 @@ function TeacherAnalyticsPage(): JSX.Element {
                     backdropFilter: 'blur(10px)',
                     padding: '12px 16px'
                   }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#6061ee' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: chartTheme.accent }}
                   labelStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.5 }}
                 />
                 <Line 
                   dataKey="value" 
-                  dot={{ r: 4, fill: '#6061ee', strokeWidth: 2, stroke: '#fff' }} 
-                  activeDot={{ r: 6, fill: '#6061ee', strokeWidth: 0 }}
-                  stroke="#6061ee" 
+                  dot={{ fill: chartTheme.accent, r: 4, stroke: chartTheme.dotStroke, strokeWidth: 2 }} 
+                  activeDot={{ fill: chartTheme.accent, r: 6, strokeWidth: 0 }}
+                  stroke={chartTheme.accent} 
                   strokeWidth={3} 
                   type="monotone" 
                   animationDuration={1500}
@@ -222,7 +223,7 @@ function TeacherAnalyticsPage(): JSX.Element {
         <ChartCard title="Revenue Stream" subtitle="Fiscal performance of your academic offerings">
            <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
                 <XAxis 
                   dataKey="label" 
                   fontSize={10} 
@@ -247,13 +248,13 @@ function TeacherAnalyticsPage(): JSX.Element {
                     backdropFilter: 'blur(10px)',
                     padding: '12px 16px'
                   }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#6061ee' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: chartTheme.accent }}
                   labelStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.5 }}
                   formatter={(value) => [`${value} BDT`, "Revenue"]}
                 />
                 <Bar 
                   dataKey="value" 
-                  fill="#6061ee" 
+                  fill={chartTheme.accent} 
                   radius={[12, 12, 4, 4]} 
                   opacity={0.8}
                   className="hover:opacity-100 transition-opacity"

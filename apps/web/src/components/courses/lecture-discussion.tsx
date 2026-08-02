@@ -200,7 +200,7 @@ function CommentItem({
       ) : null}
 
       {comment.replies.length > 0 ? (
-        <div className="space-y-3 border-l border-outline-variant pl-4 md:pl-6">
+        <div className="space-y-3 border-l border-outline-variant/15 pl-4 md:pl-6">
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}

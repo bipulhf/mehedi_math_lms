@@ -21,7 +21,7 @@ export function Textarea({ className, error, ...props }: TextareaProps): JSX.Ele
         )}
         {...props}
       />
-      {error ? <p className="text-sm text-[#c4353b]">{error}</p> : null}
+      {error ? <p className="text-sm text-error">{error}</p> : null}
     </div>
   );
 }

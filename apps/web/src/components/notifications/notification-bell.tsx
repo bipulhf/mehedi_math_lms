@@ -189,7 +189,7 @@ export function NotificationBell(): JSX.Element | null {
           )}
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="flex items-center justify-between gap-2 border-b border-outline-variant/50 pb-3">
+          <div className="flex items-center justify-between gap-2 border-b border-outline-variant/15 pb-3">
             <p className="text-sm font-semibold text-on-surface">Notifications</p>
             <Button
               type="button"

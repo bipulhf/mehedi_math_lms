@@ -18,10 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { BellRing, Target, Users, GraduationCap } from "lucide-react";
+import { RouteErrorView } from "@/components/common/route-error";
 import mmaLogo from "@/assets/mma-logo.svg";
 
 export const Route = createFileRoute("/dashboard/notifications/send")({
-  component: SendNotificationPage
+  component: SendNotificationPage,
+  errorComponent: RouteErrorView
 });
 
 function SendNotificationPage() {

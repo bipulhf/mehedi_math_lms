@@ -17,11 +17,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
+import { RouteErrorView } from "@/components/common/route-error";
 import mmaLogo from "@/assets/mma-logo.svg";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/dashboard/admin/sms")({
-  component: AdminSmsPage
+  component: AdminSmsPage,
+  errorComponent: RouteErrorView
 });
 
 function AdminSmsPage() {

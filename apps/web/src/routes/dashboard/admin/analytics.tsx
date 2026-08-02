@@ -8,6 +8,7 @@ import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons"
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
+import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
 import { TrendingUp, DollarSign, Target, PieChart, Activity } from "lucide-react";
 import {
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/dashboard/admin/analytics")({
   errorComponent: RouteErrorView
 } as never);
 
-const chartStroke = "#6061ee";
+const chartStroke = chartTheme.accent;
 
 function AdminAnalyticsPage(): JSX.Element {
   const router = useRouter();
@@ -126,7 +127,7 @@ function AdminAnalyticsPage(): JSX.Element {
                       <stop offset="95%" stopColor={chartStroke} stopOpacity={0}/>
                    </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" vertical={false} opacity={0.5} />
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} opacity={0.5} />
                 <XAxis dataKey="label" fontSize={10} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
                 <YAxis fontSize={10} width={40} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
                 <Tooltip 
@@ -151,7 +152,7 @@ function AdminAnalyticsPage(): JSX.Element {
           <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={revenueSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" vertical={false} opacity={0.5} />
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} opacity={0.5} />
                 <XAxis dataKey="label" fontSize={10} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
                 <YAxis fontSize={10} width={52} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
                 <Tooltip 
@@ -226,7 +227,7 @@ function AdminAnalyticsPage(): JSX.Element {
                 layout="vertical"
                 margin={{ bottom: 8, left: 80, right: 32, top: 8 }}
               >
-                <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" horizontal={false} opacity={0.5} />
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" horizontal={false} opacity={0.5} />
                 <XAxis fontSize={10} type="number" axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
                 <YAxis dataKey="label" fontSize={10} type="category" width={80} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.8, fontWeight: 'bold'}} />
                 <Tooltip 

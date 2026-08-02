@@ -32,7 +32,7 @@ export function PasswordInput({ className, error, ...props }: InputProps): JSX.E
           {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
       </div>
-      {error ? <p className="text-sm text-[#c4353b]">{error}</p> : null}
+      {error ? <p className="text-sm text-error">{error}</p> : null}
     </div>
   );
 }

@@ -20,7 +20,7 @@ export function Select({ className, error, ...props }: SelectProps): JSX.Element
         )}
         {...props}
       />
-      {error ? <p className="text-sm text-[#c4353b]">{error}</p> : null}
+      {error ? <p className="text-sm text-error">{error}</p> : null}
     </div>
   );
 }

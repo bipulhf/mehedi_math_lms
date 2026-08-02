@@ -26,7 +26,7 @@ export function DataTableSkeleton({
         </div>
         <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low">
           <div
-            className="grid gap-3 border-b border-outline-variant px-4 py-3"
+            className="grid gap-3 border-b border-outline-variant/15 px-4 py-3"
             style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
           >
             {Array.from({ length: columns }).map((_, index) => (

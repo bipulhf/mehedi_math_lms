@@ -163,7 +163,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="text-[#c4353b]"
+                      className="text-error"
                       onClick={() => void handleDelete(notice)}
                     >
                       <Trash2 className="size-4" />

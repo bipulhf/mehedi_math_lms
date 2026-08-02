@@ -20,7 +20,7 @@ export function Input({ className, error, ...props }: InputProps): JSX.Element {
         )}
         {...props}
       />
-      {error ? <p className="text-sm text-[color:#c4353b]">{error}</p> : null}
+      {error ? <p className="text-sm text-error">{error}</p> : null}
     </div>
   );
 }

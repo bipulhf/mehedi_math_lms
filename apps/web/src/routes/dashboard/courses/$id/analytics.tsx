@@ -7,6 +7,7 @@ import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
 import { getCourseAnalytics } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
   errorComponent: RouteErrorView
 } as never);
 
-const chartStroke = "#6061ee";
+const chartStroke = chartTheme.accent;
 
 function CourseAnalyticsPage(): JSX.Element {
   const { id } = Route.useParams();
@@ -95,7 +96,7 @@ function CourseAnalyticsPage(): JSX.Element {
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" />
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
                 <XAxis dataKey="label" fontSize={11} />
                 <YAxis fontSize={11} width={40} />
                 <Tooltip />
@@ -119,7 +120,7 @@ function CourseAnalyticsPage(): JSX.Element {
                 ]}
                 margin={{ bottom: 8, left: 0, right: 8, top: 8 }}
               >
-                <CartesianGrid stroke="#e5e5e5" strokeDasharray="3 3" />
+                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
                 <XAxis dataKey="label" fontSize={11} />
                 <YAxis fontSize={11} width={40} />
                 <Tooltip />
