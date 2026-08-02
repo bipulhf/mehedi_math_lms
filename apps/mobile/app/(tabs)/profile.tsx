@@ -16,7 +16,6 @@ import {
   Title
 } from "@/src/components/ui";
 import { getOwnProfile } from "@/src/lib/api";
-import { mobileEnv } from "@/src/lib/env";
 import { queryKeys } from "@/src/lib/query";
 import { useSession, useSignOut } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
@@ -39,6 +38,12 @@ export default function ProfileScreen(): JSX.Element {
     return <Redirect href="/sign-in" />;
   }
 
+  // The session's flag is the one the API enforces against; the profile record
+  // is only what is shown. They can disagree for a moment after a save, and the
+  // session is the one to believe.
+  const isProfileComplete = session.session.profileCompleted;
+  const phone = profile?.studentProfile?.phone ?? profile?.teacherProfile?.phone ?? null;
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
@@ -52,27 +57,50 @@ export default function ProfileScreen(): JSX.Element {
           </Card>
         ) : (
           <Card>
-            <Title>{profile?.name ?? session.user.name}</Title>
+            <Title>{profile?.user.name ?? session.user.name}</Title>
             <View style={{ height: spacing.xs }} />
-            <Body muted>{profile?.email ?? session.user.email}</Body>
+            <Body muted>{profile?.user.email ?? session.user.email}</Body>
+            {phone ? (
+              <>
+                <View style={{ height: spacing.xs }} />
+                <Body muted>{phone}</Body>
+              </>
+            ) : null}
             <View style={{ height: spacing.md }} />
             <Badge>{session.session.role}</Badge>
           </Card>
         )}
 
-        {!session.session.profileCompleted ? (
-          <Card>
-            <Title>Finish your profile</Title>
-            <View style={{ height: spacing.sm }} />
-            {/* The profile form is long, role-specific and validated against
-                schemas the web app already renders. Sending the user there is
-                honest; a half-built duplicate would not be. */}
-            <Body muted>
-              Complete it on the web at {mobileEnv.webOrigin}/dashboard/profile-complete before
-              enrolling.
-            </Body>
-          </Card>
-        ) : null}
+        <Card>
+          <Title>{isProfileComplete ? "Your details" : "Finish your profile"}</Title>
+          <View style={{ height: spacing.sm }} />
+          <Body muted>
+            {isProfileComplete
+              ? "Keep your contact details current so a teacher can reach you."
+              : "Enrolment and most of the dashboard stay locked until this is done."}
+          </Body>
+          <View style={{ height: spacing.lg }} />
+          <Button
+            label={isProfileComplete ? "Edit profile" : "Complete profile"}
+            onPress={() => router.push("/profile-complete")}
+            variant={isProfileComplete ? "outline" : "primary"}
+          />
+        </Card>
+
+        <Card>
+          <Title>Report a problem</Title>
+          <View style={{ height: spacing.sm }} />
+          <Body muted>
+            Something broken, missing or confusing? Tell us and it reaches the same queue the web
+            app's reports do.
+          </Body>
+          <View style={{ height: spacing.lg }} />
+          <Button
+            label="Report a bug"
+            onPress={() => router.push("/bug-report")}
+            variant="outline"
+          />
+        </Card>
 
         <Card>
           <Title>Session</Title>
@@ -100,3 +128,5 @@ export default function ProfileScreen(): JSX.Element {
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

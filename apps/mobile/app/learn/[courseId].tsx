@@ -4,6 +4,8 @@ import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import { LectureComments } from "@/src/components/lecture-comments";
+import { LecturePlayer } from "@/src/components/lecture-player";
 import {
   Badge,
   Body,
@@ -21,6 +23,7 @@ import {
   getCourseAssessments,
   getCourseContent,
   getCourseProgress,
+  listCourseNotices,
   markLectureComplete,
   type ContentLecture
 } from "@/src/lib/api";
@@ -63,7 +66,7 @@ export default function CoursePlayerScreen(): JSX.Element {
   const queryClient = useQueryClient();
   const [selectedLectureId, setSelectedLectureId] = useState<string | null>(null);
 
-  const [courseQuery, contentQuery, progressQuery, testsQuery] = useQueries({
+  const [courseQuery, contentQuery, progressQuery, testsQuery, noticesQuery] = useQueries({
     queries: [
       { queryFn: async () => getCourse(courseId), queryKey: queryKeys.course(courseId) },
       {
@@ -77,6 +80,10 @@ export default function CoursePlayerScreen(): JSX.Element {
       {
         queryFn: async () => getCourseAssessments(courseId),
         queryKey: queryKeys.courseTests(courseId)
+      },
+      {
+        queryFn: async () => listCourseNotices(courseId),
+        queryKey: queryKeys.courseNotices(courseId)
       }
     ]
   });
@@ -85,15 +92,15 @@ export default function CoursePlayerScreen(): JSX.Element {
   const chapters = contentQuery?.data ?? [];
   const progress = progressQuery?.data ?? null;
   const assessments = testsQuery?.data ?? [];
+  // Teachers post these; before this screen showed them, a mobile student only
+  // learned about one if a push notification happened to fire.
+  const notices = noticesQuery?.data ?? [];
   const isLoading =
     Boolean(courseQuery?.isPending) ||
     Boolean(contentQuery?.isPending) ||
     Boolean(progressQuery?.isPending);
 
-  const lectures = useMemo(
-    () => chapters.flatMap((chapter) => chapter.lectures),
-    [chapters]
-  );
+  const lectures = useMemo(() => chapters.flatMap((chapter) => chapter.lectures), [chapters]);
   const completedIds = useMemo(
     () =>
       new Set(
@@ -103,8 +110,7 @@ export default function CoursePlayerScreen(): JSX.Element {
       ),
     [progress?.lectures]
   );
-  const activeLectureId =
-    selectedLectureId ?? progress?.nextLectureId ?? lectures[0]?.id ?? null;
+  const activeLectureId = selectedLectureId ?? progress?.nextLectureId ?? lectures[0]?.id ?? null;
   const activeLecture = lectures.find((lecture) => lecture.id === activeLectureId) ?? null;
 
   const complete = useMutation({
@@ -151,21 +157,41 @@ export default function CoursePlayerScreen(): JSX.Element {
 
         {progress?.isCourseCompleted ? <Badge tone="positive">Course completed</Badge> : null}
 
+        {notices.length > 0 ? (
+          <Card>
+            <Title>Notices</Title>
+            <View style={{ height: spacing.sm }} />
+            {notices.map((notice) => (
+              <View key={notice.id} style={styles.notice}>
+                <View style={styles.noticeHeader}>
+                  <Body>{notice.title}</Body>
+                  {notice.isPinned ? <Badge>Pinned</Badge> : null}
+                </View>
+                <Body muted>{notice.content}</Body>
+                <Caption>
+                  {notice.author.name} · {new Date(notice.createdAt).toLocaleDateString()}
+                </Caption>
+              </View>
+            ))}
+          </Card>
+        ) : null}
+
         {activeLecture ? (
           <Card>
             <Title>{activeLecture.title}</Title>
             <View style={{ height: spacing.sm }} />
             {activeLecture.description ? <Body muted>{activeLecture.description}</Body> : null}
             <View style={{ height: spacing.md }} />
-            {/* Playback itself is deliberately not reimplemented here -- the
-                lecture opens in the platform player rather than shipping a
-                second video stack. */}
-            <Caption>
-              {activeLecture.videoUrl
-                ? "Video available. Open it from the course page on the web for full playback controls."
-                : "This lecture has no video attached."}
-            </Caption>
+            <LecturePlayer
+              isCompleted={completedIds.has(activeLecture.id)}
+              onWatched={() => complete.mutate(activeLecture.id)}
+              videoUrl={activeLecture.videoUrl}
+            />
             <View style={{ height: spacing.lg }} />
+            {/* Still here even though playback marks the lecture itself: a
+                reading, an external video, or a lecture the student skimmed
+                all need a way to say "done", and completion latches on the
+                server either way. ADR-0005. */}
             <Button
               disabled={completedIds.has(activeLecture.id)}
               isBusy={complete.isPending}
@@ -183,6 +209,8 @@ export default function CoursePlayerScreen(): JSX.Element {
             title="No lectures"
           />
         )}
+
+        {activeLecture ? <LectureComments lectureId={activeLecture.id} /> : null}
 
         {chapters.map((chapter) => (
           <Card key={chapter.id}>
@@ -249,5 +277,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.md
   },
-  lectureRowActive: { backgroundColor: colors.secondaryContainer }
+  lectureRowActive: { backgroundColor: colors.secondaryContainer },
+  notice: { gap: spacing.xs, paddingVertical: spacing.sm },
+  noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

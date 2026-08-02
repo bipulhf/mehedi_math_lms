@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -29,9 +29,14 @@ import {
   sendMessage
 } from "@/src/lib/api";
 import { queryKeys } from "@/src/lib/query";
+import { useMessagingSocket } from "@/src/lib/use-messaging-socket";
+import { useSession } from "@/src/lib/use-session";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 const MINIMUM_REPORT_LENGTH = 10;
+const POLL_INTERVAL_MS = 10_000;
+/** Long enough to cover a pause between words, short enough to stop feeling stuck. */
+const TYPING_IDLE_MS = 2_000;
 
 export default function ConversationScreen(): JSX.Element {
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
@@ -40,13 +45,33 @@ export default function ConversationScreen(): JSX.Element {
   const [reportReason, setReportReason] = useState("");
   const [isReporting, setIsReporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (typingTimeout.current !== null) {
+        clearTimeout(typingTimeout.current);
+      }
+    },
+    []
+  );
+
+  const { session } = useSession();
+  const [isPeerTyping, setIsPeerTyping] = useState(false);
+  const { isConnected, sendTyping } = useMessagingSocket({
+    conversationId,
+    currentUserId: session?.user.id ?? null,
+    enabled: Boolean(session),
+    onTypingChange: setIsPeerTyping
+  });
 
   const { data: thread, isPending } = useQuery({
-    // Polled rather than socket-driven: a WebSocket that reconnects on every
-    // backgrounding is a worse experience on mobile than a short poll.
     queryFn: async () => getConversation(conversationId),
     queryKey: queryKeys.conversation(conversationId),
-    refetchInterval: 10_000
+    // The socket is the fast path; the poll is what is left when it is down —
+    // on a bad network, or while the app is in the background. Neither is the
+    // rule on its own.
+    refetchInterval: isConnected ? false : POLL_INTERVAL_MS
   });
 
   useEffect(() => {
@@ -55,10 +80,26 @@ export default function ConversationScreen(): JSX.Element {
     );
   }, [conversationId, queryClient]);
 
+  // Announced on the first keystroke and withdrawn after a pause, so the other
+  // side sees "typing…" rather than one event per character.
+  const handleDraftChange = (text: string): void => {
+    setDraft(text);
+    sendTyping("typing:start");
+
+    if (typingTimeout.current !== null) {
+      clearTimeout(typingTimeout.current);
+    }
+
+    typingTimeout.current = setTimeout(() => {
+      sendTyping("typing:stop");
+    }, TYPING_IDLE_MS);
+  };
+
   const send = useMutation({
     mutationFn: async (content: string) => sendMessage(conversationId, content),
     onSuccess: async () => {
       setDraft("");
+      sendTyping("typing:stop");
       await queryClient.invalidateQueries({ queryKey: queryKeys.conversation(conversationId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.conversations() });
     }
@@ -147,9 +188,10 @@ export default function ConversationScreen(): JSX.Element {
         </ScrollView>
 
         <View style={styles.composer}>
+          {isPeerTyping ? <Caption>Typing…</Caption> : null}
           <TextInput
             multiline
-            onChangeText={setDraft}
+            onChangeText={handleDraftChange}
             placeholder="Write a message"
             placeholderTextColor={colors.outline}
             style={styles.composerInput}
@@ -209,3 +251,5 @@ const styles = StyleSheet.create({
   },
   reportLink: { alignSelf: "center", padding: spacing.md }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

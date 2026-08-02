@@ -73,19 +73,41 @@ function CatalogSkeleton(): JSX.Element {
   );
 }
 
+/**
+ * Price bands rather than two number fields: a phone keyboard for a range is a
+ * worse experience than three taps, and these are the bands the catalogue
+ * actually splits on.
+ */
+const PRICE_BANDS = [
+  { key: "any", label: "Any price" },
+  { key: "free", label: "Free", maxPrice: 0 },
+  { key: "under-2000", label: "Under 2,000", maxPrice: 2000, minPrice: 1 },
+  { key: "2000-plus", label: "2,000+", minPrice: 2000 }
+] as const;
+
+type PriceBandKey = (typeof PRICE_BANDS)[number]["key"];
+
 export default function CatalogScreen(): JSX.Element {
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [priceBand, setPriceBand] = useState<PriceBandKey>("any");
 
   const { data: categories = [] } = useQuery({
     queryFn: listCategories,
     queryKey: queryKeys.categories()
   });
-  const filters = { categoryId, search };
+  const band = PRICE_BANDS.find((entry) => entry.key === priceBand) ?? PRICE_BANDS[0];
+  const priceRange = {
+    maxPrice: "maxPrice" in band ? band.maxPrice : undefined,
+    minPrice: "minPrice" in band ? band.minPrice : undefined
+  };
+  const filters = { categoryId, priceBand, search };
   const { data, isPending } = useQuery({
     queryFn: async () =>
       listCourses({
         categoryId: categoryId ?? undefined,
+        maxPrice: priceRange.maxPrice,
+        minPrice: priceRange.minPrice,
         search: search.trim() === "" ? undefined : search.trim()
       }),
     queryKey: queryKeys.courses(filters)
@@ -128,6 +150,21 @@ export default function CatalogScreen(): JSX.Element {
               style={[styles.chip, categoryId === category.id ? styles.chipActive : null]}
             >
               <Caption>{category.name}</Caption>
+            </Pressable>
+          ))}
+        </ScrollView>
+        <ScrollView
+          contentContainerStyle={styles.filters}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {PRICE_BANDS.map((entry) => (
+            <Pressable
+              key={entry.key}
+              onPress={() => setPriceBand(entry.key)}
+              style={[styles.chip, priceBand === entry.key ? styles.chipActive : null]}
+            >
+              <Caption>{entry.label}</Caption>
             </Pressable>
           ))}
         </ScrollView>
@@ -179,3 +216,5 @@ const styles = StyleSheet.create({
   },
   skeletonList: { gap: spacing.lg, padding: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

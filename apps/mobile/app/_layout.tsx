@@ -75,6 +75,13 @@ export default function RootLayout(): JSX.Element | null {
         <Stack.Screen name="learn/[courseId]" options={{ title: "Course player" }} />
         <Stack.Screen name="tests/[testId]" options={{ title: "Test" }} />
         <Stack.Screen name="messages/[conversationId]" options={{ title: "Conversation" }} />
+        <Stack.Screen name="profile-complete" options={{ title: "Complete your profile" }} />
+        <Stack.Screen name="bug-report" options={{ title: "Report a bug" }} />
+        {/* Deep-link landing pads. Android delivers `mma://…` through Linking
+            as well as resolving the browser session, and Expo Router would
+            otherwise route that to +not-found. */}
+        <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+        <Stack.Screen name="payment-callback" options={{ headerShown: false }} />
       </Stack>
     </PersistQueryClientProvider>
   );

@@ -8,8 +8,7 @@ import {
   signUpWithEmail,
   type MobileSession
 } from "@/src/lib/auth";
-
-const SESSION_QUERY_KEY = ["session"] as const;
+import { queryKeys } from "@/src/lib/query";
 
 export function useSession(): {
   isPending: boolean;
@@ -17,7 +16,7 @@ export function useSession(): {
 } {
   const { data, isPending } = useQuery<MobileSession | null>({
     queryFn: fetchSession,
-    queryKey: SESSION_QUERY_KEY,
+    queryKey: queryKeys.session(),
     // The session is the one thing that must never be served stale from the
     // persisted cache: a signed-out user seeing a signed-in shell is worse
     // than a spinner.
@@ -33,7 +32,7 @@ export function useSignIn() {
   return useMutation({
     mutationFn: signInWithEmail,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }
   });
 }
@@ -44,7 +43,7 @@ export function useGoogleSignIn() {
   return useMutation({
     mutationFn: signInWithGoogle,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }
   });
 }
@@ -55,7 +54,7 @@ export function useSignUp() {
   return useMutation({
     mutationFn: signUpWithEmail,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }
   });
 }

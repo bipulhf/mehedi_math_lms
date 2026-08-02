@@ -1,3 +1,5 @@
+import type { BasicProfileInput, StudentProfileInput, TeacherProfileInput } from "@mma/shared";
+
 import { apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
 
 /**
@@ -161,6 +163,55 @@ export interface ConversationThread {
   nextCursor: string | null;
 }
 
+export interface LectureComment {
+  content: string | null;
+  createdAt: string;
+  id: string;
+  isDeleted: boolean;
+  isEditable: boolean;
+  isOwn: boolean;
+  lectureId: string;
+  parentId: string | null;
+  replies: readonly LectureComment[];
+  updatedAt: string;
+  user: MessageParticipant;
+}
+
+export interface CourseReview {
+  authorName: string;
+  comment: string | null;
+  createdAt: string;
+  id: string;
+  rating: number;
+  userId: string;
+}
+
+export interface CourseReviewSummary {
+  average: number;
+  count: number;
+}
+
+export interface CourseNotice {
+  author: { id: string; name: string };
+  content: string;
+  courseId: string;
+  createdAt: string;
+  id: string;
+  isPinned: boolean;
+  title: string;
+  updatedAt: string;
+}
+
+export interface BugReportRecord {
+  createdAt: string;
+  description: string;
+  id: string;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+  title: string;
+  updatedAt: string;
+}
+
 export interface NotificationRecord {
   body: string;
   createdAt: string;
@@ -170,12 +221,43 @@ export interface NotificationRecord {
   type: "NOTICE" | "PAYMENT" | "COURSE" | "MESSAGE" | "BUG_REPORT" | "SYSTEM";
 }
 
+export interface StudentProfileFields {
+  address: string | null;
+  classOrGrade: string | null;
+  dateOfBirth: string | null;
+  guardianName: string | null;
+  guardianPhone: string | null;
+  institution: string | null;
+  phone: string | null;
+  profilePhoto: string | null;
+}
+
+export interface TeacherProfileFields {
+  bio: string | null;
+  phone: string | null;
+  profilePhoto: string | null;
+  qualifications: string | null;
+  socialLinks: string | null;
+  specializations: string | null;
+}
+
+/**
+ * The shape `GET /profiles/me` actually answers with — the user record and
+ * whichever role-specific block applies, not a flattened summary.
+ */
 export interface OwnProfile {
-  email: string;
-  id: string;
-  isProfileComplete: boolean;
-  name: string;
-  role: "STUDENT" | "TEACHER" | "ACCOUNTANT" | "ADMIN";
+  studentProfile: StudentProfileFields | null;
+  teacherProfile: TeacherProfileFields | null;
+  user: {
+    email: string;
+    id: string;
+    image: string | null;
+    isActive: boolean;
+    name: string;
+    profileCompleted: boolean;
+    role: "STUDENT" | "TEACHER" | "ACCOUNTANT" | "ADMIN";
+    slug: string | null;
+  };
 }
 
 export async function listCategories(): Promise<readonly CategoryNode[]> {
@@ -185,6 +267,8 @@ export async function listCategories(): Promise<readonly CategoryNode[]> {
 export async function listCourses(query: {
   categoryId?: string | undefined;
   limit?: number;
+  maxPrice?: number | undefined;
+  minPrice?: number | undefined;
   page?: number;
   search?: string | undefined;
 }): Promise<{ items: readonly CourseSummary[]; pages: number }> {
@@ -192,6 +276,8 @@ export async function listCourses(query: {
     `courses${buildQueryString({
       categoryId: query.categoryId,
       limit: query.limit ?? 20,
+      maxPrice: query.maxPrice,
+      minPrice: query.minPrice,
       page: query.page ?? 1,
       search: query.search
     })}`
@@ -226,6 +312,8 @@ export async function getMyCourseEnrollment(courseId: string): Promise<StudentEn
 
 export async function createEnrollment(input: {
   callbackOrigin?: string;
+  /** A path on `callbackOrigin`. See `src/lib/payment.ts`. */
+  callbackPath?: string;
   courseId: string;
 }): Promise<EnrollmentActionResponse> {
   return apiPost<typeof input, EnrollmentActionResponse>("enrollments", input);
@@ -270,6 +358,61 @@ export async function submitTest(
   }
 ): Promise<SubmissionDetail> {
   return apiPost<typeof input, SubmissionDetail>(`tests/${testId}/submit`, input);
+}
+
+export async function listLectureComments(lectureId: string): Promise<readonly LectureComment[]> {
+  const response = await apiGetPaginated<LectureComment>(
+    `lectures/${lectureId}/comments${buildQueryString({ limit: 50, page: 1 })}`
+  );
+
+  return response.data;
+}
+
+export async function createLectureComment(input: {
+  content: string;
+  lectureId: string;
+  parentId?: string | undefined;
+}): Promise<LectureComment> {
+  return apiPost<{ content: string; parentId?: string | undefined }, LectureComment>(
+    `lectures/${input.lectureId}/comments`,
+    { content: input.content, parentId: input.parentId }
+  );
+}
+
+export async function getCourseReviewSummary(courseId: string): Promise<CourseReviewSummary> {
+  return apiGet<CourseReviewSummary>(`courses/${courseId}/review-summary`);
+}
+
+export async function listCourseReviews(courseId: string): Promise<readonly CourseReview[]> {
+  const response = await apiGetPaginated<CourseReview>(
+    `courses/${courseId}/reviews${buildQueryString({ limit: 20, page: 1 })}`
+  );
+
+  return response.data;
+}
+
+export async function submitCourseReview(
+  courseId: string,
+  input: { comment?: string | undefined; rating: number }
+): Promise<CourseReview> {
+  return apiPost<typeof input, CourseReview>(`courses/${courseId}/reviews`, input);
+}
+
+export async function listCourseNotices(courseId: string): Promise<readonly CourseNotice[]> {
+  const data = await apiGet<{ items: readonly CourseNotice[] }>(`courses/${courseId}/notices`);
+
+  return data.items;
+}
+
+export async function createBugReport(input: {
+  description: string;
+  title: string;
+}): Promise<BugReportRecord> {
+  return apiPost<typeof input, BugReportRecord>("bugs", input);
+}
+
+export async function listMyBugReports(): Promise<readonly BugReportRecord[]> {
+  return apiGet<readonly BugReportRecord[]>("bugs/me");
 }
 
 export async function listConversations(): Promise<readonly MessageConversation[]> {
@@ -331,4 +474,15 @@ export async function registerPushToken(input: {
 
 export async function getOwnProfile(): Promise<OwnProfile> {
   return apiGet<OwnProfile>("profiles/me");
+}
+
+/**
+ * One endpoint for every role: the API picks the schema from the session's role
+ * rather than from anything sent here, so the caller sends the shape that
+ * matches its own role and nothing else.
+ */
+export async function updateOwnProfile(
+  input: BasicProfileInput | StudentProfileInput | TeacherProfileInput
+): Promise<OwnProfile> {
+  return apiPut<typeof input, OwnProfile>("profiles/me", input);
 }

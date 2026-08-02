@@ -71,8 +71,16 @@ export function Body({
   );
 }
 
-export function Caption({ children }: { children: ReactNode }): JSX.Element {
-  return <Text style={styles.caption}>{children}</Text>;
+export function Caption({
+  children,
+  tone = "muted"
+}: {
+  children: ReactNode;
+  tone?: "muted" | "error";
+}): JSX.Element {
+  return (
+    <Text style={[styles.caption, tone === "error" ? styles.captionError : null]}>{children}</Text>
+  );
 }
 
 export function Badge({
@@ -135,14 +143,18 @@ export function Button({
 
 export function Field({
   label,
+  style,
   ...inputProps
 }: TextInputProps & { label: string }): JSX.Element {
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
+      {/* `style` is pulled out and merged rather than spread: passing one
+          through `inputProps` would replace the base input style entirely, and
+          a caller adding a min-height would silently lose the border. */}
       <TextInput
         placeholderTextColor={colors.outline}
-        style={styles.input}
+        style={[styles.input, style]}
         {...inputProps}
       />
     </View>
@@ -169,6 +181,19 @@ export function CoverImage({
       style={[styles.cover, { height }]}
       transition={150}
     />
+  );
+}
+
+/**
+ * A failure the user can read. Distinct from `EmptyState`, which describes a
+ * screen with nothing in it — this one says something went wrong, and it looks
+ * different because those two are not the same news.
+ */
+export function ErrorNotice({ message }: { message: string }): JSX.Element {
+  return (
+    <View accessibilityRole="alert" style={styles.errorNotice}>
+      <Text style={styles.errorNoticeText}>{message}</Text>
+    </View>
   );
 }
 
@@ -281,6 +306,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: typography.caption.fontSize
   },
+  captionError: { color: colors.error },
   card: {
     backgroundColor: colors.surfaceContainerLowest,
     borderColor: colors.outlineVariant,
@@ -296,6 +322,17 @@ const styles = StyleSheet.create({
     width: "100%"
   },
   emptyState: { alignItems: "center", paddingVertical: spacing.xxl },
+  errorNotice: {
+    backgroundColor: colors.errorContainer,
+    borderRadius: radius.md,
+    padding: spacing.lg
+  },
+  errorNoticeText: {
+    color: colors.error,
+    fontFamily: fonts.bodyMedium,
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight
+  },
   field: { gap: spacing.xs },
   fieldLabel: {
     color: colors.onSurfaceVariant,

@@ -1,10 +1,10 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import * as WebBrowser from "expo-web-browser";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import { CourseReviews } from "@/src/components/course-reviews";
 import {
   Badge,
   Body,
@@ -12,17 +12,14 @@ import {
   Caption,
   Card,
   CoverImage,
+  ErrorNotice,
   Heading,
   Screen,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import {
-  createEnrollment,
-  getCourse,
-  getCourseContent,
-  getMyCourseEnrollment
-} from "@/src/lib/api";
+import { getCourse, getCourseContent, getMyCourseEnrollment } from "@/src/lib/api";
+import { startCheckout } from "@/src/lib/payment";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
@@ -56,19 +53,25 @@ export default function CourseDetailScreen(): JSX.Element {
   const hasAccess = Boolean(enrollment?.accessGranted);
 
   const enrol = useMutation({
-    mutationFn: async () => createEnrollment({ courseId }),
+    mutationFn: async () => startCheckout(courseId),
     onError: (mutationError: Error) => {
       setError(mutationError.message);
     },
-    onSuccess: async (result) => {
-      // A priced course has no enrolment until the gateway settles, so the app
-      // hands off to the browser rather than pretending access was granted.
-      if (result.requiresPayment && result.payment?.gatewayUrl) {
-        await WebBrowser.openBrowserAsync(result.payment.gatewayUrl);
+    onSuccess: async (outcome) => {
+      if (outcome.kind === "cancelled") {
+        // No banner. The student is back on this page with the enrol button
+        // still available, which is the whole of what cancelling means.
+        return;
+      }
+
+      if (outcome.kind === "failed") {
+        setError(outcome.reason);
 
         return;
       }
 
+      // A priced course has no enrolment until the gateway settles, so access
+      // is re-read from the server rather than assumed from the redirect.
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollment(courseId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments() });
       router.push({ params: { courseId }, pathname: "/learn/[courseId]" });
@@ -138,7 +141,9 @@ export default function CourseDetailScreen(): JSX.Element {
           )}
         </Card>
 
-        {error ? <Body>{error}</Body> : null}
+        <CourseReviews canReview={hasAccess} courseId={courseId} />
+
+        {error ? <ErrorNotice message={error} /> : null}
 
         {!isStudent ? (
           <Card>
@@ -167,3 +172,5 @@ const styles = StyleSheet.create({
   metaRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   padded: { padding: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";
