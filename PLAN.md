@@ -136,10 +136,31 @@ Two changes reach beyond one workspace and are worth knowing about:
 - **`react` is a single copy at 19.2.8.** Expo SDK 57 pins 19.2.3; the mobile workspace excludes React from
   the Expo version check rather than putting two Reacts on disk.
 
-Current state: **lint 8/8, typecheck 8/8, build 7/7, 120 API tests, 12 E2E specs, all passing.**
-
 **Everything below this section is the original plan plus the 2 August audit.** Where it disagrees with the
 tables above, the tables are what the code does.
+
+---
+
+## Implementation Record -- drift sweep, 3 August 2026
+
+`DRIFT.md` compared the **initial** plan (`PLAN.md` as first committed, `40cd8c4`) against the working tree
+and found what the 3 August rewrite had erased: things asked for and never built. Every finding is now
+closed.
+
+| Change | Closes |
+| ------ | ------ |
+| `og:image` rasterises to a 1200×630 PNG. It was `image/svg+xml`, which Facebook, X, LinkedIn, WhatsApp, Slack and iMessage all reject — every share of every page fell back to a bare text card | A2 |
+| The homepage reads real data through a new public `GET /api/v1/landing`: featured courses, live category counts, the teachers who actually teach here, real aggregates. It had been hardcoded fiction over eleven images hotlinked from a Google AI-Studio scratch CDN | A1 |
+| 126 validator tests in `@mma/shared`, and Playwright coverage of enrolment and payment. Writing the first caught a live defect: `.partial()` does not strip a `.default()`, so every course patch silently cleared `isExamOnly` | D |
+| `/login` and `/signup` canonicalise to their `/auth/*` originals instead of each claiming to be one | A6 |
+| Mobile: Manrope and Inter actually bundled and loaded (the type scale was silently falling back to the system font), the boot spinner replaced by a Reanimated skeleton, and Google sign-in added — its absence was a lockout, not a missing convenience | A3, A4, A5, A8 |
+| Validation red, chart colours and six sectioning dividers back on the theme; error boundaries on the last two routes | B2, B3, B4 |
+| The five files over the 800-line ceiling split along seams that already existed | B7 |
+| The dead `email` queue deleted, the WebSocket apps moved into the `websocket/` directory scaffolded for them, and the empty `apps/web/src/providers/` removed | A7, C2, C3 |
+| Route files renamed `courses-route.ts` so all four backend layers agree; the `pendingComponent`, feature-structure, mobile default-export and env-tier rules decided and written down rather than left as drift | B1, B5, B6, B8, C1 |
+
+Current state: **lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 126 shared tests, 34 Playwright tests,
+all passing.**
 
 ---
 
@@ -197,9 +218,10 @@ These were the items that cut across the whole codebase.
    `sitemap-service.ts`. Course listings, the category tree, and analytics aggregates hit Postgres on
    every request.
 4. **One BullMQ queue has a producer but no consumer** (was two; the `email` enqueue was removed in
-   Stage 5, so that queue is now inert with neither producer nor consumer). `queueNames` declares `email`, `notification`,
+   Stage 5, and the queue itself was deleted on 3 August — it was still holding a Redis connection and
+   showing up in dashboards as a queue that never drains). `queueNames` declared `email`, `notification`,
    `sms`, and `file-processing`, but only `workers/notification-worker.ts` and `workers/sms-worker.ts`
-   exist. Both orphaned queues are actively written to:
+   existed. Both orphaned queues are actively written to:
    - `upload-service.ts:263` enqueues `extract-video-metadata` onto `file-processing` on every confirmed
      video upload.
    - `staff-account-service.ts:61` enqueues `staff-account-invite` onto `email` with the new staff member's
@@ -230,14 +252,20 @@ These differ from the written plan but are deliberate and should not be "fixed" 
   lectures, materials, tests, questions, notices, and uploads hard-delete.
 - **Backend file naming is `kebab-noun-layer.ts`, not `noun.layer.ts`.** The tree uses
   `course-service.ts` / `course-repository.ts`, not the `course.service.ts` shown in §4. The layering itself
-  matches the plan exactly.
+  matches the plan exactly. **Settled 3 August 2026:** the routes were the last holdout at
+  `courses.route.ts` and are now `courses-route.ts`, so all four layers agree. The rule is stated in
+  `apps/api/AGENTS.md`.
 - **Frontend is not organised by feature.** `src/features/` holds only `landing/`. Everything else lives in
   `src/components/<domain>/` (courses, tests, uploads, categories, notifications, profile, certificates,
-  bugs). `src/providers/` is an empty directory.
+  bugs, messages). **Settled 3 August 2026:** this is now the rule rather than the drift — see §5. The
+  empty `src/providers/` directory has been deleted; providers are composed in `routes/__root.tsx`.
 - **No route groups.** Routes are flat, with `auth.tsx` and `dashboard.tsx` acting as layout routes instead
   of the planned `(public)` / `(auth)` / `(dashboard)` groups.
 - **A single root `.env`.** Not the `.env.development` / `.env.production` / `.env.test` tiers in §15. Every
-  workspace loads the root file (`apps/api/src/load-root-env.ts`, `bun --env-file ../../.env`).
+  workspace loads the root file (`apps/api/src/load-root-env.ts`, `bun --env-file ../../.env`), and
+  `.env.example` is the contract. Kept deliberately: tier files nothing reads would be decoration, and
+  the one place tiers would actually apply — Vite's `loadEnv(mode, repoRoot)` — already layers a
+  `.env.[mode]` if anyone adds one.
 - **SSLCommerz is hand-rolled**, not the `sslcommerz-lts` package. `services/sslcommerz-service.ts` calls the
   sandbox/live REST API directly and supports a mock gateway mode for local development.
 - **Server-side PDFs use `pdf-lib`, not `@react-pdf/renderer`.** The API generates certificates and receipts
@@ -245,9 +273,8 @@ These differ from the written plan but are deliberate and should not be "fixed" 
   (`components/certificates/certificate-pdf-document.tsx`).
 - **`turbo.json` declares a `db:repair-course-review-feedback` task that no workspace implements.** Harmless,
   but dead.
-- **Six `animate-spin` submit-button indicators exist** (`profile-editor.tsx`, `auth/sign-in.tsx`,
-  `auth/sign-up.tsx`, `admin/users.tsx`). §12 bans spinners; these are form-submit affordances rather than
-  data-fetch loaders, so they were left in place.
+- ~~**Six `animate-spin` submit-button indicators exist.**~~ Removed on 3 August 2026. There is no
+  `animate-spin` left in `apps/web/src`, and no `ActivityIndicator` left in `apps/mobile`.
 
 ---
 
@@ -329,22 +356,22 @@ mehedi_math_academy/
 │   │       └── styles/app.css      # Tailwind v4 @theme tokens
 │   ├── api/                        # Hono backend API (port 3001, dev PORT=3010)
 │   │   └── src/
-│   │       ├── routes/v1/          # 21 route modules + index.ts
-│   │       ├── routes/             # health, site-seo, public-config,
-│   │       │                       #   messages-ws-app, notifications-ws-app
+│   │       ├── routes/v1/          # 21 route modules + index.ts (`*-route.ts`)
+│   │       ├── routes/             # health, site-seo, public-config
 │   │       ├── controllers/        # 23 controllers
-│   │       ├── services/           # 32 services
-│   │       ├── repositories/       # 22 repositories
+│   │       ├── services/           # 37 services
+│   │       ├── repositories/       # 25 repositories
 │   │       ├── middleware/         # auth, error-handler, rate-limit, request-id,
 │   │       │                       #   request-logger, session-context, validate
-│   │       ├── workers/            # ONLY notification-worker.ts, sms-worker.ts
-│   │       ├── websocket/          # EMPTY -- WS apps live in routes/*-ws-app.ts
+│   │       ├── workers/            # notification-worker, sms-worker, file-processing-worker
+│   │       ├── websocket/          # messages-ws-app.ts, notifications-ws-app.ts
 │   │       ├── lib/                # container, env, logger, queues, redis, s3
 │   │       └── utils/              # errors, response, phone-bd
-│   └── mobile/                     # UNMODIFIED create-expo-app template (Expo SDK 57)
-│       ├── app/                    # (tabs)/index, (tabs)/two, modal, +not-found, +html
-│       ├── components/             # Themed.tsx, EditScreenInfo.tsx, StyledText.tsx, ...
-│       └── constants/Colors.ts     # No src/, no features/, no API client, no auth
+│   └── mobile/                     # Expo SDK 57 app, built in e0e8b34
+│       ├── app/                    # (tabs)/ shell + course, learn, tests, messages, auth routes
+│       ├── src/lib/                # env, api-client, api, auth, session-store, query, hooks
+│       ├── src/components/         # ui.tsx primitives + google-sign-in-button.tsx
+│       └── src/theme/tokens.ts     # Digital Atelier palette, radii, spacing, type scale
 ├── packages/
 │   ├── db/src/
 │   │   ├── schema/                 # 15 entity files + enums.ts, relations.ts, index.ts
@@ -711,7 +738,7 @@ erDiagram
 - `lib/forms/use-zod-form.ts` wraps React Hook Form + `@hookform/resolvers` Zod.
 - Skeleton primitive with a shimmer keyframe, plus `components/common/fade-in.tsx`; `FadeIn` is used in
   13 files.
-- `errorComponent` is set on 47 of 49 route files, backed by `components/common/route-error.tsx`.
+- `errorComponent` is set on all 50 route files, backed by `components/common/route-error.tsx`.
 - `__root.tsx` sets the default head, favicon, viewport, theme-color, `og:site_name`, and preloads the
   Manrope and Inter woff2 subsets.
 
@@ -1513,9 +1540,10 @@ erDiagram
   Lookups are served by dedicated `by-slug` endpoints.
 - `GET /sitemap.xml` (from `sitemap-service.ts`, Redis-cached, `Cache-Control: public, max-age=300`) and
   `GET /robots.txt` (`max-age=86400`, disallowing `/dashboard/`, `/api/`, `/admin/`, and pointing at the
-  sitemap) are both mounted at the API root by `routes/site-seo.route.ts`.
-- The optional dynamic OG image endpoint was built: `GET /api/v1/og-image/default`,
-  `/og-image/course/:slug`, `/og-image/teacher/:slug` (`og-image-service.ts`).
+  sitemap) are both mounted at the API root by `routes/site-seo-route.ts`.
+- The dynamic OG image endpoint was built: `GET /api/v1/og-image/default`, `/og-image/course/:slug`,
+  `/og-image/teacher/:slug` (`og-image-service.ts`). It composes an SVG and rasterises it to a 1200×630
+  PNG with `@resvg/resvg-js`; the default card is memoised because it never varies.
 - `routes/dev/seo-preview.tsx` is the share-preview developer tool.
 - Manrope and Inter woff2 subsets are preloaded from `__root.tsx`.
 
@@ -1525,9 +1553,11 @@ erDiagram
   `apps/web/src/routes/` answers those paths, so `https://mehedismathacademy.com/sitemap.xml` will 404
   unless the production reverse proxy forwards both paths to the API. Either add that proxy rule or add
   matching TanStack Start server routes.
-- Image CLS work is thin: 1 of 25 `<img>` tags sets `loading="lazy"`, and width/height are not applied
-  consistently.
-- The OG tags have not been run through the Facebook, Twitter, or LinkedIn validators.
+- Image CLS work is thin: `loading="lazy"` and explicit `width`/`height` are not applied consistently
+  across every `<img>`.
+- The OG tags have not been run through the Facebook, Twitter, or LinkedIn validators. The one failure
+  that did not need a validator is fixed: the endpoint served `image/svg+xml`, which every platform
+  rejects, and now rasterises to a 1200×630 PNG with `og:image:type` / `:width` / `:height` declared.
 
 ---
 
@@ -1535,26 +1565,22 @@ erDiagram
 
 **Goal:** Build the React Native mobile app using Expo, sharing the `packages/shared` types/validators, connecting to the same Hono API.
 
-**Status:** Not started. `apps/mobile` is the unmodified `create-expo-app` tabs template.
+**Status:** ✅ built in `e0e8b34`, then extended in the drift sweep. `bunx expo-doctor` is 20/20.
 
-**What actually exists today:**
+**What exists today:**
 
-- Expo SDK **57** (not the planned 54), React Native 0.86.2, React 19.2.3, Reanimated 4.5.1,
-  expo-router 57.0.9. The SDK was bumped during the 2 August 2026 dependency sweep; nothing else changed.
-- Screens are the template's: `app/(tabs)/index.tsx`, `app/(tabs)/two.tsx`, `app/modal.tsx`,
-  `app/+not-found.tsx`, `app/+html.tsx`, `app/_layout.tsx`.
-- Components are the template's: `Themed.tsx`, `EditScreenInfo.tsx`, `StyledText.tsx`, `ExternalLink.tsx`,
-  `useColorScheme.ts`, `useClientOnlyValue.ts`, plus `constants/Colors.ts`.
-- **No `src/` directory**, no `features/`, no API client, no auth, no `@mma/shared` dependency. The
-  workspace does not depend on any `@mma/*` package.
+- Expo SDK **57** (not the planned 54), React Native 0.86.2, React 19.2.8, Reanimated 4.5.1,
+  expo-router 57.0.9. Treat every version reference below as SDK 57.
+- `app/` holds the routes: a `(tabs)` shell (catalog, learning, messages, notifications, profile) plus
+  course detail, the player, tests, a conversation, and sign-in / sign-up.
+- `src/` holds everything reusable: `lib/` (env, api-client, api, auth, session-store, query, hooks),
+  `components/ui.tsx`, and `theme/tokens.ts`.
+- It depends on `@mma/shared` and consumes it unbuilt; `metro.config.js` carries the workspace resolver
+  configuration that makes that work.
 - It pins its own TypeScript (`~6.0.3`) rather than inheriting the root one; `expo install --fix` owns that
   pin and will move it to whatever the installed SDK expects.
-- `bunx expo-doctor` currently reports 2 failures: `app.json` has an additional property `splash` that the
-  SDK 57 schema rejects, and there are duplicate native dependencies from bun's hoisting.
-
-**Before starting this phase:** fix the two expo-doctor failures, add `@mma/shared` (and `@mma/auth`
-`/client`) to `apps/mobile/package.json`, and confirm the Metro resolver can follow the workspace symlinks
-to TypeScript source -- the packages are consumed unbuilt, which Metro does not handle by default.
+- Three things are deliberately not reimplemented here — video playback, profile completion, and realtime
+  messaging — each with a note in the code. See `apps/mobile/AGENTS.md`.
 
 **Key tasks:**
 
@@ -1599,13 +1625,17 @@ to TypeScript source -- the packages are consumed unbuilt, which Metro does not 
 
 - Backend: `middleware/error-handler.ts` is the global `onError`, over the `AppError` hierarchy in
   `utils/errors.ts`, returning the `success`/`error` envelope from `utils/response.ts`.
-- Frontend: `errorComponent` on 47 of 49 route files via `components/common/route-error.tsx`; the ky
+- Frontend: `errorComponent` on all 50 route files via `components/common/route-error.tsx`; the ky
   `afterResponse` hook in `lib/api/client.ts` raises the sonner toast. Never add a second toast on top of
   it. Retry is not configured anywhere (there is no query layer to configure it on).
 
 **Loading States (Custom Skeletons Only -- No Spinners/Loaders):** ✅ done -- every skeleton in the §12
-inventory exists, `pendingComponent` is on every route with a loader, and the five "Loading …" strings and
-six `animate-spin` indicators are gone. `FadeIn` is applied in 13 files.
+inventory exists, the five "Loading …" strings and six `animate-spin` indicators are gone, and the mobile
+app's boot `ActivityIndicator` is now a skeleton too. `FadeIn` is applied in 13 files.
+
+Route-level skeletons follow the two-pattern rule in §12: the five public loader routes declare a
+`pendingComponent`, and the dashboard routes — which fetch client-side with TanStack Query — render their
+skeleton inline from `isPending`. That is a deliberate amendment, not an accident: see §12.
 
 - **Never use spinner/loader components** (no circular spinners, no progress bars, no "Loading..." text) for data fetching. Every loading state must be a **custom skeleton** that mirrors the exact layout of the content it replaces.
 - Each feature builds its own skeleton variants: `CourseCardSkeleton`, `ProfilePageSkeleton`, `MessageListSkeleton`, `DashboardStatsSkeleton`, etc.
@@ -1639,17 +1669,25 @@ six `animate-spin` indicators are gone. `FadeIn` is applied in 13 files.
 
 **Testing (Progressive, Per Phase):** ✅ started and load-bearing
 
-- **120 tests in `@mma/api`**, run by `bun run test`: unit tests over commerce, progress, assessment,
-  course, staff-account, admin-user, message, cache and video-metadata logic, plus 15 integration tests
-  that drive the real Hono app through `app.request`.
+- **122 tests in `@mma/api`**: unit tests over commerce, progress, assessment, course, staff-account,
+  admin-user, message, cache and video-metadata logic, plus 17 integration tests that drive the real Hono
+  app through `app.request`.
+- **126 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
+  the contract in both directions — the API validates requests with them and the web app resolves its
+  forms against them — so a loosened `.min()` or a dropped `.uuid()` now fails a test instead of silently
+  changing both sides at once. Writing them caught a live defect: `.partial()` does not strip a
+  `.default()`, so every course patch was carrying `isExamOnly: false`.
+- Both run under `bun run test`. They need Postgres and Redis.
 - The integration tests are deliberately anonymous. Their job is to prove that every guarded route still
   refuses a caller with no session — a guard that quietly stopped guarding would pass every unit test in
   the repository.
-- **12 Playwright specs** in `apps/web/e2e`, run by `bun run test:e2e` from `apps/web`. They cover the
-  public pages, the dashboard redirect, and the crawler files. They are outside the Turbo `test` task on
-  purpose: that task must run with nothing else on the machine, and these need the API, Postgres and
-  Redis.
-- Still uncovered: `apps/mobile` has no tests, and there is no coverage of `packages/shared` validators.
+- **34 Playwright tests** in `apps/web/e2e`, run by `bun run test:e2e` from `apps/web`: the public pages,
+  the dashboard redirect, the crawler files, and the two flows that move money. The enrolment and payment
+  specs assert what must never regress — every enrolment and payment endpoint refuses an anonymous caller,
+  and a forged gateway callback for an unknown payment is a 404 rather than a redirect that settles it.
+  They are outside the Turbo `test` task on purpose: that task must run with nothing else on the machine,
+  and these need the API, Postgres and Redis.
+- Still uncovered: `apps/mobile` has no tests, and `apps/web` has no component tests.
 
 ---
 
@@ -1676,6 +1714,7 @@ This section defines the project-wide conventions that every file, function, and
 
 - **One concern per file.** A service file contains one service class/object. A schema file contains one table (or a tightly coupled pair).
 - **Named exports only.** No `export default`. This ensures consistent import naming and better refactoring.
+  - **One forced exception:** Expo Router loads a route module and reads its default export, so every file under `apps/mobile/app/` has exactly one `export default` — its screen. Nothing in `apps/mobile/src/` does. Recorded in `apps/mobile/AGENTS.md` so the next reader does not "fix" it.
 - **Barrel exports via `index.ts`.** Each package exposes a clean public API through `src/index.ts`. Internal modules are not importable from outside the package.
 
 ```typescript
@@ -1724,10 +1763,20 @@ const courseController = new CourseController(courseService);
 
 ### 5. Frontend Code Architecture (TanStack Start)
 
-> ⚠️ The tree below is the target, not the current layout. In reality `src/features/` holds only
-> `landing/`, all other domain components live under `src/components/<domain>/`, `src/providers/` is empty,
-> and there are no `(public)` / `(auth)` / `(dashboard)` route groups. See the Monorepo Structure section
-> for the actual tree.
+> ⚠️ **The tree below is the original target. The layout that shipped is different, and the difference is
+> now the rule.** Settled 3 August 2026:
+>
+> - Domain components live in `src/components/<domain>/`, not `src/features/<domain>/components/`.
+>   `src/features/landing/` is the one exception and stays that way — it is a set of page sections, not a
+>   domain. New feature components go under `src/components/`.
+> - Domain hooks live in `src/hooks/`. `use-messaging-socket.ts` is the pattern: when a route file grows a
+>   cluster of state only one part of it reads, that cluster becomes a hook there.
+> - `src/providers/` has been **deleted**. Providers are composed in `routes/__root.tsx`; an empty
+>   directory that a plan says should hold code reads as unfinished work.
+> - There are no `(public)` / `(auth)` / `(dashboard)` route groups. Routing is flat with pathful layouts
+>   (`dashboard.tsx`, `auth.tsx`), which is why `/dashboard` is a real URL segment.
+>
+> See the Monorepo Structure section for the actual tree.
 
 - **Route files** (`routes/`): TanStack Router file-based routes. Each route file defines loaders, components, and error boundaries. Keep route files thin -- delegate to feature components.
 - **Features** (`features/`): Feature-based folder structure. Each feature contains its own components, hooks, and utilities.
@@ -1841,7 +1890,7 @@ export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 
 ### 12. Skeleton and Transition Rules
 
-**No loaders or spinners.** The only acceptable loading indicator in this project is a **custom skeleton UI** that mirrors the shape and layout of the real content. This applies to every screen, every component, every data-fetching boundary -- web and mobile.
+**No loaders or spinners.** The only acceptable loading indicator in this project is a **custom skeleton UI** that mirrors the shape and layout of the real content. This applies to every screen, every component, every data-fetching boundary -- web and mobile. On mobile that means `SkeletonBlock` and `ScreenSkeleton` in `apps/mobile/src/components/ui.tsx`; there is no `ActivityIndicator` anywhere in the app, including the pre-session boot state.
 
 **Skeleton construction rules:**
 
@@ -1862,7 +1911,8 @@ export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 - When data arrives and replaces a skeleton, the real content must **fade in** using `opacity 0 -> 1` with a `150ms ease-out` transition. No instant swap, no flash of unstyled content.
 - Use a thin wrapper component (e.g., `FadeIn`) or a CSS class (`animate-fade-in`) applied to the content container.
 - For route transitions (navigating between pages), use TanStack Router's `pendingMs` (set to ~200ms) so that fast navigations skip the skeleton entirely and slow ones show it smoothly.
-- **Page-level skeletons** are defined per route via TanStack Router's `pendingComponent`. Each route file exports its own skeleton matching that page's layout.
+- **Page-level skeletons** are defined per route via TanStack Router's `pendingComponent` **when the route has a `loader`**. Each such route file exports its own skeleton matching that page's layout.
+- **A route without a loader does not get a `pendingComponent`** — it has nothing to be pending on. The dashboard fetches client-side with TanStack Query, so those pages render their skeleton inline from `isPending` instead. Amended 3 August 2026: the original rule said "every route", the code adopted the split by default, and this is the version worth keeping. The one thing it must not become is a third pattern.
 - **Component-level skeletons** are rendered inline when TanStack Query's `isLoading` is true. Use a ternary, not `&&`, to switch between skeleton and content (prevents flicker).
 
 **What is forbidden:**
@@ -1970,8 +2020,11 @@ rather than a task.
   with no backfill. This database was empty and verified so before applying. BLOCKERS.md carries the
   manual three-step sequence for any deployment that has rows.
 - **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
-- **`apps/mobile` has no tests**, and `packages/shared` validators have no coverage.
-- **The `email` queue has neither producer nor consumer.** The Stage 5 enqueue was removed deliberately;
-  the queue is left declared for whenever a mail transport exists.
+- **`apps/mobile` has no tests**, and `apps/web` has no component tests. (`packages/shared` validators
+  are covered as of 3 August 2026.)
+- ~~**The `email` queue has neither producer nor consumer.**~~ Deleted on 3 August 2026. The Stage 5
+  enqueue had been removed deliberately, but the queue itself was left declared — holding a Redis
+  connection and appearing in dashboards as a queue that never drains. Reinstate it with its transport,
+  not before.
 - **TypeScript 7** typechecked ~6x faster but disabled linting across every workspace, which is why 6.0.3
   is pinned. Revisit when typescript-eslint supports it (the fix lands in TS 7.1).

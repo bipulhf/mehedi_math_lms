@@ -20,16 +20,29 @@ src/components/ui/   Primitives — button, card, input, label, select, textarea
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.
-src/features/landing/      Landing page sections.
+src/features/landing/      Landing page sections. The only thing under features/ — see below.
 src/lib/api/         One module per API feature. Thin typed wrappers over the shared client.
 src/lib/             env, auth glue, seo, site config, ssr-api, category-tree, ws-url, utils, firebase, forms.
-src/hooks/           React hooks (currently use-auth-session).
+src/hooks/           React hooks — use-auth-session, use-messaging-socket.
 src/styles/app.css   Tailwind v4 entry and the full design token set.
 ```
 
 `src/routeTree.gen.ts` is **generated** — never edit it. It regenerates on dev/build.
 
-`src/providers/` exists but is empty. Add providers to `src/routes/__root.tsx` unless you are deliberately introducing that directory.
+There is no `src/providers/` directory — providers are composed in `src/routes/__root.tsx`, and the empty directory the plan asked for was deleted rather than left looking like unfinished work.
+
+**Where a new component goes.** Domain components go in `src/components/<domain>/`, not in `src/features/`. `src/features/landing/` is the one exception and stays that way: it is a set of homepage sections, not a domain. Domain hooks go in `src/hooks/` — `use-messaging-socket.ts` is the pattern, extracted when a route file grew a cluster of state only one part of it read.
+
+## Loading states
+
+No spinners, anywhere — `animate-spin` and "Loading…" are both absent from this workspace and must stay that way.
+
+Two skeleton patterns coexist, and which one applies is decided by the route, not by taste:
+
+- A route **with a `loader`** declares a `pendingComponent` — the five public pages do this. `defaultPendingMs` means a fast navigation skips it.
+- A route **without a loader** has nothing to be pending on. The dashboard fetches client-side with TanStack Query, so those pages render their skeleton inline from `isPending`, with a ternary rather than `&&`.
+
+The plan originally said "every route". This split is the amended rule (`PLAN.md` §12); do not introduce a third pattern.
 
 ## Server state
 
@@ -63,6 +76,18 @@ Redis behind it.
 E2E is deliberately outside the Turbo `test` task, which must stay runnable with
 nothing else on the machine. Point `E2E_BASE_URL` at a deployed environment to
 skip the local server.
+
+The specs cover the public pages, the dashboard redirect, the crawler files, and
+the two flows that move money (`enrollment.spec.ts`, `payment.spec.ts`). The
+money-path assertions are about refusal — every enrolment and payment endpoint
+rejects an anonymous caller, and a forged gateway callback for an unknown payment
+is a 404 rather than a redirect that settles it. Assertions that need a published
+course read the catalogue first and skip with a stated reason when an environment
+has none.
+
+The dashboard chunk compiles on first navigation, so the guard-redirect
+assertions allow 45s. Do not tighten that back to 15s: it made the suite fail
+cold and pass warm.
 
 ## Talking to the API
 
@@ -103,7 +128,11 @@ Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`.
 
 Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. The palette is a Material-style token set (`surface`, `surface-container-*`, `on-surface`, `primary`, `secondary-container`, `outline`, `error`, ...) plus `--radius-*`.
 
-Use the semantic tokens (`bg-surface-container`, `text-on-surface-variant`) rather than raw Tailwind colours like `bg-gray-100`. Fonts: `font-sans` (Inter) for body, `font-display` (Manrope) for headings.
+Use the semantic tokens (`bg-surface-container`, `text-on-surface-variant`) rather than raw Tailwind colours like `bg-gray-100` or an arbitrary `text-[#c4353b]`. Validation text is `text-error`.
+
+Recharts is the one exception, and only because it writes colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The handful of values the charts need are mirrored as literals in `src/lib/chart-theme.ts` — add to that file rather than retyping a hex in a route.
+
+DESIGN.md's No-Line Rule holds: 1px solid borders are prohibited for sectioning, and where a border is genuinely needed it is `outline-variant` at 15% opacity — felt, not seen. Fonts: `font-sans` (Inter) for body, `font-display` (Manrope) for headings.
 
 Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge classes. Follow `src/components/ui/button.tsx` when adding a primitive. Icons come from `lucide-react`.
 
