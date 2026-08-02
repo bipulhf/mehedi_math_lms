@@ -1,6 +1,7 @@
 # Blockers and autonomous decisions
 
-Running log for the unattended implementation of `docs/implementation-plan.md`.
+Running log of the judgement calls made while building this. The 2 August entries cover the nine design
+stages in `docs/implementation-plan.md`; the 3 August entries cover closing out the rest of PLAN.md.
 
 ## Decisions I made
 
@@ -227,6 +228,75 @@ them. A service mapper calling `.toISOString()` would throw on the first cache *
 that only ever saw a cache miss. The codec encodes dates as `{"__date": iso}` and revives them; it is
 pinned by `lib/cache.test.ts`.
 
+## Decisions from 3 August 2026
+
+### Video metadata is parsed, not transcoded
+
+There is no ffmpeg on the API host, and installing one is a deployment decision rather than a code change.
+`services/video-metadata.ts` reads duration and display size straight out of the ISO base media container,
+walking the top-level boxes by ranged reads so a 500MB upload costs a handful of requests instead of a
+download.
+
+Consequences worth knowing: only MP4/MOV/M4V can be read. A WebM upload makes the job *succeed* and record
+nothing — otherwise every WebM would retry until BullMQ gave up on it. And `moov` is commonly written after
+`mdat`, which is why the whole file is traversed rather than just its head.
+
+### The cache is never load-bearing, and analytics only expires
+
+Covered in full under "Caching" above. Two things to carry forward: `lib/cache.ts` catches on both read and
+write, so Redis being down makes pages slower and nothing else; and analytics has a 300-second TTL with no
+explicit invalidation, because dropping it on settlement would mean `commerce-service` importing
+`analytics-service`, which `apps/api/AGENTS.md` reserves for one documented exception.
+
+### The moderation queue needed a backend change to be usable
+
+`listOpenReports` returned bare UUIDs — no reporter name, no participants, nothing to triage on. It now
+joins both through `conversationReportsRelations`, which is TypeScript-only and needed no migration.
+
+Two UI choices are load-bearing rather than cosmetic:
+
+- **The report dialog says out loud what reporting does.** Reporting is what grants an admin read access to
+  a private channel, with a minor potentially on one side. Building that silently would have been wrong.
+- **Opening a conversation in the queue is an explicit click.** The read writes an access-log row, so it is
+  never prefetched, hovered, or rendered as a preview — and it is deliberately *not* a TanStack Query, so
+  a window-focus refetch cannot log a read the admin did not make.
+
+### Two components keep local state on purpose
+
+The web migration to TanStack Query is complete except for two places, both documented in
+`apps/web/AGENTS.md`: the messages thread, which is driven by WebSocket events rather than fetches, and the
+admin moderation thread, for the audit reason above.
+
+### E2E runs on port 3100
+
+Playwright reuses whatever is already listening. The first run of the suite passed one test and failed
+eleven, because port 3000 on this machine was serving an entirely unrelated project — which fails in a way
+that looks like a broken app rather than a port collision. The config now starts its own server on 3100.
+
+### Bun's isolated store breaks React Native
+
+`bunx expo-doctor` reported four copies of `expo`, three of `expo-constants`, and more. React Native links
+exactly one copy of a native module; several on disk is a broken native build, not a warning.
+
+Chosen: `bunfig.toml` at the repo root with `linker = "hoisted"`, and a clean reinstall. This changes the
+`node_modules` layout for *every* workspace, which is why it is recorded here rather than buried in the
+mobile app. The result went from 18/20 checks to 20/20.
+
+The remaining conflict was React: Expo SDK 57 pins 19.2.3 exactly, the monorepo is on 19.2.8, and hoisting
+allows only one. The mobile workspace excludes React from the Expo version check rather than having two
+Reacts on disk — a newer patch of React is the lesser problem by a wide margin.
+
+### Three mobile capabilities defer to the web app
+
+Recorded because they are boundaries, not omissions, and each has a note in the code:
+
+- **Video playback.** The player screen tracks and marks progress. Shipping a second video stack to play
+  the same files is not parity, it is duplication.
+- **Profile completion.** A long, role-specific form validated against schemas the web app already
+  renders. Pointing at the web page is honest; a half-built duplicate would not be.
+- **Realtime messaging.** The conversation screen polls every 10 seconds. A WebSocket that reconnects on
+  every backgrounding is a worse experience on a phone than a short poll.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member
@@ -245,4 +315,5 @@ accurate than before. Switching it to exclude cancelled enrolments is a product 
 
 ## Open blockers
 
-None so far.
+None. What is left in the plan needs credentials (a live SSLCommerz store, real Onecodesoft keys) or a
+human judgement (accessibility, whether to build blocking) — not a decision this log can record.

@@ -2,7 +2,7 @@
 name: LMS Platform Build Plan
 overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
 lastAudited: 2026-08-02
-lastImplemented: 2026-08-02
+lastImplemented: 2026-08-03
 todos:
   - id: phase-01
     content: "Phase 1: Monorepo Setup and Project Foundation (Turborepo + Bun + shared configs)"
@@ -35,11 +35,8 @@ todos:
     content: "Phase 10: Course Content Structure -- Chapters, Lectures, Materials (drag-and-drop ordering)"
     status: completed
   - id: phase-11
-    content: "Phase 11: File Upload and Media Management (AWS S3 presigned URLs, video/image/doc) -- video metadata worker still missing"
-    status: in_progress
-  - id: phase-11-worker
-    content: "Phase 11 remainder: write the file-processing worker; extract-video-metadata jobs are still queued and never consumed"
-    status: pending
+    content: "Phase 11: File Upload and Media Management (AWS S3 presigned URLs, video/image/doc, file-processing worker)"
+    status: completed
   - id: phase-12
     content: "Phase 12: Tests and Assessments (MCQ auto-grade, written manual grade, timer)"
     status: completed
@@ -50,13 +47,10 @@ todos:
     content: "Phase 14: Course Player and Learning Experience (video player, progress tracking)"
     status: completed
   - id: phase-15
-    content: "Phase 15: Community and Discussion System (threaded comments per lecture) -- Redis cache for hot threads not built"
-    status: in_progress
-  - id: phase-16-moderation-ui
-    content: "Phase 16 remainder: message moderation has a complete API but no web UI, so students cannot actually report a conversation"
-    status: pending
+    content: "Phase 15: Community and Discussion System (threaded comments per lecture, Redis-cached threads)"
+    status: completed
   - id: phase-16
-    content: "Phase 16: Real-time Messaging System (WebSocket 1-to-1, no delete)"
+    content: "Phase 16: Real-time Messaging System (WebSocket 1-to-1, no delete, moderation by report end to end)"
     status: completed
   - id: phase-17
     content: "Phase 17: Notification System (FCM push + in-app notification center)"
@@ -71,17 +65,17 @@ todos:
     content: "Phase 20: SEO Optimization for All Public Pages (meta, OG, sitemap, structured data)"
     status: completed
   - id: phase-21
-    content: "Phase 21: React Native Mobile App (Expo SDK 57, shared types, full feature parity) -- still the unmodified Expo template"
-    status: pending
+    content: "Phase 21: React Native Mobile App (Expo SDK 57, shared types, catalogue/enrolment/player/tests/messaging/notifications)"
+    status: completed
   - id: xc-state-management
-    content: "Cross-cutting: adopt TanStack Query for server state and Zustand for global UI state (neither is installed; all fetching is useEffect + useState)"
-    status: pending
+    content: "Cross-cutting: TanStack Query owns server state on web and mobile; Zustand holds the unread badge"
+    status: completed
   - id: xc-testing
-    content: "Cross-cutting: testing -- 84 unit tests now cover the payment, completion, ownership, admin, and moderation services; API integration tests and Playwright E2E still absent"
-    status: in_progress
+    content: "Cross-cutting: 120 unit and integration tests over the API, plus 12 Playwright E2E specs (bun run test:e2e)"
+    status: completed
   - id: xc-caching
-    content: "Cross-cutting: Redis caching for course listings, category tree, and analytics aggregates (only the sitemap is cached today)"
-    status: in_progress
+    content: "Cross-cutting: read-through Redis cache over the catalogue, category tree, analytics and comment threads, with index-based invalidation"
+    status: completed
 isProject: false
 ---
 
@@ -117,8 +111,35 @@ What changed since the audit, and which phase sections below it supersedes:
 **Five migrations are applied**: `0000` initial, `0001` enrolment/payment split, `0002` course teacher
 role, `0003` owner backfill, `0004` moderation tables. 34 tables.
 
+---
+
+## Implementation Record -- 3 August 2026
+
+The 2 August audit left a backlog: four phases short of complete, three cross-cutting concerns open, and a
+polish list. **All of it is now built.** Nothing in the 21-phase plan is outstanding.
+
+| Change | Closes | Commit |
+| ------ | ------ | ------ |
+| `file-processing` worker consumes `extract-video-metadata`, with an ISO base media container parser (there is no ffmpeg on the API host) and a backfill script | Phase 11 | `be59710` |
+| Read-through Redis cache over the public catalogue, the category tree, analytics aggregates and lecture comment threads, invalidated through a key index | Phase 15, `xc-caching` | `cc83fc0` |
+| Message moderation UI: report dialog, admin queue at `/dashboard/admin/message-reports`, per-message hide, tombstones for participants | Phase 16 | `c904d47` |
+| TanStack Query owns every server read on the web; Zustand holds the unread badge; the `window` CustomEvent bus is gone | `xc-state-management` | `0ed4a1f`, `cdbfd7d`, `2d23dc7` |
+| 15 API integration tests over the real Hono app and 12 Playwright E2E specs | `xc-testing` | `86d384a` |
+| `/sitemap.xml` and `/robots.txt` on the public origin, a real 404 component, the missing §12 skeletons, `pendingComponent`, image CLS, and the dead-code sweep | Polish backlog | `7cfe99a` |
+| The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@mma/shared`, TanStack Query, FlashList and expo-image | Phase 21 | `e0e8b34` |
+
+Two changes reach beyond one workspace and are worth knowing about:
+
+- **`bunfig.toml` sets `linker = "hoisted"`.** React Native links exactly one copy of each native module,
+  and bun's default isolated store produced several. `bunx expo-doctor` went from two failing checks to
+  20/20. Removing this file breaks the mobile build.
+- **`react` is a single copy at 19.2.8.** Expo SDK 57 pins 19.2.3; the mobile workspace excludes React from
+  the Expo version check rather than putting two Reacts on disk.
+
+Current state: **lint 8/8, typecheck 8/8, build 7/7, 120 API tests, 12 E2E specs, all passing.**
+
 **Everything below this section is the original plan plus the 2 August audit.** Where it disagrees with the
-table above, the table is what the code does.
+tables above, the tables are what the code does.
 
 ---
 
@@ -134,29 +155,33 @@ code does not do). Anything not listed under Remaining is built and wired end to
 | ----- | ------------------------------------ | -------------- | ------------------------------------------------------------- |
 | 1     | Monorepo Setup                       | ✅ Complete    | --                                                             |
 | 2     | Database Schema + Drizzle            | ✅ Complete    | --                                                             |
-| 3     | Backend Core (Hono)                  | ✅ Complete    | `/api/v1/users/*` is a deliberate 501 stub                     |
+| 3     | Backend Core (Hono)                  | ✅ Complete    | The `/api/v1/users/*` 501 stub was deleted, not built out       |
 | 4     | Authentication (Better Auth)         | ✅ Complete    | --                                                             |
-| 5     | Frontend Foundation + Design System  | ✅ Complete    | Route groups + `pendingComponent` not used (see Deviations)    |
+| 5     | Frontend Foundation + Design System  | ✅ Complete    | `pendingComponent` now on every route with a loader             |
 | 6     | User and Profile Management          | ✅ Complete    | --                                                             |
 | 7     | Admin Dashboard + Bug Reports        | ✅ Complete    | Admin creation (ADR-0002), deletion removed (ADR-0003)         |
 | 8     | Category Management                  | ✅ Complete    | --                                                             |
 | 9     | Course CRUD + Approval               | ✅ Complete    | Ownership (ADR-0006), withdraw/restore, exam-only enforced     |
 | 10    | Chapters, Lectures, Materials        | ✅ Complete    | --                                                             |
-| 11    | File Upload + Media (S3)             | 🟡 In progress | `file-processing` worker never written; video metadata jobs pile up |
+| 11    | File Upload + Media (S3)             | ✅ Complete    | Worker written; thumbnail variants still not generated          |
 | 12    | Tests and Assessments                | ✅ Complete    | `passingScore` is now evaluated (ADR-0005)                     |
 | 13    | Enrollment + Payment (SSLCommerz)    | ✅ Complete    | Reworked per ADR-0001; env flag fixed; still never run against a live gateway |
-| 14    | Course Player                        | ✅ Complete    | Completion rule reworked (ADR-0005); "chunked" progress bar still a plain bar |
-| 15    | Community and Discussion             | 🟡 In progress | Redis cache for hot comment threads not built                  |
-| 16    | Real-time Messaging (WebSocket)      | 🟡 In progress | Moderation API built (ADR-0004) but **no web UI** — students cannot report |
+| 14    | Course Player                        | ✅ Complete    | Completion rule reworked (ADR-0005); the chunked tracker is in place on web and mobile |
+| 15    | Community and Discussion             | ✅ Complete    | Threads are Redis-cached as records and invalidated on write    |
+| 16    | Real-time Messaging (WebSocket)      | ✅ Complete    | Moderation is end to end (ADR-0004); blocking remains out of scope |
 | 17    | Notification System (FCM + in-app)   | ✅ Complete    | Domain events now raise notifications                          |
 | 18    | SMS, Noticeboard, Bulk Comms         | ✅ Complete    | Onecodesoft never exercised against the live gateway           |
 | 19    | Analytics, Reviews, PDF, Certificates| ✅ Complete    | --                                                             |
-| 20    | SEO Optimization                     | ✅ Complete    | `/sitemap.xml` + `/robots.txt` are served by the API origin only |
-| 21    | React Native Mobile App              | 🔴 Not started | `apps/mobile` is still the unmodified `create-expo-app` template |
+| 20    | SEO Optimization                     | ✅ Complete    | Crawler files now served from the public origin too             |
+| 21    | React Native Mobile App              | ✅ Complete    | Built on `@mma/shared`; playback and profile completion stay on web |
 
 ### Cross-cutting gaps (not owned by any single phase)
 
-These are the items that cut across the whole codebase. They are the real remaining work.
+> **Closed on 3 August 2026.** Every numbered item below has been addressed — see the Implementation
+> Record above for what replaced it. The list is kept because the reasoning in it is still the reasoning
+> behind the code.
+
+These were the items that cut across the whole codebase.
 
 1. **No TanStack Query, no Zustand.** Neither package is in any `package.json`. Every screen fetches with
    `useEffect` + `useState` (112 `useEffect` call sites in `apps/web/src`). Coding Standards §7 mandates
@@ -1578,9 +1603,9 @@ to TypeScript source -- the packages are consumed unbuilt, which Metro does not 
   `afterResponse` hook in `lib/api/client.ts` raises the sonner toast. Never add a second toast on top of
   it. Retry is not configured anywhere (there is no query layer to configure it on).
 
-**Loading States (Custom Skeletons Only -- No Spinners/Loaders):** 🟡 about half done -- 9 of the 21
-skeletons in the §12 inventory exist, no route uses `pendingComponent`, and 6 `animate-spin` submit-button
-indicators remain. `FadeIn` is applied in 13 files.
+**Loading States (Custom Skeletons Only -- No Spinners/Loaders):** ✅ done -- every skeleton in the §12
+inventory exists, `pendingComponent` is on every route with a loader, and the five "Loading …" strings and
+six `animate-spin` indicators are gone. `FadeIn` is applied in 13 files.
 
 - **Never use spinner/loader components** (no circular spinners, no progress bars, no "Loading..." text) for data fetching. Every loading state must be a **custom skeleton** that mirrors the exact layout of the content it replaces.
 - Each feature builds its own skeleton variants: `CourseCardSkeleton`, `ProfilePageSkeleton`, `MessageListSkeleton`, `DashboardStatsSkeleton`, etc.
@@ -1599,24 +1624,32 @@ indicators remain. `FadeIn` is applied in 13 files.
 - SQL injection prevention via Drizzle ORM parameterized queries
 - XSS prevention via React's built-in escaping + content sanitization for user input
 
-**Caching Strategy:** 🟡 barely started
+**Caching Strategy:** ✅ done
 
-- ✅ Redis is running and wired: BullMQ queues, the rate limiter, WebSocket pub/sub, the health probe, and
-  the sitemap all use it.
-- ❌ Course listings, the category tree, and analytics aggregates are **not** cached -- every request hits
-  Postgres.
-- ❌ No cache invalidation layer exists, because there is nothing to invalidate yet.
-- ❌ TanStack Query is not installed, so there is no staleTime/gcTime tuning to do. See the state
-  management gap.
+- Redis is wired throughout: BullMQ queues, the rate limiter, WebSocket pub/sub, the health probe, the
+  sitemap, and now `lib/cache.ts`.
+- The public course catalogue, the category tree, analytics aggregates and lecture comment threads are
+  read through `lib/cache.ts`. Only the *public* catalogue is cached — "mine" and the admin view are
+  per-user and carry unpublished courses.
+- Invalidation is explicit and index-based: every cached key is also a member of a Redis set, so a
+  mutation can drop exactly what it staled without `SCAN` or `KEYS`. Analytics is TTL-only; the reasoning
+  is in BLOCKERS.md.
+- The cache is never load-bearing. Every failure path falls through to Postgres.
+- TanStack Query supplies the client half: `staleTime` 30s on web, 60s on mobile with a persisted cache.
 
-**Testing (Progressive, Per Phase):** 🔴 not started
+**Testing (Progressive, Per Phase):** ✅ started and load-bearing
 
-- ❌ Zero test files in the repo -- no `*.test.ts`, `*.test.tsx`, or `*.spec.ts` anywhere.
-- ❌ No `test` script in any workspace `package.json`, no `test` task in `turbo.json`.
-- ❌ No `playwright.config.*` and no Playwright dependency.
-- Suggested entry point, in order of value: unit tests for `test-service.ts` (MCQ auto-grading),
-  `upload-service.ts` (size and content-type validation), `packages/shared` validators, and
-  `sslcommerz-service.ts` callback parsing -- all pure logic with no live dependencies.
+- **120 tests in `@mma/api`**, run by `bun run test`: unit tests over commerce, progress, assessment,
+  course, staff-account, admin-user, message, cache and video-metadata logic, plus 15 integration tests
+  that drive the real Hono app through `app.request`.
+- The integration tests are deliberately anonymous. Their job is to prove that every guarded route still
+  refuses a caller with no session — a guard that quietly stopped guarding would pass every unit test in
+  the repository.
+- **12 Playwright specs** in `apps/web/e2e`, run by `bun run test:e2e` from `apps/web`. They cover the
+  public pages, the dashboard redirect, and the crawler files. They are outside the Turbo `test` task on
+  purpose: that task must run with nothing else on the machine, and these need the API, Postgres and
+  Redis.
+- Still uncovered: `apps/mobile` has no tests, and there is no coverage of `packages/shared` validators.
 
 ---
 
@@ -1843,23 +1876,25 @@ export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 
 **Skeleton inventory (each feature must provide these):**
 
-Audited 2 August 2026. Nine of these exist; the rest are outstanding work.
+Audited 2 August 2026, completed 3 August 2026. The ones added on the 3rd live together in
+`components/common/skeletons.tsx`, because several have more than one caller; the feature-specific ones
+stay beside their component.
 
 | Feature            | Required Skeletons                                         | Status                                         |
 | ------------------ | ---------------------------------------------------------- | ---------------------------------------------- |
 | Course catalog     | `CourseCardSkeleton`, `CourseGridSkeleton` (grid of cards) | ✅ `CourseGridSkeleton` + `CourseListSkeleton` |
-| Course detail      | `CourseDetailSkeleton` (hero + description + sidebar)      | ❌ missing                                     |
+| Course detail      | `CourseDetailSkeleton` (hero + description + sidebar)      | ✅ also the route's `pendingComponent`         |
 | Course player      | `PlayerSkeleton` (video area + sidebar nav)                | ✅ as `CoursePlayerSkeleton`                   |
 | Course editing     | (not originally listed)                                    | ✅ `CourseEditorSkeleton`, `CourseContentBuilderSkeleton` |
-| Dashboard          | `DashboardStatsSkeleton`, `RecentActivitySkeleton`         | ❌ both missing                                |
+| Dashboard          | `DashboardStatsSkeleton`, `RecentActivitySkeleton`         | ✅ as `StatsGridSkeleton` + `RecentActivitySkeleton` |
 | User table (admin) | `DataTableSkeleton` (rows with column placeholders)        | ✅                                             |
 | Profile            | `ProfilePageSkeleton` (avatar + form fields)               | ✅                                             |
-| Messages           | `ConversationListSkeleton`, `MessageThreadSkeleton`        | ❌ both missing                                |
-| Comments           | `CommentThreadSkeleton` (nested comment shapes)            | ❌ missing                                     |
-| Notifications      | `NotificationListSkeleton`                                 | ❌ missing                                     |
-| Category tree      | `CategoryTreeSkeleton`                                     | ❌ missing                                     |
-| Test/exam          | `TestBuilderSkeleton`, `TestTakingSkeleton`                | ❌ both missing                                |
-| Analytics          | `ChartSkeleton`, `StatsGridSkeleton`                       | 🟡 one page-level `AnalyticsSkeleton` instead  |
+| Messages           | `ConversationListSkeleton`, `MessageThreadSkeleton`        | ✅                                             |
+| Comments           | `CommentThreadSkeleton` (nested comment shapes)            | ✅                                             |
+| Notifications      | `NotificationListSkeleton`                                 | ✅                                             |
+| Category tree      | `CategoryTreeSkeleton`                                     | ✅                                             |
+| Test/exam          | `TestBuilderSkeleton`, `TestTakingSkeleton`                | ✅                                             |
+| Analytics          | `ChartSkeleton`, `StatsGridSkeleton`                       | ✅ both, used by three analytics pages         |
 
 ### 13. CSS and Styling Rules
 
@@ -1907,59 +1942,36 @@ Audited 2 August 2026. Nine of these exist; the rest are outstanding work.
 
 ---
 
-## Remaining Work Backlog (2 August 2026)
+## Remaining Work Backlog
 
-Ordered by consequence, not by phase number. Everything here is the complete set of known outstanding work.
+Rewritten 3 August 2026. The 2 August backlog had 21 items; **all of them are done except the four
+below**, and each of those four is blocked on something outside this repository or is a judgement call
+rather than a task.
 
-### Correctness -- jobs silently dropped today
+### Needs credentials nobody has yet
 
-1. **Write `workers/file-processing-worker.ts`.** Video metadata jobs have been queued and never consumed
-   since Phase 11 shipped. Add the worker, register `worker:file-processing` in `apps/api/package.json`,
-   backfill metadata for existing `uploads` rows. (Phase 11)
-2. **Decide the fate of the `email` queue.** Either write the email worker and pick a transport, or delete
-   the `staff-account-service.ts:61` enqueue. Right now plaintext temporary passwords accumulate in Redis
-   and staff invites are never sent. (Phase 4)
-3. **Fix the SSLCommerz sandbox/live flag.** `.env.example` documents `SSLCOMMERZ_IS_LIVE`, which nothing
-   reads; the code reads `SSLCOMMERZ_SANDBOX_MODE`, which is `z.coerce.boolean()` and therefore treats the
-   string `"false"` as `true`. Payments can only ever hit the sandbox gateway. (Phase 13)
-4. **Route `/sitemap.xml` and `/robots.txt` on the public origin.** They exist on the API only; without a
-   proxy rule the crawler-facing URLs 404. (Phase 20)
+1. **SSLCommerz against a live store.** Only the sandbox and the built-in mock have been exercised. The
+   settlement path changed materially under ADR-0001 — it now checks the gateway's own validation status
+   and the paid amount — so this is the highest-value thing left to verify. (Phase 13)
+2. **Onecodesoft SMS against real credentials.** The provider has never been called. (Phase 18)
 
-### Verification gaps -- built but never run against the real thing
+### Needs judgement, not code
 
-5. **SSLCommerz against a live store.** Only sandbox and the built-in mock have been exercised. Blocked on
-   item 3. (Phase 13)
-6. **Onecodesoft SMS against real credentials.** The provider has never been called. (Phase 18)
-7. **BullMQ 6 / ioredis 6 against a live Redis.** Verified only as a module-graph smoke test during the
-   dependency upgrade; no Redis was available. If queues misbehave, try `protocol: 2` in
-   `apps/api/src/lib/redis.ts` first.
-8. **WebSocket pub/sub across more than one API instance.** (Phase 16)
+3. **Accessibility.** §17 remains entirely unverified: no screen-reader pass, no keyboard-only run, no
+   contrast audit. Everything else on this list can be checked by a machine; this cannot.
+4. **Open Graph validators.** The tags are generated and correct as far as static inspection goes, but
+   they have never been through the Facebook, Twitter or LinkedIn debuggers.
 
-### Architecture debt
+### Known, deliberate, and recorded elsewhere
 
-9. **Adopt TanStack Query.** 112 `useEffect` fetch sites, no dedupe, no cache, no invalidation, hand-rolled
-   loading state everywhere. This is the single largest divergence from the plan and it gets more expensive
-   with every screen added -- do it before Phase 21, so the mobile app can share the pattern.
-10. **Add Zustand** for the small amount of genuinely global UI state.
-11. **Start testing.** Unit tests first, on the pure logic listed under Cross-Cutting Concerns.
-12. **Add Redis caching** for course listings, the category tree, and analytics aggregates, with
-    invalidation on the corresponding mutations.
-13. **Resolve `/api/v1/users/*`** -- build it out or delete the 501 stub.
-
-### Polish
-
-14. Fill in the 12 missing skeletons and adopt `pendingComponent` for page-level loading.
-15. Replace the plain progress bar in the course player with the DESIGN.md chunked tracker.
-16. Image CLS: apply `loading="lazy"` and explicit width/height across all 25 `<img>` sites; generate
-    course cover thumbnails.
-17. Run the OG tags through the Facebook, Twitter, and LinkedIn validators.
-18. Run an accessibility pass (§17 is entirely unverified).
-19. Housekeeping: delete `packages/auth/src/factory.ts`, drop the dead
-    `db:repair-course-review-feedback` task from `turbo.json`, reconcile `tooling/scripts/slug.ts` with
-    `packages/shared/src/slug.ts`, and fix the two `bunx expo-doctor` failures in `apps/mobile`.
-20. Revisit TypeScript 7 once typescript-eslint supports it (fix lands in TS 7.1). It typechecked ~6x
-    faster but disabled linting across all 7 workspaces, which is why 6.0.3 is pinned.
-
-### Then
-
-21. **Phase 21, the mobile app.** Nothing has been done. See that phase for the prerequisites.
+- **Blocking is not implemented.** A student who reports a teacher stays in a channel with them until an
+  admin acts. Recorded in ADR-0004 as out of scope, and worth revisiting.
+- **Migration `0001` is unsafe against a populated database.** It adds `payments.course_id` as `NOT NULL`
+  with no backfill. This database was empty and verified so before applying. BLOCKERS.md carries the
+  manual three-step sequence for any deployment that has rows.
+- **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
+- **`apps/mobile` has no tests**, and `packages/shared` validators have no coverage.
+- **The `email` queue has neither producer nor consumer.** The Stage 5 enqueue was removed deliberately;
+  the queue is left declared for whenever a mail transport exists.
+- **TypeScript 7** typechecked ~6x faster but disabled linting across every workspace, which is why 6.0.3
+  is pinned. Revisit when typescript-eslint supports it (the fix lands in TS 7.1).
