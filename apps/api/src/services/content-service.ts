@@ -405,6 +405,19 @@ export class ContentService {
     currentUserRole: UserRole
   ): Promise<ContentLecture> {
     const chapter = await this.requireManageableChapter(chapterId, currentUserId, currentUserRole);
+    const course = await this.courseRepository.findById(chapter.courseId);
+
+    // An Exam-Only Course is sold as assessment alone. Refusing the lecture
+    // here keeps the catalog badge honest rather than catching it at approval.
+    if (course?.isExamOnly) {
+      throw new ValidationError("An exam-only course cannot contain lectures", [
+        {
+          field: "type",
+          message: "Turn off exam-only on this course before adding lectures"
+        }
+      ]);
+    }
+
     const lectures = await this.contentRepository.listLecturesByChapterIds([chapterId]);
     const normalizedLectureInput = {
       content: normalizeOptionalString(input.content),

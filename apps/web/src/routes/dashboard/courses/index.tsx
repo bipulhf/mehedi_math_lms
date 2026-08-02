@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
-import { archiveCourse, listCourses, submitCourse } from "@/lib/api/courses";
+import { listCourses, submitCourse, withdrawCourse } from "@/lib/api/courses";
 
 export const Route = createFileRoute("/dashboard/courses/")({
   component: DashboardCoursesPage,
@@ -77,7 +77,7 @@ function DashboardCoursesPage(): JSX.Element {
       return;
     }
 
-    await archiveCourse(courseId);
+    await withdrawCourse(courseId);
     toast.success("Course archived");
     await loadCourses();
   };

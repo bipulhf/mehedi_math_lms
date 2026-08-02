@@ -158,12 +158,25 @@ coursesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   );
 });
 
-coursesRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.post("/:id/withdraw", requireRole("ADMIN", "TEACHER"), (context) => {
   const params = courseIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.deleteCourse(
+  return courseController.withdrawCourse(
+    context,
+    params.id,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+coursesRoutes.post("/:id/restore", requireRole("ADMIN", "TEACHER"), (context) => {
+  const params = courseIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return courseController.restoreCourse(
     context,
     params.id,
     authUser!.id,

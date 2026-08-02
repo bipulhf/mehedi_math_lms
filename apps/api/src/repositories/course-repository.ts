@@ -2,6 +2,7 @@ import {
   and,
   asc,
   categories,
+  chapters,
   count,
   courseTeachers,
   courses,
@@ -10,6 +11,7 @@ import {
   eq,
   ilike,
   inArray,
+  lectures,
   or,
   sql,
   teacherProfiles,
@@ -462,6 +464,17 @@ export class CourseRepository {
    * Roles must be supplied explicitly — this used to delete and re-insert, which
    * would silently demote every owner. ADR-0006.
    */
+  /** How many lectures a course holds, across all its chapters. */
+  public async countLecturesByCourseId(courseId: string): Promise<number> {
+    const [row] = await db
+      .select({ value: sql<number>`count(*)` })
+      .from(lectures)
+      .innerJoin(chapters, eq(chapters.id, lectures.chapterId))
+      .where(eq(chapters.courseId, courseId));
+
+    return Number(row?.value ?? 0);
+  }
+
   public async replaceTeachers(
     courseId: string,
     entries: readonly CourseTeacherAssignment[]

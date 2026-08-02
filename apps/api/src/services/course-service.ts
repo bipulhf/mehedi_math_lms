@@ -202,7 +202,9 @@ export class CourseService {
 
   private ensureCanReviewCourse(course: CourseRecord): void {
     if (course.status === "ARCHIVED") {
-      throw new ForbiddenError("Archived courses cannot be submitted for review");
+      // Restore it first; that is what routes a withdrawn course back through
+      // approval, rather than letting it skip straight to review.
+      throw new ForbiddenError("Restore this course before submitting it for review");
     }
 
     if (course.status === "PUBLISHED") {
@@ -214,6 +216,33 @@ export class CourseService {
         {
           field: "teacherIds",
           message: "Add a teacher to this course before requesting approval"
+        }
+      ]);
+    }
+  }
+
+  /**
+   * An Exam-Only Course is sold as assessment alone: its chapters hold Tests
+   * and no Lectures. Enforced at approval so the badge on the catalog is always
+   * truthful, and so an ordinary course cannot ship with nothing to watch.
+   */
+  private async ensureContentMatchesCourseFormat(course: CourseRecord): Promise<void> {
+    const lectureCount = await this.courseRepository.countLecturesByCourseId(course.id);
+
+    if (course.isExamOnly && lectureCount > 0) {
+      throw new ValidationError("An exam-only course cannot contain lectures", [
+        {
+          field: "isExamOnly",
+          message: `Remove the ${lectureCount} lecture(s) from this course, or turn off exam-only`
+        }
+      ]);
+    }
+
+    if (!course.isExamOnly && lectureCount === 0) {
+      throw new ValidationError("Add a lecture before submitting this course", [
+        {
+          field: "lectures",
+          message: "A course with no lectures must be marked exam-only"
         }
       ]);
     }
@@ -364,6 +393,21 @@ export class CourseService {
       await this.validateCategory(input.categoryId);
     }
 
+    // Turning exam-only on cannot be allowed to make the flag a lie about
+    // content that already exists.
+    if (input.isExamOnly === true && !course.isExamOnly) {
+      const lectureCount = await this.courseRepository.countLecturesByCourseId(course.id);
+
+      if (lectureCount > 0) {
+        throw new ValidationError("This course already contains lectures", [
+          {
+            field: "isExamOnly",
+            message: `Remove the ${lectureCount} lecture(s) before marking this course exam-only`
+          }
+        ]);
+      }
+    }
+
     const trimmedTitle = input.title?.trim();
     const shouldRegenerateSlug = trimmedTitle !== undefined && trimmedTitle !== course.title;
 
@@ -386,7 +430,12 @@ export class CourseService {
     return mapCourse(updatedCourse);
   }
 
-  public async deleteCourse(
+  /**
+   * Pull a course from the catalog. It can no longer be found or enrolled in,
+   * but everyone already enrolled keeps access — nothing checks course status
+   * for that. Reversible via restoreCourse.
+   */
+  public async withdrawCourse(
     id: string,
     currentUserId: string,
     currentUserRole: UserRole
@@ -399,7 +448,11 @@ export class CourseService {
 
     this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
 
-    const archivedCourse = await this.courseRepository.update(id, {
+    if (course.status === "ARCHIVED") {
+      throw new ConflictError("Course is already withdrawn");
+    }
+
+    const withdrawnCourse = await this.courseRepository.update(id, {
       publishedAt: null,
       rejectedAt: null,
       reviewFeedback: null,
@@ -407,11 +460,48 @@ export class CourseService {
       submittedAt: null
     });
 
-    if (!archivedCourse) {
+    if (!withdrawnCourse) {
       throw new NotFoundError("Course not found");
     }
 
-    return { id: archivedCourse.id };
+    return { id: withdrawnCourse.id };
+  }
+
+  /**
+   * Bring a withdrawn course back as a Draft. It does not return to the catalog
+   * directly — it must pass admin approval again before it can take new
+   * enrolments, because the reason it was withdrawn may still stand.
+   */
+  public async restoreCourse(
+    id: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<CourseDetailResponse> {
+    const course = await this.courseRepository.findById(id);
+
+    if (!course) {
+      throw new NotFoundError("Course not found");
+    }
+
+    this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
+
+    if (course.status !== "ARCHIVED") {
+      throw new ConflictError("Only a withdrawn course can be restored");
+    }
+
+    const restoredCourse = await this.courseRepository.update(id, {
+      publishedAt: null,
+      rejectedAt: null,
+      reviewFeedback: null,
+      status: "DRAFT",
+      submittedAt: null
+    });
+
+    if (!restoredCourse) {
+      throw new NotFoundError("Course not found");
+    }
+
+    return mapCourse(restoredCourse);
   }
 
   public async submitCourse(
@@ -427,6 +517,7 @@ export class CourseService {
 
     this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
     this.ensureCanReviewCourse(course);
+    await this.ensureContentMatchesCourseFormat(course);
 
     const submittedCourse = await this.courseRepository.update(id, {
       publishedAt: null,

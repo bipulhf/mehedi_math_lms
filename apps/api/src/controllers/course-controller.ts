@@ -69,15 +69,34 @@ export class CourseController {
     return success(context, course, 200, "Course updated successfully");
   }
 
-  public async deleteCourse(
+  public async withdrawCourse(
     context: Context<AppBindings>,
     id: string,
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const deletedCourse = await this.courseService.deleteCourse(id, currentUserId, currentUserRole);
+    const withdrawnCourse = await this.courseService.withdrawCourse(
+      id,
+      currentUserId,
+      currentUserRole
+    );
 
-    return success(context, deletedCourse, 200, "Course archived successfully");
+    return success(context, withdrawnCourse, 200, "Course withdrawn from the catalog");
+  }
+
+  public async restoreCourse(
+    context: Context<AppBindings>,
+    id: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<Response> {
+    const restoredCourse = await this.courseService.restoreCourse(
+      id,
+      currentUserId,
+      currentUserRole
+    );
+
+    return success(context, restoredCourse, 200, "Course restored as a draft");
   }
 
   public async submitCourse(

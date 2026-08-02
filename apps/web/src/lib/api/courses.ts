@@ -6,7 +6,7 @@ import type {
 } from "@mma/shared";
 import type { z } from "zod";
 
-import { apiDelete, apiGet, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
+import { apiGet, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
 
 export interface CourseTeacherOption {
   bio: string | null;
@@ -126,8 +126,22 @@ export async function updateCourse(id: string, values: UpdateCourseInput): Promi
   return response.data;
 }
 
-export async function archiveCourse(id: string): Promise<{ id: string }> {
-  const response = await apiDelete<{ id: string }>(`courses/${id}`);
+/** Pull a course from the catalog. Enrolled students keep access. Reversible. */
+export async function withdrawCourse(id: string): Promise<{ id: string }> {
+  const response = await apiPost<Record<string, never>, { id: string }>(
+    `courses/${id}/withdraw`,
+    {}
+  );
+
+  return response.data;
+}
+
+/** Bring a withdrawn course back as a draft. It must be approved again. */
+export async function restoreCourse(id: string): Promise<CourseDetail> {
+  const response = await apiPost<Record<string, never>, CourseDetail>(
+    `courses/${id}/restore`,
+    {}
+  );
 
   return response.data;
 }

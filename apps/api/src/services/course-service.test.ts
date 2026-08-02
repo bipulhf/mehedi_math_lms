@@ -7,7 +7,7 @@ import type {
   CourseTeacherAssignment
 } from "@/repositories/course-repository";
 import { CourseService } from "@/services/course-service";
-import { ForbiddenError, ValidationError } from "@/utils/errors";
+import { ConflictError, ForbiddenError, ValidationError } from "@/utils/errors";
 
 /**
  * Course authority under ADR-0006. An Owner controls the roster, price, and
@@ -22,6 +22,9 @@ interface TeacherSpec {
 
 interface Overrides {
   creatorId?: string;
+  isExamOnly?: boolean;
+  lectureCount?: number;
+  status?: string;
   teachers?: readonly TeacherSpec[];
 }
 
@@ -55,13 +58,13 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
     },
     description: "A course",
     id: "course-1",
-    isExamOnly: false,
+    isExamOnly: overrides.isExamOnly ?? false,
     price: "0.00",
     publishedAt: null,
     rejectedAt: null,
     reviewFeedback: null,
     slug: "a-course",
-    status: "DRAFT",
+    status: overrides.status ?? "DRAFT",
     submittedAt: null,
     teachers,
     title: "A course",
@@ -69,6 +72,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
   } as unknown as CourseRecord;
 
   const courseRepository = {
+    countLecturesByCourseId: async () => overrides.lectureCount ?? 1,
     countTeachersByIds: async (ids: readonly string[]) => ids.length,
     create: async (input: { ownerTeacherId: string | null }) => {
       calls.createdOwnerIds.push(input.ownerTeacherId);
@@ -77,6 +81,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
     },
     findById: async () => course,
     findBySlug: async () => null,
+    update: async () => course,
     replaceTeachers: async (_courseId: string, entries: readonly CourseTeacherAssignment[]) => {
       calls.rosters.push([...entries]);
 
@@ -223,7 +228,7 @@ describe("CourseService — administer guard", () => {
     });
 
     await expect(
-      service.deleteCourse("course-1", "teacher-9", "TEACHER")
+      service.withdrawCourse("course-1", "teacher-9", "TEACHER")
     ).rejects.toBeInstanceOf(ForbiddenError);
   });
 
@@ -236,7 +241,73 @@ describe("CourseService — administer guard", () => {
     });
 
     await expect(
-      service.deleteCourse("course-1", "teacher-2", "TEACHER")
+      service.withdrawCourse("course-1", "teacher-2", "TEACHER")
     ).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});
+
+describe("CourseService — withdraw and restore", () => {
+  test("withdrawing a course that is already withdrawn is refused", async () => {
+    const { service } = buildService({ status: "ARCHIVED" });
+
+    await expect(
+      service.withdrawCourse("course-1", "teacher-1", "TEACHER")
+    ).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  test("only a withdrawn course can be restored", async () => {
+    const { service } = buildService({ status: "DRAFT" });
+
+    await expect(
+      service.restoreCourse("course-1", "teacher-1", "TEACHER")
+    ).rejects.toBeInstanceOf(ConflictError);
+  });
+
+  test("a non-owner cannot restore", async () => {
+    const { service } = buildService({
+      status: "ARCHIVED",
+      teachers: [
+        { id: "teacher-1", role: "OWNER" },
+        { id: "teacher-2", role: "TEACHER" }
+      ]
+    });
+
+    await expect(
+      service.restoreCourse("course-1", "teacher-2", "TEACHER")
+    ).rejects.toBeInstanceOf(ForbiddenError);
+  });
+});
+
+describe("CourseService — exam-only enforcement", () => {
+  test("an exam-only course with lectures cannot be submitted", async () => {
+    const { service } = buildService({ isExamOnly: true, lectureCount: 3 });
+
+    await expect(
+      service.submitCourse("course-1", "teacher-1", "TEACHER")
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  test("an ordinary course with no lectures cannot be submitted", async () => {
+    const { service } = buildService({ isExamOnly: false, lectureCount: 0 });
+
+    await expect(
+      service.submitCourse("course-1", "teacher-1", "TEACHER")
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  test("an exam-only course with no lectures submits fine", async () => {
+    const { service } = buildService({ isExamOnly: true, lectureCount: 0 });
+
+    await expect(
+      service.submitCourse("course-1", "teacher-1", "TEACHER")
+    ).resolves.toBeDefined();
+  });
+
+  test("marking a course exam-only is refused while it has lectures", async () => {
+    const { service } = buildService({ isExamOnly: false, lectureCount: 2 });
+
+    await expect(
+      service.updateCourse("course-1", { isExamOnly: true }, "teacher-1", "TEACHER")
+    ).rejects.toBeInstanceOf(ValidationError);
   });
 });

@@ -99,6 +99,29 @@ code already excluded them from the roster.
 requires the variable to exist. The test script became `bun test --env-file ../../.env src`, matching the
 existing `dev` and `worker:*` scripts. No test connects to the database — `pg` only dials on first query.
 
+### Stage 4 — kept the guard the plan said to remove
+
+`docs/implementation-plan.md` says `ensureCanReviewCourse` "must stop refusing withdrawn courses, since
+restore now routes them back through approval". Implemented the opposite, deliberately: the guard stays.
+
+Restore sets the course to `DRAFT`, so a restored course reaches review through the normal path and never
+hits the `ARCHIVED` branch. Removing the guard would only enable submitting a *still-withdrawn* course
+directly, skipping restore — which contradicts the CONTEXT.md definition ("a restored course returns as a
+Draft and must be approved again"). The message now says "Restore this course before submitting it for
+review" instead of stating a flat prohibition.
+
+The plan was written before the code was; where they disagree the ADR and glossary win.
+
+### Stage 4 — the web client called a route that no longer exists
+
+`DELETE /courses/:id` became `POST /courses/:id/withdraw`. `apps/web/src/lib/api/courses.ts` still had
+`archiveCourse` pointing at the old verb, which lint and typecheck would not have caught — it is a string
+URL. Renamed to `withdrawCourse`, added `restoreCourse`, and updated the single caller in
+`routes/dashboard/courses/index.tsx`.
+
+Worth remembering for the remaining stages: renaming an endpoint does not fail the build. Grep the web
+client every time a route changes.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member
