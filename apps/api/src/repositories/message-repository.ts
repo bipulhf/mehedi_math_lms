@@ -76,6 +76,12 @@ export interface ConversationReportRecord {
   resolvedById: string | null;
 }
 
+/** A report with the people attached, so the admin queue is readable without a second round trip. */
+export interface ConversationReportListRecord extends ConversationReportRecord {
+  participants: readonly { id: string; name: string; role: UserRole }[];
+  reporter: { id: string; name: string; role: UserRole };
+}
+
 export interface ConversationMessageRecord {
   content: string;
   conversationId: string;
@@ -720,12 +726,48 @@ export class MessageRepository {
     return Boolean(row);
   }
 
-  public async listOpenReports(): Promise<readonly ConversationReportRecord[]> {
-    return db
-      .select()
-      .from(conversationReports)
-      .where(isNull(conversationReports.resolvedAt))
-      .orderBy(desc(conversationReports.createdAt));
+  public async listOpenReports(): Promise<readonly ConversationReportListRecord[]> {
+    const rows = await db.query.conversationReports.findMany({
+      orderBy: [desc(conversationReports.createdAt)],
+      where: isNull(conversationReports.resolvedAt),
+      with: {
+        conversation: {
+          columns: { id: true },
+          with: {
+            participantOne: { columns: { id: true, name: true, role: true } },
+            participantTwo: { columns: { id: true, name: true, role: true } }
+          }
+        },
+        reporter: { columns: { id: true, name: true, role: true } }
+      }
+    });
+
+    return rows.map((row) => ({
+      conversationId: row.conversationId,
+      createdAt: row.createdAt,
+      id: row.id,
+      participants: [
+        {
+          id: row.conversation.participantOne.id,
+          name: row.conversation.participantOne.name,
+          role: row.conversation.participantOne.role as UserRole
+        },
+        {
+          id: row.conversation.participantTwo.id,
+          name: row.conversation.participantTwo.name,
+          role: row.conversation.participantTwo.role as UserRole
+        }
+      ],
+      reason: row.reason,
+      reporter: {
+        id: row.reporter.id,
+        name: row.reporter.name,
+        role: row.reporter.role as UserRole
+      },
+      reporterId: row.reporterId,
+      resolvedAt: row.resolvedAt,
+      resolvedById: row.resolvedById
+    }));
   }
 
   public async resolveReport(

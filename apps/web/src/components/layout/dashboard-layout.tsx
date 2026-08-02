@@ -7,6 +7,7 @@ import {
   Megaphone,
   MessageSquareText,
   Settings,
+  ShieldAlert,
   Smartphone,
   UserRound,
   Users
@@ -39,6 +40,7 @@ const dashboardNavigation = {
     { icon: Users, label: "Users", to: "/dashboard/admin/users" },
     { icon: Layers3, label: "Categories", to: "/dashboard/admin/categories" },
     { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
+    { icon: ShieldAlert, label: "Reports", to: "/dashboard/admin/message-reports" },
     { icon: BookCopy, label: "Courses", to: "/dashboard/admin/courses" },
     { icon: ChartColumn, label: "Analytics", to: "/dashboard/admin/analytics" }
   ],

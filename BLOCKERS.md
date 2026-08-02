@@ -163,14 +163,24 @@ conversation list's `lastMessage` preview, and the WebSocket publish path. Doing
 have destroyed the original; doing it per-caller would have leaked the first time someone added a route.
 Admin review passes `revealHidden: true` to see the original, which is the entire reason for retaining it.
 
-### Stage 6 — no web UI was built for moderation
+### Stage 6 — no web UI was built for moderation (resolved)
 
-The API is complete and tested, but `apps/web` has no report button, no admin report queue, and no hide
-control. Students cannot currently report from the product.
+Originally left backend-only rather than guessing at a safeguarding UI unprompted. **Now built**: a Report
+button in the conversation header, `components/messages/report-conversation-dialog.tsx`, the admin queue at
+`/dashboard/admin/message-reports`, per-message hide, and tombstone rendering for participants.
 
-Left as backend-only rather than guessing at a safeguarding UI unprompted. **This is the one item from
-these nine stages that leaves a feature genuinely unusable by its intended user**, so it needs a human
-decision about the interface before it is worth anything to a student.
+Two choices worth recording:
+
+- **The report dialog says out loud what reporting does.** "An administrator will be able to read your
+  conversation with X while this report is open. Every time they do, it is recorded." A safeguarding
+  control that quietly grants a third party read access to a private channel — with a minor on one side —
+  would be the wrong thing to build silently.
+- **Opening a conversation in the queue is an explicit click.** `reviewReportedConversation` writes an
+  access-log row, so it is never prefetched, hovered, or rendered as a preview. A queue that logged an
+  admin read for every page load would make the audit trail worthless.
+
+`listOpenReports` was returning bare UUIDs — no names, nothing to triage on. It now joins the reporter and
+both participants (`conversationReportsRelations` in `packages/db`, TS-only, no migration).
 
 ### Stage 6 — blocking is still not implemented
 

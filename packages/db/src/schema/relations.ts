@@ -7,7 +7,7 @@ import { comments } from "./comments";
 import { courseProgress, enrollments } from "./enrollments";
 import { courseTeachers, courses, notices } from "./courses";
 import { lectureMaterials, lectures } from "./lectures";
-import { conversations, messages } from "./messages";
+import { conversationReports, conversations, messages } from "./messages";
 import { smsBatches, smsRecipients } from "./sms";
 import { fcmTokens, notifications } from "./notifications";
 import { payments } from "./payments";
@@ -309,6 +309,18 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   sender: one(users, {
     fields: [messages.senderId],
     references: [users.id]
+  })
+}));
+
+export const conversationReportsRelations = relations(conversationReports, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [conversationReports.conversationId],
+    references: [conversations.id]
+  }),
+  reporter: one(users, {
+    fields: [conversationReports.reporterId],
+    references: [users.id],
+    relationName: "conversation_report_reporter"
   })
 }));
 

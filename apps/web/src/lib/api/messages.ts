@@ -3,6 +3,7 @@ import type {
   createConversationSchema,
   messageParticipantsQuerySchema,
   messagesConversationQuerySchema,
+  reportConversationSchema,
   sendMessageSchema
 } from "@mma/shared";
 import type { z } from "zod";
@@ -24,6 +25,8 @@ export interface ConversationMessage {
   conversationId: string;
   createdAt: string;
   id: string;
+  /** An admin removed this message; `content` is the tombstone, not the original. */
+  isHidden: boolean;
   isOwn: boolean;
   readAt: string | null;
   sender: MessageParticipant;
@@ -57,6 +60,7 @@ export type MessageParticipantsQuery = z.infer<typeof messageParticipantsQuerySc
 export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 export type ConversationMessagesQuery = z.infer<typeof conversationMessagesQuerySchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+export type ReportConversationInput = z.infer<typeof reportConversationSchema>;
 
 function buildQueryString(
   query: Record<string, number | string | undefined>
@@ -130,6 +134,22 @@ export async function sendConversationMessage(
 ): Promise<ConversationMessage> {
   const response = await apiPost<SendMessageInput, ConversationMessage>(
     `messages/conversations/${conversationId}`,
+    input
+  );
+
+  return response.data;
+}
+
+/**
+ * Reporting is what unlocks admin review of a private conversation, so it is
+ * deliberately a participant-only action. ADR-0004.
+ */
+export async function reportConversation(
+  conversationId: string,
+  input: ReportConversationInput
+): Promise<{ conversationId: string; id: string }> {
+  const response = await apiPost<ReportConversationInput, { conversationId: string; id: string }>(
+    `messages/conversations/${conversationId}/report`,
     input
   );
 

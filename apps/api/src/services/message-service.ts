@@ -41,6 +41,17 @@ export interface ConversationView {
   user: MessageParticipantView;
 }
 
+/** What the admin moderation queue shows: who reported whom, and why. */
+export interface ConversationReportView {
+  conversationId: string;
+  createdAt: string;
+  id: string;
+  participants: readonly { id: string; name: string; role: UserRole }[];
+  reason: string;
+  reporter: { id: string; name: string; role: UserRole };
+  reporterId: string;
+}
+
 interface ConversationMessagesView {
   conversation: ConversationView;
   items: readonly ConversationMessageView[];
@@ -392,16 +403,16 @@ export class MessageService {
     return mapMessageView(hidden, adminId, new Set<string>(), { revealHidden: true });
   }
 
-  public async listOpenReports(): Promise<
-    readonly { conversationId: string; createdAt: string; id: string; reason: string; reporterId: string }[]
-  > {
+  public async listOpenReports(): Promise<readonly ConversationReportView[]> {
     const reports = await this.messageRepository.listOpenReports();
 
     return reports.map((report) => ({
       conversationId: report.conversationId,
       createdAt: report.createdAt.toISOString(),
       id: report.id,
+      participants: report.participants,
       reason: report.reason,
+      reporter: report.reporter,
       reporterId: report.reporterId
     }));
   }

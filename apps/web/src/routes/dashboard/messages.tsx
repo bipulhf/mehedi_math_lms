@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { MessageSquareText, SendHorizontal, Wifi, WifiOff } from "lucide-react";
+import { EyeOff, MessageSquareText, SendHorizontal, ShieldAlert, Wifi, WifiOff } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ReportConversationDialog } from "@/components/messages/report-conversation-dialog";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import {
@@ -128,6 +129,7 @@ function DashboardMessagesPage(): JSX.Element {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [reportingConversationId, setReportingConversationId] = useState<string | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
@@ -414,6 +416,7 @@ function DashboardMessagesPage(): JSX.Element {
                     conversationId: payload.conversationId,
                     createdAt: payload.data.createdAt,
                     id: payload.data.id,
+                    isHidden: false,
                     isOwn: false,
                     readAt: payload.data.readAt,
                     sender: conversation.user,
@@ -457,6 +460,7 @@ function DashboardMessagesPage(): JSX.Element {
                 conversationId: payload.conversationId,
                 createdAt: payload.data.createdAt,
                 id: payload.data.id,
+                isHidden: false,
                 isOwn: false,
                 readAt: payload.data.readAt,
                 sender: existing.conversation.user,
@@ -478,6 +482,7 @@ function DashboardMessagesPage(): JSX.Element {
                     conversationId: payload.conversationId,
                     createdAt: payload.data.createdAt,
                     id: payload.data.id,
+                    isHidden: false,
                     isOwn: false,
                     readAt: payload.data.readAt,
                     sender: existing.conversation.user,
@@ -809,13 +814,22 @@ function DashboardMessagesPage(): JSX.Element {
                     </p>
                   ) : null}
                 </div>
-                <div className="w-full md:max-w-xs">
+                <div className="flex w-full items-center gap-3 md:max-w-md">
                   <Input
                     placeholder="Search messages"
                     value={messageSearch}
                     onChange={(event) => setMessageSearch(event.target.value)}
                     className="rounded-2xl h-11 bg-surface-container-low/50 border-outline-variant/30"
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 shrink-0 rounded-2xl"
+                    onClick={() => setReportingConversationId(selectedThread.conversation.id)}
+                  >
+                    <ShieldAlert className="mr-2 size-4" />
+                    Report
+                  </Button>
                 </div>
               </div>
             </div>
@@ -850,17 +864,29 @@ function DashboardMessagesPage(): JSX.Element {
                       key={message.id}
                       className={cn(
                         "max-w-[85%] rounded-3xl px-5 py-4 shadow-sm border",
-                        message.isOwn
-                          ? "ml-auto bg-primary text-primary-foreground border-primary/20 rounded-tr-sm"
-                          : "bg-surface text-on-surface border-outline-variant/20 rounded-tl-sm"
+                        message.isHidden
+                          ? "bg-surface-container-low/60 text-on-surface-variant border-outline-variant/30 border-dashed"
+                          : message.isOwn
+                            ? "ml-auto bg-primary text-primary-foreground border-primary/20 rounded-tr-sm"
+                            : "bg-surface text-on-surface border-outline-variant/20 rounded-tl-sm",
+                        message.isHidden && message.isOwn ? "ml-auto" : undefined
                       )}
                     >
                       <div className="space-y-2">
-                        <p className="text-sm leading-7">{message.content}</p>
+                        {message.isHidden ? (
+                          <p className="flex items-center gap-2 text-sm italic leading-7">
+                            <EyeOff className="size-4 shrink-0" />
+                            {message.content}
+                          </p>
+                        ) : (
+                          <p className="text-sm leading-7">{message.content}</p>
+                        )}
                         <div
                           className={cn(
                             "flex items-center justify-between gap-3 text-[0.7rem]",
-                            message.isOwn ? "text-surface/72" : "text-on-surface/54"
+                            message.isOwn && !message.isHidden
+                              ? "text-surface/72"
+                              : "text-on-surface/54"
                           )}
                         >
                           <span>{formatTimestamp(message.createdAt)}</span>
@@ -933,6 +959,15 @@ function DashboardMessagesPage(): JSX.Element {
           </>
         )}
       </div>
+
+      {reportingConversationId && selectedThread ? (
+        <ReportConversationDialog
+          conversationId={reportingConversationId}
+          participantName={selectedThread.conversation.user.name}
+          onClose={() => setReportingConversationId(null)}
+          onReported={() => setReportingConversationId(null)}
+        />
+      ) : null}
     </div>
   );
 }
