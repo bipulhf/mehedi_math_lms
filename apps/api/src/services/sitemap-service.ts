@@ -59,7 +59,9 @@ export class SitemapService {
     pushUrl(`${base}/categories`, today, "weekly", "0.8");
     pushUrl(`${base}/about`, today, "monthly", "0.5");
     pushUrl(`${base}/contact`, today, "monthly", "0.5");
-    pushUrl(`${base}/login`, today, "monthly", "0.4");
+    // The canonical auth URLs, not the /login and /signup aliases that render
+    // the same pages.
+    pushUrl(`${base}/auth/sign-in`, today, "monthly", "0.4");
     pushUrl(`${base}/auth/sign-up`, today, "monthly", "0.4");
 
     for (const row of courseRows) {
