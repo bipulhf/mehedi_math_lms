@@ -1,0 +1,9 @@
+# React Native can only link one copy of a native module. Bun's default isolated
+# store puts several symlinked copies of `expo`, `expo-constants`, `expo-font`
+# and friends on disk, which `expo-doctor` reports as duplicate native
+# dependencies and which can produce genuinely broken native builds.
+#
+# The hoisted linker gives the classic flat `node_modules` layout that Metro and
+# the Expo prebuild pipeline expect.
+[install]
+linker = "hoisted"

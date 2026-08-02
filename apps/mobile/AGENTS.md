@@ -1,34 +1,65 @@
-# AGENTS.md — `mobile`
+# AGENTS.md — `@mma/mobile`
 
-Expo / React Native app with Expo Router. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply where relevant — but read the caveats below first, because this workspace is not yet wired into the monorepo the way the others are.
+Expo SDK 57 / React Native app with Expo Router. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
 ```bash
-bun run start     # expo start
+bun run start      # expo start
 bun run android
 bun run ios
-bun run web
+bun run lint
+bun run typecheck
+bunx expo-doctor   # 20/20 as of this writing — keep it that way
 ```
 
-## Current state
+## Layout
 
-**This is still the unmodified `create-expo-app` tabs template.** `app/` contains `_layout.tsx`, `modal.tsx`, `+not-found.tsx`, `+html.tsx`, and `(tabs)/index.tsx` / `(tabs)/two.tsx`; `components/` holds `Themed.tsx`, `EditScreenInfo.tsx`, `ExternalLink.tsx`, `StyledText.tsx`, and the `useColorScheme` / `useClientOnlyValue` helpers. No product code exists yet.
+```
+app/                     Expo Router file routes. (tabs)/ is the signed-in shell.
+src/lib/                 env, api-client, api, auth, session-store, query, hooks
+src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
+src/theme/tokens.ts      The Digital Atelier palette, radii, spacing and type scale
+```
 
-Do not treat the existing files as house style. When real screens land, they should follow the repo's conventions, not the template's.
+`app/` holds routes only. Anything reusable belongs in `src/`.
 
-## Divergences from the rest of the monorepo
+## Talking to the API
 
-Be aware of these before making changes — several are things to fix as the app is built out, not patterns to copy:
+Two origins, and confusing them is the most likely mistake here:
 
-- **Package name is `mobile`, not `@mma/mobile`.** Every other workspace uses the `@mma/*` scope.
-- **No workspace dependencies.** It does not consume `@mma/shared`, `@mma/auth`, or `@mma/db`. Any API contract used here should come from `@mma/shared` rather than being redeclared.
-- **Own TypeScript config.** Extends `expo/tsconfig.base` with `strict: true`, not `packages/config/tsconfig.base.json`. It does not get `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, or `verbatimModuleSyntax`. Its path alias is `@/*` → `./*` (workspace root), not `./src/*`.
-- **Own pinned TypeScript** (`~6.0.3`) in devDependencies rather than inheriting the root one. It currently matches the repo version, but `expo install --fix` owns that pin and will move it to whatever the installed Expo SDK expects.
-- **No `lint`, `typecheck`, or `build` scripts**, so `turbo run lint` / `typecheck` / `build` skip this workspace entirely. CI-style checks at the root will not catch errors here.
-- **Component filenames are PascalCase** (`EditScreenInfo.tsx`), whereas the web app uses kebab-case.
+- **`mobileEnv.apiBaseUrl`** — the Hono API, `/api/v1`. All product data.
+- **`mobileEnv.authBaseUrl`** — Better Auth, served by the **web** app at `/api/auth`. Sign-in, sign-up, session, sign-out.
 
-## When building real features
+`src/lib/env.ts` infers both from the Metro connection in development, so a physical device works without editing anything. `EXPO_PUBLIC_API_ORIGIN` / `EXPO_PUBLIC_WEB_ORIGIN` override for real builds; `eas.json` sets them per profile.
 
-- API base URL and auth: the API already trusts the Expo dev origins (`http://localhost:8081`, `exp://127.0.0.1:8081`) in both its CORS config and Better Auth's `trustedOrigins`. Note that Better Auth's HTTP handler is served by the **web** app at `/api/auth/*`, not by the API — see the root `AGENTS.md`.
-- Reuse `@mma/shared` for validators, roles, and constants; add it as a `workspace:*` dependency rather than copying types.
-- The API response envelope is `{ status, message?, data }` with `{ status, data, pagination }` for paginated lists. Match `apps/web/src/lib/api/client.ts`.
-- Adding `lint` / `typecheck` scripts and moving onto the shared TS config would bring this workspace under the root checks. Worth doing as its own change.
+Never call `fetch` directly for product data. Use `src/lib/api-client.ts`, which unwraps the `{ status, message?, data }` envelope and throws `ApiError` carrying the API's own message. Add endpoints to `src/lib/api.ts`, one function each. **Check the actual route in `apps/api/src/routes/v1/` before adding one** — several paths are not where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`, `tests/submissions/:id/answers`, `tests/:testId/submit`).
+
+## Auth
+
+React Native has no cookie jar, so the app stores Better Auth's session cookie itself: `src/lib/session-store.ts` keeps it in **expo-secure-store** (it is a bearer credential, not a preference) and every request replays it as a `Cookie` header. `src/lib/auth.ts` wraps the endpoints; `src/lib/use-session.ts` is the hook screens use.
+
+A rejected cookie is treated as "signed out", not as an error — it is cleared so the next launch does not retry it.
+
+## Server state
+
+TanStack Query, with the same rules as the web app: keys come from `queryKeys` in `src/lib/query.ts`, retry is off for 4xx and for all mutations. The cache is persisted to AsyncStorage through `PersistQueryClientProvider`, so the app opens with content rather than skeletons — that persistence is why `gcTime` is a full day.
+
+The session query is the one exception: `staleTime: 0`, because showing a signed-out user a signed-in shell is worse than a brief wait.
+
+## Lists and images
+
+`FlashList` for every list, with a memoised row component and `useCallback` for `renderItem` / `keyExtractor` — FlashList recycles rows, so an unmemoised item re-renders the whole visible window on each keystroke. `expo-image` for every image; its disk cache is what makes the catalogue usable on a second launch.
+
+## Deliberate boundaries
+
+Three things are intentionally *not* reimplemented on mobile, and each carries a note in the code:
+
+- **Video playback.** The player screen tracks and marks progress; it does not ship a second video stack.
+- **Profile completion.** A long, role-specific, schema-validated form. The app points at the web page rather than duplicating it.
+- **Realtime messaging.** The conversation screen polls every 10s rather than holding a WebSocket, which would reconnect on every backgrounding.
+
+## Monorepo notes
+
+- Consumes `@mma/shared` unbuilt, from TypeScript source. `metro.config.js` adds the workspace root to `watchFolders` and `nodeModulesPaths` — without it Metro will not leave this directory.
+- **`bunfig.toml` at the repo root sets `linker = "hoisted"`.** React Native can only link one copy of a native module, and bun's default isolated store produces several. Do not remove it: `expo-doctor` fails immediately, and native builds break in harder-to-diagnose ways.
+- `react` / `react-dom` are excluded from the Expo version check in `package.json`. The SDK pins 19.2.3, the monorepo is on 19.2.8, and one shared copy on a newer patch is safer than two copies of React.
+- This workspace now has `lint` and `typecheck` scripts, so `turbo run lint` / `typecheck` cover it. It still has no `build` — a native build goes through EAS, not Turbo.

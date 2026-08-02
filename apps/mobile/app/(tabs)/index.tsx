@@ -1,31 +1,181 @@
-import { StyleSheet } from 'react-native';
+import { FlashList } from "@shopify/flash-list";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "expo-router";
+import type { JSX } from "react";
+import { memo, useCallback, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import {
+  Badge,
+  Body,
+  Caption,
+  Card,
+  CoverImage,
+  EmptyState,
+  Heading,
+  Screen,
+  SkeletonBlock,
+  Title
+} from "@/src/components/ui";
+import { listCategories, listCourses, type CategoryNode, type CourseSummary } from "@/src/lib/api";
+import { queryKeys } from "@/src/lib/query";
+import { colors, radius, spacing } from "@/src/theme/tokens";
 
-export default function TabOneScreen() {
+function flatten(categories: readonly CategoryNode[]): readonly CategoryNode[] {
+  return categories.flatMap((category) => [category, ...flatten(category.children)]);
+}
+
+function formatPrice(price: string): string {
+  return Number(price) <= 0 ? "Free" : `BDT ${Number(price).toLocaleString()}`;
+}
+
+/**
+ * Memoised with a stable key: FlashList recycles rows, and an unmemoised item
+ * re-renders the whole visible window on every keystroke in the search field.
+ */
+const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary }): JSX.Element {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <Link asChild href={{ params: { courseId: course.id }, pathname: "/courses/[courseId]" }}>
+      <Pressable style={styles.row}>
+        <Card>
+          <CoverImage uri={course.coverImageUrl} />
+          <View style={styles.rowBody}>
+            <Title>{course.title}</Title>
+            <Body muted numberOfLines={2}>
+              {course.description}
+            </Body>
+            <View style={styles.rowMeta}>
+              <Badge>{formatPrice(course.price)}</Badge>
+              {course.isExamOnly ? <Badge tone="warning">Exam only</Badge> : null}
+              {course.category ? <Caption>{course.category.name}</Caption> : null}
+            </View>
+          </View>
+        </Card>
+      </Pressable>
+    </Link>
+  );
+});
+
+function CatalogSkeleton(): JSX.Element {
+  return (
+    <View style={styles.skeletonList}>
+      {[0, 1, 2].map((key) => (
+        <Card key={key}>
+          <SkeletonBlock height={180} />
+          <View style={styles.rowBody}>
+            <SkeletonBlock height={20} width="70%" />
+            <SkeletonBlock height={14} />
+            <SkeletonBlock height={14} width="80%" />
+          </View>
+        </Card>
+      ))}
     </View>
   );
 }
 
+export default function CatalogScreen(): JSX.Element {
+  const [search, setSearch] = useState("");
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+
+  const { data: categories = [] } = useQuery({
+    queryFn: listCategories,
+    queryKey: queryKeys.categories()
+  });
+  const filters = { categoryId, search };
+  const { data, isPending } = useQuery({
+    queryFn: async () =>
+      listCourses({
+        categoryId: categoryId ?? undefined,
+        search: search.trim() === "" ? undefined : search.trim()
+      }),
+    queryKey: queryKeys.courses(filters)
+  });
+
+  const renderItem = useCallback(
+    ({ item }: { item: CourseSummary }) => <CourseRow course={item} />,
+    []
+  );
+  const keyExtractor = useCallback((item: CourseSummary) => item.id, []);
+  const flatCategories = flatten(categories);
+
+  return (
+    <Screen>
+      <View style={styles.header}>
+        <Heading>Catalog</Heading>
+        <TextInput
+          accessibilityLabel="Search courses"
+          onChangeText={setSearch}
+          placeholder="Search courses"
+          placeholderTextColor={colors.outline}
+          style={styles.search}
+          value={search}
+        />
+        <ScrollView
+          contentContainerStyle={styles.filters}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          <Pressable
+            onPress={() => setCategoryId(null)}
+            style={[styles.chip, categoryId === null ? styles.chipActive : null]}
+          >
+            <Caption>All</Caption>
+          </Pressable>
+          {flatCategories.map((category) => (
+            <Pressable
+              key={category.id}
+              onPress={() => setCategoryId(category.id)}
+              style={[styles.chip, categoryId === category.id ? styles.chipActive : null]}
+            >
+              <Caption>{category.name}</Caption>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
+      {isPending ? (
+        <CatalogSkeleton />
+      ) : (data?.items.length ?? 0) === 0 ? (
+        <EmptyState
+          message="Try a different search, or clear the category filter."
+          title="No courses match"
+        />
+      ) : (
+        <FlashList
+          contentContainerStyle={styles.list}
+          data={data?.items ?? []}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+        />
+      )}
+    </Screen>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  chip: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderColor: colors.outlineVariant,
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  chipActive: { backgroundColor: colors.secondaryContainer, borderColor: colors.primary },
+  filters: { gap: spacing.sm, paddingRight: spacing.lg },
+  header: { gap: spacing.md, padding: spacing.lg },
+  list: { padding: spacing.lg },
+  row: { marginBottom: spacing.lg },
+  rowBody: { gap: spacing.sm, paddingTop: spacing.md },
+  rowMeta: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  search: {
+    backgroundColor: colors.surfaceContainerLow,
+    borderColor: colors.outlineVariant,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    color: colors.onSurface,
+    minHeight: 48,
+    paddingHorizontal: spacing.lg
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  skeletonList: { gap: spacing.lg, padding: spacing.lg }
 });

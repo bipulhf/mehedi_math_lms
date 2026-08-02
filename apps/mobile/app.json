@@ -1,17 +1,12 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Mehedi's Math Academy",
+    "slug": "mehedis-math-academy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    "scheme": "mma",
+    "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
@@ -32,8 +27,18 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-splash-screen",
-      "expo-web-browser"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#faf8ff",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-web-browser",
+      "expo-secure-store",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true
