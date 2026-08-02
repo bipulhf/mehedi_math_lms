@@ -22,6 +22,9 @@ export interface SeoHeadInput {
 
 const MAX_DESC = 160;
 const MAX_DOC_TITLE = 60;
+const OG_IMAGE_ENDPOINT = "/api/v1/og-image/";
+const OG_IMAGE_HEIGHT = "630";
+const OG_IMAGE_WIDTH = "1200";
 const SITE = siteConfig.name;
 
 function stripTrailingSlash(url: string): string {
@@ -94,6 +97,17 @@ export function seo(input: SeoHeadInput): {
     { content: description, name: "twitter:description" },
     { content: ogImage, name: "twitter:image" }
   ];
+
+  // The rendered endpoint always returns a 1200×630 PNG. A course cover or
+  // avatar passed through `ogImageUrl` has unknown dimensions, so declare
+  // nothing for it rather than declare something false.
+  if (ogImage.includes(OG_IMAGE_ENDPOINT)) {
+    meta.push(
+      { content: "image/png", property: "og:image:type" },
+      { content: OG_IMAGE_WIDTH, property: "og:image:width" },
+      { content: OG_IMAGE_HEIGHT, property: "og:image:height" }
+    );
+  }
 
   if (input.jsonLd === undefined || input.jsonLd.length === 0) {
     return {

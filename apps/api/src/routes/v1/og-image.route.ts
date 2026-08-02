@@ -7,24 +7,22 @@ import { NotFoundError } from "@/utils/errors";
 
 export const ogImageRoutes = new Hono<AppBindings>();
 
-const svgHeaders = {
+const pngHeaders = {
   "Cache-Control": "public, max-age=86400",
-  "Content-Type": "image/svg+xml; charset=utf-8"
+  "Content-Type": "image/png"
 } as const;
 
 ogImageRoutes.get("/default", (context) => {
-  const svg = ogImageService.defaultSvg();
-
-  return context.text(svg, 200, svgHeaders);
+  return context.body(ogImageService.defaultPng(), 200, pngHeaders);
 });
 
 ogImageRoutes.get("/course/:slug", async (context) => {
   const params = slugParamsSchema.parse({ slug: context.req.param("slug") });
 
   try {
-    const svg = await ogImageService.courseOgSvg(params.slug);
+    const png = await ogImageService.courseOgPng(params.slug);
 
-    return context.text(svg, 200, svgHeaders);
+    return context.body(png, 200, pngHeaders);
   } catch (error) {
     if (error instanceof NotFoundError) {
       return context.notFound();
@@ -38,9 +36,9 @@ ogImageRoutes.get("/teacher/:slug", async (context) => {
   const params = slugParamsSchema.parse({ slug: context.req.param("slug") });
 
   try {
-    const svg = await ogImageService.teacherOgSvg(params.slug);
+    const png = await ogImageService.teacherOgPng(params.slug);
 
-    return context.text(svg, 200, svgHeaders);
+    return context.body(png, 200, pngHeaders);
   } catch (error) {
     if (error instanceof NotFoundError) {
       return context.notFound();

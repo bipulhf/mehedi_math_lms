@@ -114,6 +114,28 @@ describe("removed endpoints stay removed", () => {
   });
 });
 
+describe("open graph images", () => {
+  test("the default card is a PNG, not an SVG", async () => {
+    // Facebook, X, LinkedIn, WhatsApp, Slack and iMessage all reject
+    // image/svg+xml for og:image. The content type is the whole fix.
+    const response = await app.request("/api/v1/og-image/default");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toContain("image/png");
+  });
+
+  test("the default card is a real 1200x630 raster", async () => {
+    const response = await app.request("/api/v1/og-image/default");
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const view = new DataView(bytes.buffer);
+
+    // PNG signature, then IHDR width/height as big-endian uint32s.
+    expect(Array.from(bytes.slice(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+    expect(view.getUint32(16)).toBe(1200);
+    expect(view.getUint32(20)).toBe(630);
+  });
+});
+
 describe("CORS", () => {
   test("a preflight is answered with the configured methods", async () => {
     const response = await app.request("/api/v1/courses", {
