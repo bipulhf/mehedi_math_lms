@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Search, BookOpen, ArrowRight } from "lucide-react";
 import { CourseCard, CourseGridSkeleton } from "@/components/courses/course-card";
 import { FadeIn } from "@/components/common/fade-in";
@@ -11,6 +12,7 @@ import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses } from "@/lib/api/courses";
+import { queryKeys } from "@/lib/query/keys";
 import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { ssrApiGetCourses } from "@/lib/ssr-api";
 import { LandingLayout } from "@/features/landing/components/landing-layout";
@@ -48,36 +50,25 @@ function flattenCategories(categories: readonly CategoryNode[]): readonly Catego
 }
 
 function CoursesCatalogPage(): JSX.Element {
-  const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
-  const [courses, setCourses] = useState<readonly CourseSummary[]>([]);
   const [categoryId, setCategoryId] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
   const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      const categoryData = await listCategories();
-      setCategories(categoryData);
-    })();
-  }, []);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-      try {
-        const response = await listCourses({
-          categoryId: categoryId === "all" ? undefined : categoryId,
-          limit: 24,
-          page: 1,
-          search: search || undefined
-        });
-        setCourses(response.data);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [categoryId, search]);
+  const { data: categories = [] } = useQuery<readonly CategoryNode[]>({
+    queryFn: async () => listCategories(),
+    queryKey: queryKeys.categories.list()
+  });
+  const catalogueFilters = { categoryId, limit: 24, page: 1, search };
+  const { data: coursePage, isPending: isLoading } = useQuery({
+    queryFn: async () =>
+      listCourses({
+        categoryId: categoryId === "all" ? undefined : categoryId,
+        limit: 24,
+        page: 1,
+        search: search || undefined
+      }),
+    queryKey: queryKeys.courses.list(catalogueFilters)
+  });
+  const courses: readonly CourseSummary[] = coursePage?.data ?? [];
 
   const flatCategories = useMemo(() => flattenCategories(categories), [categories]);
 

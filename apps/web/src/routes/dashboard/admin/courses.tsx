@@ -1,7 +1,8 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Layers3, CheckCircle2, XCircle, MessageSquareText, ShieldAlert, GraduationCap } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
@@ -13,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { approveCourse, listCourses, rejectCourse } from "@/lib/api/courses";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/courses")({
   component: AdminCoursesPage,
@@ -20,29 +22,19 @@ export const Route = createFileRoute("/dashboard/admin/courses")({
 } as never);
 
 function AdminCoursesPage(): JSX.Element {
-  const [courses, setCourses] = useState<readonly CourseSummary[]>([]);
+  const queryClient = useQueryClient();
   const [feedbackByCourseId, setFeedbackByCourseId] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const pendingFilters = { limit: 12, page: 1, status: "PENDING" } as const;
+  const { data, isPending: isLoading } = useQuery({
+    queryFn: async () => listCourses({ ...pendingFilters }),
+    queryKey: queryKeys.admin.courses(pendingFilters)
+  });
+  const courses: readonly CourseSummary[] = data?.data ?? [];
 
   const loadCourses = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const response = await listCourses({
-        limit: 12,
-        page: 1,
-        status: "PENDING"
-      });
-      setCourses(response.data);
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.admin.courses(pendingFilters) });
   };
-
-  useEffect(() => {
-    void loadCourses();
-  }, []);
 
   const handleApprove = async (courseId: string): Promise<void> => {
     setActioningId(courseId);

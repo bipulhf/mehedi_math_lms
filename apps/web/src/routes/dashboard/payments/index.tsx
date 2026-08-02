@@ -1,6 +1,7 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { RouteErrorView } from "@/components/common/route-error";
@@ -12,6 +13,7 @@ import { Select } from "@/components/ui/select";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { PaymentHistoryItem, PaymentStatus } from "@/lib/api/payments";
 import { listAccountingPayments, listMyPayments, refundPayment } from "@/lib/api/payments";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/payments/")({
   component: PaymentsPage,
@@ -32,48 +34,45 @@ function paymentTone(status: PaymentStatus): "amber" | "green" | "red" {
 
 function PaymentsPage(): JSX.Element {
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [items, setItems] = useState<readonly PaymentHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "">("");
-  const [stats, setStats] = useState<{
-    pendingPayments: number;
-    refundedRevenue: number;
-    successfulPayments: number;
-    totalRevenue: number;
-  } | null>(null);
 
   const role = session?.session.role;
   const canManagePayments = role === "ACCOUNTANT" || role === "ADMIN";
-
-  const loadPayments = async (): Promise<void> => {
-    if (isSessionPending || !role) {
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
+  const paymentFilters = { role: canManagePayments ? "staff" : "student", statusFilter };
+  // One query, two shapes: staff get the accounting view with aggregates, a
+  // student gets their own history and no stats at all.
+  const { data, isPending: isLoading } = useQuery({
+    enabled: !isSessionPending && Boolean(role),
+    queryFn: async (): Promise<{
+      items: readonly PaymentHistoryItem[];
+      stats: {
+        pendingPayments: number;
+        refundedRevenue: number;
+        successfulPayments: number;
+        totalRevenue: number;
+      } | null;
+    }> => {
       if (canManagePayments) {
         const response = await listAccountingPayments({
           limit: 50,
           page: 1,
           status: statusFilter || undefined
         });
-        setItems(response.items);
-        setStats(response.stats);
-      } else {
-        const response = await listMyPayments();
-        setItems(response);
-        setStats(null);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    void loadPayments();
-  }, [canManagePayments, isSessionPending, role, statusFilter]);
+        return { items: response.items, stats: response.stats };
+      }
+
+      return { items: await listMyPayments(), stats: null };
+    },
+    queryKey: queryKeys.payments.list(paymentFilters)
+  });
+  const items: readonly PaymentHistoryItem[] = data?.items ?? [];
+  const stats = data?.stats ?? null;
+
+  const loadPayments = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all() });
+  };
 
   const handleRefund = async (paymentId: string): Promise<void> => {
     if (!window.confirm("Refund this payment?")) {

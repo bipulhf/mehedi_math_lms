@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import type { AdminUserDetail } from "@/lib/api/admin";
 import { getAdminUser, updateAdminUser } from "@/lib/api/admin";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/users/$id")({
   component: AdminUserDetailPage,
@@ -21,30 +23,30 @@ export const Route = createFileRoute("/dashboard/admin/users/$id")({
 
 function AdminUserDetailPage(): JSX.Element {
   const { id } = Route.useParams();
+  const { data: fetchedUser, isPending: isLoading } = useQuery<AdminUserDetail>({
+    queryFn: async () => getAdminUser(id),
+    queryKey: queryKeys.admin.user(id)
+  });
   const [user, setUser] = useState<AdminUserDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"STUDENT" | "TEACHER" | "ACCOUNTANT">("STUDENT");
 
+  // The form is editable, so the fetched record seeds it rather than driving it.
   useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
+    if (!fetchedUser) {
+      return;
+    }
 
-      try {
-        const nextUser = await getAdminUser(id);
-        setUser(nextUser);
-        setName(nextUser.name);
-        setEmail(nextUser.email);
-        if (nextUser.role !== "ADMIN") {
-          setRole(nextUser.role);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [id]);
+    setUser(fetchedUser);
+    setName(fetchedUser.name);
+    setEmail(fetchedUser.email);
+
+    if (fetchedUser.role !== "ADMIN") {
+      setRole(fetchedUser.role);
+    }
+  }, [fetchedUser]);
 
   const handleSave = async (): Promise<void> => {
     setIsSaving(true);

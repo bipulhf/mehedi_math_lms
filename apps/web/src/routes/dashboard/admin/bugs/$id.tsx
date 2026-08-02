@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { getAdminBug, updateAdminBug } from "@/lib/api/admin";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
   component: AdminBugDetailPage,
@@ -21,28 +23,27 @@ export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
 
 function AdminBugDetailPage(): JSX.Element {
   const { id } = Route.useParams();
+  const { data: fetchedBug, isPending: isLoading } = useQuery<AdminBugRecord>({
+    queryFn: async () => getAdminBug(id),
+    queryKey: queryKeys.admin.bug(id)
+  });
   const [bug, setBug] = useState<AdminBugRecord | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<AdminBugRecord["status"]>("OPEN");
   const [priority, setPriority] = useState<AdminBugRecord["priority"]>("MEDIUM");
   const [adminNotes, setAdminNotes] = useState("");
 
+  // The triage controls are editable, so the fetched record seeds them once.
   useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
+    if (!fetchedBug) {
+      return;
+    }
 
-      try {
-        const nextBug = await getAdminBug(id);
-        setBug(nextBug);
-        setStatus(nextBug.status);
-        setPriority(nextBug.priority);
-        setAdminNotes(nextBug.adminNotes ?? "");
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [id]);
+    setBug(fetchedBug);
+    setStatus(fetchedBug.status);
+    setPriority(fetchedBug.priority);
+    setAdminNotes(fetchedBug.adminNotes ?? "");
+  }, [fetchedBug]);
 
   const handleSave = async (): Promise<void> => {
     setIsSaving(true);

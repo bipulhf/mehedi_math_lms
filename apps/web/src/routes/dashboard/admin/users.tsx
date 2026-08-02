@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Search,
@@ -14,7 +15,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { createAdminUserSchema } from "@mma/shared";
 
@@ -34,6 +35,7 @@ import {
   updateAdminUserStatus
 } from "@/lib/api/admin";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/users")({
   component: AdminUsersPage,
@@ -49,13 +51,11 @@ function roleTone(role: AdminUserListItem["role"]): "blue" | "gray" | "green" | 
 
 function AdminUsersPage(): JSX.Element {
   const { session } = useAuthSession();
-  const [users, setUsers] = useState<readonly AdminUserListItem[]>([]);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
 
@@ -70,26 +70,24 @@ function AdminUsersPage(): JSX.Element {
     reset
   } = form;
 
-  const loadUsers = async (): Promise<void> => {
-    setIsLoading(true);
-    try {
-      const response = await listAdminUsers({
+  const userFilters = { limit: 10, page, role, search, status };
+  const { data: userPage, isPending: isLoading } = useQuery({
+    queryFn: async () =>
+      listAdminUsers({
         limit: 10,
         page,
         role: role ? (role as AdminUserListItem["role"]) : undefined,
         search,
         status
-      });
-      setUsers(response.data);
-      setTotalPages(response.pagination.pages);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      }),
+    queryKey: queryKeys.admin.users(userFilters)
+  });
+  const users: readonly AdminUserListItem[] = userPage?.data ?? [];
+  const totalPages = userPage?.pagination.pages ?? 1;
 
-  useEffect(() => {
-    void loadUsers();
-  }, [page, role, search, status]);
+  const loadUsers = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.admin.users(userFilters) });
+  };
 
   const onCreate = handleSubmit(async (values) => {
     setIsSubmitting(true);

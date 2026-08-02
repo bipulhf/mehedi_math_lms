@@ -11,8 +11,9 @@ import {
   Target
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -22,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { TeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { getTeacherAnalyticsOverview } from "@/lib/api/analytics";
+import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import {
   Bar,
@@ -60,24 +62,11 @@ function AnalyticsSkeleton(): JSX.Element {
 function TeacherAnalyticsPage(): JSX.Element {
   const router = useRouter();
   const { isPending, session } = useAuthSession();
-  const [data, setData] = useState<TeacherAnalyticsOverview | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (isPending || session?.session.role !== "TEACHER") {
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-      try {
-        const overview = await getTeacherAnalyticsOverview();
-        setData(overview);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [isPending, session?.session.role]);
+  const { data = null, isPending: isLoading } = useQuery<TeacherAnalyticsOverview>({
+    enabled: !isPending && session?.session.role === "TEACHER",
+    queryFn: async () => getTeacherAnalyticsOverview(),
+    queryKey: queryKeys.analytics.teacher()
+  });
 
   useEffect(() => {
     if (isPending || !session) return;

@@ -1,4 +1,5 @@
 import { adminSendSmsSchema, userRoleValues, type UserRole } from "@mma/shared";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import mmaLogo from "@/assets/mma-logo.svg";
 import { Badge } from "@/components/ui/badge";
@@ -25,14 +27,12 @@ export const Route = createFileRoute("/dashboard/admin/sms")({
 function AdminSmsPage() {
   const router = useRouter();
   const { isPending, session } = useAuthSession();
-  const [providerOk, setProviderOk] = useState<boolean | null>(null);
+  const queryClient = useQueryClient();
   const [message, setMessage] = useState("");
   const [targetMode, setTargetMode] = useState<"all_students" | "role" | "course">("all_students");
   const [targetRole, setTargetRole] = useState<UserRole>("STUDENT");
   const [courseId, setCourseId] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [history, setHistory] = useState<readonly AdminSmsBatchRow[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
     if (isPending) {
@@ -48,34 +48,20 @@ function AdminSmsPage() {
     }
   }, [isPending, router, session]);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const status = await getAdminSmsStatus();
-        setProviderOk(status.configured);
-      } catch {
-        setProviderOk(false);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (isPending || session?.session.role !== "ADMIN") {
-      return;
-    }
-
-    void (async () => {
-      setHistoryLoading(true);
-      try {
-        const page = await listAdminSmsHistory({ limit: 20, page: 1 });
-        setHistory(page.data);
-      } catch {
-        toast.error("Could not load SMS history");
-      } finally {
-        setHistoryLoading(false);
-      }
-    })();
-  }, [isPending, session?.session.role]);
+  const isAdmin = !isPending && session?.session.role === "ADMIN";
+  const { data: providerStatus } = useQuery({
+    queryFn: async () => getAdminSmsStatus(),
+    queryKey: ["admin", "sms", "status"]
+  });
+  // Undefined until the probe answers; null is "we asked and it failed".
+  const providerOk = providerStatus === undefined ? null : providerStatus.configured;
+  const historyFilters = { limit: 20, page: 1 };
+  const { data: historyPage, isPending: historyLoading } = useQuery({
+    enabled: isAdmin,
+    queryFn: async () => listAdminSmsHistory(historyFilters),
+    queryKey: queryKeys.admin.smsHistory(historyFilters)
+  });
+  const history: readonly AdminSmsBatchRow[] = historyPage?.data ?? [];
 
   async function handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
@@ -105,8 +91,7 @@ function AdminSmsPage() {
         `Batch queued (${result.batchId.slice(0, 8)}…). Run the SMS worker to deliver.`
       );
       setMessage("");
-      const page = await listAdminSmsHistory({ limit: 20, page: 1 });
-      setHistory(page.data);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.smsHistory(historyFilters) });
     } catch {
       toast.error("Failed to queue SMS");
     } finally {

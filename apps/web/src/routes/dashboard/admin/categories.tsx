@@ -1,7 +1,8 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Layers3 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import { createCategorySchema } from "@mma/shared";
@@ -26,6 +27,7 @@ import {
   updateCategory
 } from "@/lib/api/categories";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/categories")({
   component: AdminCategoriesPage,
@@ -114,9 +116,12 @@ function serializeCategoryTree(
 }
 
 function AdminCategoriesPage(): JSX.Element {
-  const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
+  const queryClient = useQueryClient();
+  const { data: categories = [], isPending: isLoading } = useQuery({
+    queryFn: async () => listCategories({ includeInactive: true }),
+    queryKey: queryKeys.categories.list({ includeInactive: true })
+  });
   const formRef = useRef<HTMLFormElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryNode | null>(null);
@@ -163,19 +168,8 @@ function AdminCategoriesPage(): JSX.Element {
   }, [categories, editingCategory]);
 
   const loadCategories = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const nextCategories = await listCategories({ includeInactive: true });
-      setCategories(nextCategories);
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.categories.all() });
   };
-
-  useEffect(() => {
-    void loadCategories();
-  }, []);
 
   const syncEditingForm = (category: CategoryNode | null): void => {
     setEditingCategory(category);
@@ -246,7 +240,8 @@ function AdminCategoriesPage(): JSX.Element {
     });
 
     setDraggedCategoryId(null);
-    setCategories(nextTree);
+    // Optimistic: the tree redraws in the dragged position before the round trip.
+    queryClient.setQueryData(queryKeys.categories.list({ includeInactive: true }), nextTree);
     await reorderCategories({
       items: serializeCategoryTree(nextTree, null)
     });

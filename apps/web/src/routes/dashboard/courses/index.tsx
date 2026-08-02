@@ -1,7 +1,8 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Plus, Filter, LayoutGrid, Archive, Send, BookOpen } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CourseCard } from "@/components/courses/course-card";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -11,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses, submitCourse, withdrawCourse } from "@/lib/api/courses";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/courses/")({
   component: DashboardCoursesPage,
@@ -42,29 +44,24 @@ function CourseListSkeleton(): JSX.Element {
 }
 
 function DashboardCoursesPage(): JSX.Element {
-  const [courses, setCourses] = useState<readonly CourseSummary[]>([]);
+  const queryClient = useQueryClient();
   const [status, setStatus] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadCourses = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const response = await listCourses({
+  const mineFilters = { limit: 12, page: 1, status };
+  const { data, isPending: isLoading } = useQuery({
+    queryFn: async () =>
+      listCourses({
         limit: 12,
         mine: true,
         page: 1,
         status: status ? (status as CourseSummary["status"]) : undefined
-      });
-      setCourses(response.data);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      }),
+    queryKey: queryKeys.courses.mine(mineFilters)
+  });
+  const courses: readonly CourseSummary[] = data?.data ?? [];
 
-  useEffect(() => {
-    void loadCourses();
-  }, [status]);
+  const loadCourses = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.courses.all() });
+  };
 
   const handleSubmit = async (courseId: string): Promise<void> => {
     await submitCourse(courseId);

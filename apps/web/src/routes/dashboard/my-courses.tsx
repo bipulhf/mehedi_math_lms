@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import { certificateDisplayName } from "@/components/certificates/certificate-display-name";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -10,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { fetchEnrollmentReceiptPdf, listMyEnrollments } from "@/lib/api/enrollments";
+import { queryKeys } from "@/lib/query/keys";
 
 const CertificatePreviewDialog = lazy(async () => {
   const mod = await import("@/components/certificates/certificate-preview-dialog");
@@ -42,8 +44,14 @@ function paymentTone(
 
 function MyCoursesPage(): JSX.Element {
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [enrollments, setEnrollments] = useState<readonly StudentEnrollment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const isStudent = !isSessionPending && session?.session.role === "STUDENT";
+  const { data: enrollments = [], isPending } = useQuery<readonly StudentEnrollment[]>({
+    enabled: isStudent,
+    queryFn: async () => listMyEnrollments(),
+    queryKey: queryKeys.enrollments.mine()
+  });
+  // A disabled query stays pending forever; a non-student is done loading.
+  const isLoading = isStudent && isPending;
   const [certificatePreview, setCertificatePreview] = useState<{
     courseTitle: string;
     enrollmentId: string;
@@ -61,23 +69,6 @@ function MyCoursesPage(): JSX.Element {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    if (isSessionPending || session?.session.role !== "STUDENT") {
-      setIsLoading(false);
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const items = await listMyEnrollments();
-        setEnrollments(items);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [isSessionPending, session]);
 
   if (isLoading) {
     return (

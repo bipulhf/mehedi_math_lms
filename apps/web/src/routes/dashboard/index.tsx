@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import {
@@ -9,8 +10,6 @@ import {
   type LucideIcon
 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { FadeIn } from "@/components/common/fade-in";
@@ -20,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminDashboardStats } from "@/lib/api/admin";
 import { getAdminDashboardStats } from "@/lib/api/admin";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHomePage,
@@ -91,27 +91,11 @@ function DashboardMetric({
 
 function DashboardHomePage(): JSX.Element {
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-
-  useEffect(() => {
-    if (isSessionPending || session?.session.role !== "ADMIN") {
-      return;
-    }
-
-    void (async () => {
-      setIsLoadingStats(true);
-
-      try {
-        const nextStats = await getAdminDashboardStats();
-        setStats(nextStats);
-      } catch {
-        toast.error("Couldn't load dashboard stats. Please retry.");
-      } finally {
-        setIsLoadingStats(false);
-      }
-    })();
-  }, [isSessionPending, session]);
+  const { data: stats = null, isFetching: isLoadingStats } = useQuery<AdminDashboardStats>({
+    enabled: !isSessionPending && session?.session.role === "ADMIN",
+    queryFn: async () => getAdminDashboardStats(),
+    queryKey: queryKeys.admin.dashboard()
+  });
 
   if (session?.session.role === "ADMIN") {
     const metrics = [

@@ -1,7 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Layers3 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
+import { queryKeys } from "@/lib/query/keys";
 import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { ssrApiGet } from "@/lib/ssr-api";
 
@@ -100,21 +101,10 @@ function PublicCategoryTree({
 }
 
 function CategoriesPage(): JSX.Element {
-  const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextCategories = await listCategories();
-        setCategories(nextCategories);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
+  const { data: categories = [], isPending: isLoading } = useQuery<readonly CategoryNode[]>({
+    queryFn: async () => listCategories(),
+    queryKey: queryKeys.categories.list()
+  });
 
   return (
     <PublicLayout

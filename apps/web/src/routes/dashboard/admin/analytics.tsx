@@ -1,12 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
+import { queryKeys } from "@/lib/query/keys";
 import { TrendingUp, DollarSign, Target, PieChart, Activity } from "lucide-react";
 import {
   Bar,
@@ -30,25 +32,12 @@ const chartStroke = "#6061ee";
 function AdminAnalyticsPage(): JSX.Element {
   const router = useRouter();
   const { isPending, session } = useAuthSession();
-  const [data, setData] = useState<AdminAnalyticsOverview | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (isPending || session?.session.role !== "ADMIN") {
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const overview = await getAdminAnalyticsOverview();
-        setData(overview);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [isPending, session?.session.role]);
+  const isAdmin = !isPending && session?.session.role === "ADMIN";
+  const { data = null, isPending: isLoading } = useQuery<AdminAnalyticsOverview>({
+    enabled: isAdmin,
+    queryFn: async () => getAdminAnalyticsOverview(),
+    queryKey: queryKeys.analytics.admin()
+  });
 
   useEffect(() => {
     if (isPending || !session) {

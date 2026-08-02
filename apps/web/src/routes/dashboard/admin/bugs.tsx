@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { listAdminBugs } from "@/lib/api/admin";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/admin/bugs")({
   component: AdminBugsPage,
@@ -45,32 +47,21 @@ function priorityTone(priority: AdminBugRecord["priority"]): "amber" | "blue" | 
 }
 
 function AdminBugsPage(): JSX.Element {
-  const [bugs, setBugs] = useState<readonly AdminBugRecord[]>([]);
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await listAdminBugs({
-          limit: 10,
-          page,
-          priority: priority ? (priority as AdminBugRecord["priority"]) : undefined,
-          status: status ? (status as AdminBugRecord["status"]) : undefined
-        });
-
-        setBugs(response.data);
-        setTotalPages(response.pagination.pages);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [page, priority, status]);
+  const { data, isPending: isLoading } = useQuery({
+    queryFn: async () =>
+      listAdminBugs({
+        limit: 10,
+        page,
+        priority: priority ? (priority as AdminBugRecord["priority"]) : undefined,
+        status: status ? (status as AdminBugRecord["status"]) : undefined
+      }),
+    queryKey: queryKeys.admin.bugs({ limit: 10, page, priority, status })
+  });
+  const bugs = data?.data ?? [];
+  const totalPages = data?.pagination.pages ?? 1;
 
   if (isLoading) {
     return (

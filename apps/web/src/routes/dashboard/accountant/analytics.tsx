@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { getAccountantAnalyticsOverview } from "@/lib/api/analytics";
+import { queryKeys } from "@/lib/query/keys";
 import {
   Bar,
   BarChart,
@@ -28,27 +30,12 @@ const chartStroke = "#6061ee";
 function AccountantAnalyticsPage(): JSX.Element {
   const router = useRouter();
   const { isPending, session } = useAuthSession();
-  const [data, setData] = useState<AccountantAnalyticsOverview | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
   const allowed = session?.session.role === "ACCOUNTANT" || session?.session.role === "ADMIN";
-
-  useEffect(() => {
-    if (isPending || !allowed) {
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const overview = await getAccountantAnalyticsOverview();
-        setData(overview);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [allowed, isPending, session?.session.role]);
+  const { data = null, isPending: isLoading } = useQuery<AccountantAnalyticsOverview>({
+    enabled: !isPending && allowed,
+    queryFn: async () => getAccountantAnalyticsOverview(),
+    queryKey: queryKeys.analytics.accountant()
+  });
 
   useEffect(() => {
     if (isPending || !session) {

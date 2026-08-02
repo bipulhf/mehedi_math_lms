@@ -12,11 +12,14 @@ import {
   UserRound,
   Users
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { JSX, PropsWithChildren } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { listMessageConversations, MESSAGES_UNREAD_EVENT } from "@/lib/api/messages";
+import { listMessageConversations } from "@/lib/api/messages";
+import { queryKeys } from "@/lib/query/keys";
+import { useUiStore } from "@/stores/ui-store";
 import type { UserRole } from "@mma/shared";
 
 interface DashboardLayoutProps extends PropsWithChildren {
@@ -65,34 +68,32 @@ const dashboardNavigation = {
 } as const;
 
 export function DashboardLayout({ children, isLoading, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
-  const [messageUnreadCount, setMessageUnreadCount] = useState(0);
+  const canMessage = role === "STUDENT" || role === "TEACHER";
+  const messageUnreadCount = useUiStore((state) => state.messageUnreadCount);
+  const setMessageUnreadCount = useUiStore((state) => state.setMessageUnreadCount);
+  // The badge's opening value. The messages page owns it from then on, pushing
+  // socket-driven changes into the same store slice.
+  const { data: conversations } = useQuery({
+    enabled: canMessage,
+    queryFn: async () => listMessageConversations(),
+    queryKey: queryKeys.messages.conversations("")
+  });
 
   useEffect(() => {
-    if (role !== "STUDENT" && role !== "TEACHER") {
+    if (!canMessage) {
       setMessageUnreadCount(0);
+
       return;
     }
 
-    void (async () => {
-      const conversations = await listMessageConversations();
+    if (!conversations) {
+      return;
+    }
 
-      setMessageUnreadCount(
-        conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0)
-      );
-    })();
-
-    const handleUnreadEvent = (event: Event): void => {
-      const customEvent = event as CustomEvent<{ count: number }>;
-
-      setMessageUnreadCount(customEvent.detail.count);
-    };
-
-    window.addEventListener(MESSAGES_UNREAD_EVENT, handleUnreadEvent);
-
-    return () => {
-      window.removeEventListener(MESSAGES_UNREAD_EVENT, handleUnreadEvent);
-    };
-  }, [role]);
+    setMessageUnreadCount(
+      conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0)
+    );
+  }, [canMessage, conversations, setMessageUnreadCount]);
 
   const navItems = useMemo(() => {
     if (role !== "STUDENT" && role !== "TEACHER") {

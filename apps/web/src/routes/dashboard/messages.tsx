@@ -11,13 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ReportConversationDialog } from "@/components/messages/report-conversation-dialog";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { useUiStore } from "@/stores/ui-store";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import {
   createConversation,
   getConversationMessages,
   listMessageConversations,
   markConversationRead,
-  MESSAGES_UNREAD_EVENT,
   searchMessageParticipants,
   sendConversationMessage,
   type MessageConversation,
@@ -67,18 +67,6 @@ export const Route = createFileRoute("/dashboard/messages")({
   component: DashboardMessagesPage,
   errorComponent: RouteErrorView
 } as never);
-
-function emitUnreadCount(count: number): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.dispatchEvent(
-    new CustomEvent(MESSAGES_UNREAD_EVENT, {
-      detail: { count }
-    })
-  );
-}
 
 function totalUnread(conversations: readonly MessageConversation[]): number {
   return conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0);
@@ -130,6 +118,8 @@ function DashboardMessagesPage(): JSX.Element {
   const [isSending, setIsSending] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [reportingConversationId, setReportingConversationId] = useState<string | null>(null);
+  // The sidebar badge reads this slice; it has no ancestor in common with this page.
+  const setMessageUnreadCount = useUiStore((state) => state.setMessageUnreadCount);
   const socketRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
@@ -192,7 +182,7 @@ function DashboardMessagesPage(): JSX.Element {
       const nextConversations = await listMessageConversations();
 
       setConversations(nextConversations);
-      emitUnreadCount(totalUnread(nextConversations));
+      setMessageUnreadCount(totalUnread(nextConversations));
       syncConversationSelection(nextConversations);
     } finally {
       setIsLoadingConversations(false);
@@ -236,7 +226,7 @@ function DashboardMessagesPage(): JSX.Element {
             : conversation
         );
 
-        emitUnreadCount(totalUnread(nextConversations));
+        setMessageUnreadCount(totalUnread(nextConversations));
         return nextConversations;
       });
 
@@ -438,7 +428,7 @@ function DashboardMessagesPage(): JSX.Element {
             return new Date(rightTime).getTime() - new Date(leftTime).getTime();
           });
 
-        emitUnreadCount(totalUnread(nextConversations));
+        setMessageUnreadCount(totalUnread(nextConversations));
         return nextConversations;
       });
 
@@ -520,7 +510,7 @@ function DashboardMessagesPage(): JSX.Element {
     setConversations((current) => {
       const next = [conversation, ...current.filter((item) => item.id !== conversation.id)];
 
-      emitUnreadCount(totalUnread(next));
+      setMessageUnreadCount(totalUnread(next));
       return next;
     });
     setSelectedConversationId(conversation.id);

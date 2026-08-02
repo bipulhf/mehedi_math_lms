@@ -10,8 +10,6 @@ import type { z } from "zod";
 
 import { apiGet, apiPost } from "@/lib/api/client";
 
-export const MESSAGES_UNREAD_EVENT = "mma:messages-unread";
-
 export interface MessageParticipant {
   id: string;
   image: string | null;

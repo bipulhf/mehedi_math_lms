@@ -1,6 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BugReportRecord } from "@/lib/api/bugs";
 import { listMyBugReports } from "@/lib/api/bugs";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/bugs/")({
   component: MyBugReportsPage,
@@ -31,21 +32,10 @@ function statusTone(status: BugReportRecord["status"]): "amber" | "blue" | "gray
 }
 
 function MyBugReportsPage(): JSX.Element {
-  const [bugs, setBugs] = useState<readonly BugReportRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextBugs = await listMyBugReports();
-        setBugs(nextBugs);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
+  const { data: bugs = [], isPending: isLoading } = useQuery<readonly BugReportRecord[]>({
+    queryFn: async () => listMyBugReports(),
+    queryKey: queryKeys.bugs.mine()
+  });
 
   if (isLoading) {
     return (
