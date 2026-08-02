@@ -1,5 +1,7 @@
 import {
   and,
+  conversationAccessLog,
+  conversationReports,
   conversations,
   count,
   db,
@@ -48,6 +50,7 @@ interface MessageRow {
   content: string;
   conversationId: string;
   createdAt: Date;
+  hiddenAt: Date | null;
   id: string;
   readAt: Date | null;
   sender: MessageUserRow;
@@ -63,10 +66,22 @@ export interface MessageParticipantRecord {
   role: UserRole;
 }
 
+export interface ConversationReportRecord {
+  conversationId: string;
+  createdAt: Date;
+  id: string;
+  reason: string;
+  reporterId: string;
+  resolvedAt: Date | null;
+  resolvedById: string | null;
+}
+
 export interface ConversationMessageRecord {
   content: string;
   conversationId: string;
   createdAt: Date;
+  /** Set when an admin removed this message from view after a report. */
+  hiddenAt: Date | null;
   id: string;
   readAt: Date | null;
   sender: MessageParticipantRecord;
@@ -124,6 +139,7 @@ function mapMessage(row: MessageRow): ConversationMessageRecord {
     content: row.content,
     conversationId: row.conversationId,
     createdAt: row.createdAt,
+    hiddenAt: row.hiddenAt,
     id: row.id,
     readAt: row.readAt,
     sender: mapMessageParticipant(row.sender),
@@ -252,6 +268,7 @@ export class MessageRepository {
             content: true,
             conversationId: true,
             createdAt: true,
+            hiddenAt: true,
             id: true,
             readAt: true,
             senderId: true
@@ -388,6 +405,7 @@ export class MessageRepository {
             content: true,
             conversationId: true,
             createdAt: true,
+            hiddenAt: true,
             id: true,
             readAt: true,
             senderId: true
@@ -501,6 +519,7 @@ export class MessageRepository {
             content: true,
             conversationId: true,
             createdAt: true,
+            hiddenAt: true,
             id: true,
             readAt: true,
             senderId: true
@@ -620,6 +639,7 @@ export class MessageRepository {
         content: true,
         conversationId: true,
         createdAt: true,
+        hiddenAt: true,
         id: true,
         readAt: true,
         senderId: true
@@ -659,12 +679,110 @@ export class MessageRepository {
     return rows.map((row) => mapMessage(row as MessageRow));
   }
 
+  /** Record a participant's report. Reporting is what unlocks admin access. */
+  public async createConversationReport(input: {
+    conversationId: string;
+    reason: string;
+    reporterId: string;
+  }): Promise<ConversationReportRecord> {
+    const [record] = await db
+      .insert(conversationReports)
+      .values({
+        conversationId: input.conversationId,
+        reason: input.reason,
+        reporterId: input.reporterId
+      })
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to create conversation report");
+    }
+
+    return record;
+  }
+
+  /**
+   * Whether an unresolved report exists. This is the entire basis of an admin's
+   * right to read a conversation — no open report, no access. ADR-0004.
+   */
+  public async hasOpenReport(conversationId: string): Promise<boolean> {
+    const [row] = await db
+      .select({ id: conversationReports.id })
+      .from(conversationReports)
+      .where(
+        and(
+          eq(conversationReports.conversationId, conversationId),
+          isNull(conversationReports.resolvedAt)
+        )
+      )
+      .limit(1);
+
+    return Boolean(row);
+  }
+
+  public async listOpenReports(): Promise<readonly ConversationReportRecord[]> {
+    return db
+      .select()
+      .from(conversationReports)
+      .where(isNull(conversationReports.resolvedAt))
+      .orderBy(desc(conversationReports.createdAt));
+  }
+
+  public async resolveReport(
+    reportId: string,
+    resolvedById: string
+  ): Promise<ConversationReportRecord | null> {
+    const [record] = await db
+      .update(conversationReports)
+      .set({
+        resolvedAt: new Date(),
+        resolvedById
+      })
+      .where(and(eq(conversationReports.id, reportId), isNull(conversationReports.resolvedAt)))
+      .returning();
+
+    return record ?? null;
+  }
+
+  /** Every admin read of a reported conversation, recorded. ADR-0004. */
+  public async recordAdminAccess(conversationId: string, adminId: string): Promise<void> {
+    await db.insert(conversationAccessLog).values({
+      adminId,
+      conversationId
+    });
+  }
+
+  /**
+   * Remove a message from view. The content column is deliberately untouched —
+   * hiding stops the harm; it does not destroy the record of it. ADR-0004.
+   */
+  public async hideMessage(
+    messageId: string,
+    hiddenById: string
+  ): Promise<ConversationMessageRecord | null> {
+    const [record] = await db
+      .update(messages)
+      .set({
+        hiddenAt: new Date(),
+        hiddenById
+      })
+      .where(and(eq(messages.id, messageId), isNull(messages.hiddenAt)))
+      .returning({ id: messages.id });
+
+    if (!record) {
+      return null;
+    }
+
+    return this.findMessageById(messageId);
+  }
+
   public async findMessageById(messageId: string): Promise<ConversationMessageRecord | null> {
     const row = await db.query.messages.findFirst({
       columns: {
         content: true,
         conversationId: true,
         createdAt: true,
+        hiddenAt: true,
         id: true,
         readAt: true,
         senderId: true

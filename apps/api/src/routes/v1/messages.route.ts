@@ -6,6 +6,7 @@ import {
   messageConversationIdParamsSchema,
   messageParticipantsQuerySchema,
   messagesConversationQuerySchema,
+  reportConversationSchema,
   sendMessageSchema
 } from "@mma/shared";
 
@@ -78,6 +79,23 @@ messagesRoutes.post("/conversations/:id", async (context) => {
   const authSession = context.get("authSession");
 
   return messageController.sendMessage(
+    context,
+    params.id,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+// Reporting is what unlocks admin access to an otherwise private conversation,
+// so it is a participant action and lives here. ADR-0004.
+messagesRoutes.post("/conversations/:id/report", async (context) => {
+  const params = messageConversationIdParamsSchema.parse(context.req.param());
+  const payload = reportConversationSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return messageController.reportConversation(
     context,
     params.id,
     payload,

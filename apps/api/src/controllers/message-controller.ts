@@ -41,6 +41,64 @@ export class MessageController {
     return success(context, data, 201, "Conversation ready");
   }
 
+  public async reportConversation(
+    context: Context<AppBindings>,
+    conversationId: string,
+    input: { reason: string },
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<Response> {
+    const data = await this.messageService.reportConversation(
+      conversationId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
+
+    return success(context, data, 201, "Conversation reported for review");
+  }
+
+  public async reviewReportedConversation(
+    context: Context<AppBindings>,
+    conversationId: string,
+    query: { cursor?: string | undefined; limit: number },
+    adminId: string
+  ): Promise<Response> {
+    const data = await this.messageService.reviewReportedConversation(
+      conversationId,
+      query,
+      adminId
+    );
+
+    return success(context, data);
+  }
+
+  public async hideMessage(
+    context: Context<AppBindings>,
+    messageId: string,
+    adminId: string
+  ): Promise<Response> {
+    const data = await this.messageService.hideMessage(messageId, adminId);
+
+    return success(context, data, 200, "Message hidden from participants");
+  }
+
+  public async listOpenReports(context: Context<AppBindings>): Promise<Response> {
+    const data = await this.messageService.listOpenReports();
+
+    return success(context, data);
+  }
+
+  public async resolveReport(
+    context: Context<AppBindings>,
+    reportId: string,
+    adminId: string
+  ): Promise<Response> {
+    const data = await this.messageService.resolveReport(reportId, adminId);
+
+    return success(context, data, 200, "Report resolved");
+  }
+
   public async getConversationMessages(
     context: Context<AppBindings>,
     conversationId: string,

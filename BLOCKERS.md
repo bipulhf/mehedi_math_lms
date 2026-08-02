@@ -149,6 +149,34 @@ Same class of break as Stage 4, and exactly what that note warned about. `apps/w
 deactivate toggle already sitting next to it is now the only way to disable an account, which is what
 ADR-0003 intends.
 
+### Stage 6 — admin moderation routes live under /admin, not /messages
+
+`messagesRoutes` applies `requireRole("STUDENT", "TEACHER")` to the whole router, so an admin cannot reach
+anything mounted there. The moderation endpoints are therefore under `/api/v1/admin/message-reports/*` and
+`/api/v1/admin/messages/:id/hide`, behind `requireAdmin()`. Only the report itself — a participant action —
+stays on `/api/v1/messages/conversations/:id/report`.
+
+### Stage 6 — the tombstone is applied in the view mapper, deliberately
+
+`mapMessageView` substitutes the placeholder, and everything funnels through it: the message list, the
+conversation list's `lastMessage` preview, and the WebSocket publish path. Doing it at the repository would
+have destroyed the original; doing it per-caller would have leaked the first time someone added a route.
+Admin review passes `revealHidden: true` to see the original, which is the entire reason for retaining it.
+
+### Stage 6 — no web UI was built for moderation
+
+The API is complete and tested, but `apps/web` has no report button, no admin report queue, and no hide
+control. Students cannot currently report from the product.
+
+Left as backend-only rather than guessing at a safeguarding UI unprompted. **This is the one item from
+these nine stages that leaves a feature genuinely unusable by its intended user**, so it needs a human
+decision about the interface before it is worth anything to a student.
+
+### Stage 6 — blocking is still not implemented
+
+Recorded in ADR-0004 as out of scope and worth revisiting. A student who reports a teacher remains in a
+channel with them until an admin acts.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member

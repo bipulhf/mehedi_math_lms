@@ -29,6 +29,13 @@
       "when": 1785672784638,
       "tag": "0003_backfill_course_owner_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785675168191,
+      "tag": "0004_tough_wolfsbane",
+      "breakpoints": true
     }
   ]
 }

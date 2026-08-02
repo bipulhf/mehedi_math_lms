@@ -8,7 +8,7 @@ import {
   type MessageParticipantRecord
 } from "@/repositories/message-repository";
 import type { MessageRealtimeService } from "@/services/message-realtime-service";
-import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface MessageParticipantView {
   id: string;
@@ -23,6 +23,8 @@ export interface ConversationMessageView {
   conversationId: string;
   createdAt: string;
   id: string;
+  /** True when an admin removed this message; content is a tombstone. */
+  isHidden: boolean;
   isOwn: boolean;
   readAt: string | null;
   sender: MessageParticipantView;
@@ -80,16 +82,29 @@ function mapParticipantView(
   };
 }
 
+const HIDDEN_MESSAGE_PLACEHOLDER = "This message was removed by an administrator.";
+
+/**
+ * A hidden message renders as a tombstone. The original text is retained in the
+ * database for the record, but it is replaced here so it can never reach a
+ * participant again — including over the WebSocket, which maps through this
+ * same function. Admins reviewing a reported conversation see the original.
+ * ADR-0004.
+ */
 function mapMessageView(
   message: ConversationMessageRecord,
   currentUserId: string,
-  onlineUserIds: ReadonlySet<string>
+  onlineUserIds: ReadonlySet<string>,
+  options: { revealHidden?: boolean } = {}
 ): ConversationMessageView {
+  const isHidden = message.hiddenAt !== null;
+
   return {
-    content: message.content,
+    content: isHidden && !options.revealHidden ? HIDDEN_MESSAGE_PLACEHOLDER : message.content,
     conversationId: message.conversationId,
     createdAt: message.createdAt.toISOString(),
     id: message.id,
+    isHidden,
     isOwn: message.senderId === currentUserId,
     readAt: message.readAt ? message.readAt.toISOString() : null,
     sender: mapParticipantView(message.sender, onlineUserIds),
@@ -154,6 +169,32 @@ export class MessageService {
     ) {
       throw new ForbiddenError("You do not have access to this conversation");
     }
+
+    return conversation;
+  }
+
+  /**
+   * An admin may read one conversation, and only while a report about it is
+   * open. Unreported conversations stay private to the two people in them, and
+   * every read that does happen is written to the access log. ADR-0004.
+   */
+  private async requireReportedConversationAccess(
+    conversationId: string,
+    adminId: string
+  ): Promise<ConversationRecord> {
+    const conversation = await this.messageRepository.findConversationById(conversationId, adminId);
+
+    if (!conversation) {
+      throw new NotFoundError("Conversation not found");
+    }
+
+    const isReported = await this.messageRepository.hasOpenReport(conversationId);
+
+    if (!isReported) {
+      throw new ForbiddenError("This conversation has not been reported");
+    }
+
+    await this.messageRepository.recordAdminAccess(conversationId, adminId);
 
     return conversation;
   }
@@ -272,6 +313,107 @@ export class MessageService {
       items: ordered.map((message) => mapMessageView(message, currentUserId, onlineUserIds)),
       nextCursor
     };
+  }
+
+  /**
+   * Either participant can report their conversation. This is the only thing
+   * that grants an admin the right to read it. ADR-0004.
+   */
+  public async reportConversation(
+    conversationId: string,
+    input: { reason: string },
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<{ conversationId: string; id: string }> {
+    await this.requireConversationAccess(conversationId, currentUserId, currentUserRole);
+
+    const report = await this.messageRepository.createConversationReport({
+      conversationId,
+      reason: input.reason.trim(),
+      reporterId: currentUserId
+    });
+
+    return { conversationId: report.conversationId, id: report.id };
+  }
+
+  /**
+   * Admin review of a reported conversation. Shows the original text of hidden
+   * messages, because the point of retaining them is that someone responsible
+   * can still see what was said. Writes an access-log row. ADR-0004.
+   */
+  public async reviewReportedConversation(
+    conversationId: string,
+    query: { cursor?: string | undefined; limit: number },
+    adminId: string
+  ): Promise<ConversationMessagesView> {
+    const conversation = await this.requireReportedConversationAccess(conversationId, adminId);
+    const messages = await this.messageRepository.listMessagesByConversation({
+      conversationId,
+      cursor: query.cursor,
+      limit: query.limit
+    });
+    const ordered = [...messages].reverse();
+    const nextCursor =
+      messages.length === query.limit ? ordered[0]?.createdAt.toISOString() ?? null : null;
+    const onlineUserIds: ReadonlySet<string> = new Set<string>();
+
+    return {
+      conversation: this.mapConversationView(conversation, adminId, onlineUserIds),
+      items: ordered.map((message) =>
+        mapMessageView(message, adminId, onlineUserIds, { revealHidden: true })
+      ),
+      nextCursor
+    };
+  }
+
+  /**
+   * Remove a message from view. Only an admin, only on a reported conversation.
+   * The original row survives — hiding stops the harm, it does not erase the
+   * evidence. ADR-0004.
+   */
+  public async hideMessage(
+    messageId: string,
+    adminId: string
+  ): Promise<ConversationMessageView> {
+    const message = await this.messageRepository.findMessageById(messageId);
+
+    if (!message) {
+      throw new NotFoundError("Message not found");
+    }
+
+    await this.requireReportedConversationAccess(message.conversationId, adminId);
+
+    const hidden = await this.messageRepository.hideMessage(messageId, adminId);
+
+    if (!hidden) {
+      throw new ConflictError("Message is already hidden");
+    }
+
+    return mapMessageView(hidden, adminId, new Set<string>(), { revealHidden: true });
+  }
+
+  public async listOpenReports(): Promise<
+    readonly { conversationId: string; createdAt: string; id: string; reason: string; reporterId: string }[]
+  > {
+    const reports = await this.messageRepository.listOpenReports();
+
+    return reports.map((report) => ({
+      conversationId: report.conversationId,
+      createdAt: report.createdAt.toISOString(),
+      id: report.id,
+      reason: report.reason,
+      reporterId: report.reporterId
+    }));
+  }
+
+  public async resolveReport(reportId: string, adminId: string): Promise<{ id: string }> {
+    const resolved = await this.messageRepository.resolveReport(reportId, adminId);
+
+    if (!resolved) {
+      throw new NotFoundError("Open report not found");
+    }
+
+    return { id: resolved.id };
   }
 
   public async sendMessage(

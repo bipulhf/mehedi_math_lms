@@ -50,3 +50,14 @@ export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 export type ConversationMessagesQuery = z.infer<typeof conversationMessagesQuerySchema>;
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type WebsocketClientEvent = z.infer<typeof websocketClientEventSchema>;
+
+/**
+ * Reporting a conversation is what grants an admin the right to read it, so a
+ * reason is mandatory — it is the record of why the privacy exception applies.
+ * ADR-0004.
+ */
+export const reportConversationSchema = z.object({
+  reason: z.string().trim().min(10).max(2000)
+});
+
+export type ReportConversationInput = z.infer<typeof reportConversationSchema>;

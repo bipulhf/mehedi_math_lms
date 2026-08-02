@@ -7,9 +7,11 @@ import {
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   bugsQuerySchema,
+  conversationMessagesQuerySchema,
   courseIdParamsSchema,
   createAdminUserSchema,
   idParamsSchema,
+  messageConversationIdParamsSchema,
   profileIdParamsSchema,
   rejectCourseSchema,
   updateAdminUserSchema,
@@ -21,6 +23,7 @@ import {
   adminUserController,
   bugReportController,
   courseController,
+  messageController,
   notificationController,
   profileController,
   smsController
@@ -133,4 +136,32 @@ adminRoutes.get("/sms/history", requireAdmin(), (context) => {
   const query = adminSmsHistoryQuerySchema.parse(context.req.query());
 
   return smsController.listHistory(context, query);
+});
+
+// Message moderation. An admin may read a conversation only while a report
+// about it is open, and every such read is written to the access log. ADR-0004.
+adminRoutes.get("/message-reports", requireAdmin(), (context) => {
+  return messageController.listOpenReports(context);
+});
+
+adminRoutes.get("/message-reports/conversations/:id", requireAdmin(), (context) => {
+  const params = messageConversationIdParamsSchema.parse(context.req.param());
+  const query = conversationMessagesQuerySchema.parse(context.req.query());
+  const authUser = context.get("authUser");
+
+  return messageController.reviewReportedConversation(context, params.id, query, authUser!.id);
+});
+
+adminRoutes.post("/message-reports/:id/resolve", requireAdmin(), (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return messageController.resolveReport(context, params.id, authUser!.id);
+});
+
+adminRoutes.post("/messages/:id/hide", requireAdmin(), (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return messageController.hideMessage(context, params.id, authUser!.id);
 });
