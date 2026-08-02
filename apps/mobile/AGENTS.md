@@ -41,6 +41,8 @@ The repo rule is **named exports only** (root `AGENTS.md` §3). Expo Router requ
 
 `src/theme/tokens.ts` names one font family per weight (`Inter_400Regular`, `Manrope_700Bold`, …) and `app/_layout.tsx` registers exactly those with `useFonts`, holding the splash screen until they resolve.
 
+Import each weight from its own subpath (`@expo-google-fonts/inter/400Regular`), never from the package root. The root index re-exports every weight and italic, Metro bundles each one it can see, and the export goes from 2.3MB of assets to 7.7MB for fonts nothing renders.
+
 Two traps this avoids, both silent:
 
 - React Native substitutes the system font for an unresolvable family **without warning**, so a missing `useFonts` call looks like a working app in the wrong typeface.
