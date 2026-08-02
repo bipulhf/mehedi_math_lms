@@ -17,6 +17,7 @@ import {
   type CourseRecord,
   type TeacherDirectoryRecord
 } from "@/repositories/course-repository";
+import type { NotificationService } from "@/services/notification-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CreateCourseInput = z.infer<typeof createCourseSchema>;
@@ -85,7 +86,8 @@ function mapCourse(course: CourseRecord): CourseDetailResponse {
 export class CourseService {
   public constructor(
     private readonly courseRepository: CourseRepository,
-    private readonly categoryRepository: CategoryRepository
+    private readonly categoryRepository: CategoryRepository,
+    private readonly notificationService: NotificationService
   ) {}
 
   private async createUniqueSlug(
@@ -556,6 +558,16 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
+    await this.notificationService.notifyUsers(
+      approvedCourse.teachers.map((teacher) => teacher.id),
+      {
+        body: `${approvedCourse.title} is now published in the catalog.`,
+        data: { courseId: approvedCourse.id },
+        title: "Course approved",
+        type: "COURSE"
+      }
+    );
+
     return mapCourse(approvedCourse);
   }
 
@@ -581,6 +593,16 @@ export class CourseService {
     if (!rejectedCourse) {
       throw new NotFoundError("Course not found");
     }
+
+    await this.notificationService.notifyUsers(
+      rejectedCourse.teachers.map((teacher) => teacher.id),
+      {
+        body: input.feedback.trim(),
+        data: { courseId: rejectedCourse.id },
+        title: `${rejectedCourse.title} needs changes`,
+        type: "COURSE"
+      }
+    );
 
     return mapCourse(rejectedCourse);
   }

@@ -4,6 +4,7 @@ import {
   type BugReportQuery,
   type BugReportRecord
 } from "@/repositories/bug-report-repository";
+import type { NotificationService } from "@/services/notification-service";
 import { NotFoundError } from "@/utils/errors";
 
 export interface CreateBugReportRequest {
@@ -19,7 +20,10 @@ export interface UpdateBugReportRequest {
 }
 
 export class BugReportService {
-  public constructor(private readonly bugReportRepository: BugReportRepository) {}
+  public constructor(
+    private readonly bugReportRepository: BugReportRepository,
+    private readonly notificationService: NotificationService
+  ) {}
 
   public async createBugReport(userId: string, input: CreateBugReportRequest): Promise<BugReportRecord> {
     return this.bugReportRepository.create({
@@ -67,6 +71,13 @@ export class BugReportService {
     if (!updatedBug) {
       throw new NotFoundError("Bug report not found");
     }
+
+    await this.notificationService.notifyUsers([updatedBug.user.id], {
+      body: `"${updatedBug.title}" is now ${updatedBug.status.replace("_", " ").toLowerCase()}.`,
+      data: { bugReportId: updatedBug.id },
+      title: "Bug report updated",
+      type: "BUG_REPORT"
+    });
 
     return updatedBug;
   }

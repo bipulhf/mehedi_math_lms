@@ -7,6 +7,7 @@ import type {
 import type { CourseRecord } from "@/repositories/course-repository";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { NotificationService } from "@/services/notification-service";
 import type { NoticeRepository} from "@/repositories/notice-repository";
 import { type NoticeWithAuthor } from "@/repositories/notice-repository";
 import { ForbiddenError, NotFoundError } from "@/utils/errors";
@@ -29,7 +30,8 @@ export class NoticeService {
   public constructor(
     private readonly noticeRepository: NoticeRepository,
     private readonly courseRepository: CourseRepository,
-    private readonly enrollmentRepository: EnrollmentRepository
+    private readonly enrollmentRepository: EnrollmentRepository,
+    private readonly notificationService: NotificationService
   ) {}
 
   public async listForCourse(
@@ -74,6 +76,21 @@ export class NoticeService {
     if (!match) {
       throw new Error("Failed to load created notice");
     }
+
+    // A noticeboard nobody is told about is a noticeboard nobody reads. The
+    // NOTICE notification type existed for this and was never produced.
+    const course = await this.courseRepository.findById(courseId);
+    const enrolledUserIds = await this.enrollmentRepository.listEnrolledUserIdsByCourse(courseId);
+
+    await this.notificationService.notifyUsers(enrolledUserIds, {
+      body: input.title,
+      data: {
+        courseId,
+        noticeId: row.id
+      },
+      title: course ? `New notice in ${course.title}` : "New course notice",
+      type: "NOTICE"
+    });
 
     return this.mapNotice(match);
   }

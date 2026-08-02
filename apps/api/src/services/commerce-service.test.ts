@@ -6,6 +6,7 @@ import type { PaymentRecord, PaymentRepository } from "@/repositories/payment-re
 import type { ProfileRepository } from "@/repositories/profile-repository";
 import type { ReviewRepository } from "@/repositories/review-repository";
 import { CommerceService } from "@/services/commerce-service";
+import type { NotificationService } from "@/services/notification-service";
 import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -149,6 +150,10 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
     findByUserAndCourse: async () => null
   } as unknown as ReviewRepository;
 
+  const notificationService = {
+    notifyUsers: async () => undefined
+  } as unknown as NotificationService;
+
   return {
     calls,
     service: new CommerceService(
@@ -157,7 +162,8 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
       courseRepository,
       profileRepository,
       sslCommerzService,
-      reviewRepository
+      reviewRepository,
+      notificationService
     )
   };
 }

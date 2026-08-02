@@ -177,6 +177,19 @@ decision about the interface before it is worth anything to a student.
 Recorded in ADR-0004 as out of scope and worth revisiting. A student who reports a teacher remains in a
 channel with them until an admin acts.
 
+### Stage 7 — notifications are best effort, on purpose
+
+`notifyUsers` catches and logs rather than throwing. Telling someone what happened must never be able to
+undo the thing that happened: a Redis outage should not roll back a settled payment or an approved course.
+The failure is logged, never swallowed silently.
+
+### Stage 7 — MESSAGE stays unwired
+
+Per the decision recorded in CONTEXT.md, a new message raises no notification. Messaging already has live
+WebSocket delivery and an unread badge, and it is the highest-frequency event on the platform, so a second
+alert would be noise. Four of the six notification types now have producers: NOTICE, PAYMENT, COURSE,
+BUG_REPORT. SYSTEM remains the admin broadcast.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member

@@ -1,6 +1,7 @@
 import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
+import { logger } from "@/lib/logger";
 import { queues } from "@/lib/queues";
 import {
   type NotificationRepository,
@@ -32,6 +33,14 @@ function mapRecord(record: NotificationRecord): NotificationView {
     title: record.title,
     type: record.type
   };
+}
+
+/** What a domain event wants to tell someone. */
+export interface NotificationPayload {
+  body: string;
+  data?: Record<string, string | number | boolean | null> | undefined;
+  title: string;
+  type: NotificationType;
 }
 
 export class NotificationService {
@@ -195,11 +204,19 @@ export class NotificationService {
       throw new ValidationError("No recipients matched this target");
     }
 
-    const records = await this.notificationRepository.insertForUsers(uniqueUserIds, {
-      body: input.body,
-      data: input.data,
-      title: input.title,
-      type: input.type
+    return { delivered: await this.deliver(uniqueUserIds, input) };
+  }
+
+  /** Persist, broadcast over the socket, and queue the push. */
+  private async deliver(
+    userIds: readonly string[],
+    payload: NotificationPayload
+  ): Promise<number> {
+    const records = await this.notificationRepository.insertForUsers([...userIds], {
+      body: payload.body,
+      data: payload.data,
+      title: payload.title,
+      type: payload.type
     });
 
     await this.publishNewForUsers(records);
@@ -218,6 +235,32 @@ export class NotificationService {
       }
     );
 
-    return { delivered: records.length };
+    return records.length;
+  }
+
+  /**
+   * Raise a notification from a domain event. Best effort by design: telling
+   * someone what happened must never be able to undo the thing that happened,
+   * so a failure here is logged and swallowed rather than rolling back a
+   * settled payment or an approved course.
+   */
+  public async notifyUsers(
+    userIds: readonly string[],
+    payload: NotificationPayload
+  ): Promise<void> {
+    const uniqueUserIds = [...new Set(userIds)].filter((userId) => userId.length > 0);
+
+    if (uniqueUserIds.length === 0) {
+      return;
+    }
+
+    try {
+      await this.deliver(uniqueUserIds, payload);
+    } catch (error) {
+      logger.error(
+        { err: error, recipients: uniqueUserIds.length, type: payload.type },
+        "Failed to dispatch notification"
+      );
+    }
   }
 }

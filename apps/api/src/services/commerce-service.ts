@@ -16,6 +16,7 @@ import {
 } from "@/repositories/payment-repository";
 import type { ProfileRepository } from "@/repositories/profile-repository";
 import type { ReviewRepository } from "@/repositories/review-repository";
+import type { NotificationService } from "@/services/notification-service";
 import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { isSettledValidationStatus } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
@@ -165,7 +166,8 @@ export class CommerceService {
     private readonly courseRepository: CourseRepository,
     private readonly profileRepository: ProfileRepository,
     private readonly sslCommerzService: SslCommerzService,
-    private readonly reviewRepository: ReviewRepository
+    private readonly reviewRepository: ReviewRepository,
+    private readonly notificationService: NotificationService
   ) {}
 
   private async getPublishedCourseOrThrow(courseId: string) {
@@ -436,6 +438,18 @@ export class CommerceService {
         status: "SUCCESS"
       });
 
+      const settledCourse = await this.courseRepository.findById(payment.courseId);
+
+      await this.notificationService.notifyUsers([payment.userId], {
+        body: `Your payment of ${payment.currency} ${payment.amount} was received.`,
+        data: {
+          courseId: payment.courseId,
+          paymentId: payment.id
+        },
+        title: settledCourse ? `You are enrolled in ${settledCourse.title}` : "Payment received",
+        type: "PAYMENT"
+      });
+
       return `${callbackOrigin}/dashboard/payments/return?paymentId=${encodeURIComponent(payment.id)}&status=success`;
     }
 
@@ -506,6 +520,16 @@ export class CommerceService {
     if (payment.enrollmentId) {
       await this.enrollmentRepository.cancelById(payment.enrollmentId);
     }
+
+    await this.notificationService.notifyUsers([payment.userId], {
+      body: `Your payment of ${payment.currency} ${payment.amount} has been refunded. Access to the course has ended.`,
+      data: {
+        courseId: payment.courseId,
+        paymentId: payment.id
+      },
+      title: "Payment refunded",
+      type: "PAYMENT"
+    });
 
     return this.getPaymentById(payment.id, payment.userId, "ADMIN");
   }

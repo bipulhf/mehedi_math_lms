@@ -115,10 +115,15 @@ const notificationService = new NotificationService(
 );
 const onecodesoftSmsProvider = new OnecodesoftSmsProvider();
 const smsService = new SmsService(smsRepository, courseRepository, onecodesoftSmsProvider);
-const noticeService = new NoticeService(noticeRepository, courseRepository, enrollmentRepository);
+const noticeService = new NoticeService(
+  noticeRepository,
+  courseRepository,
+  enrollmentRepository,
+  notificationService
+);
 const staffAccountService = new StaffAccountService(staffAccountRepository);
 const adminUserService = new AdminUserService(adminUserRepository, authSessionRepository, staffAccountService);
-const bugReportService = new BugReportService(bugReportRepository);
+const bugReportService = new BugReportService(bugReportRepository, notificationService);
 const categoryService = new CategoryService(categoryRepository);
 const commentService = new CommentService(
   commentRepository,
@@ -133,13 +138,14 @@ const commerceService = new CommerceService(
   courseRepository,
   profileRepository,
   sslCommerzService,
-  reviewRepository
+  reviewRepository,
+  notificationService
 );
 const enrollmentPdfService = new EnrollmentPdfService(enrollmentRepository, paymentRepository);
 const reviewService = new ReviewService(reviewRepository, enrollmentRepository, courseRepository);
 const analyticsService = new AnalyticsService(analyticsRepository, courseRepository);
 const contentService = new ContentService(contentRepository, courseRepository, enrollmentRepository);
-const courseService = new CourseService(courseRepository, categoryRepository);
+const courseService = new CourseService(courseRepository, categoryRepository, notificationService);
 const profileService = new ProfileService(profileRepository);
 const notImplementedService = new NotImplementedService();
 const progressService = new ProgressService(

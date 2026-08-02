@@ -7,6 +7,7 @@ import type {
   CourseTeacherAssignment
 } from "@/repositories/course-repository";
 import { CourseService } from "@/services/course-service";
+import type { NotificationService } from "@/services/notification-service";
 import { ConflictError, ForbiddenError, ValidationError } from "@/utils/errors";
 
 /**
@@ -93,7 +94,14 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
     findById: async () => ({ id: "cat-1", isActive: true, name: "HSC", slug: "hsc" })
   } as unknown as CategoryRepository;
 
-  return { calls, service: new CourseService(courseRepository, categoryRepository) };
+  const notificationService = {
+    notifyUsers: async () => undefined
+  } as unknown as NotificationService;
+
+  return {
+    calls,
+    service: new CourseService(courseRepository, categoryRepository, notificationService)
+  };
 }
 
 describe("CourseService — course creation seeds an owner", () => {
