@@ -17,7 +17,7 @@ const CertificatePreviewDialog = lazy(async () => {
   return { default: mod.CertificatePreviewDialog };
 });
 
-export const Route = createFileRoute("/dashboard/my-courses" as never)({
+export const Route = createFileRoute("/dashboard/my-courses")({
   component: MyCoursesPage,
   errorComponent: RouteErrorView
 } as never);

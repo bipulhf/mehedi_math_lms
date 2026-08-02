@@ -44,10 +44,10 @@ async function mergeHeaders(getHeaders?: ApiClientOptions["getHeaders"]): Promis
 export function createApiClient(options: ApiClientOptions = {}): typeof ky {
   return ky.create({
     credentials: "include",
-    prefixUrl: clientEnv.apiBaseUrl,
+    prefix: clientEnv.apiBaseUrl,
     hooks: {
       beforeRequest: [
-        async (request) => {
+        async ({ request }) => {
           const headers = await mergeHeaders(options.getHeaders);
 
           if (!headers) {
@@ -62,7 +62,7 @@ export function createApiClient(options: ApiClientOptions = {}): typeof ky {
         }
       ],
       afterResponse: [
-        async (_request, _options, response) => {
+        async ({ response }) => {
           if (response.ok || typeof window === "undefined") {
             return;
           }

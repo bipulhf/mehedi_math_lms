@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/select";
 import type { AdminUserDetail } from "@/lib/api/admin";
 import { getAdminUser, updateAdminUser } from "@/lib/api/admin";
 
-export const Route = createFileRoute("/dashboard/admin/users/$id" as never)({
+export const Route = createFileRoute("/dashboard/admin/users/$id")({
   component: AdminUserDetailPage,
   errorComponent: RouteErrorView
 } as never);

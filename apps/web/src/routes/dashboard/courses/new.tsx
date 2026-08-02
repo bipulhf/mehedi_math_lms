@@ -21,7 +21,7 @@ import {
   submitCourse
 } from "@/lib/api/courses";
 
-export const Route = createFileRoute("/dashboard/courses/new" as never)({
+export const Route = createFileRoute("/dashboard/courses/new")({
   component: CreateCoursePage,
   errorComponent: RouteErrorView
 } as never);

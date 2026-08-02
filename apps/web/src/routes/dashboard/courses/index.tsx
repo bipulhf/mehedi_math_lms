@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { archiveCourse, listCourses, submitCourse } from "@/lib/api/courses";
 
-export const Route = createFileRoute("/dashboard/courses/" as never)({
+export const Route = createFileRoute("/dashboard/courses/")({
   component: DashboardCoursesPage,
   errorComponent: RouteErrorView
 } as never);

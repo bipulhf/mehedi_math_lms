@@ -20,7 +20,7 @@ import {
   YAxis
 } from "recharts";
 
-export const Route = createFileRoute("/dashboard/courses/$id/analytics" as never)({
+export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
   component: CourseAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

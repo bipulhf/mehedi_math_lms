@@ -18,7 +18,7 @@ import {
   YAxis
 } from "recharts";
 
-export const Route = createFileRoute("/dashboard/accountant/analytics" as never)({
+export const Route = createFileRoute("/dashboard/accountant/analytics")({
   component: AccountantAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

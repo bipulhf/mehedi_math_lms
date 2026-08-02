@@ -27,7 +27,7 @@ import {
 } from "@/lib/api/categories";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 
-export const Route = createFileRoute("/dashboard/admin/categories" as never)({
+export const Route = createFileRoute("/dashboard/admin/categories")({
   component: AdminCategoriesPage,
   errorComponent: RouteErrorView
 } as never);

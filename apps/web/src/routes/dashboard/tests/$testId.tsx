@@ -20,7 +20,7 @@ interface DraftAnswer {
   writtenAnswer?: string | undefined;
 }
 
-export const Route = createFileRoute("/dashboard/tests/$testId" as never)({
+export const Route = createFileRoute("/dashboard/tests/$testId")({
   component: StudentTestPage,
   errorComponent: RouteErrorView
 } as never);

@@ -9,84 +9,59 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as CategoriesRouteImport } from './routes/categories'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as CoursesIndexRouteImport } from './routes/courses/index'
-import { Route as TeachersSlugRouteImport } from './routes/teachers/$slug'
-import { Route as DevSeoPreviewRouteImport } from './routes/dev/seo-preview'
-import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
-import { Route as DashboardMyCoursesRouteImport } from './routes/dashboard/my-courses'
-import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
-import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
-import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
-import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
-import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
-import { Route as DashboardPaymentsIndexRouteImport } from './routes/dashboard/payments/index'
-import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard/courses/index'
-import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/index'
-import { Route as DashboardTestsTestIdRouteImport } from './routes/dashboard/tests/$testId'
-import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
-import { Route as DashboardPaymentsReturnRouteImport } from './routes/dashboard/payments/return'
-import { Route as DashboardPaymentsMockRouteImport } from './routes/dashboard/payments/mock'
-import { Route as DashboardNotificationsSendRouteImport } from './routes/dashboard/notifications/send'
-import { Route as DashboardLearnCourseIdRouteImport } from './routes/dashboard/learn/$courseId'
-import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard/courses/new'
-import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
-import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
-import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/sms'
-import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
-import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
-import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
-import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
-import { Route as DashboardAccountantAnalyticsRouteImport } from './routes/dashboard/accountant/analytics'
+import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
+import { Route as CoursesIndexRouteImport } from './routes/courses/index'
+import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
+import { Route as DashboardMyCoursesRouteImport } from './routes/dashboard/my-courses'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
+import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
+import { Route as DevSeoPreviewRouteImport } from './routes/dev/seo-preview'
+import { Route as TeachersSlugRouteImport } from './routes/teachers/$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as DashboardTestsTestIdSubmissionsRouteImport } from './routes/dashboard/tests/$testId/submissions'
-import { Route as DashboardCoursesIdTestsRouteImport } from './routes/dashboard/courses/$id/tests'
-import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
-import { Route as DashboardCoursesIdContentRouteImport } from './routes/dashboard/courses/$id/content'
-import { Route as DashboardCoursesIdAnalyticsRouteImport } from './routes/dashboard/courses/$id/analytics'
-import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
+import { Route as DashboardAccountantAnalyticsRouteImport } from './routes/dashboard/accountant/analytics'
+import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
+import { Route as DashboardAdminBugsRouteImport } from './routes/dashboard/admin/bugs'
+import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
+import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
+import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/sms'
+import { Route as DashboardAdminUsersRouteImport } from './routes/dashboard/admin/users'
+import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/index'
+import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
+import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard/courses/index'
+import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard/courses/new'
+import { Route as DashboardLearnCourseIdRouteImport } from './routes/dashboard/learn/$courseId'
+import { Route as DashboardNotificationsSendRouteImport } from './routes/dashboard/notifications/send'
+import { Route as DashboardPaymentsIndexRouteImport } from './routes/dashboard/payments/index'
+import { Route as DashboardPaymentsMockRouteImport } from './routes/dashboard/payments/mock'
+import { Route as DashboardPaymentsReturnRouteImport } from './routes/dashboard/payments/return'
+import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
+import { Route as DashboardTestsTestIdRouteImport } from './routes/dashboard/tests/$testId'
 import { Route as DashboardAdminBugsIdRouteImport } from './routes/dashboard/admin/bugs/$id'
-import { Route as DashboardTestsTestIdSubmissionsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/submissions/$submissionId'
+import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
+import { Route as DashboardCoursesIdAnalyticsRouteImport } from './routes/dashboard/courses/$id/analytics'
+import { Route as DashboardCoursesIdContentRouteImport } from './routes/dashboard/courses/$id/content'
+import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
+import { Route as DashboardCoursesIdTestsRouteImport } from './routes/dashboard/courses/$id/tests'
+import { Route as DashboardTestsTestIdSubmissionsRouteImport } from './routes/dashboard/tests/$testId/submissions'
 import { Route as DashboardTestsTestIdResultsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/results/$submissionId'
+import { Route as DashboardTestsTestIdSubmissionsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/submissions/$submissionId'
 
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CategoriesRoute = CategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -94,9 +69,59 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesRoute = CategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => AuthRoute,
+} as any)
+const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CategoriesRoute,
+} as any)
+const CoursesIndexRoute = CoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesSlugRoute = CoursesSlugRouteImport.update({
+  id: '/courses/$slug',
+  path: '/courses/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -104,35 +129,9 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const CoursesIndexRoute = CoursesIndexRouteImport.update({
-  id: '/courses/',
-  path: '/courses/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TeachersSlugRoute = TeachersSlugRouteImport.update({
-  id: '/teachers/$slug',
-  path: '/teachers/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DevSeoPreviewRoute = DevSeoPreviewRouteImport.update({
-  id: '/dev/seo-preview',
-  path: '/dev/seo-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardProfileCompleteRoute =
-  DashboardProfileCompleteRouteImport.update({
-    id: '/profile-complete',
-    path: '/profile-complete',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardMyCoursesRoute = DashboardMyCoursesRouteImport.update({
-  id: '/my-courses',
-  path: '/my-courses',
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
@@ -140,100 +139,51 @@ const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
   path: '/messages',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const DashboardMyCoursesRoute = DashboardMyCoursesRouteImport.update({
+  id: '/my-courses',
+  path: '/my-courses',
   getParentRoute: () => DashboardRoute,
 } as any)
-const CoursesSlugRoute = CoursesSlugRouteImport.update({
-  id: '/courses/$slug',
-  path: '/courses/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => CategoriesRoute,
-} as any)
-const AuthSignUpRoute = AuthSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthSignInRoute = AuthSignInRouteImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => AuthRoute,
-} as any)
-const DashboardPaymentsIndexRoute = DashboardPaymentsIndexRouteImport.update({
-  id: '/payments/',
-  path: '/payments/',
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
-  id: '/courses/',
-  path: '/courses/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardBugsIndexRoute = DashboardBugsIndexRouteImport.update({
-  id: '/bugs/',
-  path: '/bugs/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardTestsTestIdRoute = DashboardTestsTestIdRouteImport.update({
-  id: '/tests/$testId',
-  path: '/tests/$testId',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
-  id: '/students/$id',
-  path: '/students/$id',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPaymentsReturnRoute = DashboardPaymentsReturnRouteImport.update({
-  id: '/payments/return',
-  path: '/payments/return',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPaymentsMockRoute = DashboardPaymentsMockRouteImport.update({
-  id: '/payments/mock',
-  path: '/payments/mock',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardNotificationsSendRoute =
-  DashboardNotificationsSendRouteImport.update({
-    id: '/notifications/send',
-    path: '/notifications/send',
+const DashboardProfileCompleteRoute =
+  DashboardProfileCompleteRouteImport.update({
+    id: '/profile-complete',
+    path: '/profile-complete',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardLearnCourseIdRoute = DashboardLearnCourseIdRouteImport.update({
-  id: '/learn/$courseId',
-  path: '/learn/$courseId',
+const DevSeoPreviewRoute = DevSeoPreviewRouteImport.update({
+  id: '/dev/seo-preview',
+  path: '/dev/seo-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeachersSlugRoute = TeachersSlugRouteImport.update({
+  id: '/teachers/$slug',
+  path: '/teachers/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAccountantAnalyticsRoute =
+  DashboardAccountantAnalyticsRouteImport.update({
+    id: '/accountant/analytics',
+    path: '/accountant/analytics',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCoursesNewRoute = DashboardCoursesNewRouteImport.update({
-  id: '/courses/new',
-  path: '/courses/new',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
-  id: '/bugs/report',
-  path: '/bugs/report',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAdminSmsRoute = DashboardAdminSmsRouteImport.update({
-  id: '/admin/sms',
-  path: '/admin/sms',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAdminCoursesRoute = DashboardAdminCoursesRouteImport.update({
-  id: '/admin/courses',
-  path: '/admin/courses',
+const DashboardAdminBugsRoute = DashboardAdminBugsRouteImport.update({
+  id: '/admin/bugs',
+  path: '/admin/bugs',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardAdminCategoriesRoute =
@@ -242,26 +192,108 @@ const DashboardAdminCategoriesRoute =
     path: '/admin/categories',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardAdminBugsRoute = DashboardAdminBugsRouteImport.update({
-  id: '/admin/bugs',
-  path: '/admin/bugs',
+const DashboardAdminCoursesRoute = DashboardAdminCoursesRouteImport.update({
+  id: '/admin/courses',
+  path: '/admin/courses',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
-  id: '/admin/analytics',
-  path: '/admin/analytics',
+const DashboardAdminSmsRoute = DashboardAdminSmsRouteImport.update({
+  id: '/admin/sms',
+  path: '/admin/sms',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardAccountantAnalyticsRoute =
-  DashboardAccountantAnalyticsRouteImport.update({
-    id: '/accountant/analytics',
-    path: '/accountant/analytics',
+const DashboardAdminUsersRoute = DashboardAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBugsIndexRoute = DashboardBugsIndexRouteImport.update({
+  id: '/bugs/',
+  path: '/bugs/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
+  id: '/bugs/report',
+  path: '/bugs/report',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesNewRoute = DashboardCoursesNewRouteImport.update({
+  id: '/courses/new',
+  path: '/courses/new',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLearnCourseIdRoute = DashboardLearnCourseIdRouteImport.update({
+  id: '/learn/$courseId',
+  path: '/learn/$courseId',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardNotificationsSendRoute =
+  DashboardNotificationsSendRouteImport.update({
+    id: '/notifications/send',
+    path: '/notifications/send',
     getParentRoute: () => DashboardRoute,
   } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
+const DashboardPaymentsIndexRoute = DashboardPaymentsIndexRouteImport.update({
+  id: '/payments/',
+  path: '/payments/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPaymentsMockRoute = DashboardPaymentsMockRouteImport.update({
+  id: '/payments/mock',
+  path: '/payments/mock',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPaymentsReturnRoute = DashboardPaymentsReturnRouteImport.update({
+  id: '/payments/return',
+  path: '/payments/return',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
+  id: '/students/$id',
+  path: '/students/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardTestsTestIdRoute = DashboardTestsTestIdRouteImport.update({
+  id: '/tests/$testId',
+  path: '/tests/$testId',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminBugsIdRoute = DashboardAdminBugsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardAdminBugsRoute,
+} as any)
+const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardAdminUsersRoute,
+} as any)
+const DashboardCoursesIdAnalyticsRoute =
+  DashboardCoursesIdAnalyticsRouteImport.update({
+    id: '/courses/$id/analytics',
+    path: '/courses/$id/analytics',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardCoursesIdContentRoute =
+  DashboardCoursesIdContentRouteImport.update({
+    id: '/courses/$id/content',
+    path: '/courses/$id/content',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardCoursesIdEditRoute = DashboardCoursesIdEditRouteImport.update({
+  id: '/courses/$id/edit',
+  path: '/courses/$id/edit',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesIdTestsRoute = DashboardCoursesIdTestsRouteImport.update({
+  id: '/courses/$id/tests',
+  path: '/courses/$id/tests',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardTestsTestIdSubmissionsRoute =
   DashboardTestsTestIdSubmissionsRouteImport.update({
@@ -269,49 +301,17 @@ const DashboardTestsTestIdSubmissionsRoute =
     path: '/submissions',
     getParentRoute: () => DashboardTestsTestIdRoute,
   } as any)
-const DashboardCoursesIdTestsRoute = DashboardCoursesIdTestsRouteImport.update({
-  id: '/courses/$id/tests',
-  path: '/courses/$id/tests',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCoursesIdEditRoute = DashboardCoursesIdEditRouteImport.update({
-  id: '/courses/$id/edit',
-  path: '/courses/$id/edit',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCoursesIdContentRoute =
-  DashboardCoursesIdContentRouteImport.update({
-    id: '/courses/$id/content',
-    path: '/courses/$id/content',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardCoursesIdAnalyticsRoute =
-  DashboardCoursesIdAnalyticsRouteImport.update({
-    id: '/courses/$id/analytics',
-    path: '/courses/$id/analytics',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardAdminUsersIdRoute = DashboardAdminUsersIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => DashboardAdminUsersRoute,
-} as any)
-const DashboardAdminBugsIdRoute = DashboardAdminBugsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => DashboardAdminBugsRoute,
-} as any)
-const DashboardTestsTestIdSubmissionsSubmissionIdRoute =
-  DashboardTestsTestIdSubmissionsSubmissionIdRouteImport.update({
-    id: '/$submissionId',
-    path: '/$submissionId',
-    getParentRoute: () => DashboardTestsTestIdSubmissionsRoute,
-  } as any)
 const DashboardTestsTestIdResultsSubmissionIdRoute =
   DashboardTestsTestIdResultsSubmissionIdRouteImport.update({
     id: '/results/$submissionId',
     path: '/results/$submissionId',
     getParentRoute: () => DashboardTestsTestIdRoute,
+  } as any)
+const DashboardTestsTestIdSubmissionsSubmissionIdRoute =
+  DashboardTestsTestIdSubmissionsSubmissionIdRouteImport.update({
+    id: '/$submissionId',
+    path: '/$submissionId',
+    getParentRoute: () => DashboardTestsTestIdSubmissionsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -640,46 +640,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/categories': {
-      id: '/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -689,11 +654,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories': {
+      id: '/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/sign-up': {
+      id: '/auth/sign-up'
+      path: '/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/categories/$slug': {
+      id: '/categories/$slug'
+      path: '/$slug'
+      fullPath: '/categories/$slug'
+      preLoaderRoute: typeof CategoriesSlugRouteImport
+      parentRoute: typeof CategoriesRoute
+    }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$slug': {
+      id: '/courses/$slug'
+      path: '/courses/$slug'
+      fullPath: '/courses/$slug'
+      preLoaderRoute: typeof CoursesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -703,46 +738,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/courses/': {
-      id: '/courses/'
-      path: '/courses'
-      fullPath: '/courses/'
-      preLoaderRoute: typeof CoursesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/teachers/$slug': {
-      id: '/teachers/$slug'
-      path: '/teachers/$slug'
-      fullPath: '/teachers/$slug'
-      preLoaderRoute: typeof TeachersSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dev/seo-preview': {
-      id: '/dev/seo-preview'
-      path: '/dev/seo-preview'
-      fullPath: '/dev/seo-preview'
-      preLoaderRoute: typeof DevSeoPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/profile-complete': {
-      id: '/dashboard/profile-complete'
-      path: '/profile-complete'
-      fullPath: '/dashboard/profile-complete'
-      preLoaderRoute: typeof DashboardProfileCompleteRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/profile': {
-      id: '/dashboard/profile'
-      path: '/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/my-courses': {
-      id: '/dashboard/my-courses'
-      path: '/my-courses'
-      fullPath: '/dashboard/my-courses'
-      preLoaderRoute: typeof DashboardMyCoursesRouteImport
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/messages': {
@@ -752,151 +752,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMessagesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/analytics': {
-      id: '/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+    '/dashboard/my-courses': {
+      id: '/dashboard/my-courses'
+      path: '/my-courses'
+      fullPath: '/dashboard/my-courses'
+      preLoaderRoute: typeof DashboardMyCoursesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/courses/$slug': {
-      id: '/courses/$slug'
-      path: '/courses/$slug'
-      fullPath: '/courses/$slug'
-      preLoaderRoute: typeof CoursesSlugRouteImport
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/profile-complete': {
+      id: '/dashboard/profile-complete'
+      path: '/profile-complete'
+      fullPath: '/dashboard/profile-complete'
+      preLoaderRoute: typeof DashboardProfileCompleteRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dev/seo-preview': {
+      id: '/dev/seo-preview'
+      path: '/dev/seo-preview'
+      fullPath: '/dev/seo-preview'
+      preLoaderRoute: typeof DevSeoPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories/$slug': {
-      id: '/categories/$slug'
-      path: '/$slug'
-      fullPath: '/categories/$slug'
-      preLoaderRoute: typeof CategoriesSlugRouteImport
-      parentRoute: typeof CategoriesRoute
+    '/teachers/$slug': {
+      id: '/teachers/$slug'
+      path: '/teachers/$slug'
+      fullPath: '/teachers/$slug'
+      preLoaderRoute: typeof TeachersSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/auth/sign-up': {
-      id: '/auth/sign-up'
-      path: '/sign-up'
-      fullPath: '/auth/sign-up'
-      preLoaderRoute: typeof AuthSignUpRouteImport
-      parentRoute: typeof AuthRoute
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/auth/sign-in': {
-      id: '/auth/sign-in'
-      path: '/sign-in'
-      fullPath: '/auth/sign-in'
-      preLoaderRoute: typeof AuthSignInRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/dashboard/payments/': {
-      id: '/dashboard/payments/'
-      path: '/payments'
-      fullPath: '/dashboard/payments/'
-      preLoaderRoute: typeof DashboardPaymentsIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/courses/': {
-      id: '/dashboard/courses/'
-      path: '/courses'
-      fullPath: '/dashboard/courses/'
-      preLoaderRoute: typeof DashboardCoursesIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/bugs/': {
-      id: '/dashboard/bugs/'
-      path: '/bugs'
-      fullPath: '/dashboard/bugs/'
-      preLoaderRoute: typeof DashboardBugsIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/tests/$testId': {
-      id: '/dashboard/tests/$testId'
-      path: '/tests/$testId'
-      fullPath: '/dashboard/tests/$testId'
-      preLoaderRoute: typeof DashboardTestsTestIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/students/$id': {
-      id: '/dashboard/students/$id'
-      path: '/students/$id'
-      fullPath: '/dashboard/students/$id'
-      preLoaderRoute: typeof DashboardStudentsIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/payments/return': {
-      id: '/dashboard/payments/return'
-      path: '/payments/return'
-      fullPath: '/dashboard/payments/return'
-      preLoaderRoute: typeof DashboardPaymentsReturnRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/payments/mock': {
-      id: '/dashboard/payments/mock'
-      path: '/payments/mock'
-      fullPath: '/dashboard/payments/mock'
-      preLoaderRoute: typeof DashboardPaymentsMockRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/notifications/send': {
-      id: '/dashboard/notifications/send'
-      path: '/notifications/send'
-      fullPath: '/dashboard/notifications/send'
-      preLoaderRoute: typeof DashboardNotificationsSendRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/learn/$courseId': {
-      id: '/dashboard/learn/$courseId'
-      path: '/learn/$courseId'
-      fullPath: '/dashboard/learn/$courseId'
-      preLoaderRoute: typeof DashboardLearnCourseIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/courses/new': {
-      id: '/dashboard/courses/new'
-      path: '/courses/new'
-      fullPath: '/dashboard/courses/new'
-      preLoaderRoute: typeof DashboardCoursesNewRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/bugs/report': {
-      id: '/dashboard/bugs/report'
-      path: '/bugs/report'
-      fullPath: '/dashboard/bugs/report'
-      preLoaderRoute: typeof DashboardBugsReportRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin/users': {
-      id: '/dashboard/admin/users'
-      path: '/admin/users'
-      fullPath: '/dashboard/admin/users'
-      preLoaderRoute: typeof DashboardAdminUsersRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin/sms': {
-      id: '/dashboard/admin/sms'
-      path: '/admin/sms'
-      fullPath: '/dashboard/admin/sms'
-      preLoaderRoute: typeof DashboardAdminSmsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin/courses': {
-      id: '/dashboard/admin/courses'
-      path: '/admin/courses'
-      fullPath: '/dashboard/admin/courses'
-      preLoaderRoute: typeof DashboardAdminCoursesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin/categories': {
-      id: '/dashboard/admin/categories'
-      path: '/admin/categories'
-      fullPath: '/dashboard/admin/categories'
-      preLoaderRoute: typeof DashboardAdminCategoriesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/admin/bugs': {
-      id: '/dashboard/admin/bugs'
-      path: '/admin/bugs'
-      fullPath: '/dashboard/admin/bugs'
-      preLoaderRoute: typeof DashboardAdminBugsRouteImport
+    '/dashboard/accountant/analytics': {
+      id: '/dashboard/accountant/analytics'
+      path: '/accountant/analytics'
+      fullPath: '/dashboard/accountant/analytics'
+      preLoaderRoute: typeof DashboardAccountantAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/analytics': {
@@ -906,39 +808,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/accountant/analytics': {
-      id: '/dashboard/accountant/analytics'
-      path: '/accountant/analytics'
-      fullPath: '/dashboard/accountant/analytics'
-      preLoaderRoute: typeof DashboardAccountantAnalyticsRouteImport
+    '/dashboard/admin/bugs': {
+      id: '/dashboard/admin/bugs'
+      path: '/admin/bugs'
+      fullPath: '/dashboard/admin/bugs'
+      preLoaderRoute: typeof DashboardAdminBugsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/tests/$testId/submissions': {
-      id: '/dashboard/tests/$testId/submissions'
-      path: '/submissions'
-      fullPath: '/dashboard/tests/$testId/submissions'
-      preLoaderRoute: typeof DashboardTestsTestIdSubmissionsRouteImport
-      parentRoute: typeof DashboardTestsTestIdRoute
-    }
-    '/dashboard/courses/$id/tests': {
-      id: '/dashboard/courses/$id/tests'
-      path: '/courses/$id/tests'
-      fullPath: '/dashboard/courses/$id/tests'
-      preLoaderRoute: typeof DashboardCoursesIdTestsRouteImport
+    '/dashboard/admin/categories': {
+      id: '/dashboard/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/dashboard/admin/categories'
+      preLoaderRoute: typeof DashboardAdminCategoriesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/courses/$id/edit': {
-      id: '/dashboard/courses/$id/edit'
-      path: '/courses/$id/edit'
-      fullPath: '/dashboard/courses/$id/edit'
-      preLoaderRoute: typeof DashboardCoursesIdEditRouteImport
+    '/dashboard/admin/courses': {
+      id: '/dashboard/admin/courses'
+      path: '/admin/courses'
+      fullPath: '/dashboard/admin/courses'
+      preLoaderRoute: typeof DashboardAdminCoursesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/sms': {
+      id: '/dashboard/admin/sms'
+      path: '/admin/sms'
+      fullPath: '/dashboard/admin/sms'
+      preLoaderRoute: typeof DashboardAdminSmsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/users': {
+      id: '/dashboard/admin/users'
+      path: '/admin/users'
+      fullPath: '/dashboard/admin/users'
+      preLoaderRoute: typeof DashboardAdminUsersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/bugs/': {
+      id: '/dashboard/bugs/'
+      path: '/bugs'
+      fullPath: '/dashboard/bugs/'
+      preLoaderRoute: typeof DashboardBugsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/bugs/report': {
+      id: '/dashboard/bugs/report'
+      path: '/bugs/report'
+      fullPath: '/dashboard/bugs/report'
+      preLoaderRoute: typeof DashboardBugsReportRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses/': {
+      id: '/dashboard/courses/'
+      path: '/courses'
+      fullPath: '/dashboard/courses/'
+      preLoaderRoute: typeof DashboardCoursesIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses/new': {
+      id: '/dashboard/courses/new'
+      path: '/courses/new'
+      fullPath: '/dashboard/courses/new'
+      preLoaderRoute: typeof DashboardCoursesNewRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/learn/$courseId': {
+      id: '/dashboard/learn/$courseId'
+      path: '/learn/$courseId'
+      fullPath: '/dashboard/learn/$courseId'
+      preLoaderRoute: typeof DashboardLearnCourseIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/notifications/send': {
+      id: '/dashboard/notifications/send'
+      path: '/notifications/send'
+      fullPath: '/dashboard/notifications/send'
+      preLoaderRoute: typeof DashboardNotificationsSendRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payments/': {
+      id: '/dashboard/payments/'
+      path: '/payments'
+      fullPath: '/dashboard/payments/'
+      preLoaderRoute: typeof DashboardPaymentsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payments/mock': {
+      id: '/dashboard/payments/mock'
+      path: '/payments/mock'
+      fullPath: '/dashboard/payments/mock'
+      preLoaderRoute: typeof DashboardPaymentsMockRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payments/return': {
+      id: '/dashboard/payments/return'
+      path: '/payments/return'
+      fullPath: '/dashboard/payments/return'
+      preLoaderRoute: typeof DashboardPaymentsReturnRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/students/$id': {
+      id: '/dashboard/students/$id'
+      path: '/students/$id'
+      fullPath: '/dashboard/students/$id'
+      preLoaderRoute: typeof DashboardStudentsIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/tests/$testId': {
+      id: '/dashboard/tests/$testId'
+      path: '/tests/$testId'
+      fullPath: '/dashboard/tests/$testId'
+      preLoaderRoute: typeof DashboardTestsTestIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/bugs/$id': {
+      id: '/dashboard/admin/bugs/$id'
+      path: '/$id'
+      fullPath: '/dashboard/admin/bugs/$id'
+      preLoaderRoute: typeof DashboardAdminBugsIdRouteImport
+      parentRoute: typeof DashboardAdminBugsRoute
+    }
+    '/dashboard/admin/users/$id': {
+      id: '/dashboard/admin/users/$id'
+      path: '/$id'
+      fullPath: '/dashboard/admin/users/$id'
+      preLoaderRoute: typeof DashboardAdminUsersIdRouteImport
+      parentRoute: typeof DashboardAdminUsersRoute
+    }
+    '/dashboard/courses/$id/analytics': {
+      id: '/dashboard/courses/$id/analytics'
+      path: '/courses/$id/analytics'
+      fullPath: '/dashboard/courses/$id/analytics'
+      preLoaderRoute: typeof DashboardCoursesIdAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/courses/$id/content': {
@@ -948,33 +948,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesIdContentRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/courses/$id/analytics': {
-      id: '/dashboard/courses/$id/analytics'
-      path: '/courses/$id/analytics'
-      fullPath: '/dashboard/courses/$id/analytics'
-      preLoaderRoute: typeof DashboardCoursesIdAnalyticsRouteImport
+    '/dashboard/courses/$id/edit': {
+      id: '/dashboard/courses/$id/edit'
+      path: '/courses/$id/edit'
+      fullPath: '/dashboard/courses/$id/edit'
+      preLoaderRoute: typeof DashboardCoursesIdEditRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/admin/users/$id': {
-      id: '/dashboard/admin/users/$id'
-      path: '/$id'
-      fullPath: '/dashboard/admin/users/$id'
-      preLoaderRoute: typeof DashboardAdminUsersIdRouteImport
-      parentRoute: typeof DashboardAdminUsersRoute
+    '/dashboard/courses/$id/tests': {
+      id: '/dashboard/courses/$id/tests'
+      path: '/courses/$id/tests'
+      fullPath: '/dashboard/courses/$id/tests'
+      preLoaderRoute: typeof DashboardCoursesIdTestsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/dashboard/admin/bugs/$id': {
-      id: '/dashboard/admin/bugs/$id'
-      path: '/$id'
-      fullPath: '/dashboard/admin/bugs/$id'
-      preLoaderRoute: typeof DashboardAdminBugsIdRouteImport
-      parentRoute: typeof DashboardAdminBugsRoute
-    }
-    '/dashboard/tests/$testId/submissions/$submissionId': {
-      id: '/dashboard/tests/$testId/submissions/$submissionId'
-      path: '/$submissionId'
-      fullPath: '/dashboard/tests/$testId/submissions/$submissionId'
-      preLoaderRoute: typeof DashboardTestsTestIdSubmissionsSubmissionIdRouteImport
-      parentRoute: typeof DashboardTestsTestIdSubmissionsRoute
+    '/dashboard/tests/$testId/submissions': {
+      id: '/dashboard/tests/$testId/submissions'
+      path: '/submissions'
+      fullPath: '/dashboard/tests/$testId/submissions'
+      preLoaderRoute: typeof DashboardTestsTestIdSubmissionsRouteImport
+      parentRoute: typeof DashboardTestsTestIdRoute
     }
     '/dashboard/tests/$testId/results/$submissionId': {
       id: '/dashboard/tests/$testId/results/$submissionId'
@@ -982,6 +975,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/tests/$testId/results/$submissionId'
       preLoaderRoute: typeof DashboardTestsTestIdResultsSubmissionIdRouteImport
       parentRoute: typeof DashboardTestsTestIdRoute
+    }
+    '/dashboard/tests/$testId/submissions/$submissionId': {
+      id: '/dashboard/tests/$testId/submissions/$submissionId'
+      path: '/$submissionId'
+      fullPath: '/dashboard/tests/$testId/submissions/$submissionId'
+      preLoaderRoute: typeof DashboardTestsTestIdSubmissionsSubmissionIdRouteImport
+      parentRoute: typeof DashboardTestsTestIdSubmissionsRoute
     }
   }
 }

@@ -13,7 +13,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { PaymentHistoryItem, PaymentStatus } from "@/lib/api/payments";
 import { listAccountingPayments, listMyPayments, refundPayment } from "@/lib/api/payments";
 
-export const Route = createFileRoute("/dashboard/payments/" as never)({
+export const Route = createFileRoute("/dashboard/payments/")({
   component: PaymentsPage,
   errorComponent: RouteErrorView
 } as never);

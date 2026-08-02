@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { PaymentHistoryItem } from "@/lib/api/payments";
 import { getPaymentById } from "@/lib/api/payments";
 
-export const Route = createFileRoute("/dashboard/payments/return" as never)({
+export const Route = createFileRoute("/dashboard/payments/return")({
   component: PaymentReturnPage,
   errorComponent: RouteErrorView
 } as never);

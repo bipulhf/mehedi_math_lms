@@ -23,7 +23,7 @@ import { getCourse } from "@/lib/api/courses";
 import type { ContentChapter } from "@/lib/api/content";
 import { getCourseContent } from "@/lib/api/content";
 
-export const Route = createFileRoute("/dashboard/courses/$id/content" as never)({
+export const Route = createFileRoute("/dashboard/courses/$id/content")({
   component: CourseContentPage,
   errorComponent: RouteErrorView
 } as never);

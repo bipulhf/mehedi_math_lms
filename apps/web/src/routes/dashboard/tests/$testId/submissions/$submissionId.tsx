@@ -12,7 +12,7 @@ import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
 
 export const Route = createFileRoute(
-  "/dashboard/tests/$testId/submissions/$submissionId" as never
+  "/dashboard/tests/$testId/submissions/$submissionId"
 )({
   component: GradeSubmissionPage,
   errorComponent: RouteErrorView

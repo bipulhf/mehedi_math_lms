@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { AssessmentTestDetail, SubmissionSummary } from "@/lib/api/tests";
 import { getTestDetail, listTestSubmissions } from "@/lib/api/tests";
 
-export const Route = createFileRoute("/dashboard/tests/$testId/submissions" as never)({
+export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
   component: TestSubmissionsPage,
   errorComponent: RouteErrorView
 } as never);

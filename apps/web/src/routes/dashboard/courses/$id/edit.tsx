@@ -22,7 +22,7 @@ import {
   updateCourse
 } from "@/lib/api/courses";
 
-export const Route = createFileRoute("/dashboard/courses/$id/edit" as never)({
+export const Route = createFileRoute("/dashboard/courses/$id/edit")({
   component: EditCoursePage,
   errorComponent: RouteErrorView
 } as never);

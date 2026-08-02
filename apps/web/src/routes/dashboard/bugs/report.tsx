@@ -14,7 +14,7 @@ import type { CreateBugReportInput } from "@/lib/api/bugs";
 import { createBugReport } from "@/lib/api/bugs";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 
-export const Route = createFileRoute("/dashboard/bugs/report" as never)({
+export const Route = createFileRoute("/dashboard/bugs/report")({
   component: ReportBugPage,
   errorComponent: RouteErrorView
 } as never);

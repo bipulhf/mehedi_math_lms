@@ -62,7 +62,7 @@ type MessagingSocketEvent =
       type: "presence:update";
     };
 
-export const Route = createFileRoute("/dashboard/messages" as never)({
+export const Route = createFileRoute("/dashboard/messages")({
   component: DashboardMessagesPage,
   errorComponent: RouteErrorView
 } as never);

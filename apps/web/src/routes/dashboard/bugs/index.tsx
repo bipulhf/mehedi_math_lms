@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { BugReportRecord } from "@/lib/api/bugs";
 import { listMyBugReports } from "@/lib/api/bugs";
 
-export const Route = createFileRoute("/dashboard/bugs/" as never)({
+export const Route = createFileRoute("/dashboard/bugs/")({
   component: MyBugReportsPage,
   errorComponent: RouteErrorView
 } as never);

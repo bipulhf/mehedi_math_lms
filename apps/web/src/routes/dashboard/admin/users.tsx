@@ -37,7 +37,7 @@ import {
 } from "@/lib/api/admin";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 
-export const Route = createFileRoute("/dashboard/admin/users" as never)({
+export const Route = createFileRoute("/dashboard/admin/users")({
   component: AdminUsersPage,
   errorComponent: RouteErrorView
 } as never);

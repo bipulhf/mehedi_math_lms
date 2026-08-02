@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/select";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { listAdminBugs } from "@/lib/api/admin";
 
-export const Route = createFileRoute("/dashboard/admin/bugs" as never)({
+export const Route = createFileRoute("/dashboard/admin/bugs")({
   component: AdminBugsPage,
   errorComponent: RouteErrorView
 } as never);

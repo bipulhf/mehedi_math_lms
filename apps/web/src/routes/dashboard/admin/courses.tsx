@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { approveCourse, listCourses, rejectCourse } from "@/lib/api/courses";
 
-export const Route = createFileRoute("/dashboard/admin/courses" as never)({
+export const Route = createFileRoute("/dashboard/admin/courses")({
   component: AdminCoursesPage,
   errorComponent: RouteErrorView
 } as never);

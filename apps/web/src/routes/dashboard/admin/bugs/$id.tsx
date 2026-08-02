@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { getAdminBug, updateAdminBug } from "@/lib/api/admin";
 
-export const Route = createFileRoute("/dashboard/admin/bugs/$id" as never)({
+export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
   component: AdminBugDetailPage,
   errorComponent: RouteErrorView
 } as never);

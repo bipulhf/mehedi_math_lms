@@ -20,7 +20,7 @@ import {
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 
-export const Route = createFileRoute("/dashboard/learn/$courseId" as never)({
+export const Route = createFileRoute("/dashboard/learn/$courseId")({
   component: CourseLearningPage,
   errorComponent: RouteErrorView
 } as never);

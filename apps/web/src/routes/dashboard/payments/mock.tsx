@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientEnv } from "@/lib/env";
 
-export const Route = createFileRoute("/dashboard/payments/mock" as never)({
+export const Route = createFileRoute("/dashboard/payments/mock")({
   component: MockPaymentPage,
   errorComponent: RouteErrorView
 } as never);
