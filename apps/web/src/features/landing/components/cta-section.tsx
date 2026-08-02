@@ -16,7 +16,7 @@ export function CtaSection() {
           <p className="text-on-primary-container font-light max-w-xl mx-auto opacity-90">
             {session
               ? "Access your dashboard to continue your learning journey or explore new course updates."
-              : "Join 15,000+ high-performers today and gain access to our curated catalog of expert-led courses."}
+              : "Create an account today and gain access to our curated catalog of expert-led courses."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
             {isPending ? (

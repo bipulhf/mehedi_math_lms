@@ -1,9 +1,30 @@
+import { Link } from "@tanstack/react-router";
 import { Search, Award } from "lucide-react";
+import type { JSX } from "react";
 
+import heroAtelier from "@/assets/hero-atelier.svg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { LandingStats } from "@/lib/api/landing";
 
-export function HeroSection() {
+function badgeFigure(stats: LandingStats): { label: string; value: string } | null {
+  if (stats.rating !== null) {
+    return { label: "Curated Quality", value: `${stats.rating.average}/5 from learners` };
+  }
+
+  if (stats.publishedCourses > 0) {
+    return {
+      label: "Curated Quality",
+      value: `${stats.publishedCourses} published ${stats.publishedCourses === 1 ? "course" : "courses"}`
+    };
+  }
+
+  return null;
+}
+
+export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
+  const figure = badgeFigure(stats);
+
   return (
     <section className="relative px-8 pt-20 pb-32 max-w-7xl mx-auto overflow-hidden">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -29,8 +50,11 @@ export function HeroSection() {
                 type="text"
               />
             </div>
-            <Button className="bg-primary text-white px-8 h-full py-3 rounded-lg font-headline font-semibold text-sm hover:bg-on-surface transition-all shrink-0">
-              Explore
+            <Button
+              asChild
+              className="bg-primary text-white px-8 h-full py-3 rounded-lg font-headline font-semibold text-sm hover:bg-on-surface transition-all shrink-0"
+            >
+              <Link to="/courses">Explore</Link>
             </Button>
           </div>
         </div>
@@ -44,24 +68,26 @@ export function HeroSection() {
               height={720}
               loading="eager"
               width={720}
-              alt="Minimalist modern library focused academic environment"
-              className="w-full h-full object-cover rounded-[1.5rem] grayscale-[30%] hover:grayscale-0 transition-all duration-700"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBVM4ASBWMj4U5LbTxJZKBq2aHjKT2iW8f2Oo7eGXhsJqyUc9m8Wn2d7iHsYrQNU7q06wbg74jyS-pPiknWzBguaRPD0rzeGBf8PU6jpyjOdUy7R9O0L9AckRIhesoz6LRgRMW1rrMSj-kkrFqGlloWNVLORUtvQurV2hSu6qNAsKtICRwZhKjeeCXKLZm58Rqfb1aDZgQ5XeAnttI7U4FCYdG0PaKdfE3Ee28H_exuvR7IcJL2zO7gilwi7DACLuk3a5OR1DYGY0"
+              alt="Abstract geometric composition of a curve, an axis grid and concentric circles"
+              className="w-full h-full object-cover rounded-[1.5rem]"
+              src={heroAtelier}
             />
           </div>
-          <div className="absolute bottom-12 -left-12 bg-surface-container-lowest p-6 rounded-2xl shadow-xl border border-outline-variant/10 max-w-[240px]">
-            <div className="flex gap-4 items-center">
-              <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-on-primary-container flex items-center justify-center text-white">
-                <Award className="size-6" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-outline tracking-wider uppercase">
-                  Curated Quality
-                </p>
-                <p className="text-sm font-headline font-bold">98% Success Rate</p>
+          {figure !== null && (
+            <div className="absolute bottom-12 -left-12 bg-surface-container-lowest p-6 rounded-2xl shadow-xl border border-outline-variant/10 max-w-[240px]">
+              <div className="flex gap-4 items-center">
+                <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-on-primary-container flex items-center justify-center text-white">
+                  <Award className="size-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-outline tracking-wider uppercase">
+                    {figure.label}
+                  </p>
+                  <p className="text-sm font-headline font-bold">{figure.value}</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

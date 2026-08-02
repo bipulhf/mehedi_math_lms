@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720" role="img" aria-label="Abstract geometric composition of a curve, an axis grid and concentric circles">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2f3ff"/>
+      <stop offset="55%" stop-color="#e2e7ff"/>
+      <stop offset="100%" stop-color="#dae2fd"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4648d4"/>
+      <stop offset="100%" stop-color="#6063ee"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="72%" cy="24%" r="46%">
+      <stop offset="0%" stop-color="#6cd3f7" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#6cd3f7" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#131b2e" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="720" height="720" fill="url(#field)"/>
+  <rect width="720" height="720" fill="url(#grid)"/>
+  <rect width="720" height="720" fill="url(#halo)"/>
+
+  <g stroke="#131b2e" stroke-opacity="0.18" stroke-width="1.5" stroke-linecap="round">
+    <path d="M96 600H636"/>
+    <path d="M96 600V108"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M112 566C232 566 268 214 388 214C476 214 508 386 616 386" stroke="url(#ink)" stroke-width="8"/>
+    <path d="M112 596C244 596 292 300 424 300C520 300 556 470 616 470" stroke="#4648d4" stroke-opacity="0.22" stroke-width="4" stroke-dasharray="10 14"/>
+  </g>
+
+  <g fill="none" stroke="#4648d4" stroke-opacity="0.3">
+    <circle cx="388" cy="214" r="30" stroke-width="2"/>
+    <circle cx="388" cy="214" r="58" stroke-width="1.5" stroke-opacity="0.18"/>
+    <circle cx="388" cy="214" r="92" stroke-width="1" stroke-opacity="0.1"/>
+  </g>
+  <circle cx="388" cy="214" r="10" fill="#4648d4"/>
+
+  <g fill="none" stroke="#131b2e" stroke-opacity="0.22" stroke-width="2" stroke-linejoin="round">
+    <path d="M168 468L248 340L328 468Z"/>
+    <rect x="470" y="486" width="104" height="104" rx="18"/>
+  </g>
+
+  <g stroke="#6063ee" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round">
+    <path d="M508 524H536"/>
+    <path d="M522 510V538"/>
+    <path d="M508 560H536"/>
+  </g>
+</svg>
