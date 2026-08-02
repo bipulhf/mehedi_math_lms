@@ -13,6 +13,14 @@ src/slug.ts           slugifySegment, buildSerialSlugCandidate, generateUniqueSl
 
 Zod v4. Only dependency.
 
+## Tests
+
+`bun run test` runs `bun test src`. Every validator with a rule in it has a suite beside it.
+
+These schemas are the contract in both directions — the API validates requests with them and the web app resolves its React Hook Form fields against them — so a loosened `.min()` or a dropped `.uuid()` changes what the server accepts *and* what the client blocks, in one edit. Tests here exist to make that edit visible. When you add or relax a rule, assert both sides of it: the value that now passes and the neighbouring one that must still fail.
+
+One trap the suite already pins: `.partial()` does **not** strip a `.default()`. `updateCourseSchema` is derived from a defaults-free field shape for exactly that reason — deriving it from `createCourseSchema` made every course patch carry `isExamOnly: false`.
+
 ## Rules
 
 - **This package must stay runtime-agnostic.** It runs in the browser bundle, in Bun on the server, and in scripts. No `node:` imports, no DB access, no `process.env`, no Hono or React types.

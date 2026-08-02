@@ -81,7 +81,7 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 - Keep changes focused on the request. No drive-by refactors.
 - One logical change per commit. Conventional Commits (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `build`, `ci`).
 - After a change, run `bun run typecheck` and `bun run lint` for the affected workspace at minimum.
-- There is **no test suite** in this repo yet. Verify by typechecking and running the app.
+- `bun run test` fans out to the workspaces that have tests: unit suites for `@mma/api` services and `@mma/shared` validators, plus the API's integration tests over the real Hono app. It needs Postgres and Redis. Playwright lives outside that task — `bun run --filter @mma/web test:e2e`.
 
 ## Reference documents
 

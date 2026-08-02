@@ -7,6 +7,14 @@ import { expect, test } from "@playwright/test";
  * making 401 requests in a loop.
  */
 
+/**
+ * The dashboard chunk is compiled on demand by the dev server, so the very
+ * first navigation to it in a run can take most of a slow-machine minute
+ * before the guard even mounts. 15s was under that, which made this file
+ * fail on a cold start and pass on a warm one.
+ */
+const GUARD_REDIRECT_TIMEOUT_MS = 45_000;
+
 const guardedRoutes = [
   "/dashboard",
   "/dashboard/my-courses",
@@ -19,7 +27,7 @@ test.describe("dashboard is gated", () => {
     test(`${route} sends an anonymous visitor to sign-in`, async ({ page }) => {
       await page.goto(route);
 
-      await expect(page).toHaveURL(/\/auth\/sign-in/, { timeout: 15_000 });
+      await expect(page).toHaveURL(/\/auth\/sign-in/, { timeout: GUARD_REDIRECT_TIMEOUT_MS });
     });
   }
 });

@@ -16,19 +16,29 @@ const optionalUrlSchema = z
   .optional()
   .transform((value) => value || undefined);
 
-export const createCourseSchema = z.object({
+const courseFieldsSchema = z.object({
   categoryId: idSchema,
   coverImageUrl: optionalUrlSchema,
   description: courseDescriptionSchema,
-  isExamOnly: z.boolean().default(false),
+  isExamOnly: z.boolean(),
   price: coursePriceSchema,
   title: courseTitleSchema
 });
 
-export const updateCourseSchema = createCourseSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  "At least one field must be provided"
-);
+export const createCourseSchema = courseFieldsSchema.extend({
+  isExamOnly: z.boolean().default(false)
+});
+
+/**
+ * Derived from the field shapes rather than from `createCourseSchema`, because
+ * `.partial()` does not remove a `.default()`. Patching only the title would
+ * otherwise arrive carrying `isExamOnly: false` and silently clear the flag —
+ * and would satisfy the "at least one field" guard while changing nothing the
+ * caller asked to change.
+ */
+export const updateCourseSchema = courseFieldsSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
 
 export const courseTeacherIdsSchema = z.object({
   teacherIds: z.array(idSchema).max(10)
