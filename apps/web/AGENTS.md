@@ -52,6 +52,18 @@ driven by WebSocket events rather than fetches, and the admin moderation thread,
 whose read writes an access-log row and therefore must never be refetched on a
 focus event.
 
+## Tests
+
+`bun run test:e2e` runs Playwright against a real stack. It starts its own Vite
+dev server on **3100** — not the 3000 that `bun run dev` uses, because Playwright
+reuses whatever is already listening and on a shared machine that can be a
+different project entirely. The API must be running on 3001, with Postgres and
+Redis behind it.
+
+E2E is deliberately outside the Turbo `test` task, which must stay runnable with
+nothing else on the machine. Point `E2E_BASE_URL` at a deployed environment to
+skip the local server.
+
 ## Talking to the API
 
 Never call `fetch` directly for API data. Two clients, for two contexts:

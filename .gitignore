@@ -14,3 +14,9 @@ apps/*/dist
 packages/*/dist
 tooling/*/dist
 *.tsbuildinfo
+
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+apps/web/.playwright/
