@@ -10,6 +10,7 @@ import {
 } from "@mma/shared";
 import { courses, eq, inArray, or, type SQL } from "@mma/db";
 
+import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CategoryRepository } from "@/repositories/category-repository";
 import type {
   CourseRepository} from "@/repositories/course-repository";
@@ -24,6 +25,9 @@ type CreateCourseInput = z.infer<typeof createCourseSchema>;
 type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 type ListCoursesQuery = z.infer<typeof listCoursesQuerySchema>;
 type RejectCourseInput = z.infer<typeof rejectCourseSchema>;
+
+/** Every cached catalogue page hangs off one index, because any course change can reorder any page. */
+const COURSE_CACHE_INDEX = buildCacheIndex("courses");
 
 export interface CourseListItem {
   category: CourseRecord["category"];
@@ -99,6 +103,11 @@ export class CourseService {
 
       return existingCourse !== null && existingCourse.id !== excludeCourseId;
     });
+  }
+
+  /** Any change to a course can reorder or repopulate any catalogue page. */
+  private async invalidateCourseCache(): Promise<void> {
+    await invalidateCacheIndex(COURSE_CACHE_INDEX);
   }
 
   private async validateCategory(categoryId: string): Promise<void> {
@@ -300,7 +309,28 @@ export class CourseService {
       }
     }
 
-    const result = await this.courseRepository.listCourses(repositoryQuery, extraClauses);
+    // Only the public catalogue is cached. "Mine" and the admin view are
+    // per-user and carry unpublished courses, which must never be shared.
+    const isPublicCatalogue = !isMineRequest && effectiveStatus === "PUBLISHED";
+    const load = async (): Promise<Awaited<ReturnType<CourseRepository["listCourses"]>>> =>
+      this.courseRepository.listCourses(repositoryQuery, extraClauses);
+    const result = isPublicCatalogue
+      ? await readThrough({
+          index: COURSE_CACHE_INDEX,
+          key: buildCacheKey(
+            "courses",
+            "catalogue",
+            repositoryQuery.categoryId,
+            repositoryQuery.minPrice,
+            repositoryQuery.maxPrice,
+            repositoryQuery.search,
+            repositoryQuery.page,
+            repositoryQuery.limit
+          ),
+          load,
+          ttlSeconds: cacheTtlSeconds.courses
+        })
+      : await load();
 
     return {
       items: result.items.map(mapCourse),
@@ -429,6 +459,8 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
+    await this.invalidateCourseCache();
+
     return mapCourse(updatedCourse);
   }
 
@@ -465,6 +497,8 @@ export class CourseService {
     if (!withdrawnCourse) {
       throw new NotFoundError("Course not found");
     }
+
+    await this.invalidateCourseCache();
 
     return { id: withdrawnCourse.id };
   }
@@ -503,6 +537,8 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
+    await this.invalidateCourseCache();
+
     return mapCourse(restoredCourse);
   }
 
@@ -533,6 +569,8 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
+    await this.invalidateCourseCache();
+
     return mapCourse(submittedCourse);
   }
 
@@ -557,6 +595,8 @@ export class CourseService {
     if (!approvedCourse) {
       throw new NotFoundError("Course not found");
     }
+
+    await this.invalidateCourseCache();
 
     await this.notificationService.notifyUsers(
       approvedCourse.teachers.map((teacher) => teacher.id),
@@ -593,6 +633,8 @@ export class CourseService {
     if (!rejectedCourse) {
       throw new NotFoundError("Course not found");
     }
+
+    await this.invalidateCourseCache();
 
     await this.notificationService.notifyUsers(
       rejectedCourse.teachers.map((teacher) => teacher.id),
@@ -666,6 +708,9 @@ export class CourseService {
     if (!updatedCourse) {
       throw new NotFoundError("Course not found");
     }
+
+    // Catalogue cards carry teacher names, so a roster change stales them.
+    await this.invalidateCourseCache();
 
     return mapCourse(updatedCourse);
   }

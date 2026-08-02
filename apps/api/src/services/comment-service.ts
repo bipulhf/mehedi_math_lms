@@ -1,5 +1,6 @@
 import type { UserRole } from "@mma/shared";
 
+import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CommentRepository} from "@/repositories/comment-repository";
 import { type CommentRecord } from "@/repositories/comment-repository";
 import type { ContentRepository } from "@/repositories/content-repository";
@@ -57,6 +58,11 @@ export class CommentService {
     private readonly courseRepository: CourseRepository,
     private readonly enrollmentRepository: EnrollmentRepository
   ) {}
+
+  /** A posted, edited or removed comment stales every page of that thread. */
+  private async invalidateLectureThread(lectureId: string): Promise<void> {
+    await invalidateCacheIndex(buildCacheIndex("comments", "lecture", lectureId));
+  }
 
   private async requireLectureDiscussionAccess(
     lectureId: string,
@@ -129,14 +135,37 @@ export class CommentService {
     await this.requireLectureDiscussionAccess(lectureId, currentUserId, currentUserRole);
 
     const offset = (query.page - 1) * query.limit;
-    const [roots, total] = await Promise.all([
-      this.commentRepository.listRootCommentsByLecture(lectureId, {
-        limit: query.limit,
-        offset
-      }),
-      this.commentRepository.countRootCommentsByLecture(lectureId)
-    ]);
-    const replies = await this.commentRepository.listRepliesByParentIds(roots.map((root) => root.id));
+    /**
+     * The thread is cached as records, not as views: `isOwn` and `isEditable`
+     * differ per reader, so the projection has to stay outside the cache.
+     */
+    const thread = await readThrough({
+      index: buildCacheIndex("comments", "lecture", lectureId),
+      key: buildCacheKey("comments", "lecture", lectureId, query.page, query.limit),
+      load: async (): Promise<{
+        replies: readonly CommentRecord[];
+        roots: readonly CommentRecord[];
+        total: number;
+      }> => {
+        const [loadedRoots, loadedTotal] = await Promise.all([
+          this.commentRepository.listRootCommentsByLecture(lectureId, {
+            limit: query.limit,
+            offset
+          }),
+          this.commentRepository.countRootCommentsByLecture(lectureId)
+        ]);
+
+        return {
+          replies: await this.commentRepository.listRepliesByParentIds(
+            loadedRoots.map((root) => root.id)
+          ),
+          roots: loadedRoots,
+          total: loadedTotal
+        };
+      },
+      ttlSeconds: cacheTtlSeconds.comments
+    });
+    const { replies, roots, total } = thread;
     const repliesByParentId = new Map<string, CommentRecord[]>();
 
     for (const reply of replies) {
@@ -203,6 +232,8 @@ export class CommentService {
       userId: currentUserId
     });
 
+    await this.invalidateLectureThread(lectureId);
+
     return mapComment(comment, currentUserId, currentUserRole, []);
   }
 
@@ -230,6 +261,8 @@ export class CommentService {
 
     const updatedComment = await this.commentRepository.update(commentId, input.content.trim());
 
+    await this.invalidateLectureThread(comment.lectureId);
+
     return mapComment(updatedComment, currentUserId, currentUserRole, []);
   }
 
@@ -252,6 +285,7 @@ export class CommentService {
 
     if (!comment.isDeleted) {
       await this.commentRepository.softDelete(commentId);
+      await this.invalidateLectureThread(comment.lectureId);
     }
 
     return { id: commentId };

@@ -9,9 +9,14 @@ import {
   generateUniqueSlug
 } from "@mma/shared";
 
+import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CategoryRepository} from "@/repositories/category-repository";
 import { type CategoryRecord } from "@/repositories/category-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+
+/** The tree is read on nearly every public page and changes only by admin action. */
+const CATEGORY_CACHE_INDEX = buildCacheIndex("categories");
+const CATEGORY_CACHE_KEY = buildCacheKey("categories", "all");
 
 type CategoriesQuery = z.infer<typeof categoriesQuerySchema>;
 type CreateCategoryInput = z.infer<typeof createCategorySchema>;
@@ -82,11 +87,25 @@ function buildTree(
 export class CategoryService {
   public constructor(private readonly categoryRepository: CategoryRepository) {}
 
+  /**
+   * Every category mutation drops the whole tree. There is one cached list and
+   * a category move changes the shape of it, so a narrower key would be a lie.
+   */
+  private async invalidateCategoryCache(): Promise<void> {
+    await invalidateCacheIndex(CATEGORY_CACHE_INDEX);
+  }
+
   public async listCategories(
     query: CategoriesQuery,
     requesterRole?: UserRole | undefined
   ): Promise<readonly CategoryTreeNode[]> {
-    const categories = await this.categoryRepository.list();
+    // Cached before the visibility filter, so admins and the public share one entry.
+    const categories = await readThrough({
+      index: CATEGORY_CACHE_INDEX,
+      key: CATEGORY_CACHE_KEY,
+      load: async () => this.categoryRepository.list(),
+      ttlSeconds: cacheTtlSeconds.categories
+    });
     const shouldIncludeInactive = query.includeInactive && requesterRole === "ADMIN";
     const visibleCategories = shouldIncludeInactive
       ? categories
@@ -146,6 +165,8 @@ export class CategoryService {
       slug,
       sortOrder: input.sortOrder
     });
+
+    await this.invalidateCategoryCache();
 
     return mapNode(createdCategory, []);
   }
@@ -222,6 +243,8 @@ export class CategoryService {
       throw new NotFoundError("Category not found");
     }
 
+    await this.invalidateCategoryCache();
+
     return mapNode(updatedCategory, []);
   }
 
@@ -246,6 +269,7 @@ export class CategoryService {
     }
 
     await this.categoryRepository.delete(id);
+    await this.invalidateCategoryCache();
   }
 
   public async reorderCategories(
@@ -309,6 +333,8 @@ export class CategoryService {
         sortOrder: item.sortOrder
       }))
     );
+
+    await this.invalidateCategoryCache();
 
     return this.listCategories({ flat: false, includeInactive: true }, "ADMIN");
   }

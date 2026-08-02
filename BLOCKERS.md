@@ -190,6 +190,33 @@ WebSocket delivery and an unread badge, and it is the highest-frequency event on
 alert would be noise. Four of the six notification types now have producers: NOTICE, PAYMENT, COURSE,
 BUG_REPORT. SYSTEM remains the admin broadcast.
 
+### Caching — analytics expires, it is not invalidated
+
+Course listings and the category tree are invalidated by the mutations that own them: a course is
+approved, a category is moved, the cached entry goes. Analytics aggregates are not.
+
+They would have to be dropped by `CommerceService` on every settlement and refund, which means
+`commerce-service.ts` importing `analytics-service.ts`. That is service → service, which
+`apps/api/AGENTS.md` reserves for one documented exception, and it would put a live Redis call inside the
+commerce unit tests, which stub every repository precisely so they touch nothing.
+
+Chosen: a 300-second TTL and no cross-service call. `invalidateAnalyticsCache()` is exported from
+`analytics-service.ts` for whoever decides the five-minute lag is unacceptable — the wiring is one line
+from wherever it belongs. A dashboard that is five minutes behind on revenue is a normal dashboard; a
+catalogue that is two minutes behind on a withdrawn course is not, which is why those two are treated
+differently.
+
+### Caching — the cache is never load-bearing
+
+`lib/cache.ts` catches on read and on write. Redis being down makes every page slower and nothing else.
+The read path also survives a payload it cannot parse, because a cached value whose shape has since
+changed must not become a 500 on a public page.
+
+The one trap worth naming: repository records carry `Date` fields, and `JSON.parse` returns strings for
+them. A service mapper calling `.toISOString()` would throw on the first cache *hit* and pass every test
+that only ever saw a cache miss. The codec encodes dates as `{"__date": iso}` and revives them; it is
+pinned by `lib/cache.test.ts`.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member
