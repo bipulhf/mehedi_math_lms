@@ -3,8 +3,8 @@ import "./load-root-env";
 import { app } from "@/app";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { messagesWsApp } from "@/routes/messages-ws-app";
-import { notificationsWsApp } from "@/routes/notifications-ws-app";
+import { messagesWsApp } from "@/websocket/messages-ws-app";
+import { notificationsWsApp } from "@/websocket/notifications-ws-app";
 import { websocket } from "hono/bun";
 
 function resolveListenPort(): number {

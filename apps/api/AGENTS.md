@@ -85,14 +85,14 @@ Ownership and resource-level authorization belongs in the **service**, not the r
 ## Infrastructure
 
 - `src/lib/env.ts` — Zod-validated env plus derived `isS3Configured` / `isFirebaseConfigured` / `isSslCommerzConfigured` / `isOnecodesoftSmsConfigured` flags. Integrations default to `"replace-me"` placeholders; guard optional integrations behind these flags rather than assuming credentials exist.
-- `src/lib/redis.ts`, `src/lib/queues.ts` — ioredis client and four BullMQ queues: `email`, `notification`, `sms`, `file-processing`. Queue names are typed as `QueueName` in `src/types/app-bindings.ts`; adding a queue means updating both.
+- `src/lib/redis.ts`, `src/lib/queues.ts` — ioredis client and three BullMQ queues: `notification`, `sms`, `file-processing`. Queue names are typed as `QueueName` in `src/types/app-bindings.ts`; adding a queue means updating both. There is deliberately no `email` queue — the staff-invite producer was removed and no transport was ever wired, so the queue went with it (see `BLOCKERS.md`).
 - `src/lib/logger.ts` — pino. Inside a request use `context.get("logger")`, which is already bound to the request id.
 - `src/lib/s3.ts` — AWS S3 client for uploads.
 - Workers in `src/workers/` run as **separate processes** and build their own dependencies — they deliberately do not import the container. Keep them that way.
 
 ## WebSockets
 
-`src/routes/messages-ws-app.ts` and `src/routes/notifications-ws-app.ts` are standalone Hono apps mounted by path match in `src/index.ts`, not by `app.route()`. They re-apply `sessionContextMiddleware` and `requireRole` themselves because the main app's middleware chain never runs for them. If you add a WebSocket path, wire it in `src/index.ts` and re-apply auth inside the new app.
+`src/websocket/messages-ws-app.ts` and `src/websocket/notifications-ws-app.ts` are standalone Hono apps mounted by path match in `src/index.ts`, not by `app.route()`. They re-apply `sessionContextMiddleware` and `requireRole` themselves because the main app's middleware chain never runs for them. If you add a WebSocket path, wire it in `src/index.ts` and re-apply auth inside the new app.
 
 Realtime fan-out goes through `MessageRealtimeService` / `NotificationRealtimeService`, which use their own Redis pub/sub connections.
 
