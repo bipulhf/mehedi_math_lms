@@ -39,12 +39,56 @@ is scoped to `bun test src` as a second guard.
 
 Rejected: excluding tests from `tsconfig.json` outright, which would have left them untypechecked.
 
+### Stage 1 — the generated migration is unsafe for a populated database
+
+`0001_tiny_major_mapleleaf.sql` adds `payments.course_id` as `NOT NULL` with no default and no backfill,
+and recreates `enrollment_status` without `CANCELLED`. Both are fine here — every affected table was empty
+and verified so before applying (`0 payments, 0 enrollments, 0 cancelled`) — but **both would fail against
+a database with rows**.
+
+Chosen: apply the generated migration as-is rather than hand-edit it, since hand-editing generated
+migrations is forbidden by the repo conventions and this database is empty.
+
+**If this schema is ever applied to a populated deployment, the migration must be replaced by a manual
+three-step sequence:**
+
+1. `ALTER TABLE payments ADD COLUMN course_id uuid;` (nullable)
+2. `UPDATE payments p SET course_id = e.course_id FROM enrollments e WHERE e.id = p.enrollment_id;`
+3. `ALTER TABLE payments ALTER COLUMN course_id SET NOT NULL;` and add the FK
+
+plus, before the enum recreation, `UPDATE enrollments SET cancelled_at = now() WHERE status = 'CANCELLED'`
+followed by setting those rows to `ACTIVE`. Per the standing instruction, mark rather than delete: any
+enrolment with no successful payment on a priced course gets `cancelled_at = now()`, not a `DELETE`.
+
+### Stage 1 — a re-purchase reactivates rather than duplicates
+
+`enrollments` has a unique index on `(user_id, course_id)`, so settlement cannot blindly insert. Added
+`grantAccess`, an upsert that clears `cancelled_at` on conflict. A student who was refunded and buys again
+gets their access back with progress, submissions, and completion intact — which is what ADR-0005's
+"completion latches" requires.
+
+### Stage 1 — amount verification is skipped in mock mode
+
+`validatePayment` now returns the gateway's reported `amount`, but mock mode has no real amount to report
+and returns null. Settlement therefore enforces the amount check only when the gateway supplies one, and
+always enforces the validation status. Documented rather than faked, because inventing a mock amount would
+make the check look stronger than it is.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member
   (`PENDING | SUCCESS | FAILED | REFUNDED`), so `handlePaymentCallback` writes `FAILED` and preserves the
   distinction in `metadata.lastCallbackStatus` and the return redirect. Deliberate, not a defect. Pinned by
   a characterisation test.
+
+### Stage 1 — the admin dashboard enrolment count, verified
+
+`admin-dashboard-repository.ts:25` is still an unfiltered `count()` over `enrollments`. Under the old model
+that silently counted abandoned checkouts. It no longer can, because the table holds only enrolments that
+were actually paid for. It does now include enrolments cancelled by a refund.
+
+Left as-is: "how many people have ever enrolled" is a defensible lifetime figure and is strictly more
+accurate than before. Switching it to exclude cancelled enrolments is a product decision, not a defect.
 
 ## Open blockers
 

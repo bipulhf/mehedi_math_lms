@@ -14,7 +14,8 @@ export interface PaymentHistoryItem {
   };
   createdAt: string;
   currency: string;
-  enrollmentId: string;
+  /** Null while the payment is still at checkout. ADR-0001. */
+  enrollmentId: string | null;
   id: string;
   metadata: Record<string, string | number | boolean | null> | null;
   paidAt: string | null;

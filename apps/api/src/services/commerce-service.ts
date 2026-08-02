@@ -17,11 +17,16 @@ import {
 import type { ProfileRepository } from "@/repositories/profile-repository";
 import type { ReviewRepository } from "@/repositories/review-repository";
 import type { SslCommerzService } from "@/services/sslcommerz-service";
+import { isSettledValidationStatus } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface EnrollmentActionResponse {
   accessGranted: boolean;
-  enrollmentId: string;
+  /**
+   * Null while a priced course is still at checkout — the enrolment does not
+   * exist until the payment settles. ADR-0001.
+   */
+  enrollmentId: string | null;
   payment: {
     gatewayUrl: string;
     id: string;
@@ -34,6 +39,8 @@ export interface EnrollmentActionResponse {
 
 export interface StudentEnrollmentItem {
   accessGranted: boolean;
+  /** Set when a refund withdrew access. Independent of status. ADR-0001. */
+  cancelledAt: string | null;
   category: {
     name: string;
     slug: string;
@@ -52,7 +59,7 @@ export interface StudentEnrollmentItem {
   id: string;
   latestPaymentStatus: PaymentRecord["status"] | null;
   progressPercentage: number;
-  status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  status: "ACTIVE" | "COMPLETED";
 }
 
 type FormattedEnrollment = Omit<StudentEnrollmentItem, "hasReview">;
@@ -65,7 +72,8 @@ export interface PaymentHistoryItem {
   };
   createdAt: string;
   currency: string;
-  enrollmentId: string;
+  /** Null while the payment is still at checkout. ADR-0001. */
+  enrollmentId: string | null;
   id: string;
   metadata: Record<string, string | number | boolean | null> | null;
   paidAt: string | null;
@@ -122,11 +130,13 @@ function formatEnrollment(record: StudentEnrollmentRecord): FormattedEnrollment 
     record.totalLectures === 0
       ? 0
       : Math.round((record.completedLectures / record.totalLectures) * 100);
-  const accessGranted =
-    record.coursePrice === "0.00" || record.latestPaymentStatus === "SUCCESS";
+  // The enrolment exists, so the right to study was real; the only question is
+  // whether a refund has since withdrawn it. No price or payment check. ADR-0001.
+  const accessGranted = record.cancelledAt === null;
 
   return {
     accessGranted,
+    cancelledAt: record.cancelledAt ? record.cancelledAt.toISOString() : null,
     category: {
       name: record.categoryName,
       slug: record.categorySlug
@@ -198,13 +208,12 @@ export class CommerceService {
       };
     }
 
-    let enrollment = existingEnrollment;
-
-    if (!enrollment) {
-      enrollment = await this.enrollmentRepository.create(currentUserId, courseId);
-    }
-
+    // A free course is enrolled immediately — the right to study is real the
+    // moment it is asked for. A priced course creates no enrolment here; that
+    // happens in handlePaymentCallback once the money clears. ADR-0001.
     if (Number(course.price) <= 0) {
+      const enrollment = await this.enrollmentRepository.grantAccess(currentUserId, courseId);
+
       return {
         accessGranted: true,
         enrollmentId: enrollment.id,
@@ -220,7 +229,8 @@ export class CommerceService {
     }
     const payment = await this.paymentRepository.create({
       amount: course.price,
-      enrollmentId: enrollment.id,
+      courseId,
+      enrollmentId: existingEnrollment?.id ?? null,
       metadata: {
         callbackOrigin: callbackBase
       },
@@ -248,7 +258,7 @@ export class CommerceService {
 
     return {
       accessGranted: false,
-      enrollmentId: enrollment.id,
+      enrollmentId: existingEnrollment?.id ?? null,
       payment: {
         gatewayUrl: gatewaySession.gatewayUrl,
         id: updatedPayment.id,
@@ -314,10 +324,9 @@ export class CommerceService {
       throw new NotFoundError("Payment not found");
     }
 
-    const enrollment = await this.enrollmentRepository.findById(payment.enrollmentId);
-    const course = enrollment
-      ? await this.courseRepository.findById(enrollment.courseId)
-      : null;
+    // The course is on the payment itself now, so an unsettled payment still
+    // reports what it was for. ADR-0001.
+    const course = await this.courseRepository.findById(payment.courseId);
 
     return {
       amount: payment.amount,
@@ -395,7 +404,28 @@ export class CommerceService {
         throw new ConflictError("Payment validation failed for this transaction");
       }
 
+      // The gateway's own verdict. Previously unread, so a response of
+      // INVALID_TRANSACTION carrying a matching tran_id still settled. ADR-0001.
+      if (!isSettledValidationStatus(validation.status)) {
+        throw new ConflictError("Payment was not confirmed by the gateway");
+      }
+
+      // Guard against a tampered amount. Mock mode reports no amount, so the
+      // comparison only applies when a real gateway is configured.
+      if (validation.amount !== null && Number(validation.amount) < Number(payment.amount)) {
+        throw new ConflictError("Paid amount does not match the course price");
+      }
+
+      // The enrolment comes into existence here, and only here, for a priced
+      // course. grantAccess also clears cancelledAt, so a student who was
+      // refunded and has bought again gets their progress back. ADR-0001.
+      const enrollment = await this.enrollmentRepository.grantAccess(
+        payment.userId,
+        payment.courseId
+      );
+
       await this.paymentRepository.update(payment.id, {
+        enrollmentId: enrollment.id,
         metadata: {
           ...payment.metadata,
           ...validation.metadata,
@@ -468,6 +498,14 @@ export class CommerceService {
       refundedAt: new Date(),
       status: "REFUNDED"
     });
+
+    // Refunding withdraws the right to study, explicitly. Previously this
+    // happened only as a side effect of hasCourseAccess matching on a SUCCESS
+    // payment; now that access is the enrolment itself, it has to be said.
+    // Progress, submissions, and completion are all left intact. ADR-0001.
+    if (payment.enrollmentId) {
+      await this.enrollmentRepository.cancelById(payment.enrollmentId);
+    }
 
     return this.getPaymentById(payment.id, payment.userId, "ADMIN");
   }

@@ -15,7 +15,9 @@ const apiEnvSchema = z.object({
   S3_PUBLIC_BASE_URL: z.url().optional(),
   SSLCOMMERZ_STORE_ID: z.string().default("replace-me"),
   SSLCOMMERZ_STORE_PASSWORD: z.string().default("replace-me"),
-  SSLCOMMERZ_SANDBOX_MODE: z.coerce.boolean().default(true),
+  // NOT z.coerce.boolean(): that is Boolean(input), so the string "false"
+  // coerces to true and the live gateway becomes unreachable. ADR-0001.
+  SSLCOMMERZ_SANDBOX_MODE: z.stringbool().default(true),
   CORS_ORIGINS: z.string().optional(),
   BODY_LIMIT_BYTES: z.coerce
     .number()

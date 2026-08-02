@@ -7,6 +7,7 @@ import {
   enrollments,
   eq,
   inArray,
+  isNull,
   lectures,
   payments,
   sql,
@@ -14,12 +15,14 @@ import {
 } from "@mma/db";
 
 export interface EnrollmentRecord {
+  /** Set when a refund withdrew the right to study. Independent of status. */
+  cancelledAt: Date | null;
   completedAt: Date | null;
   courseId: string;
   createdAt: Date;
   enrolledAt: Date;
   id: string;
-  status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  status: "ACTIVE" | "COMPLETED";
   updatedAt: Date;
   userId: string;
 }
@@ -126,14 +129,60 @@ export class EnrollmentRepository {
     return mapEnrollmentRecord(record);
   }
 
+  /**
+   * Grant the right to study, whether or not it was ever held before. A student
+   * who was refunded and has bought the course again must get their access back
+   * rather than collide with the (userId, courseId) unique index — and their
+   * progress and completion are still sitting there, untouched. ADR-0001.
+   */
+  public async grantAccess(userId: string, courseId: string): Promise<EnrollmentRecord> {
+    const [record] = await db
+      .insert(enrollments)
+      .values({
+        courseId,
+        userId
+      })
+      .onConflictDoUpdate({
+        set: {
+          cancelledAt: null,
+          updatedAt: new Date()
+        },
+        target: [enrollments.userId, enrollments.courseId]
+      })
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to grant course access");
+    }
+
+    return mapEnrollmentRecord(record);
+  }
+
+  /** Withdraw the right to study. Progress and completion are left intact. */
+  public async cancelById(id: string): Promise<EnrollmentRecord | null> {
+    const [record] = await db
+      .update(enrollments)
+      .set({
+        cancelledAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(enrollments.id, id))
+      .returning();
+
+    return record ? mapEnrollmentRecord(record) : null;
+  }
+
   public async updateStatus(
     id: string,
     status: EnrollmentRecord["status"]
   ): Promise<EnrollmentRecord> {
+    // completedAt is only ever set, never cleared: completion is a permanent
+    // fact about what the student achieved, and a later status write must not
+    // erase it. ADR-0005.
     const [record] = await db
       .update(enrollments)
       .set({
-        completedAt: status === "COMPLETED" ? new Date() : null,
+        ...(status === "COMPLETED" ? { completedAt: new Date() } : {}),
         status,
         updatedAt: new Date()
       })
@@ -150,6 +199,7 @@ export class EnrollmentRepository {
   public async listByUser(userId: string): Promise<readonly StudentEnrollmentRecord[]> {
     const rows = await db
       .select({
+        cancelledAt: enrollments.cancelledAt,
         categoryName: sql<string>`(select c.name from categories c where c.id = ${courses.categoryId})`,
         categorySlug: sql<string>`(select c.slug from categories c where c.id = ${courses.categoryId})`,
         completedLectures: sql<number>`(
@@ -283,39 +333,25 @@ export class EnrollmentRepository {
     return [...new Set(rows.map((row) => row.userId))];
   }
 
+  /**
+   * An enrolment exists only once the right to study is real — a priced course
+   * enrols on payment success, never before. So presence is access, and the
+   * only further question is whether it has since been cancelled by a refund.
+   * No payment join, and no course-price special case. ADR-0001.
+   */
   public async hasCourseAccess(userId: string, courseId: string): Promise<boolean> {
     const [row] = await db
-      .select({
-        canAccess: sql<number>`(
-          case
-            when exists (
-              select 1
-              from ${enrollments} e
-              where e.user_id = ${userId}
-                and e.course_id = ${courseId}
-                and e.status in ('ACTIVE', 'COMPLETED')
-                and (
-                  exists (
-                    select 1
-                    from ${courses} c
-                    where c.id = ${courseId}
-                      and c.price::numeric <= 0
-                  )
-                  or exists (
-                    select 1
-                    from ${payments} p
-                    where p.enrollment_id = e.id
-                      and p.status = 'SUCCESS'
-                  )
-                )
-            ) then 1 else 0
-          end
-        )`
-      })
-      .from(courses)
-      .where(eq(courses.id, courseId))
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .where(
+        and(
+          eq(enrollments.userId, userId),
+          eq(enrollments.courseId, courseId),
+          isNull(enrollments.cancelledAt)
+        )
+      )
       .limit(1);
 
-    return (row?.canAccess ?? 0) > 0;
+    return Boolean(row);
   }
 }

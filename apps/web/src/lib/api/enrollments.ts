@@ -7,7 +7,8 @@ export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
 
 export interface EnrollmentAction {
   accessGranted: boolean;
-  enrollmentId: string;
+  /** Null while a priced course is still at checkout. ADR-0001. */
+  enrollmentId: string | null;
   payment: {
     gatewayUrl: string;
     id: string;

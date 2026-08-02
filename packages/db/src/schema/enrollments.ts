@@ -22,9 +22,12 @@ export const enrollments = pgTable(
     courseId: uuid("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
+    // Progress only: how far the student got. Entitlement lives on cancelledAt
+    // so that a refund and a completion can never overwrite each other. ADR-0001.
     status: enrollmentStatusEnum("status").default("ACTIVE").notNull(),
     enrolledAt: timestamp("enrolled_at", { withTimezone: true }).defaultNow().notNull(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },

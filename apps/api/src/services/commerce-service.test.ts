@@ -10,10 +10,9 @@ import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 /**
- * Characterisation tests: these pin the behaviour that exists today, before the
- * ADR-0001 rework moves enrolment creation onto the payment-success path. They
- * are expected to change in Stage 1 — that is the point. A diff here means the
- * behaviour moved, and the diff should match the ADR.
+ * These pinned the pre-ADR-0001 behaviour and were updated when Stage 1 landed.
+ * An enrolment now exists only once the money has cleared, refunding cancels it
+ * explicitly, and settlement verifies the gateway's own verdict and the amount.
  */
 
 interface Overrides {
@@ -22,7 +21,12 @@ interface Overrides {
   hasAccess?: boolean;
   payment?: Partial<PaymentRecord> | null;
   profile?: { email: string; name: string } | null;
-  validation?: { status: string; transactionId: string; validationId: string };
+  validation?: {
+    amount?: string | null;
+    status: string;
+    transactionId: string;
+    validationId: string;
+  };
 }
 
 interface CourseShape {
@@ -33,13 +37,21 @@ interface CourseShape {
 }
 
 interface Calls {
+  cancelledEnrollments: string[];
   createdEnrollments: number;
   createdPayments: number;
+  grantedAccess: number;
   updates: { id: string; patch: Record<string, unknown> }[];
 }
 
 function buildService(overrides: Overrides = {}): { calls: Calls; service: CommerceService } {
-  const calls: Calls = { createdEnrollments: 0, createdPayments: 0, updates: [] };
+  const calls: Calls = {
+    cancelledEnrollments: [],
+    createdEnrollments: 0,
+    createdPayments: 0,
+    grantedAccess: 0,
+    updates: []
+  };
 
   const course: CourseShape | null =
     overrides.course === null
@@ -68,6 +80,11 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
   } as unknown as PaymentRecord;
 
   const enrollmentRepository = {
+    cancelById: async (id: string) => {
+      calls.cancelledEnrollments.push(id);
+
+      return { cancelledAt: new Date(), id };
+    },
     create: async () => {
       calls.createdEnrollments += 1;
 
@@ -75,6 +92,11 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
     },
     findById: async () => ({ courseId: "course-1", id: "enrol-1" }),
     findByUserAndCourse: async () => overrides.enrollment ?? null,
+    grantAccess: async () => {
+      calls.grantedAccess += 1;
+
+      return { cancelledAt: null, id: "enrol-new", status: "ACTIVE" };
+    },
     hasCourseAccess: async () => overrides.hasAccess ?? false
   } as unknown as EnrollmentRepository;
 
@@ -113,13 +135,14 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
       isMock: true,
       metadata: {}
     }),
-    validatePayment: async () =>
-      overrides.validation ?? {
-        metadata: {},
-        status: "VALID",
-        transactionId: "MMA-TXN-1",
-        validationId: "VAL-1"
-      }
+    validatePayment: async () => ({
+      amount: null,
+      metadata: {},
+      status: "VALID",
+      transactionId: "MMA-TXN-1",
+      validationId: "VAL-1",
+      ...overrides.validation
+    })
   } as unknown as SslCommerzService;
 
   const reviewRepository = {
@@ -163,17 +186,18 @@ describe("CommerceService.createEnrollment", () => {
     expect(result.accessGranted).toBe(true);
     expect(result.requiresPayment).toBe(false);
     expect(result.payment).toBeNull();
-    expect(calls.createdEnrollments).toBe(1);
+    expect(calls.grantedAccess).toBe(1);
     expect(calls.createdPayments).toBe(0);
   });
 
-  test("CURRENT BEHAVIOUR: a priced course creates the enrolment before any payment", async () => {
-    // ADR-0001 moves this creation to the payment-success handler. When Stage 1
-    // lands, createdEnrollments becomes 0 here and this expectation must flip.
+  test("a priced course creates NO enrolment until the money clears", async () => {
+    // ADR-0001. The checkout lives entirely on the payment record.
     const { calls, service } = buildService({ course: { price: "500.00" } });
     const result = await service.createEnrollment("course-1", "user-1", "STUDENT");
 
-    expect(calls.createdEnrollments).toBe(1);
+    expect(calls.grantedAccess).toBe(0);
+    expect(calls.createdEnrollments).toBe(0);
+    expect(result.enrollmentId).toBeNull();
     expect(calls.createdPayments).toBe(1);
     expect(result.accessGranted).toBe(false);
     expect(result.requiresPayment).toBe(true);
@@ -190,7 +214,7 @@ describe("CommerceService.createEnrollment", () => {
 
     expect(result.accessGranted).toBe(true);
     expect(result.enrollmentId).toBe("enrol-1");
-    expect(calls.createdEnrollments).toBe(0);
+    expect(calls.grantedAccess).toBe(0);
     expect(calls.createdPayments).toBe(0);
   });
 
@@ -202,7 +226,7 @@ describe("CommerceService.createEnrollment", () => {
     });
     const result = await service.createEnrollment("course-1", "user-1", "STUDENT");
 
-    expect(calls.createdEnrollments).toBe(0);
+    expect(calls.grantedAccess).toBe(0);
     expect(calls.createdPayments).toBe(1);
     expect(result.enrollmentId).toBe("enrol-1");
   });
@@ -236,27 +260,49 @@ describe("CommerceService.handlePaymentCallback", () => {
     expect(calls.updates).toHaveLength(0);
   });
 
-  test("a valid success marks the payment SUCCESS and stamps paidAt", async () => {
+  test("a valid success settles the payment and creates the enrolment", async () => {
     const { calls, service } = buildService();
     const redirect = await service.handlePaymentCallback({ paymentId: "pay-1", status: "SUCCESS" });
 
+    expect(calls.grantedAccess).toBe(1);
     expect(calls.updates).toHaveLength(1);
     expect(calls.updates[0]?.patch.status).toBe("SUCCESS");
     expect(calls.updates[0]?.patch.paidAt).toBeInstanceOf(Date);
+    expect(calls.updates[0]?.patch.enrollmentId).toBe("enrol-new");
     expect(redirect).toContain("status=success");
   });
 
-  test("GAP: a non-VALID gateway status still settles the payment", async () => {
-    // handlePaymentCallback only compares transaction ids; it never asserts the
-    // gateway's own validation status. Stage 1 must make this case throw.
+  test("a non-VALID gateway status is refused and nothing settles", async () => {
+    // ADR-0001. Previously only the transaction id was compared, so a response
+    // of INVALID_TRANSACTION carrying a matching tran_id still settled.
     const { calls, service } = buildService({
       validation: { status: "INVALID_TRANSACTION", transactionId: "MMA-TXN-1", validationId: "VAL-1" }
     });
 
-    const redirect = await service.handlePaymentCallback({ paymentId: "pay-1", status: "SUCCESS" });
+    await expect(
+      service.handlePaymentCallback({ paymentId: "pay-1", status: "SUCCESS" })
+    ).rejects.toBeInstanceOf(ConflictError);
+    expect(calls.grantedAccess).toBe(0);
+    expect(calls.updates).toHaveLength(0);
+  });
 
-    expect(calls.updates[0]?.patch.status).toBe("SUCCESS");
-    expect(redirect).toContain("status=success");
+  test("an underpaid amount is refused and nothing settles", async () => {
+    // ADR-0001. The gateway reports what was actually paid; it must cover the
+    // course price before the enrolment is granted.
+    const { calls, service } = buildService({
+      validation: {
+        amount: "1.00",
+        status: "VALID",
+        transactionId: "MMA-TXN-1",
+        validationId: "VAL-1"
+      }
+    });
+
+    await expect(
+      service.handlePaymentCallback({ paymentId: "pay-1", status: "SUCCESS" })
+    ).rejects.toBeInstanceOf(ConflictError);
+    expect(calls.grantedAccess).toBe(0);
+    expect(calls.updates).toHaveLength(0);
   });
 
   test("a failure marks the payment FAILED", async () => {
@@ -320,18 +366,25 @@ describe("CommerceService.refundPayment", () => {
     expect(calls.updates[0]?.patch.refundedAt).toBeInstanceOf(Date);
   });
 
-  test("CURRENT BEHAVIOUR: refunding touches only the payment, never the enrolment", async () => {
-    // ADR-0001 makes refund cancel the enrolment in the same transaction.
-    // Today access is revoked only as a side effect of hasCourseAccess
-    // matching on status = 'SUCCESS'. Stage 1 must make this explicit.
+  test("refunding cancels the enrolment it paid for", async () => {
+    // ADR-0001. Previously access was revoked only as a side effect of
+    // hasCourseAccess matching on status = 'SUCCESS'; now it is explicit.
     const { calls, service } = buildService({
       payment: { status: "SUCCESS" } as Partial<PaymentRecord>
     });
 
     await service.refundPayment("pay-1", undefined, "ADMIN");
 
-    const touchedEnrolment = calls.updates.some((update) => "cancelledAt" in update.patch);
+    expect(calls.cancelledEnrollments).toEqual(["enrol-1"]);
+  });
 
-    expect(touchedEnrolment).toBe(false);
+  test("refunding an unsettled payment cancels nothing", async () => {
+    const { calls, service } = buildService({
+      payment: { enrollmentId: null, status: "SUCCESS" } as Partial<PaymentRecord>
+    });
+
+    await service.refundPayment("pay-1", undefined, "ADMIN");
+
+    expect(calls.cancelledEnrollments).toEqual([]);
   });
 });

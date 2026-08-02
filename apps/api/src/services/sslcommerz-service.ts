@@ -19,10 +19,23 @@ interface InitiatePaymentResult {
 }
 
 interface ValidationResult {
+  /**
+   * What the gateway says was actually paid. Null in mock mode, where there is
+   * no real amount to report. Callers must compare this against the course
+   * price before settling. ADR-0001.
+   */
+  amount: string | null;
   metadata: Record<string, string | number | boolean | null>;
   status: string;
   transactionId: string;
   validationId: string;
+}
+
+/** Statuses SSLCommerz uses to mean "this transaction really was paid". */
+const SETTLED_VALIDATION_STATUSES = new Set(["VALID", "VALIDATED"]);
+
+export function isSettledValidationStatus(status: string): boolean {
+  return SETTLED_VALIDATION_STATUSES.has(status.trim().toUpperCase());
 }
 
 interface SslCommerzInitResponse {
@@ -164,6 +177,7 @@ export class SslCommerzService {
       }
 
       return {
+        amount: null,
         metadata: {
           gatewayMode: "mock",
           validationStatus: "VALIDATED"
@@ -187,6 +201,7 @@ export class SslCommerzService {
     }
 
     return {
+      amount: payload.amount ?? null,
       metadata: toFlatMetadata({
         amount: payload.amount ?? null,
         bankTransactionId: payload.bank_tran_id ?? null,

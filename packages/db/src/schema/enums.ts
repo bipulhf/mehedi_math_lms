@@ -30,10 +30,11 @@ export const testSubmissionStatusEnum = pgEnum("test_submission_status", [
   "GRADED"
 ]);
 
+// Progress only. Withdrawal of the right to study is enrollments.cancelled_at,
+// not a status — a refunded student who finished stays COMPLETED. ADR-0001.
 export const enrollmentStatusEnum = pgEnum("enrollment_status", [
   "ACTIVE",
-  "COMPLETED",
-  "CANCELLED"
+  "COMPLETED"
 ]);
 
 export const paymentStatusEnum = pgEnum("payment_status", [

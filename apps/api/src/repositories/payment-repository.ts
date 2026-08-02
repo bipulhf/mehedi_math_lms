@@ -2,9 +2,12 @@ import { and, db, desc, eq, payments, sql } from "@mma/db";
 
 export interface PaymentRecord {
   amount: string;
+  /** Known at checkout. The enrolment is not, so this is the durable link. */
+  courseId: string;
   createdAt: Date;
   currency: string;
-  enrollmentId: string;
+  /** Null until the payment settles and the enrolment is created. ADR-0001. */
+  enrollmentId: string | null;
   id: string;
   metadata: Record<string, string | number | boolean | null> | null;
   paidAt: Date | null;
@@ -17,7 +20,6 @@ export interface PaymentRecord {
 }
 
 export interface PaymentListRecord extends PaymentRecord {
-  courseId: string;
   courseTitle: string;
   userEmail: string;
   userName: string;
@@ -37,7 +39,8 @@ function mapPaymentRecord(record: typeof payments.$inferSelect): PaymentRecord {
 export class PaymentRepository {
   public async create(input: {
     amount: string;
-    enrollmentId: string;
+    courseId: string;
+    enrollmentId?: string | null | undefined;
     metadata?: Record<string, string | number | boolean | null> | null | undefined;
     transactionId: string;
     userId: string;
@@ -46,7 +49,8 @@ export class PaymentRepository {
       .insert(payments)
       .values({
         amount: input.amount,
-        enrollmentId: input.enrollmentId,
+        courseId: input.courseId,
+        enrollmentId: input.enrollmentId ?? null,
         metadata: input.metadata ?? null,
         transactionId: input.transactionId,
         userId: input.userId
@@ -111,6 +115,7 @@ export class PaymentRepository {
   public async update(
     id: string,
     input: {
+      enrollmentId?: string | null | undefined;
       metadata?: Record<string, string | number | boolean | null> | null | undefined;
       paidAt?: Date | null | undefined;
       refundedAt?: Date | null | undefined;
@@ -120,6 +125,7 @@ export class PaymentRepository {
     const [record] = await db
       .update(payments)
       .set({
+        ...(input.enrollmentId === undefined ? {} : { enrollmentId: input.enrollmentId }),
         metadata: input.metadata,
         paidAt: input.paidAt,
         refundedAt: input.refundedAt,
@@ -140,13 +146,8 @@ export class PaymentRepository {
     const rows = await db
       .select({
         amount: payments.amount,
-        courseId: sql<string>`(select e.course_id from enrollments e where e.id = ${payments.enrollmentId})`,
-        courseTitle: sql<string>`(
-          select c.title
-          from courses c
-          inner join enrollments e on e.course_id = c.id
-          where e.id = ${payments.enrollmentId}
-        )`,
+        courseId: payments.courseId,
+        courseTitle: sql<string>`(select c.title from courses c where c.id = ${payments.courseId})`,
         createdAt: payments.createdAt,
         currency: payments.currency,
         enrollmentId: payments.enrollmentId,
@@ -180,13 +181,8 @@ export class PaymentRepository {
       db
         .select({
           amount: payments.amount,
-          courseId: sql<string>`(select e.course_id from enrollments e where e.id = ${payments.enrollmentId})`,
-          courseTitle: sql<string>`(
-            select c.title
-            from courses c
-            inner join enrollments e on e.course_id = c.id
-            where e.id = ${payments.enrollmentId}
-          )`,
+          courseId: payments.courseId,
+          courseTitle: sql<string>`(select c.title from courses c where c.id = ${payments.courseId})`,
           createdAt: payments.createdAt,
           currency: payments.currency,
           enrollmentId: payments.enrollmentId,
