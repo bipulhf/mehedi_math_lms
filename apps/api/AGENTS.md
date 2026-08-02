@@ -8,6 +8,7 @@ bun run typecheck
 bun run lint
 bun run worker:notifications   # BullMQ notification worker (separate process)
 bun run worker:sms             # BullMQ SMS worker (separate process)
+bun run worker:file-processing # BullMQ video metadata worker (separate process)
 ```
 
 Listens on `env.API_PORT` (default `3001`) in development. The `PORT=3010` in the dev script is only consulted when `NODE_ENV=production` — see `resolveListenPort()` in `src/index.ts`. Do not "fix" one to match the other without checking both.

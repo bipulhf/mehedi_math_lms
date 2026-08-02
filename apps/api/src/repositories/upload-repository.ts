@@ -1,4 +1,4 @@
-import { db, eq, uploads } from "@mma/db";
+import { and, asc, db, eq, isNull, uploads } from "@mma/db";
 import type { UploadKind, UploadPurpose, UploadStatus } from "@mma/shared";
 
 export interface UploadRecord {
@@ -39,6 +39,13 @@ interface ConfirmUploadInput {
   id: string;
   status: UploadStatus;
   width?: number | undefined;
+}
+
+interface UpdateMediaMetadataInput {
+  durationInSeconds: number | null;
+  height: number | null;
+  id: string;
+  width: number | null;
 }
 
 function mapUploadRecord(record: typeof uploads.$inferSelect): UploadRecord {
@@ -112,6 +119,44 @@ export class UploadRepository {
     }
 
     return mapUploadRecord(record);
+  }
+
+  /**
+   * Writes back what the file-processing worker read out of the container.
+   * Values the parser could not determine stay as they are, so a client that
+   * supplied its own numbers on confirm is never overwritten with nulls.
+   */
+  public async updateMediaMetadata(input: UpdateMediaMetadataInput): Promise<UploadRecord | null> {
+    const [record] = await db
+      .update(uploads)
+      .set({
+        ...(input.durationInSeconds === null ? {} : { durationInSeconds: input.durationInSeconds }),
+        ...(input.height === null ? {} : { height: input.height }),
+        ...(input.width === null ? {} : { width: input.width }),
+        updatedAt: new Date()
+      })
+      .where(eq(uploads.id, input.id))
+      .returning();
+
+    return record ? mapUploadRecord(record) : null;
+  }
+
+  /** Confirmed videos whose duration was never determined. Drives the backfill. */
+  public async listVideosMissingMetadata(limit: number): Promise<readonly UploadRecord[]> {
+    const records = await db
+      .select()
+      .from(uploads)
+      .where(
+        and(
+          eq(uploads.kind, "VIDEO"),
+          eq(uploads.status, "READY"),
+          isNull(uploads.durationInSeconds)
+        )
+      )
+      .orderBy(asc(uploads.createdAt))
+      .limit(limit);
+
+    return records.map(mapUploadRecord);
   }
 
   public async deleteUpload(id: string): Promise<void> {

@@ -1,4 +1,10 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "@/lib/env";
@@ -28,6 +34,39 @@ export function getPublicFileUrl(key: string): string {
   }
 
   return `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${key}`;
+}
+
+export async function getStoredFileSize(key: string): Promise<number | null> {
+  const command = new HeadObjectCommand({
+    Bucket: env.AWS_S3_BUCKET,
+    Key: key
+  });
+  const response = await s3Client.send(command);
+
+  return response.ContentLength ?? null;
+}
+
+/**
+ * Reads `[start, endInclusive]` of a stored object. Used by the file-processing
+ * worker to walk a video's container header without downloading the video.
+ */
+export async function getStoredFileRange(
+  key: string,
+  start: number,
+  endInclusive: number
+): Promise<Uint8Array> {
+  const command = new GetObjectCommand({
+    Bucket: env.AWS_S3_BUCKET,
+    Key: key,
+    Range: `bytes=${start}-${endInclusive}`
+  });
+  const response = await s3Client.send(command);
+
+  if (!response.Body) {
+    return new Uint8Array(0);
+  }
+
+  return response.Body.transformToByteArray();
 }
 
 export async function deleteStoredFile(key: string): Promise<void> {
