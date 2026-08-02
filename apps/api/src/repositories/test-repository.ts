@@ -1,10 +1,12 @@
 import {
   and,
   asc,
+  chapters,
   db,
   desc,
   eq,
   inArray,
+  sql,
   questionOptions,
   submissionAnswers,
   testQuestions,
@@ -17,6 +19,14 @@ import type {
   TestSubmissionStatus,
   TestType
 } from "@mma/shared";
+
+/** One published Test and how the student has fared against it. ADR-0005. */
+export interface CourseTestResultRecord {
+  /** Highest score across graded attempts; null if never graded. */
+  bestGradedScore: number | null;
+  passingScore: number | null;
+  testId: string;
+}
 
 export interface TestRecord {
   chapterId: string;
@@ -185,6 +195,38 @@ function mapSubmissionAnswerRecord(record: typeof submissionAnswers.$inferSelect
 }
 
 export class TestRepository {
+  /**
+   * Every published Test in a course, with the student's best graded score.
+   * Retakes are unlimited, so the best attempt is the one that counts. Feeds
+   * the completion rule in ADR-0005.
+   */
+  public async listCourseTestResults(
+    courseId: string,
+    userId: string
+  ): Promise<readonly CourseTestResultRecord[]> {
+    const rows = await db
+      .select({
+        bestGradedScore: sql<number | null>`(
+          select max(coalesce(s.score, 0))
+          from ${testSubmissions} s
+          where s.test_id = ${tests.id}
+            and s.user_id = ${userId}
+            and s.status = 'GRADED'
+        )`,
+        passingScore: tests.passingScore,
+        testId: tests.id
+      })
+      .from(tests)
+      .innerJoin(chapters, eq(chapters.id, tests.chapterId))
+      .where(and(eq(chapters.courseId, courseId), eq(tests.isPublished, true)));
+
+    return rows.map((row) => ({
+      bestGradedScore: row.bestGradedScore === null ? null : Number(row.bestGradedScore),
+      passingScore: row.passingScore,
+      testId: row.testId
+    }));
+  }
+
   public async listTestsByChapterIds(chapterIds: readonly string[]): Promise<readonly TestRecord[]> {
     if (chapterIds.length === 0) {
       return [];

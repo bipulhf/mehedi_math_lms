@@ -4,6 +4,7 @@ import type { ContentRepository } from "@/repositories/content-repository";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import type { TestRepository } from "@/repositories/test-repository";
+import type { ProgressService } from "@/services/progress-service";
 import { TestService } from "@/services/test-service";
 import { ForbiddenError, ValidationError } from "@/utils/errors";
 
@@ -36,6 +37,7 @@ interface Overrides {
 
 interface Calls {
   createdSubmissions: number;
+  promotionChecks: number;
   submissionUpdates: Record<string, unknown>[];
 }
 
@@ -52,7 +54,7 @@ const defaultOptions: readonly OptionSpec[] = [
 ];
 
 function buildService(overrides: Overrides = {}): { calls: Calls; service: TestService } {
-  const calls: Calls = { createdSubmissions: 0, submissionUpdates: [] };
+  const calls: Calls = { createdSubmissions: 0, promotionChecks: 0, submissionUpdates: [] };
   const questions = overrides.questions ?? defaultQuestions;
   const options = overrides.options ?? defaultOptions;
 
@@ -106,8 +108,23 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
   } as unknown as CourseRepository;
 
   const enrollmentRepository = {
+    findByUserAndCourse: async () => ({
+      cancelledAt: null,
+      courseId: "course-1",
+      id: "enrol-1",
+      status: "ACTIVE",
+      userId: "user-1"
+    }),
     hasCourseAccess: async () => true
   } as unknown as EnrollmentRepository;
+
+  const progressService = {
+    promoteIfFinished: async () => {
+      calls.promotionChecks += 1;
+
+      return { id: "enrol-1", status: "ACTIVE" };
+    }
+  } as unknown as ProgressService;
 
   return {
     calls,
@@ -115,7 +132,8 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
       testRepository,
       contentRepository,
       courseRepository,
-      enrollmentRepository
+      enrollmentRepository,
+      progressService
     )
   };
 }

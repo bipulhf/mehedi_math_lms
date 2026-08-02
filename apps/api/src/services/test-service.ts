@@ -24,6 +24,7 @@ import {
   type SubmissionSummaryRecord,
   type TestRecord
 } from "@/repositories/test-repository";
+import type { ProgressService } from "@/services/progress-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CreateTestInput = z.infer<typeof createTestSchema>;
@@ -153,8 +154,33 @@ export class TestService {
     private readonly testRepository: TestRepository,
     private readonly contentRepository: ContentRepository,
     private readonly courseRepository: CourseRepository,
-    private readonly enrollmentRepository: EnrollmentRepository
+    private readonly enrollmentRepository: EnrollmentRepository,
+    private readonly progressService: ProgressService
   ) {}
+
+  /**
+   * A graded submission can be the last thing a course was waiting on, so the
+   * enrolment is re-evaluated here. For an Exam-Only Course this is the only
+   * path to completion — it has no lectures to mark. ADR-0005.
+   */
+  private async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<void> {
+    const chapter = await this.contentRepository.findChapterById(chapterId);
+
+    if (!chapter) {
+      return;
+    }
+
+    const enrollment = await this.enrollmentRepository.findByUserAndCourse(
+      userId,
+      chapter.courseId
+    );
+
+    if (!enrollment) {
+      return;
+    }
+
+    await this.progressService.promoteIfFinished(chapter.courseId, enrollment);
+  }
 
   private async requireStudentCourseAccess(
     courseId: string,
@@ -858,6 +884,14 @@ export class TestService {
       status: graded.hasWrittenQuestions ? "SUBMITTED" : "GRADED",
       submittedAt: new Date()
     });
+    if (updatedSubmission.status === "GRADED") {
+      const test = await this.testRepository.findTestById(testId);
+
+      if (test) {
+        await this.promoteEnrollmentIfFinished(test.chapterId, currentUserId);
+      }
+    }
+
     const summaryRecord: SubmissionSummaryRecord = {
       ...updatedSubmission,
       userEmail: "",
@@ -1004,6 +1038,12 @@ export class TestService {
       score,
       status: "GRADED"
     });
+    const gradedTest = await this.testRepository.findTestById(updatedSubmission.testId);
+
+    if (gradedTest) {
+      await this.promoteEnrollmentIfFinished(gradedTest.chapterId, updatedSubmission.userId);
+    }
+
     const summaries = await this.testRepository.listSubmissionsByTestId(updatedSubmission.testId);
     const summaryRecord = summaries.find((item) => item.id === submissionId);
 

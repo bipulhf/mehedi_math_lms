@@ -2,15 +2,14 @@ import { describe, expect, test } from "bun:test";
 
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRecord, EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { CourseTestResultRecord, TestRepository } from "@/repositories/test-repository";
 import { ProgressService } from "@/services/progress-service";
 import { ForbiddenError, NotFoundError } from "@/utils/errors";
 
 /**
- * Characterisation tests for completion. ADR-0005 changes three things here:
- * completion will require passing every published Test as well as watching
- * every Lecture, the `totalLectures > 0` guard goes away so exam-only courses
- * can complete, and promotion moves out of the read path entirely. Every test
- * below marked CURRENT BEHAVIOUR is expected to change in Stage 2.
+ * Completion under ADR-0005: every Lecture watched and every published Test
+ * passed, caused by a student action and never by a read, and latching once
+ * reached. An Exam-Only Course has no lectures, so only its Tests decide.
  */
 
 interface Overrides {
@@ -18,6 +17,7 @@ interface Overrides {
   enrollmentStatus?: EnrollmentRecord["status"];
   hasAccess?: boolean;
   lectureIds?: readonly string[];
+  testResults?: readonly CourseTestResultRecord[];
 }
 
 interface Calls {
@@ -67,7 +67,14 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Progr
       lectureIds.map((id) => ({ chapterId: "chap-1", id }))
   } as unknown as ContentRepository;
 
-  return { calls, service: new ProgressService(enrollmentRepository, contentRepository) };
+  const testRepository = {
+    listCourseTestResults: async () => overrides.testResults ?? []
+  } as unknown as TestRepository;
+
+  return {
+    calls,
+    service: new ProgressService(enrollmentRepository, contentRepository, testRepository)
+  };
 }
 
 describe("ProgressService.getCourseProgress", () => {
@@ -89,15 +96,30 @@ describe("ProgressService.getCourseProgress", () => {
     expect(result.nextLectureId).toBe("lec-2");
   });
 
-  test("CURRENT BEHAVIOUR: merely reading progress can promote to COMPLETED", async () => {
-    // ADR-0005 moves promotion out of the read path. After Stage 2 this read
-    // must record zero status updates.
+  test("reading progress never promotes", async () => {
+    // ADR-0005. A read must not write, which is also what stops a lecture
+    // deletion from silently graduating whoever was waiting on it.
     const { calls, service } = buildService({ completedLectureIds: ["lec-1", "lec-2"] });
     const result = await service.getCourseProgress("course-1", "user-1");
 
-    expect(calls.statusUpdates).toEqual([{ id: "enrol-1", status: "COMPLETED" }]);
-    expect(result.enrollmentStatus).toBe("COMPLETED");
+    expect(calls.statusUpdates).toHaveLength(0);
+    expect(result.enrollmentStatus).toBe("ACTIVE");
     expect(result.nextLectureId).toBeNull();
+  });
+
+  test("REGRESSION: deleting the last unwatched lecture does not complete anybody", async () => {
+    // The student watched lec-1; lec-2 has since been deleted, so the course
+    // now contains only what they finished. Before ADR-0005 the next read
+    // promoted them and issued a certificate. It must not.
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1"],
+      lectureIds: ["lec-1"]
+    });
+    const result = await service.getCourseProgress("course-1", "user-1");
+
+    expect(result.completionPercentage).toBe(100);
+    expect(calls.statusUpdates).toHaveLength(0);
+    expect(result.enrollmentStatus).toBe("ACTIVE");
   });
 
   test("an already-complete enrolment is not promoted twice", async () => {
@@ -111,15 +133,95 @@ describe("ProgressService.getCourseProgress", () => {
     expect(calls.statusUpdates).toHaveLength(0);
   });
 
-  test("CURRENT BEHAVIOUR: a course with no lectures can never complete", async () => {
-    // This is the `totalLectures > 0` guard, and it is why an Exam-Only Course
-    // can never be completed today. ADR-0005 removes it.
-    const { calls, service } = buildService({ lectureIds: [] });
+  test("a course with no lectures reports zero progress", async () => {
+    const { service } = buildService({ lectureIds: [] });
     const result = await service.getCourseProgress("course-1", "user-1");
 
     expect(result.totalLectures).toBe(0);
     expect(result.completionPercentage).toBe(0);
-    expect(result.enrollmentStatus).toBe("ACTIVE");
+  });
+});
+
+describe("ProgressService.promoteIfFinished", () => {
+  const enrollment = {
+    cancelledAt: null,
+    courseId: "course-1",
+    id: "enrol-1",
+    status: "ACTIVE",
+    userId: "user-1"
+  } as unknown as EnrollmentRecord;
+
+  test("an Exam-Only Course completes on passing its tests alone", async () => {
+    // No lectures at all. Before ADR-0005 the totalLectures > 0 guard made this
+    // impossible, so exam-only courses could never be completed or certified.
+    const { calls, service } = buildService({
+      lectureIds: [],
+      testResults: [{ bestGradedScore: 9, passingScore: 8, testId: "test-1" }]
+    });
+
+    await service.promoteIfFinished("course-1", enrollment);
+
+    expect(calls.statusUpdates).toEqual([{ id: "enrol-1", status: "COMPLETED" }]);
+  });
+
+  test("a failed test blocks completion even with every lecture watched", async () => {
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1", "lec-2"],
+      testResults: [{ bestGradedScore: 3, passingScore: 8, testId: "test-1" }]
+    });
+
+    await service.promoteIfFinished("course-1", enrollment);
+
+    expect(calls.statusUpdates).toHaveLength(0);
+  });
+
+  test("the best attempt is what counts across retakes", async () => {
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1", "lec-2"],
+      testResults: [{ bestGradedScore: 8, passingScore: 8, testId: "test-1" }]
+    });
+
+    await service.promoteIfFinished("course-1", enrollment);
+
+    expect(calls.statusUpdates).toEqual([{ id: "enrol-1", status: "COMPLETED" }]);
+  });
+
+  test("an ungraded written test blocks completion", async () => {
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1", "lec-2"],
+      testResults: [{ bestGradedScore: null, passingScore: null, testId: "test-1" }]
+    });
+
+    await service.promoteIfFinished("course-1", enrollment);
+
+    expect(calls.statusUpdates).toHaveLength(0);
+  });
+
+  test("a null passing score is cleared by any graded attempt", async () => {
+    // The threshold is opt-in. Tests written before passingScore meant anything
+    // must not become impossible to pass.
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1", "lec-2"],
+      testResults: [{ bestGradedScore: 0, passingScore: null, testId: "test-1" }]
+    });
+
+    await service.promoteIfFinished("course-1", enrollment);
+
+    expect(calls.statusUpdates).toEqual([{ id: "enrol-1", status: "COMPLETED" }]);
+  });
+
+  test("completion latches: an already-complete enrolment is left alone", async () => {
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1"],
+      lectureIds: ["lec-1", "lec-2"],
+      testResults: []
+    });
+
+    await service.promoteIfFinished("course-1", {
+      ...enrollment,
+      status: "COMPLETED"
+    } as EnrollmentRecord);
+
     expect(calls.statusUpdates).toHaveLength(0);
   });
 });
@@ -134,7 +236,10 @@ describe("ProgressService.markLectureComplete", () => {
   });
 
   test("completing the final lecture promotes the enrolment", async () => {
-    const { calls, service } = buildService({ completedLectureIds: ["lec-1", "lec-2"] });
+    const { calls, service } = buildService({
+      completedLectureIds: ["lec-1", "lec-2"],
+      testResults: []
+    });
     const result = await service.markLectureComplete("lec-2", "user-1");
 
     expect(result.completionPercentage).toBe(100);

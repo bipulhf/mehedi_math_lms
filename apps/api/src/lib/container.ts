@@ -142,12 +142,19 @@ const contentService = new ContentService(contentRepository, courseRepository, e
 const courseService = new CourseService(courseRepository, categoryRepository);
 const profileService = new ProfileService(profileRepository);
 const notImplementedService = new NotImplementedService();
-const progressService = new ProgressService(enrollmentRepository, contentRepository);
+const progressService = new ProgressService(
+  enrollmentRepository,
+  contentRepository,
+  testRepository
+);
+// TestService promotes an enrolment through ProgressService once grading
+// finishes, which is how an Exam-Only Course completes at all. ADR-0005.
 const testService = new TestService(
   testRepository,
   contentRepository,
   courseRepository,
-  enrollmentRepository
+  enrollmentRepository,
+  progressService
 );
 const uploadService = new UploadService(uploadRepository);
 export const sitemapService = new SitemapService(seoRepository, redis);
