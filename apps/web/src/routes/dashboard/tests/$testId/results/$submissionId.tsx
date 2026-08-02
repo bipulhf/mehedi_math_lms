@@ -1,12 +1,13 @@
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/results/$submissionId")({
   component: SubmissionResultPage,
@@ -15,26 +16,21 @@ export const Route = createFileRoute("/dashboard/tests/$testId/results/$submissi
 
 function SubmissionResultPage(): JSX.Element {
   const { submissionId, testId } = Route.useParams();
-  const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
-  const [test, setTest] = useState<AssessmentTestDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const [testDetail, submissionDetail] = await Promise.all([
-          getTestDetail(testId),
-          getSubmissionDetail(submissionId)
-        ]);
-        setTest(testDetail);
-        setSubmission(submissionDetail);
-      } finally {
-        setIsLoading(false);
+  const [testQuery, submissionQuery] = useQueries({
+    queries: [
+      {
+        queryFn: async () => getTestDetail(testId),
+        queryKey: queryKeys.tests.detail(testId)
+      },
+      {
+        queryFn: async () => getSubmissionDetail(submissionId),
+        queryKey: queryKeys.tests.submission(submissionId)
       }
-    })();
-  }, [submissionId, testId]);
+    ]
+  });
+  const test: AssessmentTestDetail | null = testQuery?.data ?? null;
+  const submission: SubmissionDetail | null = submissionQuery?.data ?? null;
+  const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionQuery?.isPending);
 
   if (isLoading || !test || !submission) {
     return (

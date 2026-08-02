@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+
+
+import { useQueries } from "@tanstack/react-query";
 
 import {
   CoursePlayer,
@@ -19,6 +21,7 @@ import {
 } from "@/lib/api/progress";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/learn/$courseId")({
   component: CourseLearningPage,
@@ -28,41 +31,42 @@ export const Route = createFileRoute("/dashboard/learn/$courseId")({
 function CourseLearningPage(): JSX.Element {
   const { courseId } = Route.useParams();
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [content, setContent] = useState<readonly ContentChapter[]>([]);
-  const [assessments, setAssessments] = useState<readonly AssessmentChapterSummary[]>([]);
-  const [progress, setProgress] = useState<CourseProgressResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (isSessionPending) {
-      return;
-    }
-
-    if (session?.session.role !== "STUDENT") {
-      setIsLoading(false);
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const [courseData, contentData, progressData, assessmentData] = await Promise.all([
-          getCourse(courseId),
-          getCourseContent(courseId),
-          getCourseProgress(courseId),
-          getCourseAssessments(courseId)
-        ]);
-        setCourse(courseData);
-        setContent(contentData);
-        setProgress(progressData);
-        setAssessments(assessmentData);
-      } finally {
-        setIsLoading(false);
+  const isStudent = !isSessionPending && session?.session.role === "STUDENT";
+  const [courseQuery, contentQuery, progressQuery, assessmentsQuery] = useQueries({
+    queries: [
+      {
+        enabled: isStudent,
+        queryFn: async () => getCourse(courseId),
+        queryKey: queryKeys.courses.detail(courseId)
+      },
+      {
+        enabled: isStudent,
+        queryFn: async () => getCourseContent(courseId),
+        queryKey: queryKeys.content.course(courseId)
+      },
+      {
+        enabled: isStudent,
+        queryFn: async () => getCourseProgress(courseId),
+        queryKey: queryKeys.progress.course(courseId)
+      },
+      {
+        enabled: isStudent,
+        queryFn: async () => getCourseAssessments(courseId),
+        queryKey: queryKeys.tests.byCourse(courseId)
       }
-    })();
-  }, [courseId, isSessionPending, session]);
+    ]
+  });
+  const course: CourseDetail | null = courseQuery?.data ?? null;
+  const content: readonly ContentChapter[] = contentQuery?.data ?? [];
+  const progress: CourseProgressResponse | null = progressQuery?.data ?? null;
+  const assessments: readonly AssessmentChapterSummary[] = assessmentsQuery?.data ?? [];
+  // A non-student never enables the queries, so they would stay pending forever.
+  const isLoading =
+    isStudent &&
+    (Boolean(courseQuery?.isPending) ||
+      Boolean(contentQuery?.isPending) ||
+      Boolean(progressQuery?.isPending) ||
+      Boolean(assessmentsQuery?.isPending));
 
   if (session?.session.role !== "STUDENT") {
     return (

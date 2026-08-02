@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { OwnProfileData } from "@/lib/api/profiles";
 import { getAdminStudentProfile } from "@/lib/api/profiles";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/students/$id")({
   component: AdminStudentProfilePage,
@@ -19,31 +21,21 @@ function AdminStudentProfilePage(): JSX.Element {
   const { id } = Route.useParams();
   const router = useRouter();
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<OwnProfileData | null>(null);
+  const isAdmin = !isSessionPending && session?.session.role === "ADMIN";
+  const { data: profile = null, isPending: isLoading } = useQuery<OwnProfileData>({
+    enabled: isAdmin,
+    queryFn: async () => getAdminStudentProfile(id),
+    queryKey: queryKeys.profiles.student(id)
+  });
 
   useEffect(() => {
-    if (isSessionPending || !session) {
+    if (isSessionPending || !session || session.session.role === "ADMIN") {
       return;
     }
 
-    if (session.session.role !== "ADMIN") {
-      toast.error("Only admins can view student records");
-      void router.navigate({ to: "/dashboard" });
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextProfile = await getAdminStudentProfile(id);
-        setProfile(nextProfile);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [id, isSessionPending, router, session]);
+    toast.error("Only admins can view student records");
+    void router.navigate({ to: "/dashboard" });
+  }, [isSessionPending, router, session]);
 
   if (isSessionPending || isLoading || !profile) {
     return <ProfilePageSkeleton />;

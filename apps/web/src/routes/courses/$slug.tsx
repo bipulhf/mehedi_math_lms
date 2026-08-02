@@ -1,7 +1,8 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { Star, PlayCircle, Award, History, ShieldCheck, ChevronDown, Users } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -12,6 +13,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseDetail } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
+import { queryKeys } from "@/lib/query/keys";
 import { breadcrumbJsonLd, courseJsonLd, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
@@ -114,40 +116,33 @@ function RatingSummary({ rating, count }: { rating: number; count: number }): JS
 function CourseDetailPage(): JSX.Element {
   const { course, content, reviewSummary: loaderReviewSummary } = Route.useLoaderData();
   const { isPending: isSessionPending, session } = useAuthSession();
-  const [enrollment, setEnrollment] = useState<StudentEnrollment | null>(null);
   const [isSubmittingEnrollment, setIsSubmittingEnrollment] = useState(false);
-  const [reviewSummary, setReviewSummary] = useState(loaderReviewSummary);
-  const [reviews, setReviews] = useState<readonly CourseReviewPublic[]>([]);
+  const isStudent = !isSessionPending && session?.session.role === "STUDENT";
+  const { data: enrollment = null } = useQuery<StudentEnrollment | null>({
+    enabled: isStudent,
+    queryFn: async () => getMyCourseEnrollment(course.id),
+    queryKey: queryKeys.enrollments.course(course.id)
+  });
+  const { data: reviewData } = useQuery({
+    enabled: course.status === "PUBLISHED",
+    queryFn: async () => {
+      const [summary, page] = await Promise.all([
+        getCourseReviewSummary(course.id),
+        listCourseReviews(course.id, { limit: 20, page: 1 })
+      ]);
+
+      return { reviews: page.data, summary };
+    },
+    queryKey: ["reviews", "course", course.id]
+  });
+  // The loader already put a summary in the page for SEO; the query only
+  // refines it, so a failed refresh falls back rather than blanking the rating.
+  const reviewSummary = reviewData?.summary ?? loaderReviewSummary;
+  const reviews: readonly CourseReviewPublic[] = reviewData?.reviews ?? [];
   const [expandedChapters, setExpandedChapters] = useState<Record<string, boolean>>({
     [content[0]?.id ?? ""]: true
   });
 
-  useEffect(() => {
-    if (isSessionPending || session?.session.role !== "STUDENT") {
-      setEnrollment(null);
-      return;
-    }
-    void (async () => {
-      const currentEnrollment = await getMyCourseEnrollment(course.id);
-      setEnrollment(currentEnrollment);
-    })();
-  }, [course.id, isSessionPending, session]);
-
-  useEffect(() => {
-    if (course.status !== "PUBLISHED") return;
-    void (async () => {
-      try {
-        const [summary, page] = await Promise.all([
-          getCourseReviewSummary(course.id),
-          listCourseReviews(course.id, { limit: 20, page: 1 })
-        ]);
-        setReviewSummary(summary);
-        setReviews(page.data);
-      } catch {
-        setReviewSummary(loaderReviewSummary);
-      }
-    })();
-  }, [course.id, course.status, loaderReviewSummary]);
 
   const handleEnroll = async (): Promise<void> => {
     setIsSubmittingEnrollment(true);

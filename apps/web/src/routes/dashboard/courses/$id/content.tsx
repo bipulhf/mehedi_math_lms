@@ -1,3 +1,4 @@
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { 
   ArrowLeft, 
@@ -8,7 +9,6 @@ import {
   LayoutGrid
 } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import {
   CourseContentBuilder,
@@ -22,6 +22,7 @@ import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
 import type { ContentChapter } from "@/lib/api/content";
 import { getCourseContent } from "@/lib/api/content";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/courses/$id/content")({
   component: CourseContentPage,
@@ -30,28 +31,20 @@ export const Route = createFileRoute("/dashboard/courses/$id/content")({
 
 function CourseContentPage(): JSX.Element {
   const { id } = Route.useParams();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [content, setContent] = useState<readonly ContentChapter[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [courseQuery, contentQuery] = useQueries({
+    queries: [
+      { queryFn: async () => getCourse(id), queryKey: queryKeys.courses.detail(id) },
+      { queryFn: async () => getCourseContent(id), queryKey: queryKeys.content.course(id) }
+    ]
+  });
+  const course: CourseDetail | null = courseQuery?.data ?? null;
+  const content: readonly ContentChapter[] = contentQuery?.data ?? [];
+  const isLoading = Boolean(courseQuery?.isPending) || Boolean(contentQuery?.isPending);
 
   const loadData = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const [courseData, contentData] = await Promise.all([
-        getCourse(id),
-        getCourseContent(id)
-      ]);
-      setCourse(courseData);
-      setContent(contentData);
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.content.course(id) });
   };
-
-  useEffect(() => {
-    void loadData();
-  }, [id]);
 
   if (isLoading || !course) {
     return <CourseContentBuilderSkeleton />;

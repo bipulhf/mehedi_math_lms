@@ -1,6 +1,7 @@
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -21,6 +22,7 @@ import {
   submitCourse,
   updateCourse
 } from "@/lib/api/courses";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/courses/$id/edit")({
   component: EditCoursePage,
@@ -41,32 +43,29 @@ function mapInitialValues(course: CourseDetail): CourseEditorValues {
 
 function EditCoursePage(): JSX.Element {
   const { id } = Route.useParams();
-  const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [teachers, setTeachers] = useState<readonly CourseTeacherOption[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
+  const [courseQuery, categoriesQuery, teachersQuery] = useQueries({
+    queries: [
+      { queryFn: async () => getCourse(id), queryKey: queryKeys.courses.detail(id) },
+      { queryFn: async () => listCategories(), queryKey: queryKeys.categories.list() },
+      {
+        queryFn: async () => listTeacherDirectory(),
+        queryKey: queryKeys.courses.teacherDirectory("")
+      }
+    ]
+  });
+  const course: CourseDetail | null = courseQuery?.data ?? null;
+  const categories: readonly CategoryNode[] = categoriesQuery?.data ?? [];
+  const teachers: readonly CourseTeacherOption[] = teachersQuery?.data ?? [];
+  const isLoading =
+    Boolean(courseQuery?.isPending) ||
+    Boolean(categoriesQuery?.isPending) ||
+    Boolean(teachersQuery?.isPending);
 
   const loadData = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const [courseData, categoryData, teacherData] = await Promise.all([
-        getCourse(id),
-        listCategories(),
-        listTeacherDirectory()
-      ]);
-      setCourse(courseData);
-      setCategories(categoryData);
-      setTeachers(teacherData);
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.courses.detail(id) });
   };
-
-  useEffect(() => {
-    void loadData();
-  }, [id]);
 
   const handleCommit = async (
     values: CourseEditorValues,

@@ -1,7 +1,8 @@
 import { createCourseNoticeSchema } from "@mma/shared";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pin, Trash2 } from "lucide-react";
 import type { FormEvent, JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,30 +16,23 @@ import {
   listCourseNotices,
   updateCourseNotice
 } from "@/lib/api/course-notices";
+import { queryKeys } from "@/lib/query/keys";
 
 export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Element {
-  const [notices, setNotices] = useState<readonly CourseNotice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isPinned, setIsPinned] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const load = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const items = await listCourseNotices(courseId);
-      setNotices(items);
-    } catch {
-      toast.error("Could not load notices");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: notices = [], isPending: loading } = useQuery<readonly CourseNotice[]>({
+    queryFn: async () => listCourseNotices(courseId),
+    queryKey: queryKeys.notices.course(courseId)
+  });
 
-  useEffect(() => {
-    void load();
-  }, [courseId]);
+  const load = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.notices.course(courseId) });
+  };
 
   async function handleCreate(e: FormEvent): Promise<void> {
     e.preventDefault();

@@ -1,7 +1,8 @@
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { GraduationCap, ChevronLeft } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -20,6 +21,7 @@ import {
   replaceCourseTeachers,
   submitCourse
 } from "@/lib/api/courses";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/courses/new")({
   component: CreateCoursePage,
@@ -38,27 +40,19 @@ const initialValues: CourseEditorValues = {
 
 function CreateCoursePage(): JSX.Element {
   const router = useRouter();
-  const [categories, setCategories] = useState<readonly CategoryNode[]>([]);
-  const [teachers, setTeachers] = useState<readonly CourseTeacherOption[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const [categoryData, teacherData] = await Promise.all([
-          listCategories(),
-          listTeacherDirectory()
-        ]);
-        setCategories(categoryData);
-        setTeachers(teacherData);
-      } finally {
-        setIsLoading(false);
+  const [categoriesQuery, teachersQuery] = useQueries({
+    queries: [
+      { queryFn: async () => listCategories(), queryKey: queryKeys.categories.list() },
+      {
+        queryFn: async () => listTeacherDirectory(),
+        queryKey: queryKeys.courses.teacherDirectory("")
       }
-    })();
-  }, []);
+    ]
+  });
+  const categories: readonly CategoryNode[] = categoriesQuery?.data ?? [];
+  const teachers: readonly CourseTeacherOption[] = teachersQuery?.data ?? [];
+  const isLoading = Boolean(categoriesQuery?.isPending) || Boolean(teachersQuery?.isPending);
 
   const handleCommit = async (
     values: CourseEditorValues,

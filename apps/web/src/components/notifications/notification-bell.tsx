@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   NOTIFICATIONS_EVENT,
   type NotificationRecord
 } from "@/lib/api/notifications";
+import { queryKeys } from "@/lib/query/keys";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import { cn } from "@/lib/utils";
 
@@ -48,34 +50,33 @@ function resolveNotificationLink(record: NotificationRecord): string {
 
 export function NotificationBell(): JSX.Element | null {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [unread, setUnread] = useState(0);
-  const [items, setItems] = useState<readonly NotificationRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const openRef = useRef(false);
 
-  const refreshUnread = async (): Promise<void> => {
-    const count = await getNotificationUnreadCount();
+  const { data: unread = 0 } = useQuery({
+    queryFn: async () => getNotificationUnreadCount(),
+    queryKey: queryKeys.notifications.unreadCount()
+  });
+  // The list is only fetched while the panel is open; the badge is always live.
+  const listFilters = { limit: 12, page: 1 };
+  const { data: notificationPage, isFetching: isLoading } = useQuery({
+    enabled: open,
+    queryFn: async () => listNotifications(listFilters),
+    queryKey: queryKeys.notifications.list(listFilters)
+  });
+  const items: readonly NotificationRecord[] = notificationPage?.items ?? [];
 
-    setUnread(count);
+  const refreshUnread = async (): Promise<void> => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });
   };
 
   const refreshList = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      const page = await listNotifications({ limit: 12, page: 1 });
-
-      setItems(page.items);
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.notifications.list(listFilters) });
   };
 
   useEffect(() => {
-    void refreshUnread();
-
     const handleDocClick = (event: MouseEvent): void => {
       if (!panelRef.current?.contains(event.target as Node)) {
         setOpen(false);
@@ -138,12 +139,6 @@ export function NotificationBell(): JSX.Element | null {
       socket.close();
     };
   }, []);
-
-  useEffect(() => {
-    if (open) {
-      void refreshList();
-    }
-  }, [open]);
 
   const handleOpen = (): void => {
     setOpen((current) => !current);

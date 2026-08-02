@@ -1,26 +1,20 @@
+import { useQuery } from "@tanstack/react-query";
 import { Pin } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CourseNotice, listCourseNotices } from "@/lib/api/course-notices";
+import { queryKeys } from "@/lib/query/keys";
 
 export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Element {
-  const [notices, setNotices] = useState<readonly CourseNotice[] | null>(null);
-
-  useEffect(() => {
-    void (async () => {
-      try {
-        const items = await listCourseNotices(courseId);
-        setNotices(items);
-      } catch {
-        toast.error("Could not load notices");
-        setNotices([]);
-      }
-    })();
-  }, [courseId]);
+  const { data, isPending } = useQuery<readonly CourseNotice[]>({
+    queryFn: async () => listCourseNotices(courseId),
+    queryKey: queryKeys.notices.course(courseId)
+  });
+  // A failed load shows the empty state, not the skeleton forever. The ky
+  // interceptor has already said why.
+  const notices: readonly CourseNotice[] | null = isPending ? null : (data ?? []);
 
   if (notices === null) {
     return (

@@ -3,11 +3,14 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import { queryKeys } from "@/lib/query/keys";
 import type { LectureComment } from "@/lib/api/comments";
 import {
   createLectureComment,
@@ -214,16 +217,18 @@ function CommentItem({
   );
 }
 
+interface CommentPage {
+  data: readonly LectureComment[];
+  pagination: { page: number; pages: number };
+}
+
 export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.Element {
   const { session } = useAuthSession();
-  const [comments, setComments] = useState<readonly LectureComment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [replyTargetId, setReplyTargetId] = useState<string | null>(null);
   const [submittingReplyId, setSubmittingReplyId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
 
   const currentUserId = session?.user.id;
   const canDiscuss =
@@ -231,34 +236,56 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
     session?.session.role === "TEACHER" ||
     session?.session.role === "ADMIN";
 
-  const loadComments = async (
-    targetPage = 1,
-    append = false
-  ): Promise<void> => {
-    setIsLoading(true);
+  const commentsQueryKey = queryKeys.comments.lecture(lectureId);
+  const {
+    data: commentPages,
+    fetchNextPage,
+    hasNextPage,
+    isPending: isLoading
+  } = useInfiniteQuery<CommentPage>({
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.pages
+        ? lastPage.pagination.page + 1
+        : undefined,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) =>
+      listLectureComments(lectureId, { limit: 10, page: pageParam as number }),
+    queryKey: commentsQueryKey
+  });
+  const comments: readonly LectureComment[] =
+    commentPages?.pages.flatMap((commentPage) => commentPage.data) ?? [];
 
-    try {
-      const response = await listLectureComments(lectureId, {
-        limit: 10,
-        page: targetPage
-      });
-      setComments((currentComments) =>
-        append ? [...currentComments, ...response.data] : response.data
-      );
-      setPage(response.pagination.page);
-      setPages(response.pagination.pages);
-    } finally {
-      setIsLoading(false);
-    }
+  /**
+   * Posting, editing and deleting all update the loaded pages in place. The
+   * server round trip has already succeeded by the time this runs, so there is
+   * nothing to roll back -- this only spares the thread a full refetch.
+   */
+  const patchLoadedComments = (
+    update: (loaded: readonly LectureComment[]) => readonly LectureComment[]
+  ): void => {
+    queryClient.setQueryData<{ pageParams: unknown[]; pages: CommentPage[] }>(
+      commentsQueryKey,
+      (current) => {
+        if (!current) {
+          return current;
+        }
+
+        const flattened = update(current.pages.flatMap((commentPage) => commentPage.data));
+        let cursor = 0;
+
+        return {
+          ...current,
+          pages: current.pages.map((commentPage) => {
+            const slice = flattened.slice(cursor, cursor + commentPage.data.length);
+
+            cursor += commentPage.data.length;
+
+            return { ...commentPage, data: slice };
+          })
+        };
+      }
+    );
   };
-
-  useEffect(() => {
-    setComments([]);
-    setPage(1);
-    setPages(1);
-    setReplyTargetId(null);
-    void loadComments(1);
-  }, [lectureId]);
 
   const totalLoaded = useMemo(() => comments.length, [comments.length]);
 
@@ -287,7 +314,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                   content: value.trim(),
                   lectureId
                 });
-                setComments((currentComments) => [createdComment, ...currentComments]);
+                patchLoadedComments((loaded) => [createdComment, ...loaded]);
                 toast.success("Comment posted");
               } finally {
                 setIsCreating(false);
@@ -318,8 +345,8 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                   }
 
                   await deleteComment(id);
-                  setComments((currentComments) =>
-                    currentComments.map((item) =>
+                  patchLoadedComments((loaded) =>
+                    loaded.map((item) =>
                       item.id === id
                         ? {
                             ...item,
@@ -358,8 +385,8 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                       lectureId,
                       parentId
                     });
-                    setComments((currentComments) =>
-                      currentComments.map((item) =>
+                    patchLoadedComments((loaded) =>
+                      loaded.map((item) =>
                         item.id === parentId
                           ? {
                               ...item,
@@ -381,8 +408,8 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                     const updatedComment = await updateComment(id, {
                       content: content.trim()
                     });
-                    setComments((currentComments) =>
-                      currentComments.map((item) =>
+                    patchLoadedComments((loaded) =>
+                      loaded.map((item) =>
                         item.id === id
                           ? updatedComment
                           : {
@@ -406,13 +433,13 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
           </div>
         )}
 
-        {page < pages ? (
+        {hasNextPage ? (
           <div className="flex justify-center">
             <Button
               variant="outline"
-              onClick={() => void loadComments(page + 1, true)}
+              onClick={() => void fetchNextPage()}
             >
-              Load more comments ({totalLoaded}/{pages * 10 > totalLoaded ? `${totalLoaded}+` : totalLoaded})
+              Load more comments ({totalLoaded} loaded)
             </Button>
           </div>
         ) : null}

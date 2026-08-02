@@ -1,6 +1,6 @@
+import { useQueries } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AssessmentTestDetail, SubmissionSummary } from "@/lib/api/tests";
 import { getTestDetail, listTestSubmissions } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
   component: TestSubmissionsPage,
@@ -16,26 +17,21 @@ export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
 
 function TestSubmissionsPage(): JSX.Element {
   const { testId } = Route.useParams();
-  const [submissions, setSubmissions] = useState<readonly SubmissionSummary[]>([]);
-  const [test, setTest] = useState<AssessmentTestDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const [testDetail, submissionList] = await Promise.all([
-          getTestDetail(testId),
-          listTestSubmissions(testId)
-        ]);
-        setTest(testDetail);
-        setSubmissions(submissionList);
-      } finally {
-        setIsLoading(false);
+  const [testQuery, submissionsQuery] = useQueries({
+    queries: [
+      {
+        queryFn: async () => getTestDetail(testId),
+        queryKey: queryKeys.tests.detail(testId)
+      },
+      {
+        queryFn: async () => listTestSubmissions(testId),
+        queryKey: queryKeys.tests.submissions(testId)
       }
-    })();
-  }, [testId]);
+    ]
+  });
+  const test: AssessmentTestDetail | null = testQuery?.data ?? null;
+  const submissions: readonly SubmissionSummary[] = submissionsQuery?.data ?? [];
+  const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionsQuery?.isPending);
 
   if (isLoading || !test) {
     return (

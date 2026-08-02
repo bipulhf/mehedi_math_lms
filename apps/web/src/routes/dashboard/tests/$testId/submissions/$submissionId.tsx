@@ -1,3 +1,4 @@
+import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute(
   "/dashboard/tests/$testId/submissions/$submissionId"
@@ -20,35 +22,41 @@ export const Route = createFileRoute(
 
 function GradeSubmissionPage(): JSX.Element {
   const { submissionId, testId } = Route.useParams();
+  const [testQuery, submissionQuery] = useQueries({
+    queries: [
+      {
+        queryFn: async () => getTestDetail(testId),
+        queryKey: queryKeys.tests.detail(testId)
+      },
+      {
+        queryFn: async () => getSubmissionDetail(submissionId),
+        queryKey: queryKeys.tests.submission(submissionId)
+      }
+    ]
+  });
+  const test: AssessmentTestDetail | null = testQuery?.data ?? null;
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
-  const [test, setTest] = useState<AssessmentTestDetail | null>(null);
   const [feedback, setFeedback] = useState("");
   const [marksByAnswerId, setMarksByAnswerId] = useState<Record<string, number>>({});
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionQuery?.isPending);
+  const fetchedSubmission = submissionQuery?.data;
 
+  // The marks and feedback are edited in place, so the fetched submission seeds
+  // them rather than being read directly.
   useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
+    if (!fetchedSubmission) {
+      return;
+    }
 
-      try {
-        const [testDetail, submissionDetail] = await Promise.all([
-          getTestDetail(testId),
-          getSubmissionDetail(submissionId)
-        ]);
-        setTest(testDetail);
-        setSubmission(submissionDetail);
-        setFeedback(submissionDetail.feedback ?? "");
-        setMarksByAnswerId(
-          Object.fromEntries(
-            submissionDetail.answers.map((answer) => [answer.id, answer.awardedMarks ?? 0])
-          )
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [submissionId, testId]);
+    setSubmission(fetchedSubmission);
+    setFeedback(fetchedSubmission.feedback ?? "");
+    setMarksByAnswerId(
+      Object.fromEntries(
+        fetchedSubmission.answers.map((answer) => [answer.id, answer.awardedMarks ?? 0])
+      )
+    );
+  }, [fetchedSubmission]);
 
   const answerMap = useMemo(
     () => new Map(submission?.answers.map((answer) => [answer.questionId, answer]) ?? []),

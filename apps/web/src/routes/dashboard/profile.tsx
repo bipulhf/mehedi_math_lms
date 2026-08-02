@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ import {
   updateStudentProfile,
   updateTeacherProfile
 } from "@/lib/api/profiles";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/profile")({
   component: DashboardProfilePage,
@@ -50,7 +52,6 @@ const changePasswordSchema = z
 function DashboardProfilePage(): JSX.Element {
   const router = useRouter();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
   const [profile, setProfile] = useState<OwnProfileData | null>(null);
@@ -69,22 +70,19 @@ function DashboardProfilePage(): JSX.Element {
     reset: resetPasswordForm
   } = passwordForm;
 
+  const { data: fetchedProfile, isPending } = useQuery<OwnProfileData>({
+    enabled: !isSessionPending && Boolean(session),
+    queryFn: async () => getOwnProfile(),
+    queryKey: queryKeys.profiles.me()
+  });
+
+  // The forms write back through setProfile after each save, so the fetched
+  // record seeds local state rather than being rendered directly.
   useEffect(() => {
-    if (isSessionPending || !session) {
-      return;
+    if (fetchedProfile) {
+      setProfile(fetchedProfile);
     }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextProfile = await getOwnProfile();
-        setProfile(nextProfile);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [isSessionPending, session]);
+  }, [fetchedProfile]);
 
   const handleStudentSubmit = async (values: StudentProfileInput): Promise<void> => {
     setIsSubmitting(true);
@@ -146,7 +144,7 @@ function DashboardProfilePage(): JSX.Element {
     }
   });
 
-  if (isSessionPending || isLoading || !session) {
+  if (isSessionPending || isPending || !session) {
     return <ProfilePageSkeleton />;
   }
 
