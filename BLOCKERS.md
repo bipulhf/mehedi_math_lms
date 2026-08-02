@@ -74,6 +74,31 @@ and returns null. Settlement therefore enforces the amount check only when the g
 always enforces the validation status. Documented rather than faked, because inventing a mock amount would
 make the check look stronger than it is.
 
+### Stage 3 — the ownership backfill is a real migration, not a note
+
+`0002` adds `course_teachers.role` defaulting to `TEACHER`, which would leave every existing course
+ownerless. Rather than document the fix, authored `0003_backfill_course_owner_roles.sql` through
+`drizzle-kit generate --custom` — a migration created by the tool, not a hand-edit of a generated one.
+
+It promotes the creator where they are on the roster, inserts the creator where they are not, and as a
+last resort promotes the longest-standing teacher of any course still without an owner (creator deleted,
+roster rebuilt). No-op against this empty database; correct against a populated one.
+
+### Stage 3 — an admin-created course starts ownerless, deliberately
+
+`courses.create` seeds an `OWNER` row only when a teacher creates the course. An admin-created course has
+no owner until teachers are first assigned, at which point the first assignee is promoted. Admins bypass
+the ownership guard entirely, so nothing is unreachable in the meantime.
+
+Rejected: auto-assigning the creating admin as a course owner. Admins are not teachers, and the previous
+code already excluded them from the roster.
+
+### Stage 3 — tests now load the root .env
+
+`course-service.ts` imports `@mma/db`, whose client parses `DATABASE_URL` at module load, so testing it
+requires the variable to exist. The test script became `bun test --env-file ../../.env src`, matching the
+existing `dev` and `worker:*` scripts. No test connects to the database — `pg` only dials on first query.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member

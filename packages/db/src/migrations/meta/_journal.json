@@ -15,6 +15,20 @@
       "when": 1785671639998,
       "tag": "0001_tiny_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785672774741,
+      "tag": "0002_mushy_toxin",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785672784638,
+      "tag": "0003_backfill_course_owner_roles",
+      "breakpoints": true
     }
   ]
 }

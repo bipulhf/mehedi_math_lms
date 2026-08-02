@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { categories } from "./categories";
-import { courseStatusEnum } from "./enums";
+import { courseStatusEnum, courseTeacherRoleEnum } from "./enums";
 import { users } from "./users";
 
 export const courses = pgTable(
@@ -56,6 +56,9 @@ export const courseTeachers = pgTable(
     teacherId: uuid("teacher_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    // Authority, not job title. A course always has at least one OWNER.
+    // ADR-0006.
+    role: courseTeacherRoleEnum("role").default("TEACHER").notNull(),
     assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [

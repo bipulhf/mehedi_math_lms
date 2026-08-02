@@ -16,13 +16,21 @@ import {
   users,
   type SQL
 } from "@mma/db";
-import type { UserRole } from "@mma/shared";
+import type { CourseTeacherRole, UserRole } from "@mma/shared";
+
+/** A teacher and the authority they hold over one course. ADR-0006. */
+export interface CourseTeacherAssignment {
+  role: CourseTeacherRole;
+  teacherId: string;
+}
 
 export interface CourseTeacherRecord {
   email: string;
   id: string;
   name: string;
   profilePhoto: string | null;
+  /** Authority over the course, not job title. ADR-0006. */
+  role: CourseTeacherRole;
   slug: string | null;
 }
 
@@ -72,6 +80,8 @@ export interface CreateCourseInput {
   creatorId: string;
   description: string;
   isExamOnly: boolean;
+  /** Seeded as the course's first OWNER. Null for admin-created courses. */
+  ownerTeacherId: string | null;
   price: string;
   reviewFeedback: string | null;
   slug: string;
@@ -93,8 +103,17 @@ export interface UpdateCourseInput {
   title?: string | undefined;
 }
 
-export interface TeacherDirectoryRecord extends CourseTeacherRecord {
+/**
+ * A teacher in the platform-wide picker. Deliberately not a CourseTeacherRecord:
+ * authority is per-course, and this list is not scoped to one. ADR-0006.
+ */
+export interface TeacherDirectoryRecord {
   bio: string | null;
+  email: string;
+  id: string;
+  name: string;
+  profilePhoto: string | null;
+  slug: string | null;
 }
 
 export class CourseRepository {
@@ -140,6 +159,7 @@ export class CourseRepository {
         id: users.id,
         name: users.name,
         profilePhoto: teacherProfiles.profilePhoto,
+        role: courseTeachers.role,
         slug: users.slug
       })
       .from(courseTeachers)
@@ -157,6 +177,7 @@ export class CourseRepository {
         id: row.id,
         name: row.name,
         profilePhoto: row.profilePhoto,
+        role: row.role,
         slug: row.slug
       });
       teachersByCourseId.set(row.courseId, currentTeachers);
@@ -353,6 +374,17 @@ export class CourseRepository {
       throw new Error("Failed to create course");
     }
 
+    // A teacher who creates a course owns it from the outset, so it is never
+    // ownerless. An admin-created course has no owner until one is assigned —
+    // admins bypass the ownership guard anyway. ADR-0006.
+    if (input.ownerTeacherId) {
+      await db.insert(courseTeachers).values({
+        courseId: createdCourse.id,
+        role: "OWNER",
+        teacherId: input.ownerTeacherId
+      });
+    }
+
     const course = await this.findById(createdCourse.id);
 
     if (!course) {
@@ -425,17 +457,26 @@ export class CourseRepository {
     return this.findById(updatedCourse.id);
   }
 
-  public async replaceTeachers(courseId: string, teacherIds: readonly string[]): Promise<readonly CourseTeacherRecord[]> {
-    const uniqueTeacherIds = [...new Set(teacherIds)];
+  /**
+   * Replaces the roster wholesale, carrying each teacher's authority with them.
+   * Roles must be supplied explicitly — this used to delete and re-insert, which
+   * would silently demote every owner. ADR-0006.
+   */
+  public async replaceTeachers(
+    courseId: string,
+    entries: readonly CourseTeacherAssignment[]
+  ): Promise<readonly CourseTeacherRecord[]> {
+    const uniqueEntries = [...new Map(entries.map((entry) => [entry.teacherId, entry])).values()];
 
     await db.transaction(async (transaction) => {
       await transaction.delete(courseTeachers).where(eq(courseTeachers.courseId, courseId));
 
-      if (uniqueTeacherIds.length > 0) {
+      if (uniqueEntries.length > 0) {
         await transaction.insert(courseTeachers).values(
-          uniqueTeacherIds.map((teacherId) => ({
+          uniqueEntries.map((entry) => ({
             courseId,
-            teacherId
+            role: entry.role,
+            teacherId: entry.teacherId
           }))
         );
       }

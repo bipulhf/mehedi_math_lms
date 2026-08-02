@@ -30,6 +30,10 @@ export const testSubmissionStatusEnum = pgEnum("test_submission_status", [
   "GRADED"
 ]);
 
+// Authority over a course. OWNER controls the roster, price, and catalog
+// standing; TEACHER works on content. ADR-0006.
+export const courseTeacherRoleEnum = pgEnum("course_teacher_role", ["OWNER", "TEACHER"]);
+
 // Progress only. Withdrawal of the right to study is enrollments.cancelled_at,
 // not a status — a refunded student who finished stays COMPLETED. ADR-0001.
 export const enrollmentStatusEnum = pgEnum("enrollment_status", [

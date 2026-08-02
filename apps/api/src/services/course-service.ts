@@ -131,7 +131,11 @@ export class CourseService {
     }
   }
 
-  private ensureCanManageCourse(
+  /**
+   * Content work: chapters, lectures, materials, tests, notices. Any teacher on
+   * the roster, plus an Admin. ADR-0006.
+   */
+  private ensureCanEditContent(
     course: CourseRecord,
     currentUserId: string,
     currentUserRole: UserRole
@@ -140,11 +144,34 @@ export class CourseService {
       return;
     }
 
-    const isAssignedTeacher = course.teachers.some((teacher) => teacher.id === currentUserId);
-    const isCreator = course.creator.id === currentUserId;
+    const isOnRoster = course.teachers.some((teacher) => teacher.id === currentUserId);
 
-    if (!isAssignedTeacher && !isCreator) {
+    if (!isOnRoster) {
       throw new ForbiddenError("You do not have permission to manage this course");
+    }
+  }
+
+  /**
+   * Authority over the course itself: who teaches it, its price, whether it
+   * goes for approval, and whether it is withdrawn or restored. Owners and
+   * Admins only — a teacher invited to help with content cannot rewrite the
+   * roster or pull the course from the catalog. ADR-0006.
+   */
+  private ensureCanAdministerCourse(
+    course: CourseRecord,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): void {
+    if (currentUserRole === "ADMIN") {
+      return;
+    }
+
+    const isOwner = course.teachers.some(
+      (teacher) => teacher.id === currentUserId && teacher.role === "OWNER"
+    );
+
+    if (!isOwner) {
+      throw new ForbiddenError("Only a course owner can administer this course");
     }
   }
 
@@ -296,6 +323,9 @@ export class CourseService {
     await this.validateCategory(input.categoryId);
 
     const createdCourse = await this.courseRepository.create({
+      // A teacher owns what they create; an admin-created course gets its owner
+      // when teachers are first assigned. ADR-0006.
+      ownerTeacherId: currentUserRole === "TEACHER" ? currentUserId : null,
       categoryId: input.categoryId,
       coverImageUrl: normalizeOptionalUrl(input.coverImageUrl),
       creatorId: currentUserId,
@@ -306,10 +336,6 @@ export class CourseService {
       slug: await this.createUniqueSlug(input.title.trim()),
       title: input.title.trim()
     });
-
-    if (currentUserRole === "TEACHER") {
-      await this.courseRepository.replaceTeachers(createdCourse.id, [currentUserId]);
-    }
 
     const course = await this.courseRepository.findById(createdCourse.id);
 
@@ -332,7 +358,7 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
-    this.ensureCanManageCourse(course, currentUserId, currentUserRole);
+    this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
 
     if (input.categoryId) {
       await this.validateCategory(input.categoryId);
@@ -371,7 +397,7 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
-    this.ensureCanManageCourse(course, currentUserId, currentUserRole);
+    this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
 
     const archivedCourse = await this.courseRepository.update(id, {
       publishedAt: null,
@@ -399,7 +425,7 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
-    this.ensureCanManageCourse(course, currentUserId, currentUserRole);
+    this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
     this.ensureCanReviewCourse(course);
 
     const submittedCourse = await this.courseRepository.update(id, {
@@ -480,20 +506,47 @@ export class CourseService {
       throw new NotFoundError("Course not found");
     }
 
-    this.ensureCanManageCourse(course, currentUserId, currentUserRole);
+    this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
 
     const uniqueTeacherIds = [...new Set(teacherIds)];
-
-    if (course.creator.role === "TEACHER" && !uniqueTeacherIds.includes(course.creator.id)) {
-      uniqueTeacherIds.push(course.creator.id);
-    }
 
     if (currentUserRole === "TEACHER" && !uniqueTeacherIds.includes(currentUserId)) {
       uniqueTeacherIds.push(currentUserId);
     }
 
     await this.validateTeachers(uniqueTeacherIds);
-    await this.courseRepository.replaceTeachers(courseId, uniqueTeacherIds);
+
+    const currentOwnerIds = course.teachers
+      .filter((teacher) => teacher.role === "OWNER")
+      .map((teacher) => teacher.id);
+    const survivingOwnerIds = currentOwnerIds.filter((ownerId) =>
+      uniqueTeacherIds.includes(ownerId)
+    );
+
+    // A course is never left unaccountable. Dropping every owner is refused
+    // outright; a course that had none yet — admin-created — gets its first.
+    // ADR-0006.
+    if (currentOwnerIds.length > 0 && survivingOwnerIds.length === 0) {
+      throw new ValidationError("A course must keep at least one owner", [
+        {
+          field: "teacherIds",
+          message: "Removing every owner would leave this course unaccountable"
+        }
+      ]);
+    }
+
+    const ownerIds =
+      survivingOwnerIds.length > 0
+        ? survivingOwnerIds
+        : uniqueTeacherIds.slice(0, 1);
+
+    await this.courseRepository.replaceTeachers(
+      courseId,
+      uniqueTeacherIds.map((teacherId) => ({
+        role: ownerIds.includes(teacherId) ? ("OWNER" as const) : ("TEACHER" as const),
+        teacherId
+      }))
+    );
 
     const updatedCourse = await this.courseRepository.findById(courseId);
 
