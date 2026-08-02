@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { ReportConversationDialog } from "@/components/messages/report-conversation-dialog";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useUiStore } from "@/stores/ui-store";
@@ -24,6 +26,7 @@ import {
   type MessageConversationThread,
   type MessageParticipant
 } from "@/lib/api/messages";
+import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 
 type MessagingSocketEvent =
@@ -110,7 +113,6 @@ function DashboardMessagesPage(): JSX.Element {
   const [conversationSearch, setConversationSearch] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [participantSearch, setParticipantSearch] = useState("");
-  const [participantResults, setParticipantResults] = useState<readonly MessageParticipant[]>([]);
   const [composerValue, setComposerValue] = useState("");
   const [typingConversationId, setTypingConversationId] = useState<string | null>(null);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
@@ -120,6 +122,7 @@ function DashboardMessagesPage(): JSX.Element {
   const [reportingConversationId, setReportingConversationId] = useState<string | null>(null);
   // The sidebar badge reads this slice; it has no ancestor in common with this page.
   const setMessageUnreadCount = useUiStore((state) => state.setMessageUnreadCount);
+  const queryClient = useQueryClient();
   const socketRef = useRef<WebSocket | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement | null>(null);
@@ -283,27 +286,25 @@ function DashboardMessagesPage(): JSX.Element {
     void loadConversation(selectedConversationId);
   }, [selectedConversationId, threads]);
 
+  // Debounced into state so the query key changes at most every 200ms while typing.
+  const [debouncedParticipantSearch, setDebouncedParticipantSearch] = useState("");
+
   useEffect(() => {
-    if (!participantSearch.trim() || !canUseMessaging) {
-      setParticipantResults([]);
-      return;
-    }
-
     const timeoutId = window.setTimeout(() => {
-      void (async () => {
-        const results = await searchMessageParticipants({
-          limit: 8,
-          search: participantSearch.trim()
-        });
-
-        setParticipantResults(results);
-      })();
+      setDebouncedParticipantSearch(participantSearch.trim());
     }, 200);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [canUseMessaging, participantSearch]);
+  }, [participantSearch]);
+
+  const { data: participantResults = [] } = useQuery<readonly MessageParticipant[]>({
+    enabled: canUseMessaging && debouncedParticipantSearch.length > 0,
+    queryFn: async () =>
+      searchMessageParticipants({ limit: 8, search: debouncedParticipantSearch }),
+    queryKey: queryKeys.messages.participants(debouncedParticipantSearch)
+  });
 
   useEffect(() => {
     if (!canUseMessaging || !session || !currentUserId) {
@@ -339,15 +340,16 @@ function DashboardMessagesPage(): JSX.Element {
               : conversation
           )
         );
-        setParticipantResults((current) =>
-          current.map((participant) =>
-            participant.id === payload.data.userId
-              ? {
-                  ...participant,
-                  isOnline: payload.data.isOnline
-                }
-              : participant
-          )
+        // Presence for the search results comes from the next refetch; a
+        // stale online dot in a transient dropdown is not worth cache surgery.
+        queryClient.setQueryData<readonly MessageParticipant[]>(
+          queryKeys.messages.participants(debouncedParticipantSearch),
+          (current) =>
+            current?.map((participant) =>
+              participant.id === payload.data.userId
+                ? { ...participant, isOnline: payload.data.isOnline }
+                : participant
+            )
         );
         return;
       }
@@ -506,7 +508,6 @@ function DashboardMessagesPage(): JSX.Element {
     const conversation = await createConversation({ participantId });
 
     setParticipantSearch("");
-    setParticipantResults([]);
     setConversations((current) => {
       const next = [conversation, ...current.filter((item) => item.id !== conversation.id)];
 

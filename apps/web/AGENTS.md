@@ -31,6 +31,27 @@ src/styles/app.css   Tailwind v4 entry and the full design token set.
 
 `src/providers/` exists but is empty. Add providers to `src/routes/__root.tsx` unless you are deliberately introducing that directory.
 
+## Server state
+
+TanStack Query owns every server read. `src/routes/__root.tsx` creates the client
+per render (never at module scope -- on the server that would share one user's
+cache with the next request), `src/lib/query/query-client.ts` holds the defaults,
+and `src/lib/query/keys.ts` is the single key factory. Use a key from that file
+rather than typing an array inline, so a mutation's `invalidateQueries` cannot
+drift out of sync with the query it is meant to invalidate.
+
+Retry is off for 4xx and off for all mutations: the ky `afterResponse` hook has
+already raised a toast, and a retry raises a second one.
+
+`src/stores/ui-store.ts` (Zustand) is for genuinely global *UI* state only --
+currently the unread-message badge, which the messages page owns and the sidebar
+renders. Never put server data there.
+
+Two deliberate exceptions still hold local state: the messages thread, which is
+driven by WebSocket events rather than fetches, and the admin moderation thread,
+whose read writes an access-log row and therefore must never be refetched on a
+focus event.
+
 ## Talking to the API
 
 Never call `fetch` directly for API data. Two clients, for two contexts:

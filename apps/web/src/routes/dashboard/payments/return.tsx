@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PaymentHistoryItem } from "@/lib/api/payments";
 import { getPaymentById } from "@/lib/api/payments";
+import { queryKeys } from "@/lib/query/keys";
 
 export const Route = createFileRoute("/dashboard/payments/return")({
   component: PaymentReturnPage,
@@ -16,32 +18,24 @@ export const Route = createFileRoute("/dashboard/payments/return")({
 } as never);
 
 function PaymentReturnPage(): JSX.Element {
-  const [payment, setPayment] = useState<PaymentHistoryItem | null>(null);
   const [status, setStatus] = useState("pending");
-  const [isLoading, setIsLoading] = useState(true);
+  // The gateway hands the ids back on the query string, which only exists in the
+  // browser -- hence a mount effect rather than a route search schema.
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [hasReadSearch, setHasReadSearch] = useState(false);
+  const { data: payment = null, isPending } = useQuery<PaymentHistoryItem>({
+    enabled: Boolean(paymentId),
+    queryFn: async () => getPaymentById(paymentId ?? ""),
+    queryKey: queryKeys.payments.detail(paymentId ?? "")
+  });
+  const isLoading = !hasReadSearch || (Boolean(paymentId) && isPending);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    const paymentId = searchParams.get("paymentId");
-    const nextStatus = searchParams.get("status") ?? "pending";
 
-    setStatus(nextStatus);
-
-    if (!paymentId) {
-      setIsLoading(false);
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const record = await getPaymentById(paymentId);
-        setPayment(record);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
+    setStatus(searchParams.get("status") ?? "pending");
+    setPaymentId(searchParams.get("paymentId"));
+    setHasReadSearch(true);
   }, []);
 
   if (isLoading) {

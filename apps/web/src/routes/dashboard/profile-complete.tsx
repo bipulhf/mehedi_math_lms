@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import type { UserRole } from "@mma/shared";
 import { z } from "zod";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { ProfilePageSkeleton, RoleProfileForm } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -20,6 +22,7 @@ import {
   updateStudentProfile,
   updateTeacherProfile
 } from "@/lib/api/profiles";
+import { queryKeys } from "@/lib/query/keys";
 
 const searchSchema = z.object({
   courseSlug: z.string().trim().min(1).optional()
@@ -35,9 +38,23 @@ function CompleteProfilePage(): JSX.Element {
   const router = useRouter();
   const search = Route.useSearch();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profile, setProfile] = useState<OwnProfileData | null>(null);
+  const needsCompletion = !isSessionPending && Boolean(session) && !session?.session.profileCompleted;
+  const { data: fetchedProfile, isPending } = useQuery<OwnProfileData>({
+    enabled: needsCompletion,
+    queryFn: async () => getOwnProfile(),
+    queryKey: queryKeys.profiles.me()
+  });
+  // A completed profile redirects instead of rendering, so a disabled query is
+  // never "still loading" from the user's point of view.
+  const isLoading = needsCompletion && isPending;
+
+  useEffect(() => {
+    if (fetchedProfile) {
+      setProfile(fetchedProfile);
+    }
+  }, [fetchedProfile]);
 
   const getPostCompletionHref = (): string => {
     return search.courseSlug ? `/courses/${search.courseSlug}` : "/dashboard/profile";
@@ -61,16 +78,6 @@ function CompleteProfilePage(): JSX.Element {
       return;
     }
 
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const nextProfile = await getOwnProfile();
-        setProfile(nextProfile);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
   }, [isSessionPending, router, search.courseSlug, session]);
 
   const finishFlow = async (nextProfile: OwnProfileData, message: string): Promise<void> => {

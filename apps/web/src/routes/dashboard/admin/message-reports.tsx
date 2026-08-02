@@ -1,7 +1,8 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { EyeOff, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { RouteErrorView } from "@/components/common/route-error";
@@ -15,6 +16,7 @@ import {
   resolveConversationReport,
   reviewReportedConversation
 } from "@/lib/api/moderation";
+import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/admin/message-reports")({
@@ -59,27 +61,22 @@ function ReportQueueSkeleton(): JSX.Element {
 }
 
 function AdminMessageReportsPage(): JSX.Element {
-  const [reports, setReports] = useState<readonly ConversationReport[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: reports = [], isPending: isLoading } = useQuery<readonly ConversationReport[]>({
+    queryFn: async () => listConversationReports(),
+    queryKey: queryKeys.moderation.reports()
+  });
   const [selectedReport, setSelectedReport] = useState<ConversationReport | null>(null);
+  // The thread is deliberately not a query: fetching it writes an access-log
+  // row, so it must never be refetched on a window focus or a cache revalidation.
   const [thread, setThread] = useState<ReportedConversationThread | null>(null);
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [pendingMessageId, setPendingMessageId] = useState<string | null>(null);
   const [resolvingReportId, setResolvingReportId] = useState<string | null>(null);
 
   const refreshReports = async (): Promise<void> => {
-    setIsLoading(true);
-
-    try {
-      setReports(await listConversationReports());
-    } finally {
-      setIsLoading(false);
-    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.moderation.reports() });
   };
-
-  useEffect(() => {
-    void refreshReports();
-  }, []);
 
   /**
    * Opening a conversation writes an access-log row on the server, so it is an

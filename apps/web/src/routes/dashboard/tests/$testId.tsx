@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 import {
   getTestDetail,
   saveSubmissionAnswers,
@@ -28,25 +30,31 @@ export const Route = createFileRoute("/dashboard/tests/$testId")({
 function StudentTestPage(): JSX.Element {
   const { testId } = Route.useParams();
   const router = useRouter();
-  const [test, setTest] = useState<AssessmentTestDetail | null>(null);
+  const { data: test = null, isPending: isLoadingTest } = useQuery<AssessmentTestDetail>({
+    queryFn: async () => getTestDetail(testId),
+    queryKey: queryKeys.tests.detail(testId)
+  });
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, DraftAnswer>>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
   const isHydratingAnswersRef = useRef(true);
+  const isLoading = isLoadingTest || isStartingSubmission;
 
+  /**
+   * Starting a submission is a write -- it creates the attempt, or resumes the
+   * open one -- so it stays an effect rather than becoming a cached read. It
+   * must happen exactly once per test.
+   */
   useEffect(() => {
-    void (async () => {
-      setIsLoading(true);
+    setIsStartingSubmission(true);
 
+    void (async () => {
       try {
-        const [testDetail, submissionDetail] = await Promise.all([
-          getTestDetail(testId),
-          startSubmission(testId)
-        ]);
-        setTest(testDetail);
+        const submissionDetail = await startSubmission(testId);
+
         setSubmission(submissionDetail);
         setDraftAnswers(
           Object.fromEntries(
@@ -61,7 +69,7 @@ function StudentTestPage(): JSX.Element {
         );
         isHydratingAnswersRef.current = true;
       } finally {
-        setIsLoading(false);
+        setIsStartingSubmission(false);
       }
     })();
   }, [testId]);

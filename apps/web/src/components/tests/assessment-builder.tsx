@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -30,6 +31,7 @@ import {
   updateQuestion,
   updateTest
 } from "@/lib/api/tests";
+import { queryKeys } from "@/lib/query/keys";
 
 interface AssessmentBuilderProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -93,6 +95,17 @@ export function AssessmentBuilder({
     assessments[0]?.tests[0]?.id ?? null
   );
   const [selectedTest, setSelectedTest] = useState<AssessmentTestDetail | null>(null);
+  const { data: fetchedTest } = useQuery<AssessmentTestDetail>({
+    enabled: Boolean(selectedTestId),
+    queryFn: async () => getTestDetail(selectedTestId ?? ""),
+    queryKey: queryKeys.tests.detail(selectedTestId ?? "")
+  });
+
+  // Every question edit mutates this object in place before the round trip, so
+  // the fetched detail seeds local state rather than being rendered directly.
+  useEffect(() => {
+    setSelectedTest(selectedTestId ? (fetchedTest ?? null) : null);
+  }, [fetchedTest, selectedTestId]);
   const [testDrafts, setTestDrafts] = useState<Record<string, CreateTestInput>>({});
   const [questionDraft, setQuestionDraft] = useState<QuestionDraft>(initialQuestionDraft);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
@@ -111,17 +124,6 @@ export function AssessmentBuilder({
     [assessments]
   );
 
-  useEffect(() => {
-    if (!selectedTestId) {
-      setSelectedTest(null);
-      return;
-    }
-
-    void (async () => {
-      const detail = await getTestDetail(selectedTestId);
-      setSelectedTest(detail);
-    })();
-  }, [selectedTestId]);
 
   const handleCreateTest = async (chapterId: string): Promise<void> => {
     const draft = testDrafts[chapterId] ?? initialTestDraft;

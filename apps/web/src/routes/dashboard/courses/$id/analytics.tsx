@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
 import { getCourseAnalytics } from "@/lib/api/analytics";
+import { queryKeys } from "@/lib/query/keys";
 import {
   Bar,
   BarChart,
@@ -31,28 +33,13 @@ function CourseAnalyticsPage(): JSX.Element {
   const { id } = Route.useParams();
   const router = useRouter();
   const { isPending, session } = useAuthSession();
-  const [data, setData] = useState<CourseAnalyticsDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
   const role = session?.session.role;
   const canView = role === "ADMIN" || role === "ACCOUNTANT" || role === "TEACHER";
-
-  useEffect(() => {
-    if (isPending || !canView) {
-      return;
-    }
-
-    void (async () => {
-      setIsLoading(true);
-
-      try {
-        const detail = await getCourseAnalytics(id);
-        setData(detail);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [canView, id, isPending]);
+  const { data = null, isPending: isLoading } = useQuery<CourseAnalyticsDetail>({
+    enabled: !isPending && canView,
+    queryFn: async () => getCourseAnalytics(id),
+    queryKey: queryKeys.analytics.course(id)
+  });
 
   useEffect(() => {
     if (isPending || !session) {
