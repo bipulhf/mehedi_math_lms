@@ -22,7 +22,7 @@ Be aware of these before making changes — several are things to fix as the app
 - **Package name is `mobile`, not `@mma/mobile`.** Every other workspace uses the `@mma/*` scope.
 - **No workspace dependencies.** It does not consume `@mma/shared`, `@mma/auth`, or `@mma/db`. Any API contract used here should come from `@mma/shared` rather than being redeclared.
 - **Own TypeScript config.** Extends `expo/tsconfig.base` with `strict: true`, not `packages/config/tsconfig.base.json`. It does not get `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, or `verbatimModuleSyntax`. Its path alias is `@/*` → `./*` (workspace root), not `./src/*`.
-- **Own TypeScript version** (`~5.9.2`) pinned in devDependencies, while the rest of the repo is on TS 6.
+- **Own pinned TypeScript** (`~6.0.3`) in devDependencies rather than inheriting the root one. It currently matches the repo version, but `expo install --fix` owns that pin and will move it to whatever the installed Expo SDK expects.
 - **No `lint`, `typecheck`, or `build` scripts**, so `turbo run lint` / `typecheck` / `build` skip this workspace entirely. CI-style checks at the root will not catch errors here.
 - **Component filenames are PascalCase** (`EditScreenInfo.tsx`), whereas the web app uses kebab-case.
 
