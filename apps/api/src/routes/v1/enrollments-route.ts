@@ -1,5 +1,9 @@
 import { Hono } from "hono";
-import { courseIdParamsSchema, createEnrollmentSchema, enrollmentIdParamsSchema } from "@mma/shared";
+import {
+  courseIdParamsSchema,
+  createEnrollmentSchema,
+  enrollmentIdParamsSchema
+} from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
 import { enrollmentController } from "@/lib/container";
@@ -16,7 +20,7 @@ enrollmentsRoutes.post("/", requireRole("STUDENT"), async (context) => {
   return enrollmentController.createEnrollment(
     context,
     payload.courseId,
-    payload.callbackOrigin,
+    { origin: payload.callbackOrigin, path: payload.callbackPath },
     authUser!.id,
     authSession!.role as UserRole
   );

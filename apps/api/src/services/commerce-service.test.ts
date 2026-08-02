@@ -244,6 +244,24 @@ describe("CommerceService.createEnrollment", () => {
       NotFoundError
     );
   });
+
+  test("the caller's return target is stored on the payment, not left to the callback", async () => {
+    // The gateway calls back minutes later carrying only its own parameters, so
+    // where to send the browser afterwards has to survive on the record.
+    const { calls, service } = buildService({ course: { price: "500.00" } });
+
+    await service.createEnrollment("course-1", "user-1", "STUDENT", {
+      origin: "http://192.168.0.9:3000",
+      path: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
+    });
+
+    const metadata = calls.updates[0]?.patch.metadata as Record<string, unknown> | undefined;
+
+    expect(metadata?.callbackOrigin).toBe("http://192.168.0.9:3000");
+    expect(metadata?.callbackPath).toBe(
+      "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
+    );
+  });
 });
 
 describe("CommerceService.handlePaymentCallback", () => {
@@ -282,7 +300,11 @@ describe("CommerceService.handlePaymentCallback", () => {
     // ADR-0001. Previously only the transaction id was compared, so a response
     // of INVALID_TRANSACTION carrying a matching tran_id still settled.
     const { calls, service } = buildService({
-      validation: { status: "INVALID_TRANSACTION", transactionId: "MMA-TXN-1", validationId: "VAL-1" }
+      validation: {
+        status: "INVALID_TRANSACTION",
+        transactionId: "MMA-TXN-1",
+        validationId: "VAL-1"
+      }
     });
 
     await expect(
@@ -325,13 +347,69 @@ describe("CommerceService.handlePaymentCallback", () => {
     // user cancelled rather than failed survives only in metadata and the
     // redirect. This is deliberate, not a defect.
     const { calls, service } = buildService();
-    const redirect = await service.handlePaymentCallback({ paymentId: "pay-1", status: "CANCELLED" });
+    const redirect = await service.handlePaymentCallback({
+      paymentId: "pay-1",
+      status: "CANCELLED"
+    });
 
     expect(calls.updates[0]?.patch.status).toBe("FAILED");
     expect(
       (calls.updates[0]?.patch.metadata as Record<string, unknown> | undefined)?.lastCallbackStatus
     ).toBe("CANCELLED");
     expect(redirect).toContain("status=cancel");
+  });
+
+  test("the default return is the web dashboard page", async () => {
+    const { service } = buildService();
+    const redirect = await service.handlePaymentCallback({
+      origin: "https://app.test",
+      paymentId: "pay-1",
+      status: "SUCCESS"
+    });
+
+    expect(redirect).toBe(
+      "https://app.test/dashboard/payments/return?paymentId=pay-1&status=success"
+    );
+  });
+
+  test("a stored callback path is honoured and keeps its own query string", async () => {
+    // This is what makes the mobile return work: the app's deep link rides in
+    // the path's query, and `paymentId` merges alongside rather than opening a
+    // second `?`.
+    const { service } = buildService({
+      payment: {
+        metadata: {
+          callbackOrigin: "http://192.168.0.9:3000",
+          callbackPath: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
+        }
+      } as Partial<PaymentRecord>
+    });
+    const redirect = await service.handlePaymentCallback({ paymentId: "pay-1", status: "SUCCESS" });
+    const url = new URL(redirect);
+
+    expect(url.origin).toBe("http://192.168.0.9:3000");
+    expect(url.pathname).toBe("/api/payment-return");
+    expect(url.searchParams.get("redirect")).toBe("mma://payment-callback");
+    expect(url.searchParams.get("paymentId")).toBe("pay-1");
+    expect(url.searchParams.get("status")).toBe("success");
+  });
+
+  test("the path is read from the payment even when the callback echoes an origin", async () => {
+    // `origin` round-trips through the gateway and is therefore attacker-shaped.
+    // The path never leaves the server, so a caller cannot swap the destination
+    // of someone else's settled payment.
+    const { service } = buildService({
+      payment: {
+        metadata: { callbackPath: "/api/payment-return" }
+      } as Partial<PaymentRecord>
+    });
+    const redirect = await service.handlePaymentCallback({
+      origin: "https://app.test",
+      paymentId: "pay-1",
+      status: "FAILED"
+    });
+
+    expect(redirect).toBe("https://app.test/api/payment-return?paymentId=pay-1&status=fail");
   });
 });
 

@@ -41,6 +41,35 @@ describe("createEnrollmentSchema", () => {
       createEnrollmentSchema.safeParse({ callbackOrigin: "/dashboard", courseId: UUID }).success
     ).toBe(false);
   });
+
+  test("the callback path is a path on that origin, and cannot escape it", () => {
+    expect(
+      createEnrollmentSchema.safeParse({
+        callbackPath: "/dashboard/payments/return",
+        courseId: UUID
+      }).success
+    ).toBe(true);
+    // The mobile app carries its deep link here, so a query string is allowed.
+    expect(
+      createEnrollmentSchema.safeParse({
+        callbackPath: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback",
+        courseId: UUID
+      }).success
+    ).toBe(true);
+
+    // An absolute URL would redirect the browser off the origin after payment.
+    expect(
+      createEnrollmentSchema.safeParse({ callbackPath: "https://evil.test/x", courseId: UUID })
+        .success
+    ).toBe(false);
+    // So would a protocol-relative one, which `new URL()` resolves to a host.
+    expect(
+      createEnrollmentSchema.safeParse({ callbackPath: "//evil.test/x", courseId: UUID }).success
+    ).toBe(false);
+    expect(
+      createEnrollmentSchema.safeParse({ callbackPath: "dashboard", courseId: UUID }).success
+    ).toBe(false);
+  });
 });
 
 describe("paymentValidationParamsSchema", () => {

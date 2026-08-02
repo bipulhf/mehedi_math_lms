@@ -2,13 +2,9 @@ import type { UserRole } from "@mma/shared";
 
 import { env } from "@/lib/env";
 import type { CourseRepository } from "@/repositories/course-repository";
-import type {
-  EnrollmentRepository} from "@/repositories/enrollment-repository";
-import {
-  type StudentEnrollmentRecord
-} from "@/repositories/enrollment-repository";
-import type {
-  PaymentRepository} from "@/repositories/payment-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import { type StudentEnrollmentRecord } from "@/repositories/enrollment-repository";
+import type { PaymentRepository } from "@/repositories/payment-repository";
 import {
   type PaymentDashboardStatsRecord,
   type PaymentListRecord,
@@ -81,11 +77,13 @@ export interface PaymentHistoryItem {
   refundedAt: string | null;
   status: PaymentRecord["status"];
   transactionId: string;
-  user?: {
-    email: string;
-    id: string;
-    name: string;
-  } | undefined;
+  user?:
+    | {
+        email: string;
+        id: string;
+        name: string;
+      }
+    | undefined;
 }
 
 export interface AccountingPaymentsResponse {
@@ -98,6 +96,53 @@ export interface AccountingPaymentsResponse {
 
 function createTransactionId(): string {
   return `MMA-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+}
+
+/**
+ * Where the browser is sent once the gateway settles.
+ *
+ * `origin` and `path` are both supplied by the client that started checkout,
+ * because the two clients land in different places: the web app wants its own
+ * return page, and the mobile app wants a web route that redirects into its
+ * scheme — an in-app browser holds a session the app cannot read, so it needs
+ * a hop it controls. Both are stored on the payment and read back from there
+ * rather than from the gateway's callback, which is not ours to trust.
+ */
+export interface PaymentCallbackTarget {
+  origin?: string | undefined;
+  path?: string | undefined;
+}
+
+const DEFAULT_RETURN_PATH = "/dashboard/payments/return";
+
+/**
+ * Resolved with the URL parser rather than string concatenation, because
+ * `path` may already carry a query string — the mobile app's deep link travels
+ * that way — and `paymentId` has to merge into it rather than start a second
+ * `?`. `callbackPathSchema` in `@mma/shared` has already refused anything that
+ * could resolve to a different origin.
+ */
+function buildReturnUrl(
+  origin: string,
+  path: string,
+  params: Readonly<Record<string, string>>
+): string {
+  const url = new URL(path, origin);
+
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  return url.toString();
+}
+
+function readMetadataString(
+  metadata: Record<string, unknown> | null | undefined,
+  key: string
+): string | null {
+  const value = metadata?.[key];
+
+  return typeof value === "string" && value.length > 0 ? value : null;
 }
 
 function formatPayment(record: PaymentListRecord, includeUser = false): PaymentHistoryItem {
@@ -190,18 +235,21 @@ export class CommerceService {
     courseId: string,
     currentUserId: string,
     currentUserRole: UserRole,
-    callbackOrigin?: string | undefined
+    callback: PaymentCallbackTarget = {}
   ): Promise<EnrollmentActionResponse> {
     this.ensureStudent(currentUserRole);
 
     const course = await this.getPublishedCourseOrThrow(courseId);
-    const callbackBase = callbackOrigin ?? env.APP_URL;
+    const callbackBase = callback.origin ?? env.APP_URL;
     const existingEnrollment = await this.enrollmentRepository.findByUserAndCourse(
       currentUserId,
       courseId
     );
 
-    if (existingEnrollment && (await this.enrollmentRepository.hasCourseAccess(currentUserId, courseId))) {
+    if (
+      existingEnrollment &&
+      (await this.enrollmentRepository.hasCourseAccess(currentUserId, courseId))
+    ) {
       return {
         accessGranted: true,
         enrollmentId: existingEnrollment.id,
@@ -234,7 +282,8 @@ export class CommerceService {
       courseId,
       enrollmentId: existingEnrollment?.id ?? null,
       metadata: {
-        callbackOrigin: callbackBase
+        callbackOrigin: callbackBase,
+        callbackPath: callback.path ?? DEFAULT_RETURN_PATH
       },
       transactionId: createTransactionId(),
       userId: currentUserId
@@ -252,7 +301,10 @@ export class CommerceService {
     const updatedPayment = await this.paymentRepository.update(payment.id, {
       metadata: {
         ...gatewaySession.metadata,
-        callbackOrigin: callbackOrigin ?? null,
+        // Kept on the payment because the callback arrives with nothing but
+        // the gateway's own parameters, minutes or hours later.
+        callbackOrigin: callbackBase,
+        callbackPath: callback.path ?? DEFAULT_RETURN_PATH,
         gatewayUrl: gatewaySession.gatewayUrl,
         transactionId: payment.transactionId
       }
@@ -276,9 +328,9 @@ export class CommerceService {
     courseId: string,
     currentUserId: string,
     currentUserRole: UserRole,
-    callbackOrigin?: string | undefined
+    callback: PaymentCallbackTarget = {}
   ): Promise<EnrollmentActionResponse> {
-    return this.createEnrollment(courseId, currentUserId, currentUserRole, callbackOrigin);
+    return this.createEnrollment(courseId, currentUserId, currentUserRole, callback);
   }
 
   public async listMyEnrollments(userId: string): Promise<readonly StudentEnrollmentItem[]> {
@@ -292,7 +344,10 @@ export class CommerceService {
     return items.map((item) => ({ ...item, hasReview: reviewedIds.has(item.course.id) }));
   }
 
-  public async getMyCourseEnrollment(userId: string, courseId: string): Promise<StudentEnrollmentItem | null> {
+  public async getMyCourseEnrollment(
+    userId: string,
+    courseId: string
+  ): Promise<StudentEnrollmentItem | null> {
     const enrollments = await this.enrollmentRepository.listByUser(userId);
     const record = enrollments.find((item) => item.courseId === courseId);
 
@@ -381,20 +436,23 @@ export class CommerceService {
     tranId?: string | undefined;
     valId?: string | undefined;
   }): Promise<string> {
-    const payment =
-      input.paymentId
-        ? await this.paymentRepository.findById(input.paymentId)
-        : input.tranId
-          ? await this.paymentRepository.findByTransactionId(input.tranId)
-          : null;
+    const payment = input.paymentId
+      ? await this.paymentRepository.findById(input.paymentId)
+      : input.tranId
+        ? await this.paymentRepository.findByTransactionId(input.tranId)
+        : null;
 
     if (!payment) {
       throw new NotFoundError("Payment not found");
     }
 
     const callbackOrigin =
-      input.origin ??
-      (typeof payment.metadata?.callbackOrigin === "string" ? payment.metadata.callbackOrigin : env.APP_URL);
+      input.origin ?? readMetadataString(payment.metadata, "callbackOrigin") ?? env.APP_URL;
+    // Only ever read from the payment. The gateway echoes `origin` back for
+    // compatibility, but it never saw the path, and taking a redirect target
+    // from a callback body would be someone else's choice of destination.
+    const callbackPath =
+      readMetadataString(payment.metadata, "callbackPath") ?? DEFAULT_RETURN_PATH;
 
     if (input.status === "SUCCESS") {
       const validation =
@@ -450,7 +508,10 @@ export class CommerceService {
         type: "PAYMENT"
       });
 
-      return `${callbackOrigin}/dashboard/payments/return?paymentId=${encodeURIComponent(payment.id)}&status=success`;
+      return buildReturnUrl(callbackOrigin, callbackPath, {
+        paymentId: payment.id,
+        status: "success"
+      });
     }
 
     await this.paymentRepository.update(payment.id, {
@@ -462,7 +523,10 @@ export class CommerceService {
       status: "FAILED"
     });
 
-    return `${callbackOrigin}/dashboard/payments/return?paymentId=${encodeURIComponent(payment.id)}&status=${input.status === "CANCELLED" ? "cancel" : "fail"}`;
+    return buildReturnUrl(callbackOrigin, callbackPath, {
+      paymentId: payment.id,
+      status: input.status === "CANCELLED" ? "cancel" : "fail"
+    });
   }
 
   public async validatePayment(valId: string): Promise<PaymentHistoryItem> {

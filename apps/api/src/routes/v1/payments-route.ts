@@ -45,7 +45,7 @@ paymentsRoutes.post("/init", requireRole("STUDENT"), async (context) => {
   return paymentController.initializePayment(
     context,
     payload.courseId,
-    payload.callbackOrigin,
+    { origin: payload.callbackOrigin, path: payload.callbackPath },
     authUser!.id,
     authSession!.role as UserRole
   );
@@ -61,11 +61,7 @@ paymentsRoutes.get("/", requireRole("ACCOUNTANT", "ADMIN"), (context) => {
   const query = paymentListQuerySchema.parse(context.req.query());
   const authSession = context.get("authSession");
 
-  return paymentController.listAccountingPayments(
-    context,
-    query,
-    authSession!.role as UserRole
-  );
+  return paymentController.listAccountingPayments(context, query, authSession!.role as UserRole);
 });
 
 paymentsRoutes.get("/success", async (context) => {

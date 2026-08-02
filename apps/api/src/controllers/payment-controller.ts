@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { UserRole } from "@mma/shared";
 
-import type { CommerceService } from "@/services/commerce-service";
+import type { CommerceService, PaymentCallbackTarget } from "@/services/commerce-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 
@@ -11,7 +11,7 @@ export class PaymentController {
   public async initializePayment(
     context: Context<AppBindings>,
     courseId: string,
-    callbackOrigin: string | undefined,
+    callback: PaymentCallbackTarget,
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
@@ -19,7 +19,7 @@ export class PaymentController {
       courseId,
       currentUserId,
       currentUserRole,
-      callbackOrigin
+      callback
     );
 
     return success(context, data, 201, "Payment initialized successfully");
@@ -112,10 +112,7 @@ export class PaymentController {
     return context.redirect(redirectUrl, 302);
   }
 
-  public async validatePayment(
-    context: Context<AppBindings>,
-    valId: string
-  ): Promise<Response> {
+  public async validatePayment(context: Context<AppBindings>, valId: string): Promise<Response> {
     const data = await this.commerceService.validatePayment(valId);
 
     return success(context, data);

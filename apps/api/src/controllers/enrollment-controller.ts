@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { UserRole } from "@mma/shared";
 
-import type { CommerceService } from "@/services/commerce-service";
+import type { CommerceService, PaymentCallbackTarget } from "@/services/commerce-service";
 import type { EnrollmentPdfService } from "@/services/enrollment-pdf-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
@@ -15,7 +15,7 @@ export class EnrollmentController {
   public async createEnrollment(
     context: Context<AppBindings>,
     courseId: string,
-    callbackOrigin: string | undefined,
+    callback: PaymentCallbackTarget,
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
@@ -23,7 +23,7 @@ export class EnrollmentController {
       courseId,
       currentUserId,
       currentUserRole,
-      callbackOrigin
+      callback
     );
 
     return success(context, data, 201, "Enrollment created successfully");

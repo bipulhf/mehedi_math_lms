@@ -20,6 +20,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiMobileAuthHandoffRouteImport } from './routes/api/mobile-auth-handoff'
+import { Route as ApiPaymentReturnRouteImport } from './routes/api/payment-return'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
@@ -116,6 +117,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ApiMobileAuthHandoffRoute = ApiMobileAuthHandoffRouteImport.update({
   id: '/api/mobile-auth-handoff',
   path: '/api/mobile-auth-handoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentReturnRoute = ApiPaymentReturnRouteImport.update({
+  id: '/api/payment-return',
+  path: '/api/payment-return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -351,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -405,6 +412,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -518,6 +527,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/payment-return'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -572,6 +582,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/payment-return'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -627,6 +638,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/payment-return'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -683,6 +695,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiMobileAuthHandoffRoute: typeof ApiMobileAuthHandoffRoute
+  ApiPaymentReturnRoute: typeof ApiPaymentReturnRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   DevSeoPreviewRoute: typeof DevSeoPreviewRoute
   TeachersSlugRoute: typeof TeachersSlugRoute
@@ -767,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mobile-auth-handoff'
       fullPath: '/api/mobile-auth-handoff'
       preLoaderRoute: typeof ApiMobileAuthHandoffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment-return': {
+      id: '/api/payment-return'
+      path: '/api/payment-return'
+      fullPath: '/api/payment-return'
+      preLoaderRoute: typeof ApiPaymentReturnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -1222,6 +1242,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiMobileAuthHandoffRoute: ApiMobileAuthHandoffRoute,
+  ApiPaymentReturnRoute: ApiPaymentReturnRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   DevSeoPreviewRoute: DevSeoPreviewRoute,
   TeachersSlugRoute: TeachersSlugRoute,
