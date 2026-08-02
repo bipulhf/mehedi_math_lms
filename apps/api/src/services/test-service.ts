@@ -1,6 +1,6 @@
 import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
-import {
+import type {
   createQuestionSchema,
   createTestSchema,
   gradeSubmissionSchema,
@@ -11,15 +11,16 @@ import {
   updateTestSchema
 } from "@mma/shared";
 
-import { ContentRepository, type ChapterRecord } from "@/repositories/content-repository";
-import { CourseRepository, type CourseRecord } from "@/repositories/course-repository";
-import { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { ContentRepository} from "@/repositories/content-repository";
+import { type ChapterRecord } from "@/repositories/content-repository";
+import type { CourseRepository} from "@/repositories/course-repository";
+import { type CourseRecord } from "@/repositories/course-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type {
+  TestRepository} from "@/repositories/test-repository";
 import {
-  TestRepository,
   type QuestionOptionRecord,
   type QuestionRecord,
-  type SubmissionAnswerRecord,
-  type SubmissionRecord,
   type SubmissionSummaryRecord,
   type TestRecord
 } from "@/repositories/test-repository";

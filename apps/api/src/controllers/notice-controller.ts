@@ -5,7 +5,7 @@ import type {
   UserRole
 } from "@mma/shared";
 
-import { NoticeService } from "@/services/notice-service";
+import type { NoticeService } from "@/services/notice-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

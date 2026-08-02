@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import { NotImplementedService } from "@/services/not-implemented-service";
+import type { NotImplementedService } from "@/services/not-implemented-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

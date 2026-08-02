@@ -1,4 +1,4 @@
-import { FcmPushService } from "@/services/fcm-push-service";
+import type { FcmPushService } from "@/services/fcm-push-service";
 import type { NotificationRepository } from "@/repositories/notification-repository";
 
 function stringifyData(data: Record<string, string | number | boolean | null> | null): Record<string, string> {

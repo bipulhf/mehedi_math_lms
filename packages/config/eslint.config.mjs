@@ -33,5 +33,16 @@ export default [
       "@typescript-eslint/no-explicit-any": "error",
       "no-console": "off"
     }
+  },
+  {
+    // Service workers shipped as static assets: worker scope, plus the
+    // firebase global that the compat scripts install via importScripts.
+    files: ["**/public/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        firebase: "readonly"
+      }
+    }
   }
 ];

@@ -1,9 +1,10 @@
 import type { UserRole } from "@mma/shared";
 
-import { CommentRepository, type CommentRecord } from "@/repositories/comment-repository";
-import { ContentRepository } from "@/repositories/content-repository";
-import { CourseRepository } from "@/repositories/course-repository";
-import { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { CommentRepository} from "@/repositories/comment-repository";
+import { type CommentRecord } from "@/repositories/comment-repository";
+import type { ContentRepository } from "@/repositories/content-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface CommentView {

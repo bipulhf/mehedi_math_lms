@@ -1,8 +1,8 @@
 import type { Context } from "hono";
 import type { UserRole } from "@mma/shared";
 
-import { CommerceService } from "@/services/commerce-service";
-import { EnrollmentPdfService } from "@/services/enrollment-pdf-service";
+import type { CommerceService } from "@/services/commerce-service";
+import type { EnrollmentPdfService } from "@/services/enrollment-pdf-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

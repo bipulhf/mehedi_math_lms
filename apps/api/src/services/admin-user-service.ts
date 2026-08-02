@@ -1,15 +1,17 @@
-import { generateUniqueSlug, type UserRole } from "@mma/shared";
+import { generateUniqueSlug } from "@mma/shared";
 
-import { AuthSessionRepository } from "@/repositories/auth-session-repository";
+import type { AuthSessionRepository } from "@/repositories/auth-session-repository";
+import type {
+  AdminUserRepository} from "@/repositories/admin-user-repository";
 import {
-  AdminUserRepository,
   type AdminUserDetailRecord,
   type AdminUserListRecord,
   type AdminUsersQuery,
   type UpdateAdminUserInput
 } from "@/repositories/admin-user-repository";
+import type {
+  StaffAccountService} from "@/services/staff-account-service";
 import {
-  StaffAccountService,
   type CreateStaffAccountRequest,
   type CreatedStaffAccount
 } from "@/services/staff-account-service";

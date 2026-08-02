@@ -1,8 +1,9 @@
 import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@mma/shared";
 
-import { CourseRepository } from "@/repositories/course-repository";
-import { EnrollmentRepository } from "@/repositories/enrollment-repository";
-import { ReviewRepository, type ReviewWithAuthor } from "@/repositories/review-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { ReviewRepository} from "@/repositories/review-repository";
+import { type ReviewWithAuthor } from "@/repositories/review-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface ReviewView {

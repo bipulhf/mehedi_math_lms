@@ -1,14 +1,16 @@
-import type { UserRole } from "@mma/shared";
-import type { z } from "zod";
-import {
+import type { UserRole ,
   categoriesQuerySchema,
   createCategorySchema,
-  generateUniqueSlug,
   reorderCategoriesSchema,
   updateCategorySchema
 } from "@mma/shared";
+import type { z } from "zod";
+import {
+  generateUniqueSlug
+} from "@mma/shared";
 
-import { CategoryRepository, type CategoryRecord } from "@/repositories/category-repository";
+import type { CategoryRepository} from "@/repositories/category-repository";
+import { type CategoryRecord } from "@/repositories/category-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CategoriesQuery = z.infer<typeof categoriesQuerySchema>;

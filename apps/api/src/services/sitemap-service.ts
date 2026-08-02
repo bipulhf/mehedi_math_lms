@@ -1,7 +1,7 @@
 import type Redis from "ioredis";
 
 import { env } from "@/lib/env";
-import { SeoRepository } from "@/repositories/seo-repository";
+import type { SeoRepository } from "@/repositories/seo-repository";
 
 function escapeXml(value: string): string {
   return value

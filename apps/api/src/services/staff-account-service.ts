@@ -2,7 +2,8 @@ import { generateUniqueSlug } from "@mma/shared";
 import { createPasswordHash } from "@mma/auth/server";
 
 import { queues } from "@/lib/queues";
-import { StaffAccountRepository, type StaffRole } from "@/repositories/staff-account-repository";
+import type { StaffAccountRepository} from "@/repositories/staff-account-repository";
+import { type StaffRole } from "@/repositories/staff-account-repository";
 import { ConflictError } from "@/utils/errors";
 
 export interface CreateStaffAccountRequest {

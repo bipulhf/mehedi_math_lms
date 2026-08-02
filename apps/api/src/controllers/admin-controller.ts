@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 
-import { StaffAccountService, type CreateStaffAccountRequest } from "@/services/staff-account-service";
+import type { StaffAccountService} from "@/services/staff-account-service";
+import { type CreateStaffAccountRequest } from "@/services/staff-account-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

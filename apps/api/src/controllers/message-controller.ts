@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { UserRole } from "@mma/shared";
 
-import { MessageService } from "@/services/message-service";
+import type { MessageService } from "@/services/message-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

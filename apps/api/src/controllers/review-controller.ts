@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@mma/shared";
 
-import { ReviewService } from "@/services/review-service";
+import type { ReviewService } from "@/services/review-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { paginated, success } from "@/utils/response";
 

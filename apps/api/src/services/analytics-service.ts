@@ -1,7 +1,7 @@
 import type { UserRole } from "@mma/shared";
 
-import { AnalyticsRepository } from "@/repositories/analytics-repository";
-import { CourseRepository } from "@/repositories/course-repository";
+import type { AnalyticsRepository } from "@/repositories/analytics-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
 import { ForbiddenError, NotFoundError } from "@/utils/errors";
 
 export class AnalyticsService {

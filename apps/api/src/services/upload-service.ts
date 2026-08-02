@@ -4,7 +4,8 @@ import type { UploadKind, UploadPurpose } from "@mma/shared";
 import { env } from "@/lib/env";
 import { queues } from "@/lib/queues";
 import { createSignedUploadUrl, deleteStoredFile, getPublicFileUrl } from "@/lib/s3";
-import { UploadRepository, type UploadRecord } from "@/repositories/upload-repository";
+import type { UploadRepository} from "@/repositories/upload-repository";
+import { type UploadRecord } from "@/repositories/upload-repository";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface CreatePresignedUploadRequest {
@@ -207,7 +208,7 @@ export class UploadService {
   ): Promise<PreparedUploadResponse> {
     this.requireS3Configuration();
 
-    const config = this.validateUploadInput(input);
+    this.validateUploadInput(input);
     const extension = getFileExtension(input.fileName, input.contentType);
     const key = this.buildStorageKey(input.purpose, actor.id, extension);
     const fileUrl = getPublicFileUrl(key);

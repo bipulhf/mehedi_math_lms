@@ -1,7 +1,7 @@
 import type { AuthSession, AuthUser } from "@mma/auth/server";
 import type { UserRole } from "@mma/shared";
 
-import { AuthSessionRepository } from "@/repositories/auth-session-repository";
+import type { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { ForbiddenError, UnauthorizedError } from "@/utils/errors";
 
 export class AuthGuardService {

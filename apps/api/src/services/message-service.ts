@@ -1,12 +1,13 @@
 import type { UserRole } from "@mma/shared";
 
+import type {
+  MessageRepository} from "@/repositories/message-repository";
 import {
-  MessageRepository,
   type ConversationMessageRecord,
   type ConversationRecord,
   type MessageParticipantRecord
 } from "@/repositories/message-repository";
-import { MessageRealtimeService } from "@/services/message-realtime-service";
+import type { MessageRealtimeService } from "@/services/message-realtime-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface MessageParticipantView {

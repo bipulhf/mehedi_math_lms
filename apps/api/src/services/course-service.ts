@@ -1,17 +1,19 @@
-import type { UserRole } from "@mma/shared";
-import type { z } from "zod";
-import {
+import type { UserRole ,
   createCourseSchema,
-  generateUniqueSlug,
   listCoursesQuerySchema,
   rejectCourseSchema,
   updateCourseSchema
 } from "@mma/shared";
+import type { z } from "zod";
+import {
+  generateUniqueSlug
+} from "@mma/shared";
 import { courses, eq, inArray, or, type SQL } from "@mma/db";
 
-import { CategoryRepository } from "@/repositories/category-repository";
+import type { CategoryRepository } from "@/repositories/category-repository";
+import type {
+  CourseRepository} from "@/repositories/course-repository";
 import {
-  CourseRepository,
   type CourseRecord,
   type TeacherDirectoryRecord
 } from "@/repositories/course-repository";
@@ -42,7 +44,7 @@ export interface CourseListItem {
   updatedAt: string;
 }
 
-export interface CourseDetailResponse extends CourseListItem {}
+export type CourseDetailResponse = CourseListItem;
 
 function normalizeOptionalUrl(value: string | undefined): string | null {
   if (!value) {

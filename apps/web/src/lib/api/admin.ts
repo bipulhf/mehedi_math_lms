@@ -1,11 +1,12 @@
-import {
+import type {
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   bugReportPrioritySchema,
   bugReportStatusSchema,
   createAdminUserSchema,
   updateAdminUserSchema,
-  updateAdminUserStatusSchema,
+  updateAdminUserStatusSchema} from "@mma/shared";
+import {
   userListStatusSchema,
   type AdminSendNotificationInput,
   type AdminSendSmsInput,

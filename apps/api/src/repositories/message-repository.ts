@@ -44,15 +44,6 @@ interface MessageUserRow {
   } | null;
 }
 
-interface ConversationRow {
-  createdAt: Date;
-  id: string;
-  lastMessageAt: Date | null;
-  participantOne: ParticipantUserRow;
-  participantTwo: ParticipantUserRow;
-  updatedAt: Date;
-}
-
 interface MessageRow {
   content: string;
   conversationId: string;

@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "hono";
-import { z, ZodError, ZodType } from "zod";
+import type { z, ZodType } from "zod";
+import { ZodError } from "zod";
 
 import type { AppBindings } from "@/types/app-bindings";
 import { ValidationError } from "@/utils/errors";

@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { UserRole } from "@mma/shared";
 
-import { CommentService } from "@/services/comment-service";
+import type { CommentService } from "@/services/comment-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { paginated, success } from "@/utils/response";
 

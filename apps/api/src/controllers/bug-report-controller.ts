@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 
-import { BugReportService, type CreateBugReportRequest, type UpdateBugReportRequest } from "@/services/bug-report-service";
+import type { BugReportService} from "@/services/bug-report-service";
+import { type CreateBugReportRequest, type UpdateBugReportRequest } from "@/services/bug-report-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { paginated, success } from "@/utils/response";
 

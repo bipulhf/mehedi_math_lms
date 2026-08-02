@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { AdminSendSmsInput, AdminSmsHistoryQuery } from "@mma/shared";
 
-import { SmsService } from "@/services/sms-service";
+import type { SmsService } from "@/services/sms-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { paginated, success } from "@/utils/response";
 

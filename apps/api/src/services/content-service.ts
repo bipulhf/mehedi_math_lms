@@ -1,6 +1,6 @@
 import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
-import {
+import type {
   createChapterSchema,
   createLectureSchema,
   createMaterialSchema,
@@ -11,14 +11,16 @@ import {
   updateMaterialSchema
 } from "@mma/shared";
 
-import { CourseRepository, type CourseRecord } from "@/repositories/course-repository";
+import type { CourseRepository} from "@/repositories/course-repository";
+import { type CourseRecord } from "@/repositories/course-repository";
+import type {
+  ContentRepository} from "@/repositories/content-repository";
 import {
-  ContentRepository,
   type ChapterRecord,
   type LectureRecord,
   type MaterialRecord
 } from "@/repositories/content-repository";
-import { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type CreateChapterInput = z.infer<typeof createChapterSchema>;

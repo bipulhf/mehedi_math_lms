@@ -1,4 +1,4 @@
-import { createBugReportSchema } from "@mma/shared";
+import type { createBugReportSchema } from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPost } from "@/lib/api/client";

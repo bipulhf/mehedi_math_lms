@@ -1,5 +1,5 @@
 import type { SQL } from "@mma/db";
-import { and, bugReports, count, db, desc, eq, or, users } from "@mma/db";
+import { and, bugReports, count, db, desc, eq, users } from "@mma/db";
 
 export interface CreateBugReportInput {
   description: string;

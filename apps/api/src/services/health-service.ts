@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 import type { HealthSnapshot } from "@/repositories/health-repository";
-import { HealthRepository } from "@/repositories/health-repository";
+import type { HealthRepository } from "@/repositories/health-repository";
 
 export interface HealthStatus {
   appName: string;

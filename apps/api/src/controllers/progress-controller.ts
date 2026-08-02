@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import { ProgressService } from "@/services/progress-service";
+import type { ProgressService } from "@/services/progress-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

@@ -1,6 +1,7 @@
-import { ContentRepository } from "@/repositories/content-repository";
+import type { ContentRepository } from "@/repositories/content-repository";
+import type {
+  EnrollmentRepository} from "@/repositories/enrollment-repository";
 import {
-  EnrollmentRepository,
   type CourseProgressRecord,
   type EnrollmentRecord
 } from "@/repositories/enrollment-repository";

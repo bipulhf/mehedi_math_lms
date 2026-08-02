@@ -1,5 +1,5 @@
-import { CourseRepository } from "@/repositories/course-repository";
-import { ProfileRepository } from "@/repositories/profile-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
+import type { ProfileRepository } from "@/repositories/profile-repository";
 import { NotFoundError } from "@/utils/errors";
 
 function escapeSvgText(value: string): string {

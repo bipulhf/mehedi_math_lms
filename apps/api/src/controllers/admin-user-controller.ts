@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 
 import type { CreateStaffAccountRequest } from "@/services/staff-account-service";
-import { AdminUserService } from "@/services/admin-user-service";
+import type { AdminUserService } from "@/services/admin-user-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { paginated, success } from "@/utils/response";
 

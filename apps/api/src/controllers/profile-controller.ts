@@ -1,13 +1,14 @@
 import type { Context } from "hono";
-import {
+import type {
   basicProfileInputSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
 } from "@mma/shared";
 import type { z } from "zod";
 
+import type {
+  ProfileService} from "@/services/profile-service";
 import {
-  ProfileService,
   type OwnProfileResponse,
   type PublicTeacherProfileResponse
 } from "@/services/profile-service";

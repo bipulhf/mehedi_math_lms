@@ -1,16 +1,12 @@
 import type { SQL } from "@mma/db";
 import {
   and,
-  bugReports,
   count,
   db,
   desc,
   eq,
   ilike,
   or,
-  sessions,
-  studentProfiles,
-  teacherProfiles,
   users
 } from "@mma/db";
 import type { UserRole } from "@mma/shared";

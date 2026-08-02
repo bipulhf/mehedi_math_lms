@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import { AdminDashboardService } from "@/services/admin-dashboard-service";
+import type { AdminDashboardService } from "@/services/admin-dashboard-service";
 import type { AppBindings } from "@/types/app-bindings";
 import { success } from "@/utils/response";
 

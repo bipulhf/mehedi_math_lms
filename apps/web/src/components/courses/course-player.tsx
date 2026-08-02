@@ -7,7 +7,6 @@ import {
   Circle,
   Clock3,
   Download,
-  FileText,
   Megaphone,
   PlayCircle
 } from "lucide-react";

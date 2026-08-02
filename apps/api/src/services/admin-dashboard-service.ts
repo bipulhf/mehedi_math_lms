@@ -1,5 +1,6 @@
+import type {
+  AdminDashboardRepository} from "@/repositories/admin-dashboard-repository";
 import {
-  AdminDashboardRepository,
   type AdminDashboardStatsRecord
 } from "@/repositories/admin-dashboard-repository";
 

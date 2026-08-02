@@ -1,8 +1,9 @@
 import type { Context } from "hono";
 import type { AuthUser } from "@mma/auth/server";
 
+import type {
+  UploadService} from "@/services/upload-service";
 import {
-  UploadService,
   type ConfirmUploadRequest,
   type CreatePresignedUploadRequest
 } from "@/services/upload-service";

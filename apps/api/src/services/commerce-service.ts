@@ -1,20 +1,22 @@
 import type { UserRole } from "@mma/shared";
 
 import { env } from "@/lib/env";
-import { CourseRepository } from "@/repositories/course-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
+import type {
+  EnrollmentRepository} from "@/repositories/enrollment-repository";
 import {
-  EnrollmentRepository,
   type StudentEnrollmentRecord
 } from "@/repositories/enrollment-repository";
+import type {
+  PaymentRepository} from "@/repositories/payment-repository";
 import {
-  PaymentRepository,
   type PaymentDashboardStatsRecord,
   type PaymentListRecord,
   type PaymentRecord
 } from "@/repositories/payment-repository";
-import { ProfileRepository } from "@/repositories/profile-repository";
-import { ReviewRepository } from "@/repositories/review-repository";
-import { SslCommerzService } from "@/services/sslcommerz-service";
+import type { ProfileRepository } from "@/repositories/profile-repository";
+import type { ReviewRepository } from "@/repositories/review-repository";
+import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 export interface EnrollmentActionResponse {

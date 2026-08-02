@@ -1,14 +1,16 @@
-import type { UserRole } from "@mma/shared";
-import {
+import type { UserRole ,
   basicProfileInputSchema,
-  generateUniqueSlug,
   studentProfileInputSchema,
   teacherProfileInputSchema
 } from "@mma/shared";
+import {
+  generateUniqueSlug
+} from "@mma/shared";
 import type { z } from "zod";
 
+import type {
+  ProfileRepository} from "@/repositories/profile-repository";
 import {
-  ProfileRepository,
   type ProfileUserRecord,
   type StudentProfileRecord,
   type TeacherCourseRecord,

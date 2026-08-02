@@ -5,9 +5,10 @@ import type {
 } from "@mma/shared";
 
 import type { CourseRecord } from "@/repositories/course-repository";
-import { CourseRepository } from "@/repositories/course-repository";
-import { EnrollmentRepository } from "@/repositories/enrollment-repository";
-import { NoticeRepository, type NoticeWithAuthor } from "@/repositories/notice-repository";
+import type { CourseRepository } from "@/repositories/course-repository";
+import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { NoticeRepository} from "@/repositories/notice-repository";
+import { type NoticeWithAuthor } from "@/repositories/notice-repository";
 import { ForbiddenError, NotFoundError } from "@/utils/errors";
 
 export interface CourseNoticeView {

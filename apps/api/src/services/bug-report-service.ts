@@ -1,5 +1,6 @@
+import type {
+  BugReportRepository} from "@/repositories/bug-report-repository";
 import {
-  BugReportRepository,
   type BugReportQuery,
   type BugReportRecord
 } from "@/repositories/bug-report-repository";

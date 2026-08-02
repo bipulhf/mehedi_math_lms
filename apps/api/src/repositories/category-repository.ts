@@ -23,7 +23,7 @@ export interface CreateCategoryInput {
   sortOrder: number;
 }
 
-export interface UpdateCategoryInput extends CreateCategoryInput {}
+export type UpdateCategoryInput = CreateCategoryInput;
 
 export interface ReorderCategoryInput {
   id: string;
