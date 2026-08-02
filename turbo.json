@@ -17,6 +17,10 @@
       "dependsOn": ["^typecheck"],
       "outputs": []
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "db:generate": {
       "cache": false,
       "outputs": ["packages/db/src/migrations/**"]
