@@ -111,3 +111,5 @@ const styles = StyleSheet.create({
   row: { marginBottom: spacing.md },
   skeletonList: { gap: spacing.md, padding: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

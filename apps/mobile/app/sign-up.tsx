@@ -20,7 +20,9 @@ export default function SignUpScreen(): JSX.Element {
 
   const passwordTooShort = password.length > 0 && password.length < MINIMUM_PASSWORD_LENGTH;
   const canSubmit =
-    name.trim().length > 1 && email.trim().includes("@") && password.length >= MINIMUM_PASSWORD_LENGTH;
+    name.trim().length > 1 &&
+    email.trim().includes("@") &&
+    password.length >= MINIMUM_PASSWORD_LENGTH;
 
   const handleSubmit = (): void => {
     setError(null);
@@ -104,3 +106,5 @@ const styles = StyleSheet.create({
   flex: { backgroundColor: colors.background, flex: 1 },
   form: { gap: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

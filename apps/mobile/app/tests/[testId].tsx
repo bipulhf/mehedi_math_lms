@@ -269,3 +269,5 @@ const styles = StyleSheet.create({
     textAlignVertical: "top"
   }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

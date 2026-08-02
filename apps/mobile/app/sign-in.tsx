@@ -82,7 +82,11 @@ export default function SignInScreen(): JSX.Element {
             <Body muted>Student accounts can be created from the app.</Body>
             <View style={{ height: spacing.lg }} />
             <Link asChild href="/sign-up">
-              <Button label="Create a student account" onPress={() => undefined} variant="outline" />
+              <Button
+                label="Create a student account"
+                onPress={() => undefined}
+                variant="outline"
+              />
             </Link>
           </Card>
         </ScrollView>
@@ -96,3 +100,5 @@ const styles = StyleSheet.create({
   flex: { backgroundColor: colors.background, flex: 1 },
   form: { gap: spacing.lg }
 });
+
+export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";
