@@ -424,25 +424,29 @@ function AdminUsersPage(): JSX.Element {
                         !user.isActive && "opacity-60 grayscale-[0.1]"
                       )}
                     >
-                      <td className="px-10 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="size-10 rounded-full bg-panel-warm border border-hairline/20 flex items-center justify-center font-body font-bold text-ink">
+                      <td className="px-4 py-3">
+                        <Link
+                          className="flex items-center gap-3 group/user"
+                          params={{ id: user.id }}
+                          to="/dashboard/admin/users/$id"
+                        >
+                          <div className="size-8 rounded-full bg-panel-warm border border-hairline flex items-center justify-center text-xs font-semibold text-ink group-hover/user:border-ink transition-colors">
                             {user.name.charAt(0)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-body text-base font-medium text-ink tracking-tight group-hover:text-ink transition-colors">
+                            <span className="text-sm font-medium text-ink group-hover/user:text-accent transition-colors">
                               {user.name}
                             </span>
-                            <div className="flex items-center gap-1.5 text-xs text-ink/40 font-medium">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-faint">
                               <Mail className="size-3" /> {user.email}
                               <span className="mx-1 opacity-30">•</span>
                               <Fingerprint className="size-3" />{" "}
-                              <code className="text-[0.6rem] tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">
+                              <code className="text-[0.6rem]">
                                 {user.id.slice(-8)}
                               </code>
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       </td>
                       <td className="px-10 py-6">
                         <div className="flex items-center gap-2.5">
