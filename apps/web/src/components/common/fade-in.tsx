@@ -7,17 +7,15 @@ interface FadeInProps extends PropsWithChildren {
   delayClassName?: string | undefined;
 }
 
+/**
+ * Now a plain wrapper. It used to run an entrance animation, which DESIGN.md
+ * §1 forbids outright — the client rejected a livelier direction as visually
+ * stressful.
+ *
+ * Kept only so the routes that wrap sections in it keep compiling while they
+ * are rebuilt. Each phase drops its own uses and Phase 12 deletes the
+ * component. Do not reach for it in new markup.
+ */
 export function FadeIn({ children, className, delayClassName }: FadeInProps): JSX.Element {
-  return (
-    <div
-      className={cn(
-        "animate-fade-in-up motion-reduce:animate-none",
-        "transition-[opacity,transform] duration-150 ease-out",
-        delayClassName,
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <div className={cn(delayClassName, className)}>{children}</div>;
 }

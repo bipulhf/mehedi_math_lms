@@ -7,10 +7,16 @@
  * Keep these in sync with `src/styles/app.css`.
  */
 export const chartTheme = {
-  /** `--color-secondary-container` — the series colour. */
-  accent: "#6063ee",
-  /** `--color-surface-container-lowest` — dot and marker fills. */
+  /** `--color-accent` — the peak bar, and the one series that matters. */
+  accent: "#ee5622",
+  /** `--color-bar-idle` — every other bar. The design keeps them quiet. */
+  bar: "#e4ded5",
+  /** `--color-card` — dot and marker fills. */
   dotStroke: "#ffffff",
-  /** `--color-outline-variant` — grid lines, kept faint by the No-Line Rule. */
-  grid: "#c6c6cd"
+  /** `--color-hairline` — grid lines. Felt, not seen. */
+  grid: "#e8e4de",
+  /** `--color-muted-light` — axis labels and tick text. */
+  label: "#8a857d",
+  /** `--color-bar-track` — the track a bar or progress arc sits in. */
+  track: "#f1eee9"
 } as const;

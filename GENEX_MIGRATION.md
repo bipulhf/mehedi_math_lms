@@ -180,9 +180,13 @@ Consequences:
 
 ### Page background
 
-One shared `PageBackground`: `#FCFBF9` base, 27px dot grid, three corner washes
-(orange, sage, blue). Panels on top are translucent white so the texture shows;
-cards inside them are solid `#FFFFFF` with a hairline border.
+`#FCFBF9` base, 27px dot grid, three corner washes (orange, sage, blue). Panels
+on top are translucent white so the texture shows; cards inside them are solid
+`#FFFFFF` with a hairline border.
+
+Applied to `body` in `app.css` rather than to a `PageBackground` component, as
+originally planned — the design puts it on the outermost container of all eight
+screens, so there is no page that wants it and no page that does not.
 
 ---
 
@@ -282,7 +286,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 0 | Rewrite `DESIGN.md` for Genex; fix `apps/web/AGENTS.md` §Styling / §Loading / §Progress / §Layout | ☑ |
 | 1 | Rename, everywhere (§7). Mechanical, no behaviour change | ☑ |
 | 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☑ |
-| 3 | Design tokens: `app.css`, fonts, `PageBackground`, brand assets | ☐ |
+| 3 | Design tokens: `app.css`, fonts, page background, brand assets | ☑ |
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☐ |
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding | ☐ |
 | 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile, plus the new `/teachers` index | ☐ |
@@ -339,6 +343,42 @@ the landing header and the dashboard shell, styled with the current tokens —
 Phase 3 retokens it along with everything else.
 
 Typecheck 9/9, lint 9/9, tests 8/8 (331 passing), web build clean.
+
+**Phase 3** — the token set replaced. Hind Siliguri (300/400/500/600, Bengali
+and Latin subsets) and Archivo (400/500/600) via `@fontsource`; Inter and
+Manrope removed. The page texture went on `body` rather than into a component,
+for the reason in §5.
+
+The awkward part was that roughly fifty route files still name Material tokens
+(`bg-surface-container-lowest`, `text-on-surface-variant`) and will not be
+rebuilt for another seven phases. Deleting those names would have left the app
+unstyled for most of the migration, so every old name is aliased to its nearest
+Genex value in a block marked for deletion in Phase 12. Existing screens picked
+up the warm palette the moment the aliases landed, and each phase replaces its
+own class names with the real tokens as it goes.
+
+Both keyframes are gone, which made two components lie: `Skeleton` swept a
+gradient across itself and `FadeIn` ran an entrance animation. `Skeleton` is now
+a still `placeholder-fill` block. `FadeIn` is a plain wrapper with a comment
+saying so — deleting it would have meant editing twenty route files during a
+token phase, so its uses come out as each phase reaches them. The
+`animate-in` / `slide-in-from-*` classes scattered through the dashboard were
+already inert: they come from a Tailwind plugin this project does not install.
+
+`chart-theme.ts` was retargeted at the accent, the idle bar and the hairline —
+it is the one place allowed to hold literal hexes, because Recharts writes
+colours as SVG presentation attributes and those never resolve a CSS variable.
+The favicon was the old indigo "M" mark and now points at the Genex mark.
+
+Verified against a running stack: `body` computes to `rgb(252, 251, 249)`, the
+font resolves to Hind Siliguri, `<html lang>` is `bn-BD` from the cookie, and
+the switcher renders with বাংলা selected. Twenty-one woff2 files ship, twenty-five
+`@font-face` rules, and no keyframes in the compiled CSS.
+
+The hero illustration (`hero-atelier.svg`) is still the old indigo asset and
+looks wrong against the new palette. It is homepage content — Phase 6.
+
+Typecheck 9/9, lint 9/9, tests 8/8, web build clean.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

@@ -93,8 +93,8 @@
       "name": "@genex/web",
       "version": "0.1.0",
       "dependencies": {
-        "@fontsource/inter": "^5.3.0",
-        "@fontsource/manrope": "^5.3.0",
+        "@fontsource/archivo": "^5.3.0",
+        "@fontsource/hind-siliguri": "^5.3.0",
         "@genex/auth": "workspace:*",
         "@genex/i18n": "workspace:*",
         "@genex/shared": "workspace:*",
@@ -661,9 +661,9 @@
 
     "@firebase/webchannel-wrapper": ["@firebase/webchannel-wrapper@1.0.6", "", {}, "sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q=="],
 
-    "@fontsource/inter": ["@fontsource/inter@5.3.0", "", {}, "sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g=="],
+    "@fontsource/archivo": ["@fontsource/archivo@5.3.0", "", {}, "sha512-5DIMgPVJRi62OqdOVoogCFxP73EkNM/E0YVTSDIQlDEJfDbxqZduwM/YoNZwC9Sx1CDgpKinqf8ckRY1QNIecw=="],
 
-    "@fontsource/manrope": ["@fontsource/manrope@5.3.0", "", {}, "sha512-obJ1Dv3+uCA6HlHgW8u4BGYxJR9In2HW7gjJhlflEvkrj1X1iSEwu0fToL+JYGC/FEKFfIz1sBuPduvcL2gIAA=="],
+    "@fontsource/hind-siliguri": ["@fontsource/hind-siliguri@5.3.0", "", {}, "sha512-jTxXVXLTUYpiCqQ8zGzX9gK4pHkJ6nOn05nKqFjPEpqf3VY6gGREKAIvHfHprE/6N4ittSudnHsMPT10QQfgtw=="],
 
     "@genex/api": ["@genex/api@workspace:apps/api"],
 

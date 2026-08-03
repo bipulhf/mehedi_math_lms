@@ -1,91 +1,141 @@
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/manrope/600.css";
-@import "@fontsource/manrope/700.css";
+@import "@fontsource/hind-siliguri/300.css";
+@import "@fontsource/hind-siliguri/400.css";
+@import "@fontsource/hind-siliguri/500.css";
+@import "@fontsource/hind-siliguri/600.css";
+@import "@fontsource/hind-siliguri/bengali-300.css";
+@import "@fontsource/hind-siliguri/bengali-400.css";
+@import "@fontsource/hind-siliguri/bengali-500.css";
+@import "@fontsource/hind-siliguri/bengali-600.css";
+@import "@fontsource/archivo/400.css";
+@import "@fontsource/archivo/500.css";
+@import "@fontsource/archivo/600.css";
 @import "tailwindcss";
 @source "../";
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
-  --color-primary: #000000;
-  --color-tertiary-fixed: #6ffbbe;
-  --color-on-error-container: #93000a;
-  --color-on-tertiary: #ffffff;
-  --color-primary-fixed: #b7eaff;
-  --color-tertiary-container: #002113;
-  --color-secondary-fixed-dim: #c0c1ff;
-  --color-secondary-fixed: #e1e0ff;
-  --color-on-secondary-fixed: #07006c;
-  --color-on-surface-variant: #45464d;
-  --color-on-error: #ffffff;
-  --color-inverse-on-surface: #eef0ff;
+  /* ------------------------------------------------------------------
+   * Genex palette. DESIGN.md §2 is the authority; this is its encoding.
+   * ------------------------------------------------------------------ */
+  --color-ink: #23211e;
+  --color-ink-muted: #4a453f;
+  --color-muted: #6b6763;
+  --color-muted-light: #8a857d;
+  --color-muted-faint: #a8a29a;
+  --color-placeholder: #b4aea6;
+
+  --color-paper: #fcfbf9;
+  --color-card: #ffffff;
+  --color-panel-warm: #f7f5f1;
+  --color-row-hover: #fbf9f6;
+  --color-placeholder-fill: #f1eee9;
+  --color-chip-active: #efebe4;
+
+  --color-hairline: #e8e4de;
+  --color-hairline-faint: #f0ede7;
+  --color-hairline-fainter: #f5f1ec;
+  --color-line-strong: #c9c3bb;
+  --color-dot-idle: #ddd8d1;
+
+  --color-bar-track: #f1eee9;
+  --color-bar-idle: #e4ded5;
+
+  /* The one saturated colour. Four alternates ship with the design —
+   * #EE5622, #23211E, #1F6F5C, #3B5BA5 — so never type the hex into a
+   * component. DESIGN.md §2. */
+  --color-accent: #ee5622;
+
+  /* The only red that survives. Validation text, and nothing else. */
   --color-error: #ba1a1a;
-  --color-secondary: #4648d4;
-  --color-outline-variant: #c6c6cd;
-  --color-on-secondary-container: #fffbff;
-  --color-on-primary: #ffffff;
-  --color-tertiary: #000000;
-  --color-on-tertiary-fixed: #002113;
-  --color-inverse-surface: #283044;
-  --color-surface: #faf8ff;
-  --color-surface-variant: #dae2fd;
-  --color-secondary-container: #6063ee;
-  --color-on-primary-fixed: #001f28;
-  --color-on-surface: #131b2e;
-  --color-surface-tint: #006780;
-  --color-background: #faf8ff;
-  --color-on-secondary-fixed-variant: #2f2ebe;
-  --color-surface-container-low: #f2f3ff;
-  --color-inverse-primary: #6cd3f7;
-  --color-tertiary-fixed-dim: #4edea3;
-  --color-surface-container-lowest: #ffffff;
-  --color-primary-container: #001f28;
-  --color-on-tertiary-container: #009668;
-  --color-surface-bright: #faf8ff;
-  --color-on-secondary: #ffffff;
+
+  /* ------------------------------------------------------------------
+   * Compatibility aliases.
+   *
+   * The Material-style token names are still used by every screen that has
+   * not been rebuilt yet. Rather than leave those pages unstyled for eight
+   * phases, each old name is pointed at its nearest Genex value, so they
+   * adopt the new palette immediately and are rewritten to the real tokens
+   * as their phase comes up. Delete this block in Phase 12 — by then
+   * nothing should reference it.
+   * ------------------------------------------------------------------ */
+  --color-background: var(--color-paper);
+  --color-on-background: var(--color-ink);
+  --color-surface: var(--color-paper);
+  --color-surface-bright: var(--color-paper);
+  --color-surface-dim: var(--color-panel-warm);
+  --color-surface-variant: var(--color-panel-warm);
+  --color-surface-container-lowest: var(--color-card);
+  --color-surface-container-low: var(--color-panel-warm);
+  --color-surface-container: var(--color-panel-warm);
+  --color-surface-container-high: var(--color-chip-active);
+  --color-surface-container-highest: var(--color-chip-active);
+  --color-on-surface: var(--color-ink);
+  --color-on-surface-variant: var(--color-muted);
+  --color-inverse-surface: var(--color-ink);
+  --color-inverse-on-surface: var(--color-paper);
+
+  --color-outline: var(--color-line-strong);
+  --color-outline-variant: var(--color-hairline);
+
+  --color-primary: var(--color-ink);
+  --color-on-primary: var(--color-paper);
+  --color-primary-container: var(--color-chip-active);
+  --color-on-primary-container: var(--color-ink);
+  --color-primary-fixed: var(--color-chip-active);
+  --color-primary-fixed-dim: var(--color-dot-idle);
+  --color-on-primary-fixed: var(--color-ink);
+  --color-on-primary-fixed-variant: var(--color-ink-muted);
+  --color-inverse-primary: var(--color-paper);
+  --color-surface-tint: var(--color-accent);
+
+  --color-secondary: var(--color-accent);
+  --color-on-secondary: var(--color-paper);
+  --color-secondary-container: var(--color-accent);
+  --color-on-secondary-container: var(--color-paper);
+  --color-secondary-fixed: var(--color-chip-active);
+  --color-secondary-fixed-dim: var(--color-dot-idle);
+  --color-on-secondary-fixed: var(--color-ink);
+  --color-on-secondary-fixed-variant: var(--color-ink-muted);
+
+  --color-tertiary: var(--color-ink);
+  --color-on-tertiary: var(--color-paper);
+  --color-tertiary-container: var(--color-panel-warm);
+  --color-on-tertiary-container: var(--color-ink);
+  --color-tertiary-fixed: var(--color-chip-active);
+  --color-tertiary-fixed-dim: var(--color-dot-idle);
+  --color-on-tertiary-fixed: var(--color-ink);
+  --color-on-tertiary-fixed-variant: var(--color-ink-muted);
+
+  --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
-  --color-surface-container-high: #e2e7ff;
-  --color-surface-container: #eaedff;
-  --color-primary-fixed-dim: #6cd3f7;
-  --color-on-background: #131b2e;
-  --color-outline: #76777d;
-  --color-on-primary-container: #028fb0;
-  --color-surface-dim: #d2d9f4;
-  --color-surface-container-highest: #dae2fd;
-  --color-on-tertiary-fixed-variant: #005236;
-  --color-on-primary-fixed-variant: #004e61;
+  --color-on-error-container: #93000a;
 
-  --font-headline: "Manrope", var(--font-display);
-  --font-body: "Inter", var(--font-sans);
-  --font-label: "Inter", var(--font-sans);
+  /* ------------------------------------------------------------------
+   * Type
+   * ------------------------------------------------------------------ */
+  --font-body: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
+  /* Latin numerals, ids, and small all-caps labels. DESIGN.md §4. */
+  --font-mono-label: "Archivo", ui-sans-serif, system-ui, sans-serif;
 
+  /* Aliases for markup that has not been rebuilt yet. Both resolve to Hind
+   * Siliguri — the design uses one family for everything it sets in words. */
+  --font-headline: var(--font-body);
+  --font-label: var(--font-body);
+
+  /* ------------------------------------------------------------------
+   * Shape. Cards are square; 4px is for buttons and inputs. DESIGN.md §5.
+   * ------------------------------------------------------------------ */
   --radius: 0.25rem;
-  --radius-md: 0.375rem;
-  --animate-shimmer: shimmer 1.35s linear infinite;
-  --animate-fade-in-up: fade-in-up 150ms ease-out;
+  --radius-md: 0.25rem;
+  --radius-pill: 6.25rem;
 
-  @keyframes shimmer {
-    100% {
-      transform: translateX(200%);
-    }
-  }
-
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(0.625rem);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  /* No keyframes. DESIGN.md §1 forbids animation outright — the client
+   * rejected a livelier direction as visually stressful. Colour and border
+   * transitions on hover are the whole motion budget. */
 }
 
 @layer base {
@@ -94,20 +144,31 @@
   }
 
   html {
-    background: var(--color-surface);
-    color: var(--color-on-surface);
-    font-family: var(--font-sans);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
   }
 
+  /* The page texture: a 27px dot grid plus three corner washes — orange,
+   * sage, blue. DESIGN.md §3. It lives on the body so that every page gets
+   * it once; translucent panels sit on top and let it show through. */
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(circle at top left, rgba(96, 99, 238, 0.07), transparent 28%),
-      radial-gradient(circle at right center, rgba(2, 143, 176, 0.09), transparent 24%),
-      var(--color-surface);
-    color: var(--color-on-surface);
-    font-family: var(--font-sans);
+    background-color: var(--color-paper);
+    background-image:
+      radial-gradient(#ede6dd 1px, transparent 1px),
+      radial-gradient(920px 550px at 92% -8%, rgba(238, 86, 34, 0.05), transparent 70%),
+      radial-gradient(780px 470px at -3% 40%, rgba(31, 111, 92, 0.045), transparent 72%),
+      radial-gradient(870px 520px at 100% 90%, rgba(59, 91, 165, 0.04), transparent 70%);
+    background-size:
+      27px 27px,
+      auto,
+      auto,
+      auto;
+    background-attachment: fixed;
+    color: var(--color-ink);
+    font-family: var(--font-body);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
@@ -117,14 +178,33 @@
     text-decoration: none;
   }
 
+  a:hover {
+    color: var(--color-accent);
+  }
+
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font: inherit;
   }
 
+  /* Long paragraphs are weight 300 and headings 500 — never 700+, the calm
+   * register depends on it. DESIGN.md §4. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 500;
+    text-wrap: pretty;
+  }
+
+  ::placeholder {
+    color: var(--color-placeholder);
+  }
+
   ::selection {
-    background: rgba(96, 99, 238, 0.18);
+    background: rgba(238, 86, 34, 0.16);
   }
 }
 
@@ -132,8 +212,15 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* The Archivo mark used for ids, counters and small all-caps labels. */
+  .label-mono {
+    font-family: var(--font-mono-label);
+    letter-spacing: 0.06em;
   }
 }

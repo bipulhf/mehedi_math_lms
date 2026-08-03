@@ -6,8 +6,10 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-r
 import { Toaster } from "sonner";
 import { localeTags } from "@genex/i18n";
 
-import interLatinWoff2 from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
-import manropeLatinWoff2 from "@fontsource/manrope/files/manrope-latin-600-normal.woff2?url";
+// Bengali first: it is the default locale, so it is the subset the first
+// paint needs. Latin covers the English locale and the Archivo labels.
+import hindBengaliWoff2 from "@fontsource/hind-siliguri/files/hind-siliguri-bengali-400-normal.woff2?url";
+import hindLatinWoff2 from "@fontsource/hind-siliguri/files/hind-siliguri-latin-400-normal.woff2?url";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { LocaleProvider, useLocale } from "@/lib/i18n/locale-context";
@@ -38,7 +40,7 @@ export const Route = createRootRoute({
       },
       {
         name: "theme-color",
-        content: "#faf8ff"
+        content: "#fcfbf9"
       },
       {
         property: "og:site_name",
@@ -50,18 +52,19 @@ export const Route = createRootRoute({
       }
     ],
     links: [
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      // The traced PNG mark, until the client supplies the original vector.
+      { rel: "icon", href: "/brand/genex-mark.png", type: "image/png" },
       {
         as: "font",
         crossOrigin: "anonymous",
-        href: interLatinWoff2,
+        href: hindBengaliWoff2,
         rel: "preload",
         type: "font/woff2"
       },
       {
         as: "font",
         crossOrigin: "anonymous",
-        href: manropeLatinWoff2,
+        href: hindLatinWoff2,
         rel: "preload",
         type: "font/woff2"
       },
