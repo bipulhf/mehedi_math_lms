@@ -9,6 +9,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { useT } from "@/lib/i18n/locale-context";
 import { seo } from "@/lib/seo";
 
 export const signUpSearchSchema = z.object({
@@ -51,6 +52,7 @@ function AuthSignUpRoutePage(): JSX.Element {
 }
 
 export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
+  const t = useT();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
@@ -93,7 +95,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
         return;
       }
 
-      toast.success("Student account created — complete your profile to enter the academy.");
+      toast.success(t("auth.signUp"));
       await router.navigate({
         to: "/dashboard/profile-complete",
         search: courseSlug ? { courseSlug } : {}
@@ -107,11 +109,11 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
     <div className="space-y-6">
       <form className="space-y-5" onSubmit={onSubmit}>
         <div className="space-y-2">
-          <Label htmlFor="name">Full name</Label>
+          <Label htmlFor="name">{t("auth.name")}</Label>
           <Input id="name" autoComplete="name" error={errors.name?.message} {...register("name")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input
             id="email"
             type="email"
@@ -121,7 +123,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <PasswordInput
             id="password"
             autoComplete="new-password"
@@ -130,7 +132,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
           <PasswordInput
             id="confirmPassword"
             autoComplete="new-password"
@@ -139,19 +141,21 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           />
         </div>
         <Button
-          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-body font-semibold text-sm transition-all"
+          className="w-full"
+          size="lg"
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? "Creating account" : "Create student account"}
+          {isSubmitting ? t("auth.signingUp") : t("auth.signUp")}
         </Button>
       </form>
 
-      <div className="grid gap-3">
+      <div className="space-y-4">
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 font-body font-semibold text-on-surface hover:bg-surface-container-high transition-all"
+          className="w-full"
+          size="lg"
           onClick={async () => {
             const callbackURL = courseSlug
               ? `/dashboard/profile-complete?courseSlug=${encodeURIComponent(courseSlug)}`
@@ -163,12 +167,15 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
             });
           }}
         >
-          Continue with Google
+          {t("auth.google")}
         </Button>
-        <p className="text-sm leading-6 text-on-surface/62">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-secondary-container hover:underline">
-            Sign in
+        <p className="text-base font-light text-muted">
+          {t("auth.haveAccount")}{" "}
+          <Link
+            className="border-b border-line-strong pb-0.5 text-ink transition-colors hover:border-accent hover:text-accent"
+            to="/auth/sign-in"
+          >
+            {t("auth.signIn")}
           </Link>
         </p>
       </div>

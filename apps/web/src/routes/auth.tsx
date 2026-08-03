@@ -3,6 +3,7 @@ import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { AuthLayout } from "@/components/layout/auth-layout";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/auth")({
   component: AuthRoute,
@@ -10,11 +11,10 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthRoute(): JSX.Element {
+  const t = useT();
+
   return (
-    <AuthLayout
-      title="Access your academy account"
-      description="Sign in or create your student account to enter the academy workspace, manage your profile, and continue into role-aware dashboard flows."
-    >
+    <AuthLayout description={t("auth.signInLead")} title={t("auth.welcomeBack")}>
       <Outlet />
     </AuthLayout>
   );

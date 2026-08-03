@@ -295,7 +295,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 7 | Teacher dashboard + the stepped course builder | ☑ |
 | 8 | Dashboard overviews — student, teacher, admin, accountant | ☑ |
 | 9 | Admin dashboard + accountant analytics | ☑ |
-| 10 | System-only surfaces restyled (§3): messages, notifications, SMS, bugs, tests, certificates, analytics, category admin, user admin, auth | ☐ |
+| 10 | System-only surfaces restyled (§3). Auth localised; the rest carry English copy — see §11 | ◐ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☐ |
 | 12 | Cleanup: compatibility aliases, `FadeIn`, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
 
@@ -581,6 +581,20 @@ the other way round. §2 is corrected above.
 Verified signed in as the administrator: KPI cards in Bangla numerals, the
 derived watch list with its accent count, revenue bars, and the most-enrolled
 list.
+
+**Phase 10** — restyled, partly localised.
+
+The restyle is done: the Phase 7 sweep took the forbidden markup out of every
+dashboard surface, and they now render in the Genex palette with the new
+primitives.
+
+Auth is rebuilt properly, because the handoff never designed it and everyone
+sees it: `/auth` and both forms are in the catalogue, the marketing column is
+gone, and the layout is derived from the marketing bands rather than invented.
+
+**The rest of the dashboard copy is still English.** Roughly 495 strings across
+64 files — see §11. This is the one part of the migration that is measured
+rather than finished, and it is called out rather than glossed.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

@@ -31,6 +31,20 @@ export const bn = {
 
   "auth.backHome": "হোমে ফিরে যাও",
 
+  "auth.confirmPassword": "পাসওয়ার্ড আবার লেখ",
+  "auth.email": "ইমেইল",
+  "auth.google": "গুগল দিয়ে ঢোকো",
+  "auth.haveAccount": "অ্যাকাউন্ট আছে?",
+  "auth.name": "নাম",
+  "auth.newHere": "নতুন?",
+  "auth.password": "পাসওয়ার্ড",
+  "auth.signIn": "লগ ইন",
+  "auth.signInLead": "তোমার কোর্স, ক্লাস আর পরীক্ষা — সব এক জায়গায়।",
+  "auth.signingIn": "ঢুকছি…",
+  "auth.signingUp": "অ্যাকাউন্ট খুলছি…",
+  "auth.signUp": "অ্যাকাউন্ট খোল",
+  "auth.signUpLead": "একটা ফ্রি অ্যাকাউন্ট খুলে কোর্সগুলো দেখে নাও।",
+  "auth.welcomeBack": "আবার স্বাগতম",
   "brand.name": "জেনেক্স",
 
   "common.courses": "কোর্স",

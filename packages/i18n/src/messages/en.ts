@@ -29,6 +29,20 @@ export const en: Readonly<Record<MessageKey, string>> = {
 
   "auth.backHome": "Back to home",
 
+  "auth.confirmPassword": "Confirm password",
+  "auth.email": "Email",
+  "auth.google": "Continue with Google",
+  "auth.haveAccount": "Already have an account?",
+  "auth.name": "Name",
+  "auth.newHere": "New here?",
+  "auth.password": "Password",
+  "auth.signIn": "Sign in",
+  "auth.signInLead": "Your courses, classes and tests, all in one place.",
+  "auth.signingIn": "Signing in…",
+  "auth.signingUp": "Creating your account…",
+  "auth.signUp": "Create an account",
+  "auth.signUpLead": "Open a free account and look around the courses.",
+  "auth.welcomeBack": "Welcome back",
   "brand.name": "Genex",
 
   "common.courses": "courses",

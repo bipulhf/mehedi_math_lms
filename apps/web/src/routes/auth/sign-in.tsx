@@ -2,20 +2,21 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { useT } from "@/lib/i18n/locale-context";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
     seo({
-      description:
-        "Secure email and Google sign-in for Genex dashboards, courses, and messaging.",
+      description: "Secure email and Google sign-in for Genex.",
       path: "/auth/sign-in",
       title: "Sign in"
     }),
@@ -30,12 +31,10 @@ const signInSchema = z.object({
 
 export function SignInPage(): JSX.Element {
   const router = useRouter();
+  const t = useT();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
-    defaultValues: {
-      email: "",
-      password: ""
-    },
+    defaultValues: { email: "", password: "" },
     schema: signInSchema
   });
 
@@ -56,10 +55,10 @@ export function SignInPage(): JSX.Element {
 
       if (response.error) {
         toast.error(response.error.message);
+
         return;
       }
 
-      toast.success("Signed in successfully");
       await router.navigate({ to: "/dashboard" });
     } finally {
       setIsSubmitting(false);
@@ -70,43 +69,44 @@ export function SignInPage(): JSX.Element {
     <div className="space-y-6">
       <form className="space-y-5" onSubmit={onSubmit}>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" error={errors.email?.message} {...register("email")} />
+          <Label htmlFor="email">{t("auth.email")}</Label>
+          <Input error={errors.email?.message} id="email" type="email" {...register("email")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <PasswordInput id="password" error={errors.password?.message} {...register("password")} />
+          <Label htmlFor="password">{t("auth.password")}</Label>
+          <PasswordInput
+            error={errors.password?.message}
+            id="password"
+            {...register("password")}
+          />
         </div>
-        <Button
-          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-body font-semibold text-sm transition-all"
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Signing in" : "Sign In"}
+        {/* Disabled until the form is submitting-capable rather than only while
+            it submits: a click before hydration would post natively, putting the
+            password in the URL and the browser history. */}
+        <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
+          {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
         </Button>
       </form>
 
-      <div className="grid gap-3">
+      <div className="space-y-4">
         <Button
+          className="w-full"
+          onClick={async () => {
+            await authClient.signIn.social({ callbackURL: "/dashboard", provider: "google" });
+          }}
+          size="lg"
           type="button"
           variant="outline"
-          className="w-full h-12 font-body font-semibold text-on-surface hover:bg-surface-container-high transition-all"
-          onClick={async () => {
-            await authClient.signIn.social({
-              provider: "google",
-              callbackURL: "/dashboard"
-            });
-          }}
         >
-          Continue with Google
+          {t("auth.google")}
         </Button>
-        <p className="text-sm leading-6 text-on-surface/62">
-          New student?{" "}
+        <p className="text-base font-light text-muted">
+          {t("auth.newHere")}{" "}
           <Link
-            className="font-semibold text-secondary-container hover:underline"
+            className="border-b border-line-strong pb-0.5 text-ink transition-colors hover:border-accent hover:text-accent"
             to="/auth/sign-up"
           >
-            Create your account
+            {t("auth.signUp")}
           </Link>
         </p>
       </div>
