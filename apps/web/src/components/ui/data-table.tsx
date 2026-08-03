@@ -1,5 +1,7 @@
 import type { JSX, ReactNode } from "react";
 
+import { EmptyState } from "@/components/ui/empty-state";
+import { useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 export interface DataTableColumn<TRow> {
@@ -40,8 +42,10 @@ export function DataTable<TRow>({
   rowKey,
   rows
 }: DataTableProps<TRow>): JSX.Element {
-  if (rows.length === 0 && emptyState !== undefined) {
-    return <>{emptyState}</>;
+  const t = useT();
+
+  if (rows.length === 0) {
+    return <>{emptyState ?? <EmptyState className="my-6" message={t("empty.generic")} />}</>;
   }
 
   return (

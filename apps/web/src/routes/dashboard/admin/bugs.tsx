@@ -6,6 +6,7 @@ import { useState } from "react";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -136,54 +137,60 @@ function AdminBugsPage(): JSX.Element {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left whitespace-nowrap">
-            <thead>
-              <tr className="bg-panel-warm/30 border-b border-hairline/20 font-bold text-[0.65rem] uppercase tracking-widest text-ink/50">
-                <th className="px-10 py-5">{t("admin.bugs.issue")}</th>
-                <th className="px-10 py-5">{t("admin.bugs.reporter")}</th>
-                <th className="px-10 py-5">{t("admin.bugs.state")}</th>
-                <th className="px-10 py-5 text-center">{t("admin.bugs.severity")}</th>
-                <th className="px-10 py-5">{t("admin.bugs.time")}</th>
-                <th className="px-10 py-5 text-right">{t("admin.bugs.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bugs.map((bug) => (
-                <tr key={bug.id} className="group border-t border-hairline/10 transition-all hover:bg-ink/2">
-                  <td className="px-10 py-6 min-w-75">
-                    <div className="flex flex-col max-w-sm">
-                      <span className="font-body text-base font-medium text-ink tracking-tight group-hover:text-ink transition-colors truncate">{bug.title}</span>
-                      <span className="text-xs text-muted font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>
-                    </div>
-                  </td>
-                  <td className="px-10 py-6">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-ink text-sm tracking-tight">{bug.user.name}</span>
-                      <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold mt-0.5">{bug.user.role}</span>
-                    </div>
-                  </td>
-                  <td className="px-10 py-6">
-                    <Badge tone={statusTone(bug.status)} className="rounded-full px-3 font-semibold text-[0.65rem] uppercase tracking-widest">{bug.status.replace("_", " ")}</Badge>
-                  </td>
-                  <td className="px-10 py-6 text-center">
-                    <Badge tone={priorityTone(bug.priority)} className="rounded-full px-3 font-semibold text-[0.65rem] uppercase tracking-widest">{bug.priority}</Badge>
-                  </td>
-                  <td className="px-10 py-6">
-                    <span className="text-xs text-ink/40 font-bold uppercase tracking-tighter">
-                      {new Date(bug.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
-                  </td>
-                  <td className="px-10 py-6 text-right">
-                    <Button asChild size="sm" variant="outline" className="h-9 border-hairline/30 hover:bg-chip-active transition-all font-bold text-[0.65rem] uppercase tracking-widest">
-                      <Link to="/dashboard/admin/bugs/$id" params={{ id: bug.id }}>{t("admin.bugs.inspect")}</Link>
-                    </Button>
-                  </td>
+        {bugs.length === 0 ? (
+          <div className="p-8">
+            <EmptyState message={t("admin.bugs.empty")} />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left whitespace-nowrap">
+              <thead>
+                <tr className="bg-panel-warm/30 border-b border-hairline/20 font-bold text-[0.65rem] uppercase tracking-widest text-ink/50">
+                  <th className="px-10 py-5">{t("admin.bugs.issue")}</th>
+                  <th className="px-10 py-5">{t("admin.bugs.reporter")}</th>
+                  <th className="px-10 py-5">{t("admin.bugs.state")}</th>
+                  <th className="px-10 py-5 text-center">{t("admin.bugs.severity")}</th>
+                  <th className="px-10 py-5">{t("admin.bugs.time")}</th>
+                  <th className="px-10 py-5 text-right">{t("admin.bugs.actions")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {bugs.map((bug) => (
+                  <tr key={bug.id} className="group border-t border-hairline/10 transition-all hover:bg-ink/2">
+                    <td className="px-10 py-6 min-w-75">
+                      <div className="flex flex-col max-w-sm">
+                        <span className="font-body text-base font-medium text-ink tracking-tight group-hover:text-ink transition-colors truncate">{bug.title}</span>
+                        <span className="text-xs text-muted font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>
+                      </div>
+                    </td>
+                    <td className="px-10 py-6">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-ink text-sm tracking-tight">{bug.user.name}</span>
+                        <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold mt-0.5">{bug.user.role}</span>
+                      </div>
+                    </td>
+                    <td className="px-10 py-6">
+                      <Badge tone={statusTone(bug.status)} className="rounded-full px-3 font-semibold text-[0.65rem] uppercase tracking-widest">{bug.status.replace("_", " ")}</Badge>
+                    </td>
+                    <td className="px-10 py-6 text-center">
+                      <Badge tone={priorityTone(bug.priority)} className="rounded-full px-3 font-semibold text-[0.65rem] uppercase tracking-widest">{bug.priority}</Badge>
+                    </td>
+                    <td className="px-10 py-6">
+                      <span className="text-xs text-ink/40 font-bold uppercase tracking-tighter">
+                        {new Date(bug.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </td>
+                    <td className="px-10 py-6 text-right">
+                      <Button asChild size="sm" variant="outline" className="h-9 border-hairline/30 hover:bg-chip-active transition-all font-bold text-[0.65rem] uppercase tracking-widest">
+                        <Link to="/dashboard/admin/bugs/$id" params={{ id: bug.id }}>{t("admin.bugs.inspect")}</Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         <div className="p-8 border-t border-hairline/20 flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40">{t("admin.users.pageLabel")}<span className="text-ink">{page}</span> of <span className="text-ink">{totalPages}</span></p>

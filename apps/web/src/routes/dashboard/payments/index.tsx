@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -177,7 +178,9 @@ function PaymentsPage(): JSX.Element {
       <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
         <div className="p-0">
           {items.length === 0 ? (
-            <div className="p-10 text-center text-sm leading-7 text-muted font-light italic">{t("pay.empty")}</div>
+            <div className="p-8">
+              <EmptyState message={t("pay.empty")} />
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm">

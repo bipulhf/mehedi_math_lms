@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -360,8 +361,13 @@ function AdminUsersPage(): JSX.Element {
           </div>
 
           {/* Desktop Table View */}
-          <div className="hidden xl:block overflow-x-auto">
-            <table className="w-full border-collapse text-left">
+          {users.length === 0 ? (
+            <div className="p-8">
+              <EmptyState message={t("admin.users.empty")} />
+            </div>
+          ) : (
+            <div className="hidden xl:block overflow-x-auto">
+              <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="bg-panel-warm/10 border-b border-hairline/20">
                   <th className="px-10 py-6 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("admin.users.identity")}</th>
@@ -509,6 +515,7 @@ function AdminUsersPage(): JSX.Element {
               </tbody>
             </table>
           </div>
+        )}
         </div>
 
         {/* Improved Pagination */}

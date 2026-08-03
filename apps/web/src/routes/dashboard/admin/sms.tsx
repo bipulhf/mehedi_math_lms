@@ -12,6 +12,7 @@ import {
 } from "@/lib/api/admin";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -319,8 +320,8 @@ function AdminSmsPage() {
               ))}
             </div>
           ) : history.length === 0 ? (
-            <div className="p-20 text-center">
-              <p className="text-sm font-light text-ink/40 italic font-body">{t("sms.historyEmpty")}</p>
+            <div className="p-8">
+              <EmptyState message={t("sms.historyEmpty")} />
             </div>
           ) : (
             <table className="w-full text-left whitespace-nowrap">
