@@ -143,7 +143,7 @@ function AdminCoursesPage(): JSX.Element {
     setIsArchiving(true);
     try {
       await withdrawCourse(archiveTarget.id);
-      toast.success("Course withdrawn");
+      toast.success(t("admin.courses.withdrawn"));
       setArchiveTarget(null);
       await loadCourses();
     } finally {
@@ -154,7 +154,7 @@ function AdminCoursesPage(): JSX.Element {
   const handleRestore = (course: CourseSummary): void => {
     void withBusy(course.id, async () => {
       await restoreCourse(course.id);
-      toast.success("Course restored as a draft");
+      toast.success(t("admin.courses.restored"));
       await loadCourses();
     });
   };
@@ -192,16 +192,15 @@ function AdminCoursesPage(): JSX.Element {
               <div className="flex size-9 items-center justify-center border border-hairline bg-panel-warm">
                 <GraduationCap className="size-5" />
               </div>
-              <h1 className="text-xl font-medium text-ink">Course management</h1>
+              <h1 className="text-xl font-medium text-ink">{t("admin.courses.title")}</h1>
             </div>
             <p className="max-w-2xl text-sm font-light leading-relaxed text-muted">
-              Create, edit and curate every course. Approve or send back pending proposals, withdraw
-              (archive) published ones, and restore withdrawn drafts.
+              {t("admin.courses.lead")}
             </p>
           </div>
           <Button asChild size="sm">
             <Link to="/dashboard/courses/new">
-              <Plus className="mr-1.5 size-4" /> Create course
+              <Plus className="mr-1.5 size-4" /> {t("admin.courses.create")}
             </Link>
           </Button>
         </div>
@@ -215,7 +214,7 @@ function AdminCoursesPage(): JSX.Element {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by title..."
+              placeholder={t("admin.courses.searchPlaceholder")}
               value={search}
             />
           </div>
@@ -229,7 +228,7 @@ function AdminCoursesPage(): JSX.Element {
           >
             {STATUS_OPTIONS.map((value) => (
               <option key={value} value={value}>
-                {value === "ALL" ? "All statuses" : value.charAt(0) + value.slice(1).toLowerCase()}
+                {value === "ALL" ? t("admin.courses.allStatuses") : value.charAt(0) + value.slice(1).toLowerCase()}
               </option>
             ))}
           </Select>
@@ -241,9 +240,9 @@ function AdminCoursesPage(): JSX.Element {
           <div className="mx-auto mb-4 flex size-16 items-center justify-center border border-hairline bg-panel-warm">
             <Layers3 className="size-8 text-muted-faint" />
           </div>
-          <p className="text-lg font-medium text-ink">No courses found</p>
+          <p className="text-lg font-medium text-ink">{t("admin.courses.notFoundTitle")}</p>
           <p className="mx-auto max-w-xs text-sm font-light text-muted">
-            No courses match this status and search. Clear a filter or create a new course.
+            {t("admin.courses.notFoundLead")}
           </p>
         </div>
       ) : (
@@ -253,10 +252,10 @@ function AdminCoursesPage(): JSX.Element {
               <thead>
                 <tr className="bg-panel-warm/10 border-b border-hairline/20">
                   <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("courses.title")}</th>
-                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Creator</th>
-                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Status</th>
-                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Price</th>
-                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Date</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("admin.courses.creator")}</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("admin.courses.status")}</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("admin.courses.price")}</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("admin.courses.date")}</th>
                   <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30 text-right">{t("admin.users.actions")}</th>
                 </tr>
               </thead>
@@ -301,7 +300,7 @@ function AdminCoursesPage(): JSX.Element {
                               {course.isExamOnly && (
                                 <Badge tone="quiet">
                                   <GraduationCap className="mr-1 size-3 opacity-50" />
-                                  Exam only
+                                  {t("admin.courses.examOnly")}
                                 </Badge>
                               )}
                             </div>
@@ -336,7 +335,7 @@ function AdminCoursesPage(): JSX.Element {
                       <td className="px-6 py-4 text-right">
                         <div className="flex flex-col items-end gap-2">
                           <div className="flex items-center justify-end gap-2">
-                            <Button asChild size="sm" variant="ghost" title="Edit course">
+                            <Button asChild size="sm" variant="ghost" title={t("action.edit")}>
                               <Link to="/dashboard/courses/$id/edit" params={{ id: course.id }}>
                                 <Eye className="size-4" />
                               </Link>
@@ -349,7 +348,7 @@ function AdminCoursesPage(): JSX.Element {
                                 disabled={isBusy}
                                 onClick={() => handleRestore(course)}
                               >
-                                <ArchiveRestore className="mr-1.5 size-4" /> Restore
+                                <ArchiveRestore className="mr-1.5 size-4" /> {t("admin.courses.restore")}
                               </Button>
                             ) : (
                               <Button
@@ -360,7 +359,7 @@ function AdminCoursesPage(): JSX.Element {
                                 className="text-error"
                               >
                                 <Archive className="mr-1.5 size-4" />
-                                Archive
+                                {t("admin.courses.archive")}
                               </Button>
                             )}
 
@@ -485,10 +484,10 @@ function AdminCoursesPage(): JSX.Element {
               <div className="flex gap-3 pt-4 border-t border-hairline">
                 <Button className="flex-1" disabled={isRejecting} size="lg" type="submit">
                   <XCircle className="mr-1.5 size-4" />
-                  {isRejecting ? "Sending back…" : t("admin.approve.reject")}
+                  {isRejecting ? t("admin.courses.sendingBack") : t("admin.approve.reject")}
                 </Button>
                 <Button onClick={closeRejectModal} size="lg" type="button" variant="outline">
-                  {t("common.cancel")}
+                  {t("action.cancel")}
                 </Button>
               </div>
             </form>
@@ -497,19 +496,19 @@ function AdminCoursesPage(): JSX.Element {
       )}
       {/* Archive (soft-delete) confirmation */}
       <ConfirmDialog
-        cancelLabel="Cancel"
+        cancelLabel={t("action.cancel")}
         dangerous
-        confirmLabel="Archive course"
+        confirmLabel={t("admin.courses.archive")}
         description={
           archiveTarget
-            ? `Withdraw "${archiveTarget.title}" from the catalog? Enrolled students keep access. Restorable.`
+            ? `${t("admin.courses.archiveDesc")}`
             : ""
         }
         onCancel={() => setArchiveTarget(null)}
         onConfirm={() => void executeArchive()}
         open={archiveTarget !== null}
         pending={isArchiving}
-        title="Archive course"
+        title={t("admin.courses.archiveTitle")}
       />
     </div>
   );
