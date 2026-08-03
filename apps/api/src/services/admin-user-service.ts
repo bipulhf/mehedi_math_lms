@@ -137,4 +137,52 @@ export class AdminUserService {
 
     return updatedUser;
   }
+
+  /**
+   * Physically remove an account. Deactivation is the normal off-ramp; hard
+   * delete is reserved for getting useless accounts fully out of the platform.
+   * A user is only removable while nothing RESTRICT-foreign-keys to them —
+   * currently a course they created and an SMS batch they queued. Otherwise we
+   * refuse rather than orphan or cascade rows the schema was designed to keep.
+   */
+  public async deleteUser(targetUserId: string, currentUserId: string): Promise<{ id: string }> {
+    if (targetUserId === currentUserId) {
+      throw new ForbiddenError("You cannot delete your own account");
+    }
+
+    const targetRole = await this.adminUserRepository.findRoleById(targetUserId);
+
+    if (!targetRole) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (targetRole === "ADMIN") {
+      const activeAdmins = await this.adminUserRepository.countActiveAdmins();
+
+      if (activeAdmins <= 1) {
+        throw new ForbiddenError("You cannot delete the last remaining admin");
+      }
+    }
+
+    const coursesCreated = await this.adminUserRepository.countCoursesCreatedByUser(targetUserId);
+    const smsBatchesCreated =
+      await this.adminUserRepository.countSmsBatchesCreatedByUser(targetUserId);
+
+    if (coursesCreated > 0) {
+      throw new ConflictError(
+        `This user created ${coursesCreated} course(s). Transfer or delete them before removing the account`
+      );
+    }
+
+    if (smsBatchesCreated > 0) {
+      throw new ConflictError(
+        `This user queued ${smsBatchesCreated} SMS broadcast(s). Deactivate the account instead of deleting it`
+      );
+    }
+
+    await this.authSessionRepository.deleteByUserId(targetUserId);
+    await this.adminUserRepository.deleteUser(targetUserId);
+
+    return { id: targetUserId };
+  }
 }

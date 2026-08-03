@@ -58,4 +58,14 @@ export class AdminUserController {
 
     return success(context, updatedUser, 200, "User status updated successfully");
   }
+
+  public async deleteUser(
+    context: Context<AppBindings>,
+    userId: string,
+    currentUserId: string
+  ): Promise<Response> {
+    await this.adminUserService.deleteUser(userId, currentUserId);
+
+    return success(context, { id: userId }, 200, "User deleted successfully");
+  }
 }

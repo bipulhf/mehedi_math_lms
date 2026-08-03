@@ -14,7 +14,7 @@ import {
 } from "@genex/shared";
 import type { z } from "zod";
 
-import { apiGet, apiPatch, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
 
 export interface AdminDashboardStats {
   activeCourses: number;
@@ -156,6 +156,12 @@ export async function updateAdminUserStatus(
     `admin/users/${id}/status`,
     values
   );
+
+  return response.data;
+}
+
+export async function deleteAdminUser(id: string): Promise<{ id: string }> {
+  const response = await apiDelete<{ id: string }>(`admin/users/${id}`);
 
   return response.data;
 }

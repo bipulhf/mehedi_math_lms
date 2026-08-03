@@ -41,6 +41,12 @@ describe("createAdminUserSchema", () => {
     ).toMatchObject({ role: "TEACHER" });
   });
 
+  test("accepts a STUDENT account", () => {
+    expect(
+      createAdminUserSchema.parse({ email: "student@example.com", name: "Rahim", role: "STUDENT" })
+    ).toMatchObject({ role: "STUDENT" });
+  });
+
   test("rejects a bad address and an empty name", () => {
     expect(
       createAdminUserSchema.safeParse({ email: "teacher", name: "Nadia", role: "TEACHER" }).success
@@ -66,7 +72,7 @@ describe("createAdminUserSchema", () => {
 });
 
 describe("updateAdminUserStatusSchema", () => {
-  test("deactivation is a boolean, and there is no delete — ADR-0003", () => {
+  test("deactivation is a boolean; deletion lives on its own endpoint", () => {
     expect(updateAdminUserStatusSchema.parse({ isActive: false }).isActive).toBe(false);
     expect(updateAdminUserStatusSchema.safeParse({ isActive: "false" }).success).toBe(false);
     expect(updateAdminUserStatusSchema.safeParse({}).success).toBe(false);

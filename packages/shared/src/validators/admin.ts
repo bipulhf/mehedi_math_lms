@@ -10,6 +10,11 @@ export const userListStatusSchema = z.enum(userListStatusValues);
 export const staffRoleValues = ["TEACHER", "ACCOUNTANT", "ADMIN"] as const;
 export const staffRoleSchema = z.enum(staffRoleValues);
 
+// Admin-created accounts. Wider than staffRoleValues because an admin also
+// mints student accounts directly from the user-management page.
+export const creatableUserRoleValues = ["STUDENT", "TEACHER", "ACCOUNTANT", "ADMIN"] as const;
+export const creatableUserRoleSchema = z.enum(creatableUserRoleValues);
+
 export const manageableUserRoleValues = ["STUDENT", "TEACHER", "ACCOUNTANT", "ADMIN"] as const;
 export const manageableUserRoleSchema = z.enum(manageableUserRoleValues);
 
@@ -39,7 +44,7 @@ export const createAdminUserSchema = z.object({
   confirmPassword: z.string().min(1).max(128).optional(),
   email: z.email(),
   name: z.string().trim().min(1).max(255),
-  role: staffRoleSchema
+  role: creatableUserRoleSchema
 });
 
 export const updateAdminUserSchema = z.object({

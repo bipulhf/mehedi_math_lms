@@ -69,6 +69,13 @@ adminRoutes.patch("/users/:id/status", requireAdmin(), async (context) => {
   return adminUserController.updateUserStatus(context, params.id, authUser!.id, payload.isActive);
 });
 
+adminRoutes.delete("/users/:id", requireAdmin(), (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+
+  return adminUserController.deleteUser(context, params.id, authUser!.id);
+});
+
 adminRoutes.get("/users/:id/profile", requireAdmin(), async (context) => {
   const params = profileIdParamsSchema.parse(context.req.param());
 

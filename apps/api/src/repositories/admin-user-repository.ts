@@ -2,11 +2,13 @@ import type { SQL } from "@genex/db";
 import {
   and,
   count,
+  courses,
   db,
   desc,
   eq,
   ilike,
   or,
+  smsBatches,
   users
 } from "@genex/db";
 import type { UserRole } from "@genex/shared";
@@ -321,5 +323,37 @@ export class AdminUserRepository {
       .limit(1);
 
     return row?.role ?? null;
+  }
+
+  /**
+   * A user who created a course owns it through `courses.creator_id`, which is
+   * `onDelete: "restrict"`. Such a user cannot be hard-deleted — the rows would
+   * need the course rows to go first. Callers surface this as a refusal.
+   */
+  public async countCoursesCreatedByUser(userId: string): Promise<number> {
+    const [row] = await db
+      .select({ value: count() })
+      .from(courses)
+      .where(eq(courses.creatorId, userId));
+
+    return Number(row?.value ?? 0);
+  }
+
+  /**
+   * `sms_batches.created_by_user_id` is `onDelete: "restrict"` (audit trail for
+   * who queued a broadcast). A user who queued one cannot be hard-deleted.
+   */
+  public async countSmsBatchesCreatedByUser(userId: string): Promise<number> {
+    const [row] = await db
+      .select({ value: count() })
+      .from(smsBatches)
+      .where(eq(smsBatches.createdByUserId, userId));
+
+    return Number(row?.value ?? 0);
+  }
+
+  /** Physically removes the account. Cascade FKs clear the rest of the graph. */
+  public async deleteUser(userId: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, userId));
   }
 }

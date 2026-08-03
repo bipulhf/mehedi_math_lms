@@ -11,7 +11,8 @@ import {
   Shield,
   Fingerprint,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -31,6 +32,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminUserListItem, CreateAdminUserInput } from "@/lib/api/admin";
 import {
   createAdminUser,
+  deleteAdminUser,
   listAdminUsers,
   updateAdminUserStatus
 } from "@/lib/api/admin";
@@ -118,6 +120,22 @@ function AdminUsersPage(): JSX.Element {
     await loadUsers();
   };
 
+  const handleDelete = async (user: AdminUserListItem): Promise<void> => {
+    if (
+      !window.confirm(
+        `Delete ${user.name} permanently? This removes the account and all of its records. Prefer deactivating a user who still has courses or SMS history.`
+      )
+    )
+      return;
+    try {
+      await deleteAdminUser(user.id);
+      toast.success(`User deleted`);
+      await loadUsers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8 p-4 sm:p-0">
@@ -189,6 +207,7 @@ function AdminUsersPage(): JSX.Element {
               id="create-role"
               {...register("role")}
             >
+              <option value="STUDENT">{t("role.student")}</option>
               <option value="TEACHER">{t("role.teacherOption")}</option>
               <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
             </Select>
@@ -343,6 +362,16 @@ function AdminUsersPage(): JSX.Element {
                       <UserCheck className="size-4" />
                     )}
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={session?.user.id === user.id}
+                    onClick={() => void handleDelete(user)}
+                    className="h-10 w-10 rounded-xl font-bold uppercase tracking-widest text-error hover:bg-red-50 transition-all"
+                    title="Delete user"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -494,6 +523,16 @@ function AdminUsersPage(): JSX.Element {
                             ) : (
                               <UserCheck className="size-4" />
                             )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={isOwn}
+                            onClick={() => void handleDelete(user)}
+                            className="size-9 rounded-xl transition-all hover:bg-red-50 hover:text-error"
+                            title="Delete user permanently"
+                          >
+                            <Trash2 className="size-4" />
                           </Button>
                         </div>
                       </td>

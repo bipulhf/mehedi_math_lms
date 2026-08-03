@@ -4,8 +4,9 @@ import { accounts, db, eq, users } from "@genex/db";
  * Roles an Admin can create on someone's behalf. ADMIN is included so a second
  * administrator can be minted from the UI rather than only by re-running the
  * seed with shell access. Creating one demands re-authentication. ADR-0002.
+ * STUDENT is included so the admin console can also mint learner accounts.
  */
-export type StaffRole = "TEACHER" | "ACCOUNTANT" | "ADMIN";
+export type StaffRole = "STUDENT" | "TEACHER" | "ACCOUNTANT" | "ADMIN";
 
 export interface CreateStaffAccountInput {
   email: string;
