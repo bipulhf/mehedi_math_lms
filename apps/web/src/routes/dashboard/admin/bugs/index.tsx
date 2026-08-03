@@ -15,7 +15,7 @@ import { listAdminBugs } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
 
-export const Route = createFileRoute("/dashboard/admin/bugs")({
+export const Route = createFileRoute("/dashboard/admin/bugs/")({
   component: AdminBugsPage,
   errorComponent: RouteErrorView
 } as never);

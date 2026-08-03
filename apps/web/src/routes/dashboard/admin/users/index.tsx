@@ -41,7 +41,7 @@ import { useZodForm } from "@/lib/forms/use-zod-form";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
 
-export const Route = createFileRoute("/dashboard/admin/users")({
+export const Route = createFileRoute("/dashboard/admin/users/")({
   component: AdminUsersPage,
   errorComponent: RouteErrorView
 } as never);
@@ -302,7 +302,7 @@ function AdminUsersPage(): JSX.Element {
         </div>
 
         {/* Mobile List View - Cards */}
-          <div className="xl:hidden grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div className="xl:hidden grid gap-4 grid-cols-1 md:grid-cols-2 p-4">
             {users.map((user) => (
               <div
                 key={user.id}
@@ -450,9 +450,6 @@ function AdminUsersPage(): JSX.Element {
                       </td>
                       <td className="px-10 py-6">
                         <div className="flex items-center gap-2.5">
-                          {/* One icon colour. The role already reads in the
-                              badge beside it, and DESIGN.md §2 has no second
-                              saturated colour to spend here. */}
                           <Shield className="size-4 text-muted-light" />
                           <Badge
                             tone={roleTone(user.role)}
