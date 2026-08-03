@@ -77,9 +77,13 @@ export function useMessagingSocket({
     let isCancelled = false;
 
     const connect = async (): Promise<void> => {
-      const cookie = await readSessionCookie();
+      const cookie = await readSessionCookie().catch(() => null);
 
       if (cookie === null || isCancelled) {
+        // No credential, or the keychain would not answer. Either way the poll
+        // is already running, so there is nothing to report and nothing to
+        // throw — an unhandled rejection here would take the screen down
+        // through its error boundary for a transport the student never sees.
         return;
       }
 
@@ -135,7 +139,11 @@ export function useMessagingSocket({
       };
     };
 
-    void connect();
+    // Nothing awaits this, so anything it throws would surface as an unhandled
+    // rejection rather than as a failed connection.
+    void connect().catch(() => {
+      setIsConnected(false);
+    });
 
     return () => {
       isCancelled = true;

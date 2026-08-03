@@ -75,9 +75,12 @@ export default function ConversationScreen(): JSX.Element {
   });
 
   useEffect(() => {
-    void markConversationRead(conversationId).then(async () =>
-      queryClient.invalidateQueries({ queryKey: queryKeys.conversations() })
-    );
+    // Nothing awaits this, and failing to clear a badge is not worth an error
+    // banner — but an uncaught rejection here would take the screen down
+    // through its error boundary while the thread itself loaded fine.
+    void markConversationRead(conversationId)
+      .then(async () => queryClient.invalidateQueries({ queryKey: queryKeys.conversations() }))
+      .catch(() => undefined);
   }, [conversationId, queryClient]);
 
   // Announced on the first keystroke and withdrawn after a pause, so the other
