@@ -4,16 +4,22 @@ import { useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { localeTags } from "@genex/i18n";
 
 import interLatinWoff2 from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
 import manropeLatinWoff2 from "@fontsource/manrope/files/manrope-latin-600-normal.woff2?url";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { LocaleProvider, useLocale } from "@/lib/i18n/locale-context";
+import { readLocale } from "@/lib/i18n/locale-cookie";
 import { createQueryClient } from "@/lib/query/query-client";
 import { siteConfig } from "@/lib/site";
 import appCss from "@/styles/app.css?url";
 
 export const Route = createRootRoute({
+  // Reading the cookie here rather than in an effect is what stops the page
+  // rendering in one language and then flipping to the other after hydration.
+  beforeLoad: () => ({ locale: readLocale() }),
   head: () => ({
     meta: [
       {
@@ -70,31 +76,37 @@ function RootComponent(): JSX.Element {
   // useState, not module scope: on the server this component runs once per
   // request, and a shared client would hand one user's cache to the next.
   const [queryClient] = useState(createQueryClient);
+  const { locale } = Route.useRouteContext();
 
   return (
-    <RootDocument>
-      <QueryClientProvider client={queryClient}>
-        <Outlet />
-      </QueryClientProvider>
-      <Toaster
-        closeButton
-        richColors
-        position="top-right"
-        toastOptions={{
-          classNames: {
-            toast: "!bg-surface-container-lowest !text-on-surface !shadow-[0_16px_38px_-20px_rgba(19,27,46,0.22)]",
-            description: "!text-on-surface/66",
-            title: "!font-semibold"
-          }
-        }}
-      />
-    </RootDocument>
+    <LocaleProvider initialLocale={locale}>
+      <RootDocument>
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
+        <Toaster
+          closeButton
+          richColors
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              toast:
+                "!bg-surface-container-lowest !text-on-surface !shadow-[0_16px_38px_-20px_rgba(19,27,46,0.22)]",
+              description: "!text-on-surface/66",
+              title: "!font-semibold"
+            }
+          }}
+        />
+      </RootDocument>
+    </LocaleProvider>
   );
 }
 
 function RootDocument({ children }: PropsWithChildren): JSX.Element {
+  const { locale } = useLocale();
+
   return (
-    <html lang="en">
+    <html lang={localeTags[locale]}>
       <head>
         <HeadContent />
       </head>

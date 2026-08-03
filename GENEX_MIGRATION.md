@@ -171,9 +171,6 @@ Consequences:
 - **`DESIGN.md` is replaced**, not amended. Every rule in it is contradicted.
 - **`apps/web/AGENTS.md` §Styling is rewritten**, along with §Loading states
   (skeletons must lose their shimmer animation) and §Progress.
-- `apps/web/AGENTS.md` §Layout is **already stale** — it lists `select`,
-  `textarea` and `skeleton` in `components/ui/`, and none of the three exist.
-  Fix while rewriting.
 - The accent is a **theme variable**, not a hardcode. The handoff ships four
   alternates (`#EE5622`, `#23211E`, `#1F6F5C`, `#3B5BA5`).
 - **Accent discipline**: 6–10 accent marks per page, never a large fill on
@@ -210,8 +207,11 @@ build screens. No screen work starts before §Phase 4 lands.
 ### New primitives
 
 `Pill` · `FilterPill` · `StatCard` · `Tabs` · `Accordion` · `DataTable` ·
-`EmptyState` · `Checkbox` · `Textarea` · `Select` · `Avatar` · `DotRow`
-(the level selector) · `PriceText` · `SectionHeading`.
+`EmptyState` · `Checkbox` · `Avatar` · `DotRow` (the level selector) ·
+`PriceText` · `SectionHeading`.
+
+`select.tsx`, `textarea.tsx` and `skeleton.tsx` already exist and are rewritten
+rather than added.
 
 ### Doodle set
 
@@ -281,7 +281,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | --- | --- | --- |
 | 0 | Rewrite `DESIGN.md` for Genex; fix `apps/web/AGENTS.md` §Styling / §Loading / §Progress / §Layout | ☑ |
 | 1 | Rename, everywhere (§7). Mechanical, no behaviour change | ☑ |
-| 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☐ |
+| 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☑ |
 | 3 | Design tokens: `app.css`, fonts, `PageBackground`, brand assets | ☐ |
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☐ |
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding | ☐ |
@@ -302,10 +302,43 @@ parallelised once 5 is in.
 palette, hairline sectioning, no shadows, no animation, square cards, accent
 discipline, the doodle set, and a responsive section the handoff does not have.
 `apps/web/AGENTS.md` §Styling rewritten against the new tokens, §Loading gained
-the no-shimmer rule, §Progress retargeted at accent-on-track, and §Layout
-corrected — it listed `select`, `textarea` and `skeleton` in `components/ui/`
-and none of the three exist. Root `AGENTS.md` now points at this document first.
-Typecheck 8/8.
+the no-shimmer rule, and §Progress retargeted at accent-on-track. Root
+`AGENTS.md` now points at this document first. Typecheck 8/8.
+
+*Correction, made during Phase 2:* Phase 0 also "fixed" §Layout by removing
+`select`, `textarea` and `skeleton` from the `components/ui/` list, on the
+strength of a directory listing that had been truncated. All three exist. The
+line is restored, and the claim is struck from §5 and §6 above.
+
+**Phase 2** — `packages/i18n`, a ninth workspace with zero runtime
+dependencies (it is imported by React Native, where a Node-only dependency is a
+build failure).
+
+`src/messages/bn.ts` is the source of truth and `MessageKey` derives from it, so
+`en.ts` is typed as a complete record — a key added to one and forgotten in the
+other fails the build instead of falling back silently. English is the
+*fallback* locale, Bangla the default.
+
+`Intl` turned out to already know everything the design needs: `bn-BD` gives
+Bangla numerals and lakh/crore grouping (১,৮৪,০০০, not ১৮৪,০০০) with no digit
+table of our own. Three things it does not do are composed by hand — the taka
+sign tight against the number, paisa hidden when zero, and `toLocaleDigits` for
+values that must be mapped without being regrouped (a phone number must not
+become ১,৩৪,৬০,৫৬,৪৬৮). `en` maps to `en-GB` rather than `en-US` so dates read
+"12 August" and mirror the Bangla "১২ আগস্ট" instead of inverting it.
+
+On the web the locale is read from a cookie in the root route's `beforeLoad`,
+not in an effect — an effect renders the page in one language and flips it after
+hydration. `createIsomorphicFn` keeps `@tanstack/react-start/server` out of the
+browser bundle; verified against a production build, where the client chunk
+carries only the `document.cookie` branch.
+
+The switcher shows both languages rather than toggling to the one you are not
+in, which is a puzzle for a reader who cannot read the label. It is mounted in
+the landing header and the dashboard shell, styled with the current tokens —
+Phase 3 retokens it along with everything else.
+
+Typecheck 9/9, lint 9/9, tests 8/8 (331 passing), web build clean.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

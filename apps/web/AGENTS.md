@@ -16,7 +16,7 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
 src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
-src/components/ui/   Primitives — button, card, input, label, badge, password-input, progress-track, responsive-image.
+src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input, progress-track, responsive-image.
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.

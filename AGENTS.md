@@ -11,6 +11,7 @@ Nested `AGENTS.md` files exist per workspace. Read the one for the workspace you
 | `apps/mobile/AGENTS.md` | Expo app (still template boilerplate) |
 | `packages/db/AGENTS.md` | Drizzle schema + migrations |
 | `packages/shared/AGENTS.md` | Zod validators, shared types |
+| `packages/i18n/AGENTS.md` | Bilingual catalogue and locale formatters |
 | `packages/auth/AGENTS.md` | Better Auth wiring |
 | `tooling/scripts/AGENTS.md` | Seed and backfill scripts |
 
@@ -39,8 +40,9 @@ Single workspace: `bun run --filter @genex/api dev` (or `cd apps/api && bun run 
 
 ```
 apps/web  ──┬─> @genex/auth ──┬─> @genex/db
-apps/api  ──┤               └─> @genex/shared
-            └─> @genex/shared
+apps/api  ──┤                 └─> @genex/shared
+            ├─> @genex/shared
+            └─> @genex/i18n
 tooling/scripts ─> @genex/auth, @genex/db, @genex/shared
 apps/mobile — standalone, no workspace deps yet
 ```

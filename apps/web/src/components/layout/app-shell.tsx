@@ -3,6 +3,7 @@ import { ArrowLeft, LogOut, Menu, X, type LucideIcon } from "lucide-react";
 import { useState, type JSX, type PropsWithChildren, useEffect } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { authClient } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -172,6 +173,7 @@ export function AppShell({ children, isLoading, navItems, title }: AppShellProps
               </div>
 
               <div className="flex items-center gap-2 sm:gap-4">
+                <LanguageSwitcher className="hidden sm:inline-flex" />
                 <NotificationBell />
                 <div className="w-px h-8 bg-outline-variant/30 mx-1 hidden sm:block"></div>
                 <Button

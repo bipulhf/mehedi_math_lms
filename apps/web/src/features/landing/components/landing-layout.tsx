@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { useAuthSession } from "@/hooks/use-auth-session";
 
 export function LandingLayout({ children, showGrid = true }: PropsWithChildren<{ showGrid?: boolean }>) {
@@ -57,6 +58,7 @@ export function LandingLayout({ children, showGrid = true }: PropsWithChildren<{
             </div>
             <div className="flex items-center gap-4">
               <div className="h-6 w-px bg-outline-variant/30 mx-2"></div>
+              <LanguageSwitcher className="hidden sm:inline-flex" />
               {isPending ? (
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-11 w-32 rounded-2xl bg-surface-container-high" />
