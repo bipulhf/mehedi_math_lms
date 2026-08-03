@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, User, Mail, Phone, GraduationCap, Calendar, MapPin, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { OwnProfileData } from "@/lib/api/profiles";
 import { getAdminStudentProfile } from "@/lib/api/profiles";
@@ -24,54 +26,170 @@ function AdminStudentProfilePage(): JSX.Element {
   const { id } = Route.useParams();
   const router = useRouter();
   const { isPending: isSessionPending, session } = useAuthSession();
-  const isAdmin = !isSessionPending && session?.session.role === "ADMIN";
+  const canView = !isSessionPending && (session?.session.role === "ADMIN" || session?.session.role === "TEACHER");
+
   const { data: profile = null, isPending: isLoading } = useQuery<OwnProfileData>({
-    enabled: isAdmin,
+    enabled: canView,
     queryFn: async () => getAdminStudentProfile(id),
     queryKey: queryKeys.profiles.student(id)
   });
 
   useEffect(() => {
-    if (isSessionPending || !session || session.session.role === "ADMIN") {
+    if (isSessionPending || !session || session.session.role === "ADMIN" || session.session.role === "TEACHER") {
       return;
     }
 
     toast.error(t("astudent.adminOnly"));
     void router.navigate({ to: "/dashboard" });
-  }, [isSessionPending, router, session]);
+  }, [isSessionPending, router, session, t]);
 
   if (isSessionPending || isLoading || !profile) {
     return <ProfilePageSkeleton />;
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{profile.user.name}</CardTitle>
-          <CardDescription>{t("astudent.lead")}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70">
-            <p className="font-semibold text-ink">{t("astudent.contact")}</p>
-            <p>Email: {profile.user.email}</p>
-            <p>Phone: {profile.studentProfile?.phone ?? "Not added"}</p>
-            <p>Guardian: {profile.studentProfile?.guardianName ?? "Not added"}</p>
-            <p>Guardian phone: {profile.studentProfile?.guardianPhone ?? "Not added"}</p>
+    <div className="space-y-6">
+      {/* Header Bar */}
+      <div className="border border-hairline bg-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="mb-2 flex items-center gap-3">
+            <Button asChild size="sm" variant="outline" className="h-8 px-2.5">
+              <Link to="/dashboard/students">
+                <ArrowLeft className="mr-1 size-3.5" />
+                {t("common.back")}
+              </Link>
+            </Button>
+            <h1 className="text-xl font-medium text-ink">{profile.user.name}</h1>
+            <Badge tone="quiet" className="px-2.5 py-0.5 text-xs font-semibold">
+              {profile.user.role}
+            </Badge>
           </div>
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70">
-            <p className="font-semibold text-ink">{t("astudent.academic")}</p>
-            <p>Institution: {profile.studentProfile?.institution ?? "Not added"}</p>
-            <p>Class or grade: {profile.studentProfile?.classOrGrade ?? "Not added"}</p>
-            <p>Date of birth: {profile.studentProfile?.dateOfBirth?.slice(0, 10) ?? "Not added"}</p>
-            <p>Status: {profile.user.isActive ? "Active" : "Inactive"}</p>
+          <p className="text-xs font-light text-muted">{profile.user.email}</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-hairline bg-panel-warm/40 text-xs">
+            {profile.user.isActive ? (
+              <>
+                <div className="size-2 rounded-full bg-green-500" />
+                <span className="font-medium text-green-700">Active</span>
+              </>
+            ) : (
+              <>
+                <div className="size-2 rounded-full bg-red-500" />
+                <span className="font-medium text-red-700">Inactive</span>
+              </>
+            )}
           </div>
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70 md:col-span-2">
-            <p className="font-semibold text-ink">{t("profile.address")}</p>
-            <p>{profile.studentProfile?.address ?? "Not added"}</p>
+        </div>
+      </div>
+
+      {/* Details Grid */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Contact Info */}
+        <div className="border border-hairline bg-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-hairline pb-3">
+            <User className="size-4 text-accent" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">
+              {t("astudent.contact")}
+            </h2>
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted flex items-center gap-2">
+                <Mail className="size-3.5" /> Email
+              </span>
+              <span className="font-medium text-ink">{profile.user.email}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted flex items-center gap-2">
+                <Phone className="size-3.5" /> Phone
+              </span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.phone || "Not added"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Guardian Name</span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.guardianName || "Not added"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Guardian Phone</span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.guardianPhone || "Not added"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Academic Info */}
+        <div className="border border-hairline bg-card p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-hairline pb-3">
+            <GraduationCap className="size-4 text-accent" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">
+              {t("astudent.academic")}
+            </h2>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Institution</span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.institution || "Not added"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">Class or Grade</span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.classOrGrade || "Not added"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted flex items-center gap-2">
+                <Calendar className="size-3.5" /> Date of Birth
+              </span>
+              <span className="font-medium text-ink">
+                {profile.studentProfile?.dateOfBirth
+                  ? new Date(profile.studentProfile.dateOfBirth).toLocaleDateString()
+                  : "Not added"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted flex items-center gap-2">
+                <ShieldCheck className="size-3.5" /> Profile Status
+              </span>
+              <div className="flex items-center gap-1.5">
+                {profile.user.profileCompleted ? (
+                  <>
+                    <CheckCircle2 className="size-3.5 text-green-500" />
+                    <span className="text-xs font-semibold text-green-700">Complete</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="size-3.5 text-amber-500" />
+                    <span className="text-xs font-semibold text-amber-700">Incomplete</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Address */}
+        <div className="border border-hairline bg-card p-6 space-y-4 md:col-span-2">
+          <div className="flex items-center gap-2 border-b border-hairline pb-3">
+            <MapPin className="size-4 text-accent" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink">
+              {t("profile.address")}
+            </h2>
+          </div>
+          <p className="text-sm text-ink leading-relaxed">
+            {profile.studentProfile?.address || "No address provided."}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
+

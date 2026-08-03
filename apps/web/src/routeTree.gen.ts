@@ -51,6 +51,7 @@ import { Route as DashboardNotificationsSendRouteImport } from './routes/dashboa
 import { Route as DashboardPaymentsIndexRouteImport } from './routes/dashboard/payments/index'
 import { Route as DashboardPaymentsMockRouteImport } from './routes/dashboard/payments/mock'
 import { Route as DashboardPaymentsReturnRouteImport } from './routes/dashboard/payments/return'
+import { Route as DashboardStudentsIndexRouteImport } from './routes/dashboard/students/index'
 import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard/students/$id'
 import { Route as DashboardTestsTestIdRouteImport } from './routes/dashboard/tests/$testId'
 import { Route as DashboardAdminBugsIndexRouteImport } from './routes/dashboard/admin/bugs/index'
@@ -281,6 +282,11 @@ const DashboardPaymentsReturnRoute = DashboardPaymentsReturnRouteImport.update({
   path: '/payments/return',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardStudentsIndexRoute = DashboardStudentsIndexRouteImport.update({
+  id: '/students/',
+  path: '/students/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStudentsIdRoute = DashboardStudentsIdRouteImport.update({
   id: '/students/$id',
   path: '/students/$id',
@@ -404,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
+  '/dashboard/students/': typeof DashboardStudentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
@@ -461,6 +468,7 @@ export interface FileRoutesByTo {
   '/dashboard/bugs': typeof DashboardBugsIndexRoute
   '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/payments': typeof DashboardPaymentsIndexRoute
+  '/dashboard/students': typeof DashboardStudentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
@@ -520,6 +528,7 @@ export interface FileRoutesById {
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
+  '/dashboard/students/': typeof DashboardStudentsIndexRoute
   '/dashboard/admin/bugs/$id': typeof DashboardAdminBugsIdRoute
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
@@ -580,6 +589,7 @@ export interface FileRouteTypes {
     | '/dashboard/bugs/'
     | '/dashboard/courses/'
     | '/dashboard/payments/'
+    | '/dashboard/students/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/dashboard/bugs'
     | '/dashboard/courses'
     | '/dashboard/payments'
+    | '/dashboard/students'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
@@ -695,6 +706,7 @@ export interface FileRouteTypes {
     | '/dashboard/bugs/'
     | '/dashboard/courses/'
     | '/dashboard/payments/'
+    | '/dashboard/students/'
     | '/dashboard/admin/bugs/$id'
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
@@ -1026,6 +1038,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPaymentsReturnRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/students/': {
+      id: '/dashboard/students/'
+      path: '/students'
+      fullPath: '/dashboard/students/'
+      preLoaderRoute: typeof DashboardStudentsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/students/$id': {
       id: '/dashboard/students/$id'
       path: '/students/$id'
@@ -1205,6 +1224,7 @@ interface DashboardRouteChildren {
   DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
   DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
   DashboardPaymentsIndexRoute: typeof DashboardPaymentsIndexRoute
+  DashboardStudentsIndexRoute: typeof DashboardStudentsIndexRoute
   DashboardAdminBugsIdRoute: typeof DashboardAdminBugsIdRoute
   DashboardAdminUsersIdRoute: typeof DashboardAdminUsersIdRoute
   DashboardCoursesIdAnalyticsRoute: typeof DashboardCoursesIdAnalyticsRoute
@@ -1240,6 +1260,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBugsIndexRoute: DashboardBugsIndexRoute,
   DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
   DashboardPaymentsIndexRoute: DashboardPaymentsIndexRoute,
+  DashboardStudentsIndexRoute: DashboardStudentsIndexRoute,
   DashboardAdminBugsIdRoute: DashboardAdminBugsIdRoute,
   DashboardAdminUsersIdRoute: DashboardAdminUsersIdRoute,
   DashboardCoursesIdAnalyticsRoute: DashboardCoursesIdAnalyticsRoute,

@@ -35,7 +35,7 @@ export const adminRoutes = new Hono<AppBindings>();
 
 adminRoutes.get("/dashboard", requireAdmin(), (context) => adminDashboardController.getStats(context));
 
-adminRoutes.get("/users", requireAdmin(), (context) => {
+adminRoutes.get("/users", requireRole("ADMIN", "TEACHER"), (context) => {
   const query = adminUsersQuerySchema.parse(context.req.query());
 
   return adminUserController.listUsers(context, query);
@@ -48,7 +48,7 @@ adminRoutes.post("/users", requireAdmin(), async (context) => {
   return adminUserController.createUser(context, payload, authUser!.id);
 });
 
-adminRoutes.get("/users/:id", requireAdmin(), (context) => {
+adminRoutes.get("/users/:id", requireRole("ADMIN", "TEACHER"), (context) => {
   const params = idParamsSchema.parse(context.req.param());
 
   return adminUserController.getUserById(context, params.id);
@@ -76,7 +76,7 @@ adminRoutes.delete("/users/:id", requireAdmin(), (context) => {
   return adminUserController.deleteUser(context, params.id, authUser!.id);
 });
 
-adminRoutes.get("/users/:id/profile", requireAdmin(), async (context) => {
+adminRoutes.get("/users/:id/profile", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = profileIdParamsSchema.parse(context.req.param());
 
   return profileController.getAdminStudentProfile(context, params.id);
