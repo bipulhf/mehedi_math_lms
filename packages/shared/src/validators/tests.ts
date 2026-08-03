@@ -29,7 +29,12 @@ export const testQuestionParamsSchema = z.object({
 
 export const createTestSchema = z.object({
   description: optionalTextSchema,
-  durationInMinutes: z.number().int().positive().max(24 * 60).optional(),
+  durationInMinutes: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 60)
+    .optional(),
   isPublished: z.boolean().default(false),
   passingScore: z.number().int().min(0).max(10000).optional(),
   title: z.string().trim().min(1).max(255),
@@ -39,7 +44,12 @@ export const createTestSchema = z.object({
 export const updateTestSchema = z
   .object({
     description: optionalTextSchema.optional(),
-    durationInMinutes: z.number().int().positive().max(24 * 60).optional(),
+    durationInMinutes: z
+      .number()
+      .int()
+      .positive()
+      .max(24 * 60)
+      .optional(),
     isPublished: z.boolean().optional(),
     passingScore: z.number().int().min(0).max(10000).optional(),
     title: z.string().trim().min(1).max(255).optional(),

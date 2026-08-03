@@ -150,10 +150,7 @@ export function CourseLectureBuilder({
     return true;
   };
 
-  const appendCourseItem = async (
-    chapterId: string,
-    item: CourseOutlineItem
-  ): Promise<void> => {
+  const appendCourseItem = async (chapterId: string, item: CourseOutlineItem): Promise<void> => {
     await reorderCourseItems(chapterId, {
       items: chapters.flatMap((chapter) => {
         const chapterItems = getChapterItems(chapter, assessments);
@@ -365,10 +362,10 @@ export function CourseLectureBuilder({
 
     reordered.splice(targetIndex, 0, movedItem);
     const itemLists = new Map(
-      chapters.map((item) => [
-        item.id,
-        item.id === chapterId ? reordered : getChapterItems(item, assessments)
-      ] as const)
+      chapters.map(
+        (item) =>
+          [item.id, item.id === chapterId ? reordered : getChapterItems(item, assessments)] as const
+      )
     );
     await saveCourseItemOrder(itemLists, chapterId);
   };

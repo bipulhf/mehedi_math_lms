@@ -14,11 +14,7 @@ import {
   tests,
   users
 } from "@genex/db";
-import type {
-  QuestionType,
-  TestSubmissionStatus,
-  TestType
-} from "@genex/shared";
+import type { QuestionType, TestSubmissionStatus, TestType } from "@genex/shared";
 
 /** One published Test and how the student has fared against it. ADR-0005. */
 export interface CourseTestResultRecord {
@@ -133,10 +129,12 @@ interface SaveQuestionInput {
 interface UpdateQuestionInput {
   expectedAnswer?: string | null | undefined;
   marks?: number | undefined;
-  options?: readonly {
-    isCorrect: boolean;
-    optionText: string;
-  }[] | undefined;
+  options?:
+    | readonly {
+        isCorrect: boolean;
+        optionText: string;
+      }[]
+    | undefined;
   questionText?: string | undefined;
   sortOrder?: number | undefined;
   type?: QuestionType | undefined;
@@ -182,7 +180,9 @@ function mapQuestionRecord(record: typeof testQuestions.$inferSelect): QuestionR
   };
 }
 
-function mapQuestionOptionRecord(record: typeof questionOptions.$inferSelect): QuestionOptionRecord {
+function mapQuestionOptionRecord(
+  record: typeof questionOptions.$inferSelect
+): QuestionOptionRecord {
   return record;
 }
 
@@ -190,7 +190,9 @@ function mapSubmissionRecord(record: typeof testSubmissions.$inferSelect): Submi
   return record;
 }
 
-function mapSubmissionAnswerRecord(record: typeof submissionAnswers.$inferSelect): SubmissionAnswerRecord {
+function mapSubmissionAnswerRecord(
+  record: typeof submissionAnswers.$inferSelect
+): SubmissionAnswerRecord {
   return record;
 }
 
@@ -227,7 +229,9 @@ export class TestRepository {
     }));
   }
 
-  public async listTestsByChapterIds(chapterIds: readonly string[]): Promise<readonly TestRecord[]> {
+  public async listTestsByChapterIds(
+    chapterIds: readonly string[]
+  ): Promise<readonly TestRecord[]> {
     if (chapterIds.length === 0) {
       return [];
     }
@@ -288,7 +292,9 @@ export class TestRepository {
     await db.delete(tests).where(eq(tests.id, id));
   }
 
-  public async listQuestionsByTestIds(testIds: readonly string[]): Promise<readonly QuestionRecord[]> {
+  public async listQuestionsByTestIds(
+    testIds: readonly string[]
+  ): Promise<readonly QuestionRecord[]> {
     if (testIds.length === 0) {
       return [];
     }
@@ -297,7 +303,11 @@ export class TestRepository {
       .select()
       .from(testQuestions)
       .where(inArray(testQuestions.testId, [...testIds]))
-      .orderBy(asc(testQuestions.testId), asc(testQuestions.sortOrder), asc(testQuestions.createdAt));
+      .orderBy(
+        asc(testQuestions.testId),
+        asc(testQuestions.sortOrder),
+        asc(testQuestions.createdAt)
+      );
 
     return rows.map(mapQuestionRecord);
   }
@@ -433,7 +443,9 @@ export class TestRepository {
     });
   }
 
-  public async listOptionsByQuestionIds(questionIds: readonly string[]): Promise<readonly QuestionOptionRecord[]> {
+  public async listOptionsByQuestionIds(
+    questionIds: readonly string[]
+  ): Promise<readonly QuestionOptionRecord[]> {
     if (questionIds.length === 0) {
       return [];
     }
@@ -442,7 +454,11 @@ export class TestRepository {
       .select()
       .from(questionOptions)
       .where(inArray(questionOptions.questionId, [...questionIds]))
-      .orderBy(asc(questionOptions.questionId), asc(questionOptions.sortOrder), asc(questionOptions.createdAt));
+      .orderBy(
+        asc(questionOptions.questionId),
+        asc(questionOptions.sortOrder),
+        asc(questionOptions.createdAt)
+      );
 
     return rows.map(mapQuestionOptionRecord);
   }
@@ -480,12 +496,19 @@ export class TestRepository {
   }
 
   public async findSubmissionById(id: string): Promise<SubmissionRecord | null> {
-    const [record] = await db.select().from(testSubmissions).where(eq(testSubmissions.id, id)).limit(1);
+    const [record] = await db
+      .select()
+      .from(testSubmissions)
+      .where(eq(testSubmissions.id, id))
+      .limit(1);
 
     return record ? mapSubmissionRecord(record) : null;
   }
 
-  public async updateSubmission(id: string, input: UpdateSubmissionInput): Promise<SubmissionRecord> {
+  public async updateSubmission(
+    id: string,
+    input: UpdateSubmissionInput
+  ): Promise<SubmissionRecord> {
     const [record] = await db
       .update(testSubmissions)
       .set({
@@ -565,7 +588,9 @@ export class TestRepository {
     return rows.map(mapSubmissionAnswerRecord);
   }
 
-  public async listSubmissionsByTestId(testId: string): Promise<readonly SubmissionSummaryRecord[]> {
+  public async listSubmissionsByTestId(
+    testId: string
+  ): Promise<readonly SubmissionSummaryRecord[]> {
     const rows = await db
       .select({
         createdAt: testSubmissions.createdAt,

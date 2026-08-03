@@ -162,7 +162,7 @@ function CourseNavigationItemButton({
                 ? t("author.pdf")
                 : item.lecture.type === "TEXT"
                   ? t("cb.textLesson")
-                  : t("author.video")} {" "}
+                  : t("author.video")}{" "}
               · {item.lecture.videoDuration ? `${item.lecture.videoDuration} min` : "Self-paced"}
             </>
           ) : (
@@ -209,12 +209,12 @@ export function CoursePlayer({
 
     for (const chapter of content) {
       const chapterItems: NavigationItem[] = chapter.lectures.map((lecture) => ({
-          chapterId: chapter.id,
-          id: `lecture:${lecture.id}`,
-          kind: "lecture" as const,
-          lecture,
-          title: lecture.title
-        }));
+        chapterId: chapter.id,
+        id: `lecture:${lecture.id}`,
+        kind: "lecture" as const,
+        lecture,
+        title: lecture.title
+      }));
 
       chapterItems.push(
         ...(testsByChapterId.get(chapter.id) ?? []).map((test) => ({
@@ -226,7 +226,8 @@ export function CoursePlayer({
         }))
       );
       chapterItems.sort((first, second) => {
-        const firstOrder = first.kind === "lecture" ? first.lecture.sortOrder : first.test.sortOrder;
+        const firstOrder =
+          first.kind === "lecture" ? first.lecture.sortOrder : first.test.sortOrder;
         const secondOrder =
           second.kind === "lecture" ? second.lecture.sortOrder : second.test.sortOrder;
 
@@ -469,69 +470,18 @@ export function CoursePlayer({
 
                       {isChapterOpen ? (
                         <div className="grid gap-2 border-t border-hairline p-3">
-                          {chapter.lectures.map((lecture) => {
-                            const lectureProgress = progressByLectureId.get(lecture.id);
-                            const isSelected = selectedItemId === `lecture:${lecture.id}`;
-
-                            return (
-                              <button
-                                key={lecture.id}
-                                className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                                  isSelected
-                                    ? "border-accent bg-accent/10"
-                                    : "border-hairline bg-panel-warm hover:bg-panel-warm"
-                                }`}
-                                type="button"
-                                onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
-                              >
-                                <div className="min-w-0">
-                                  <p className="truncate font-medium text-ink">{lecture.title}</p>
-                                  <p className="text-xs text-ink/58">
-                                    {getPdfMaterial(lecture)
-                                      ? t("author.pdf")
-                                      : lecture.type === "TEXT"
-                                        ? t("cb.textLesson")
-                                        : t("author.video")}{" "}
-                                    ·{" "}
-                                    {lecture.videoDuration
-                                      ? `${lecture.videoDuration} min`
-                                      : "Self-paced"}
-                                  </p>
-                                </div>
-                                {lectureProgress?.isCompleted ? (
-                                  <CheckCircle2 className="size-4 shrink-0 text-accent" />
-                                ) : (
-                                  <Circle className="size-4 shrink-0 text-ink/42" />
-                                )}
-                              </button>
-                            );
-                          })}
-
-                          {(testsByChapterId.get(chapter.id) ?? []).map((test) => {
-                            const isSelected = selectedItemId === `test:${test.id}`;
-
-                            return (
-                              <button
-                                key={test.id}
-                                className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                                  isSelected
-                                    ? "border-accent bg-accent/10"
-                                    : "border-hairline bg-panel-warm hover:bg-panel-warm"
-                                }`}
-                                type="button"
-                                onClick={() => setSelectedItemId(`test:${test.id}`)}
-                              >
-                                <div className="min-w-0">
-                                  <p className="truncate font-medium text-ink">{test.title}</p>
-                                  <p className="text-xs text-ink/58">
-                                    Assessment · {test.questionCount} questions · {test.totalMarks}{" "}
-                                    marks
-                                  </p>
-                                </div>
-                                <BookOpen className="size-4 shrink-0 text-ink/52" />
-                              </button>
-                            );
-                          })}
+                          {chapterNavigationItems.map((item) => (
+                            <CourseNavigationItemButton
+                              isCompleted={
+                                item.kind === "lecture" &&
+                                Boolean(progressByLectureId.get(item.lecture.id)?.isCompleted)
+                              }
+                              isSelected={selectedItemId === item.id}
+                              item={item}
+                              key={item.id}
+                              onSelect={() => setSelectedItemId(item.id)}
+                            />
+                          ))}
                         </div>
                       ) : null}
                     </div>
@@ -662,7 +612,7 @@ export function CoursePlayer({
                   materials={selectedChapter.materials}
                   title={t("player.chapterMaterials")}
                 />
-                <LectureDiscussion lectureId={selectedLecture.id} />
+                <LectureDiscussion key={selectedLecture.id} lectureId={selectedLecture.id} />
 
                 <Card>
                   <CardContent className="flex flex-wrap justify-between gap-3 p-4">

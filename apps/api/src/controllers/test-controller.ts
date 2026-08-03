@@ -14,7 +14,11 @@ export class TestController {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const data = await this.testService.listCourseAssessments(courseId, currentUserId, currentUserRole);
+    const data = await this.testService.listCourseAssessments(
+      courseId,
+      currentUserId,
+      currentUserRole
+    );
 
     return success(context, data);
   }
@@ -26,7 +30,12 @@ export class TestController {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const data = await this.testService.createTest(chapterId, input, currentUserId, currentUserRole);
+    const data = await this.testService.createTest(
+      chapterId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
 
     return success(context, data, 201, "Test created successfully");
   }
@@ -72,7 +81,12 @@ export class TestController {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const data = await this.testService.createQuestion(testId, input, currentUserId, currentUserRole);
+    const data = await this.testService.createQuestion(
+      testId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
 
     return success(context, data, 201, "Question created successfully");
   }
@@ -84,7 +98,12 @@ export class TestController {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const data = await this.testService.updateQuestion(questionId, input, currentUserId, currentUserRole);
+    const data = await this.testService.updateQuestion(
+      questionId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
 
     return success(context, data, 200, "Question updated successfully");
   }
@@ -124,7 +143,12 @@ export class TestController {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<Response> {
-    const data = await this.testService.reorderQuestions(testId, input, currentUserId, currentUserRole);
+    const data = await this.testService.reorderQuestions(
+      testId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
 
     return success(context, data, 200, "Question order updated successfully");
   }

@@ -96,14 +96,22 @@ export type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSch
 export type SubmitTestInput = z.infer<typeof submitTestSchema>;
 export type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
 
-export async function getCourseAssessments(courseId: string): Promise<readonly AssessmentChapterSummary[]> {
+export async function getCourseAssessments(
+  courseId: string
+): Promise<readonly AssessmentChapterSummary[]> {
   const response = await apiGet<readonly AssessmentChapterSummary[]>(`courses/${courseId}/tests`);
 
   return response.data;
 }
 
-export async function createTest(chapterId: string, values: CreateTestInput): Promise<AssessmentTestSummary> {
-  const response = await apiPost<CreateTestInput, AssessmentTestSummary>(`chapters/${chapterId}/tests`, values);
+export async function createTest(
+  chapterId: string,
+  values: CreateTestInput
+): Promise<AssessmentTestSummary> {
+  const response = await apiPost<CreateTestInput, AssessmentTestSummary>(
+    `chapters/${chapterId}/tests`,
+    values
+  );
 
   return response.data;
 }
@@ -114,7 +122,10 @@ export async function getTestDetail(testId: string): Promise<AssessmentTestDetai
   return response.data;
 }
 
-export async function updateTest(testId: string, values: UpdateTestInput): Promise<AssessmentTestSummary> {
+export async function updateTest(
+  testId: string,
+  values: UpdateTestInput
+): Promise<AssessmentTestSummary> {
   const response = await apiPut<UpdateTestInput, AssessmentTestSummary>(`tests/${testId}`, values);
 
   return response.data;
@@ -130,7 +141,10 @@ export async function createQuestion(
   testId: string,
   values: CreateQuestionInput
 ): Promise<AssessmentQuestion> {
-  const response = await apiPost<CreateQuestionInput, AssessmentQuestion>(`tests/${testId}/questions`, values);
+  const response = await apiPost<CreateQuestionInput, AssessmentQuestion>(
+    `tests/${testId}/questions`,
+    values
+  );
 
   return response.data;
 }
@@ -139,7 +153,10 @@ export async function updateQuestion(
   questionId: string,
   values: UpdateQuestionInput
 ): Promise<AssessmentQuestion> {
-  const response = await apiPut<UpdateQuestionInput, AssessmentQuestion>(`questions/${questionId}`, values);
+  const response = await apiPut<UpdateQuestionInput, AssessmentQuestion>(
+    `questions/${questionId}`,
+    values
+  );
 
   return response.data;
 }
@@ -175,7 +192,10 @@ export async function reorderCourseItems(
 }
 
 export async function startSubmission(testId: string): Promise<SubmissionDetail> {
-  const response = await apiPost<Record<string, never>, SubmissionDetail>(`tests/${testId}/submissions/start`, {});
+  const response = await apiPost<Record<string, never>, SubmissionDetail>(
+    `tests/${testId}/submissions/start`,
+    {}
+  );
 
   return response.data;
 }
@@ -192,8 +212,14 @@ export async function saveSubmissionAnswers(
   return response.data;
 }
 
-export async function submitTest(testId: string, values: SubmitTestInput): Promise<SubmissionDetail> {
-  const response = await apiPost<SubmitTestInput, SubmissionDetail>(`tests/${testId}/submit`, values);
+export async function submitTest(
+  testId: string,
+  values: SubmitTestInput
+): Promise<SubmissionDetail> {
+  const response = await apiPost<SubmitTestInput, SubmissionDetail>(
+    `tests/${testId}/submit`,
+    values
+  );
 
   return response.data;
 }

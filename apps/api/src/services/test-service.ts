@@ -150,7 +150,10 @@ export class TestService {
 
     for (const question of questions) {
       questionCountMap.set(question.testId, (questionCountMap.get(question.testId) ?? 0) + 1);
-      totalMarksMap.set(question.testId, (totalMarksMap.get(question.testId) ?? 0) + question.marks);
+      totalMarksMap.set(
+        question.testId,
+        (totalMarksMap.get(question.testId) ?? 0) + question.marks
+      );
     }
 
     const testsMap = new Map<string, AssessmentTestSummary[]>();
@@ -232,7 +235,8 @@ export class TestService {
     }
 
     const record = await this.testRepository.updateTest(testId, {
-      description: input.description !== undefined ? normalizeOptionalString(input.description) : undefined,
+      description:
+        input.description !== undefined ? normalizeOptionalString(input.description) : undefined,
       durationInMinutes: input.durationInMinutes ?? undefined,
       isPublished: input.isPublished,
       passingScore: input.passingScore ?? undefined,
@@ -338,7 +342,11 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<AssessmentQuestion> {
-    const question = await this.access.requireManageableQuestion(questionId, currentUserId, currentUserRole);
+    const question = await this.access.requireManageableQuestion(
+      questionId,
+      currentUserId,
+      currentUserRole
+    );
     const nextType = input.type ?? question.type;
     validateQuestionAgainstTest(question.test.type, nextType);
     validateQuestionInput({
@@ -346,9 +354,7 @@ export class TestService {
       marks: input.marks ?? question.marks,
       options:
         input.options ??
-        (
-          await this.testRepository.listOptionsByQuestionIds([questionId])
-        ).map((option) => ({
+        (await this.testRepository.listOptionsByQuestionIds([questionId])).map((option) => ({
           isCorrect: option.isCorrect,
           optionText: option.optionText
         })),
@@ -485,7 +491,10 @@ export class TestService {
   ): Promise<SubmissionDetail> {
     await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
 
-    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(testId, currentUserId);
+    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(
+      testId,
+      currentUserId
+    );
 
     if (!submission || submission.status !== "STARTED") {
       submission = await this.testRepository.createSubmission(testId, currentUserId);
@@ -567,7 +576,10 @@ export class TestService {
   ): Promise<SubmissionDetail> {
     await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
 
-    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(testId, currentUserId);
+    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(
+      testId,
+      currentUserId
+    );
 
     if (!submission || submission.status !== "STARTED") {
       submission = await this.testRepository.createSubmission(testId, currentUserId);
