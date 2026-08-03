@@ -326,6 +326,10 @@ directory afterwards.
   in scope.
 - `app.json` has `"version": "1.0.0"` and `eas.json` sets `autoIncrement` on production only. Confirm
   that is the intended scheme before the first submission, because changing it afterwards is awkward.
+- **Confirm the application id before the first submission.** Prebuild demanded one and wrote
+  `com.anonymous.mehedismathacademy`; it is now `com.mehedismathacademy.app` on both platforms,
+  derived from the domain. That is a placeholder replaced by a reasonable default, not a decision
+  anyone made — and it is the one field that genuinely cannot change once an app is listed.
 
 ---
 

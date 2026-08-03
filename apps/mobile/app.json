@@ -8,6 +8,7 @@
     "scheme": "mma",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.mehedismathacademy.app",
       "supportsTablet": true
     },
     "android": {
@@ -17,6 +18,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "package": "com.mehedismathacademy.app",
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -40,7 +42,8 @@
       "expo-secure-store",
       "expo-image",
       "expo-video",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-system-ui"
     ],
     "experiments": {
       "typedRoutes": true
