@@ -141,7 +141,7 @@ function CoursesCatalogPage(): JSX.Element {
       subtitle={t("courses.lead")}
       title={<RingedWord>{t("courses.title")}</RingedWord>}
     >
-      <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-4 py-10 sm:px-8 lg:grid-cols-[296px_1fr] lg:gap-12 lg:px-14">
+      <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-4 py-10 sm:px-8 lg:grid-cols-[296px_1fr] lg:gap-12 lg:px-14 animate-fade-in">
         <CourseFilterRail
           categories={categories}
           isFreeOnly={isFreeOnly}

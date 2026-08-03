@@ -38,18 +38,18 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
   const meta = courseMetaParts(course.stats, t, format);
 
   return (
-    <div className="group flex h-full flex-col border border-hairline bg-card transition-colors hover:border-line-strong">
+    <div className="group flex h-full flex-col border border-hairline bg-card transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-md">
       <Link className="block" params={{ slug: course.slug }} to="/courses/$slug">
         <div className="relative flex h-[150px] items-center justify-center overflow-hidden bg-placeholder-fill">
           {course.coverImageUrl ? (
             <ResponsiveImage
               alt={course.title}
-              className="size-full object-cover"
+              className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               sizes="(min-width: 1024px) 420px, (min-width: 640px) 45vw, 100vw"
               src={course.coverImageUrl}
             />
           ) : (
-            <span className="label-mono text-xs uppercase text-muted-faint">
+            <span className="label-mono text-xs uppercase text-muted-faint transition-transform duration-300 group-hover:scale-105">
               {t("course.noThumbnail")}
             </span>
           )}

@@ -91,7 +91,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
 
   return (
     <Link
-      className="flex items-center gap-4 border-b border-hairline-faint py-4 transition-colors hover:bg-panel-warm"
+      className="group flex items-center gap-4 border-b border-hairline-faint px-2 py-4 transition-all duration-200 hover:translate-x-1 hover:bg-panel-warm"
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >
@@ -99,7 +99,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
         {course.coverImageUrl ? (
           <ResponsiveImage
             alt={course.title}
-            className="size-full object-cover"
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="76px"
             src={course.coverImageUrl}
           />
@@ -107,7 +107,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-medium text-ink">{course.title}</p>
+        <p className="truncate text-base font-medium text-ink transition-colors group-hover:text-accent">{course.title}</p>
         <p className="truncate text-sm text-muted-light">
           {course.teacher?.name ?? course.category.name} ·{" "}
           {t("course.lessons", { count: format.number(course.lectureCount) })}
@@ -115,7 +115,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
       </div>
 
       <PriceText amount={course.price} className="hidden shrink-0 text-base sm:block" />
-      <span className="shrink-0 text-base text-accent">{t("course.enroll")} →</span>
+      <span className="shrink-0 text-base text-accent transition-transform duration-200 group-hover:translate-x-1">{t("course.enroll")} →</span>
     </Link>
   );
 }

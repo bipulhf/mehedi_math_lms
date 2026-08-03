@@ -17,9 +17,9 @@ export function CtaSection(): JSX.Element {
 
   return (
     <section className="relative overflow-hidden bg-panel-warm">
-      <DotPatch className="-left-4 bottom-4" />
-      <DotPatch className="-right-4 top-4" />
-      <div className="mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:py-20">
+      <DotPatch className="-left-4 bottom-4 transition-transform duration-700 hover:scale-110" />
+      <DotPatch className="-right-4 top-4 transition-transform duration-700 hover:scale-110" />
+      <div className="animate-fade-in mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:py-20">
         <div className="space-y-3">
           <h2 className="max-w-[20ch] text-2xl font-medium leading-tight text-ink sm:text-3xl">
             {t("home.closingTitle")}
@@ -34,16 +34,17 @@ export function CtaSection(): JSX.Element {
             which dropped the link onto a second line beneath the button. */}
         {isPending ? null : (
           <div className="flex shrink-0 flex-wrap items-center gap-6">
-            <Button asChild size="lg">
+            <Button asChild className="shadow-xs transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98]" size="lg">
               <Link to={session ? "/dashboard" : "/auth/sign-up"}>
                 {session ? t("nav.dashboard") : t("home.openAccount")}
               </Link>
             </Button>
             <Link
-              className="whitespace-nowrap border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+              className="group flex items-center gap-1.5 whitespace-nowrap border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-200 hover:border-accent hover:text-accent"
               to="/contact"
             >
-              {t("footer.support")}
+              <span>{t("footer.support")}</span>
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
             </Link>
           </div>
         )}

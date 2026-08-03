@@ -27,20 +27,33 @@ export function AccordionRow({
   title
 }: AccordionRowProps): JSX.Element {
   return (
-    <div className={cn("border-b border-hairline", className)}>
+    <div className={cn("border-b border-hairline transition-colors duration-200", className)}>
       <button
         aria-expanded={isOpen}
-        className="flex min-h-11 w-full items-center gap-4 py-5 text-left transition-colors hover:bg-panel-warm focus-visible:outline-none"
+        className="group flex min-h-11 w-full items-center gap-4 px-2 py-5 text-left transition-colors duration-200 hover:bg-panel-warm focus-visible:outline-none"
         onClick={onToggle}
         type="button"
       >
-        <span className="flex-1 text-lg font-medium text-ink">{title}</span>
+        <span className="flex-1 text-lg font-medium text-ink transition-colors group-hover:text-accent">{title}</span>
         {meta === undefined ? null : <span className="text-sm text-muted-light">{meta}</span>}
-        <span aria-hidden="true" className="w-4 text-center text-xl font-light text-muted">
-          {isOpen ? "–" : "+"}
+        <span
+          aria-hidden="true"
+          className={cn(
+            "w-4 text-center text-xl font-light text-muted transition-transform duration-300 ease-out",
+            isOpen && "rotate-45 font-normal text-accent"
+          )}
+        >
+          +
         </span>
       </button>
-      {isOpen ? <div className="pb-5">{children}</div> : null}
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-out",
+          isOpen ? "grid-rows-[1fr] pb-5 opacity-100" : "grid-rows-[0fr] overflow-hidden opacity-0"
+        )}
+      >
+        <div className="overflow-hidden px-2">{children}</div>
+      </div>
     </div>
   );
 }

@@ -2,21 +2,13 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { Button } from "@/components/ui/button";
-import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
+import { DiamondTrio, DotPatch, QuarterArc, RingedPlay, RingedWord } from "@/components/ui/doodles";
 import type { LandingStats } from "@/lib/api/landing";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 /**
- * The hero: a large headline with the ring doodle around one word, a lead
- * paragraph, an Ink action beside an underlined one, and a stat row above a
- * hairline.
- *
- * The design hardcodes which word is ringed. Here the sentence carries a
- * `{ring}` placeholder instead, because the ringed word differs between Bangla
- * and English and hardcoding it would circle the wrong one.
- *
- * Three figures, not the design's four — "৬ পরীক্ষা কেন্দ্র" has nothing behind
- * it. GENEX_MIGRATION.md §2.
+ * The hero: a prominent, bold headline with doodle accents, lead paragraph,
+ * high-impact CTA controls, ambient glow, and translucent stat cards.
  */
 export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
   const t = useT();
@@ -30,48 +22,67 @@ export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
   ];
 
   return (
-    <section className="relative overflow-hidden">
-      <div className="mx-auto grid w-full max-w-[90rem] gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_420px] lg:items-center lg:px-14 lg:py-24">
-        <div className="space-y-7">
-          <h1 className="max-w-[20ch] text-4xl font-medium leading-tight tracking-tight text-ink sm:text-5xl lg:text-[3.375rem]">
+    <section className="relative overflow-hidden border-b border-hairline py-12 sm:py-20 lg:py-28">
+      {/* Ambient background glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 -z-0 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/6 blur-[120px]"
+      />
+
+      {/* Decorative background doodles */}
+      <DotPatch className="-left-4 top-10 opacity-70 animate-float-subtle" />
+      <QuarterArc className="right-12 top-14 size-20 opacity-80 animate-float-subtle" />
+      <DiamondTrio className="right-1/4 top-1/5 opacity-70" />
+      <DotPatch className="-right-6 bottom-16 opacity-60 animate-pulse-subtle" />
+      <QuarterArc className="bottom-12 left-1/5 opacity-50" />
+
+      <div className="relative z-10 mx-auto max-w-[90rem] px-4 sm:px-8 lg:px-14">
+        <div className="mx-auto flex max-w-4xl flex-col items-center text-center space-y-9">
+          {/* Bold Main Headline */}
+          <h1 className="animate-fade-up-1 max-w-[22ch] text-4xl font-semibold leading-[1.12] tracking-tight text-ink sm:text-5xl lg:text-[4rem]">
             {beforeRing}
             <RingedWord>{t("home.heroTitleRing")}</RingedWord>
             {afterRing}
           </h1>
 
-          <p className="max-w-[48ch] text-lg font-light leading-relaxed text-muted lg:text-xl">
+          {/* Lead Copy */}
+          <p className="animate-fade-up-2 max-w-[50ch] text-lg font-light leading-relaxed text-muted sm:text-xl lg:text-[1.375rem]">
             {t("home.heroLead")}
           </p>
 
-          <div className="flex flex-wrap items-center gap-6">
-            <Button asChild size="lg">
+          {/* Action CTAs */}
+          <div className="animate-fade-up-3 flex flex-wrap items-center justify-center gap-5 pt-2">
+            <Button
+              asChild
+              className="h-12 px-8 text-base transition-all duration-300 hover:scale-[1.04] active:scale-[0.98]"
+              size="lg"
+            >
               <Link to="/courses">{t("action.viewAllCourses")}</Link>
             </Button>
             <Link
-              className="border-b border-line-strong pb-0.5 text-lg text-ink transition-colors hover:border-accent hover:text-accent"
+              className="group flex h-12 items-center gap-2.5 rounded-full border border-line-strong bg-card/80 px-6 text-base text-ink shadow-xs backdrop-blur-sm transition-all duration-300 hover:border-accent hover:bg-paper hover:text-accent hover:shadow-md"
               search={{ free: true }}
               to="/courses"
             >
-              {t("action.watchFreeClass")}
+              <RingedPlay className="transition-transform duration-300 group-hover:scale-110" />
+              <span>{t("action.watchFreeClass")}</span>
             </Link>
           </div>
 
-          <dl className="flex flex-wrap gap-x-11 gap-y-6 border-t border-hairline pt-8">
+          {/* Stat Cards Grid */}
+          <dl className="animate-fade-up-4 grid w-full max-w-3xl grid-cols-1 gap-4 pt-10 sm:grid-cols-3">
             {figures.map((figure) => (
-              <div key={figure.label}>
-                <dd className="text-2xl font-medium text-ink sm:text-3xl">{figure.value}</dd>
-                <dt className="text-base font-light text-muted-light">{figure.label}</dt>
+              <div
+                className="group flex flex-col items-center justify-center rounded-xl border border-hairline bg-card/80 p-6 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-card hover:shadow-md"
+                key={figure.label}
+              >
+                <dd className="text-3xl font-bold tracking-tight text-ink transition-colors group-hover:text-accent sm:text-4xl">
+                  {figure.value}
+                </dd>
+                <dt className="mt-1 text-sm font-medium text-muted-light">{figure.label}</dt>
               </div>
             ))}
           </dl>
-        </div>
-
-        {/* The design puts a photograph here. Until there is one, this is the
-            placeholder fill the design specifies for every missing image —
-            better than an illustration in the wrong palette. */}
-        <div className="relative hidden aspect-4/5 items-center justify-center bg-placeholder-fill lg:flex">
-          <DotPatch className="-bottom-4 -left-4" />
-          <QuarterArc className="-right-6 -top-6" />
         </div>
       </div>
     </section>

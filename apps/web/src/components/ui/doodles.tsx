@@ -22,7 +22,7 @@ export function RingedWord({ children }: PropsWithChildren): JSX.Element {
       {children}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute -left-3 -right-3 -top-0.5 bottom-0.5 rounded-full border-2 border-accent opacity-40"
+        className="pointer-events-none absolute -left-3 -right-3 -top-0.5 bottom-0.5 rounded-full border-2 border-accent opacity-40 animate-doodle-pulse"
         style={{ transform: "rotate(-3deg)" }}
       />
     </span>

@@ -26,10 +26,10 @@ export function StepsSection(): JSX.Element {
       <QuarterArc className="right-16 top-10 hidden lg:block" />
       <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-3 lg:px-14 lg:py-20">
         {steps.map((step, index) => (
-          <div className="flex gap-5" key={step.title}>
+          <div className="group flex gap-5 rounded-sm p-3 transition-all duration-300 hover:-translate-y-1 hover:bg-paper/80 hover:shadow-xs" key={step.title}>
             <StepCircle>{format.digits(String(index + 1).padStart(2, "0"))}</StepCircle>
             <div className="space-y-2">
-              <h3 className="text-xl font-medium text-ink">{step.title}</h3>
+              <h3 className="text-xl font-medium text-ink transition-colors group-hover:text-accent">{step.title}</h3>
               <p className="text-base font-light leading-relaxed text-muted">{step.body}</p>
             </div>
           </div>

@@ -44,12 +44,12 @@ export function InstructorsSection({
             const body = (
               <>
                 <TeacherAvatar
-                  className="size-14"
+                  className="size-14 transition-transform duration-300 group-hover:scale-105"
                   name={teacher.name}
                   profilePhoto={teacher.profilePhoto}
                 />
                 <div className="min-w-0 space-y-1">
-                  <p className="truncate text-base font-medium text-ink">{teacher.name}</p>
+                  <p className="truncate text-base font-medium text-ink transition-colors group-hover:text-accent">{teacher.name}</p>
                   {teacher.specializations === null ? null : (
                     <p className="truncate text-sm text-muted-light">{teacher.specializations}</p>
                   )}
@@ -62,14 +62,14 @@ export function InstructorsSection({
 
             return teacher.slug === null ? (
               <div
-                className="flex items-center gap-4 border border-hairline bg-card p-5"
+                className="group flex items-center gap-4 border border-hairline bg-card p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:shadow-md"
                 key={teacher.id}
               >
                 {body}
               </div>
             ) : (
               <Link
-                className="flex items-center gap-4 border border-hairline bg-card p-5 transition-colors hover:border-line-strong"
+                className="group flex items-center gap-4 border border-hairline bg-card p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:shadow-md"
                 key={teacher.id}
                 params={{ slug: teacher.slug }}
                 to="/teachers/$slug"
