@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX, PropsWithChildren } from "react";
 
+import { SiteFooter } from "@/components/layout/site-footer";
 import { DiamondTrio, DotPatch, QuarterArc, RingedWord, StepCircle } from "@/components/ui/doodles";
 import { useT } from "@/lib/i18n/locale-context";
 import { siteConfig } from "@/lib/site";
@@ -12,7 +13,7 @@ interface AuthLayoutProps extends PropsWithChildren {
 
 /**
  * Sign-in and sign-up layout. Feature showcase on desktop, crisp form card,
- * warm paper background, hairline rules, doodles, and full i18n support.
+ * warm paper background, hairline rules, doodles, full i18n support, and site footer.
  */
 export function AuthLayout({ children, description, title }: AuthLayoutProps): JSX.Element {
   const t = useT();
@@ -62,14 +63,6 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
         <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_450px] lg:gap-16">
           {/* Left Column - Brand & Value Showcase (Visible on Large Screens) */}
           <div className="hidden space-y-8 lg:block">
-            {/* Trust Pill */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card/80 px-4 py-1.5 shadow-xs backdrop-blur-md">
-              <span className="inline-block size-2 rounded-full bg-accent" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-ink">
-                {t("auth.trustBadge")}
-              </span>
-            </div>
-
             {/* Hero Title */}
             <h2 className="text-3xl font-medium leading-tight tracking-tight text-ink lg:text-4xl">
               {beforeRing}
@@ -105,6 +98,9 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <SiteFooter />
     </div>
   );
 }
