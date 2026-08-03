@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
+import { ProgressTrack } from "@/components/ui/progress-track";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
@@ -195,12 +196,11 @@ function AdminAnalyticsPage(): JSX.Element {
                    <p className="text-xs text-on-surface-variant font-light opacity-60 italic">Completion Ratio</p>
                    <p className="text-xs font-bold text-on-surface tracking-widest">{row.completedCount} / {row.enrollmentCount} Scholars</p>
                 </div>
-                <div className="h-2 w-full bg-surface-container-highest/50 rounded-full overflow-hidden">
-                   <div 
-                     className="h-full bg-linear-to-r from-primary to-secondary transition-all duration-1000 ease-out"
-                     style={{ width: `${Math.min(100, row.completionRate)}%` }}
-                   />
-                </div>
+                <ProgressTrack
+                  completed={Math.min(100, row.completionRate)}
+                  label={`${row.courseTitle} completion rate`}
+                  total={100}
+                />
               </div>
             ))
           )}

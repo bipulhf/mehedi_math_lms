@@ -69,6 +69,42 @@ export async function getStoredFileRange(
   return response.Body.transformToByteArray();
 }
 
+/** The whole object. Used to resize an image the client has already uploaded. */
+export async function readStoredFile(key: string): Promise<Uint8Array> {
+  const command = new GetObjectCommand({
+    Bucket: env.AWS_S3_BUCKET,
+    Key: key
+  });
+  const response = await s3Client.send(command);
+
+  if (!response.Body) {
+    return new Uint8Array(0);
+  }
+
+  return response.Body.transformToByteArray();
+}
+
+/**
+ * Writes an object the server produced, rather than handing out a signed URL for
+ * the client to write. `public-read` matches what `createSignedUploadUrl` grants,
+ * so a variant is reachable on the same terms as the original it came from.
+ */
+export async function writeStoredFile(
+  key: string,
+  body: Uint8Array,
+  contentType: string
+): Promise<void> {
+  const command = new PutObjectCommand({
+    ACL: "public-read",
+    Body: body,
+    Bucket: env.AWS_S3_BUCKET,
+    ContentType: contentType,
+    Key: key
+  });
+
+  await s3Client.send(command);
+}
+
 export async function deleteStoredFile(key: string): Promise<void> {
   const command = new DeleteObjectCommand({
     Bucket: env.AWS_S3_BUCKET,

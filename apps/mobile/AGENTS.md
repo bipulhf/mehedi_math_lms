@@ -95,6 +95,12 @@ No spinners. Standards §12 applies to mobile as written — "every screen, ever
 
 `FlashList` for every list, with a memoised row component and `useCallback` for `renderItem` / `keyExtractor` — FlashList recycles rows, so an unmemoised item re-renders the whole visible window on each keystroke. `expo-image` for every image; its disk cache is what makes the catalogue usable on a second launch.
 
+Uploaded images come with smaller copies. `CoverImage` reads the widths declared on the URL and picks one with `pickImageVariant` from `@mma/shared`, sized in **device pixels** — `useWindowDimensions()` times `PixelRatio.get()`. Points would ask for a third of what a 3x screen needs and put a blurred cover on the best display in the room. A URL with no variants is used as-is.
+
+## Progress
+
+`ProgressTrack` in `src/components/ui.tsx` is the chunked tracker from DESIGN.md, sharing `resolveProgressChunks` with the web app so both fill the same number of blocks. The course player screen keeps its own: there a chunk is a named lecture and the current one gets a third colour.
+
 ## Video, profile and messaging
 
 These were the three deliberate boundaries. All three are closed, and how they were closed is the part worth keeping.

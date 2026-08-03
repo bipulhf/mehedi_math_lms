@@ -71,7 +71,7 @@ todos:
     content: "Cross-cutting: TanStack Query owns server state on web and mobile; Zustand holds the unread badge"
     status: completed
   - id: xc-testing
-    content: "Cross-cutting: 321 tests under `bun run test` (126 API, 135 shared, 60 mobile) plus 42 Playwright E2E assertions in 5 specs (bun run test:e2e)"
+    content: "Cross-cutting: 366 tests under `bun run test` (145 API, 161 shared, 60 mobile) plus 42 Playwright E2E assertions in 5 specs (bun run test:e2e)"
     status: completed
   - id: xc-caching
     content: "Cross-cutting: read-through Redis cache over the catalogue, category tree, analytics and comment threads, with index-based invalidation"
@@ -190,6 +190,32 @@ listed — confirm it before the first submission.
 
 ---
 
+## Implementation Record -- thumbnails and the chunked tracker, 3 August 2026
+
+The last two build items from the backlog, both from §16 and DESIGN.md rather than from any phase.
+
+| Change                                                                                                                                                                                                  | Closes                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Every resizable upload is resized into 400/800/1200-wide copies on confirm (`sharp`), stored beside the original as `<name>@<width>.<ext>`, and recorded on `uploads.variant_widths` (migration `0005`) | Thumbnail variants (§16)   |
+| The widths are declared **on the URL**, because a single URL string is all that is kept downstream — `courses.cover_image_url` has no upload id beside it to join against                               | The same, at render time   |
+| `ResponsiveImage` on the web builds a `srcset` from that marker; `CoverImage` on mobile picks one variant by device pixels; `absolutePublicUrl` strips the marker so `og:image` stays plain             | Responsive sizing (§16)    |
+| `ProgressTrack` on web and mobile: chunks in `secondary` over a `surface-container-highest` track, from a shared `resolveProgressChunks`                                                                | Chunked tracker (Phase 14) |
+
+Three decisions worth knowing:
+
+- **Generation is synchronous inside `confirmUpload`, not queued.** The course editor saves the returned
+  URL the moment confirm resolves; a worker would finish after that URL was already written to a course,
+  leaving a marker nobody had put on it.
+- **Failure is never fatal.** A corrupt file, an unresizable format, or S3 refusing the write all log a
+  warning and return the original unmarked. The upload the user just made still succeeds.
+- **The tracker rounds honestly.** 1 lecture of 30 fills one chunk rather than none, and 29 of 30 fills all
+  but one rather than all. A progress bar that says "done" before it is done is the more expensive lie.
+
+The course player already drew a chunked bar — one chunk per lecture, with a third colour for the one
+being watched — on both web and mobile. Both were left alone; they model more than the new primitive does.
+
+---
+
 ## Verification -- 3 August 2026
 
 Every claim in the sections below was re-read against the working tree, and the stale ones were rewritten
@@ -200,10 +226,10 @@ rather than annotated. What the gates say today:
 | `bun run lint`      | 8/8                                                                 |
 | `bun run typecheck` | 8/8                                                                 |
 | `bun run build`     | 7/7                                                                 |
-| `bun run test`      | **321 pass** — 126 `@mma/api`, 135 `@mma/shared`, 60 `@mma/mobile`  |
+| `bun run test`      | **366 pass** — 145 `@mma/api`, 161 `@mma/shared`, 60 `@mma/mobile`  |
 | `bun run test:e2e`  | 42 assertions across 5 specs — 40 pass, 2 skip with a stated reason |
 
-Counts that the tree disagreed with the plan on, now corrected throughout: 5 migrations over 34 tables (not
+Counts that the tree disagreed with the plan on, now corrected throughout: 6 migrations over 34 tables (not
 1 over 32); 46 services and 25 repositories (not 37 and 22); 22 route modules under `routes/v1`, all named
 `*-route.ts`; 55 route files in `apps/web/src/routes`, of which 50 are UI routes and all 50 carry an
 `errorComponent`; 6 loader routes, each with a `pendingComponent`; 3 BullMQ queues with 3 workers.
@@ -234,10 +260,10 @@ wired end to end.
 | 8     | Category Management                   | ✅ Complete | Category delete is a hard delete despite `isActive` existing                  |
 | 9     | Course CRUD + Approval                | ✅ Complete | Ownership (ADR-0006), withdraw/restore, exam-only enforced                    |
 | 10    | Chapters, Lectures, Materials         | ✅ Complete | --                                                                            |
-| 11    | File Upload + Media (S3)              | ✅ Complete | Worker written; thumbnail variants still not generated                        |
+| 11    | File Upload + Media (S3)              | ✅ Complete | --                                                                            |
 | 12    | Tests and Assessments                 | ✅ Complete | `passingScore` is now evaluated (ADR-0005)                                    |
 | 13    | Enrollment + Payment (SSLCommerz)     | ✅ Complete | Reworked per ADR-0001; env flag fixed; still never run against a live gateway |
-| 14    | Course Player                         | ✅ Complete | Completion rule reworked (ADR-0005); the tracker is a plain bar, not chunked  |
+| 14    | Course Player                         | ✅ Complete | Completion rule reworked (ADR-0005); the tracker is chunked everywhere now    |
 | 15    | Community and Discussion              | ✅ Complete | Threads are Redis-cached as records and invalidated on write                  |
 | 16    | Real-time Messaging (WebSocket)       | ✅ Complete | Moderation is end to end (ADR-0004); blocking remains out of scope            |
 | 17    | Notification System (FCM + in-app)    | ✅ Complete | The service worker's `importScripts` version is hand-synced                   |
@@ -437,7 +463,7 @@ mehedi_math_academy/
 ├── packages/
 │   ├── db/src/
 │   │   ├── schema/                 # 15 entity files + enums.ts, relations.ts, index.ts
-│   │   ├── migrations/             # 0000-0004, 34 tables + meta/
+│   │   ├── migrations/             # 0000-0005, 34 tables + meta/
 │   │   └── client.ts
 │   ├── shared/src/
 │   │   ├── types/roles.ts
@@ -484,6 +510,7 @@ the lockfile, not what the March 2026 plan proposed. Rows where reality diverged
 | Cache           | ioredis                                                            | ^6                    | **v6** (RESP3 default); fall back to `protocol: 2` if queues misbehave  |
 | Queue           | BullMQ                                                             | ^6                    | 3 queues, 3 workers -- the producerless `email` queue was deleted       |
 | Storage         | AWS S3 SDK v3                                                      | ^3.1101.0             | `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`                   |
+| Image resizing  | sharp                                                              | ^0.35.3               | Thumbnail variants on upload confirm. Native, and it runs under Bun     |
 | Payments        | _hand-rolled SSLCommerz_                                           | --                    | ⚠️ `sslcommerz-lts` not used; direct REST calls + mock mode             |
 | Notifications   | firebase-admin / firebase                                          | ^14 / ^12             | Web SW `importScripts` pinned to 12.17.0 -- update by hand on each bump |
 | PDF             | pdf-lib (API) / @react-pdf/renderer (web)                          | ^1.17.1 / ^4.5.1      | ⚠️ Server-side generation uses pdf-lib                                  |
@@ -609,10 +636,10 @@ erDiagram
 - 16 entity files in `packages/db/src/schema/`: `users`, `courses`, `chapters`, `lectures`, `tests`,
   `enrollments`, `payments`, `messages`, `comments`, `notifications`, `categories`, `reviews`,
   `bug-reports`, `sms`, `uploads`, plus `enums.ts`, `relations.ts`, `index.ts`.
-- Five applied migrations over 34 tables: `0000_charming_thunderbolt` (the initial 32 -- the extra tables
+- Six applied migrations over 34 tables: `0000_charming_thunderbolt` (the initial 32 -- the extra tables
   over the ERD are the Better Auth tables, join tables, materials, submissions, FCM tokens, and SMS
   batches), `0001` the enrolment/payment split, `0002` the course-teacher role, `0003` the owner backfill,
-  `0004` the moderation tables.
+  `0004` the moderation tables, `0005` `uploads.variant_widths`.
 - Indexes are dense: `users` 12, `tests` 11, `courses` 8, `enrollments` 6, `messages` 6, `sms` 5,
   `uploads` 4, and 3 each on the rest. Unique slug indexes on `courses`, `categories`, `users`.
 - `packages/db/src/client.ts` exports a `pg` Pool-backed Drizzle singleton; `drizzle.config.ts` targets pg.
@@ -1106,8 +1133,12 @@ erDiagram
   `upload-repository`. Run it with `bun run --filter @mma/api worker:file-processing`. It skips cleanly when
   S3 is unconfigured, and `apps/api/src/scripts/backfill-video-metadata.ts` covers videos confirmed before
   it existed.
-- No thumbnail variants are generated for course covers (§16 Performance Rules asks for them). This is the
-  one item left in this phase.
+- ~~No thumbnail variants are generated for course covers.~~ Built. Every resizable image is resized on
+  confirm into the widths in `@mma/shared`'s `imageVariantWidths` (400/800/1200) by `services/image-variants.ts`,
+  stored beside the original as `<name>@<width>.<ext>`, and recorded on `uploads.variant_widths`. The row's
+  URL is marked with the widths that exist, which is what lets a client build a `srcset` — a single URL
+  string is all that is kept downstream, so there is nothing else to ask.
+- Nothing outstanding.
 
 ---
 
@@ -1269,8 +1300,12 @@ erDiagram
 
 **Remaining:**
 
-- The progress indicator is a plain bar, not the segmented "chunked" tracker described in DESIGN.md.
-  Verified still true on 3 August: `routes/dashboard/my-courses.tsx:197` sets a single `width` percentage.
+- ~~The progress indicator is a plain bar, not the segmented "chunked" tracker described in DESIGN.md.~~
+  Chunked everywhere as of 3 August. The player always drew one chunk per lecture, with a third colour for
+  the lecture being watched, on both web and mobile; what was still a filled bar — "My courses", the two
+  analytics completion rates, the mobile learning tab — now uses the `ProgressTrack` primitive over the
+  shared `resolveProgressChunks`.
+- Nothing outstanding.
 
 ---
 
@@ -1763,13 +1798,16 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 - The cache is never load-bearing. Every failure path falls through to Postgres.
 - TanStack Query supplies the client half: `staleTime` 30s on web, 60s on mobile with a persisted cache.
 
-**Testing (Progressive, Per Phase):** ✅ load-bearing — 321 tests under `bun run test`, 42 more under
+**Testing (Progressive, Per Phase):** ✅ load-bearing — 366 tests under `bun run test`, 42 more under
 `bun run test:e2e`
 
-- **126 tests in `@mma/api`** across 11 files: unit tests over commerce, progress, assessment, course,
-  staff-account, admin-user, message, cache and video-metadata logic, plus integration tests that drive the
-  real Hono app through `app.request`.
-- **135 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
+- **145 tests in `@mma/api`** across 13 files: unit tests over commerce, progress, assessment, course,
+  staff-account, admin-user, message, cache, video-metadata and image-variant logic, plus integration tests
+  that drive the real Hono app through `app.request`. The image tests run real pixels through the real
+  encoder — a mocked `sharp` would pass while shipping upscaled or wrongly-encoded variants.
+- **161 tests in `@mma/shared`**, one suite beside every validator that carries a rule, plus the two
+  cross-runtime modules that are not validators: the image-variant URL contract and the progress-chunk
+  rounding rules. These schemas are
   the contract in both directions — the API validates requests with them and the web app resolves its
   forms against them — so a loosened `.min()` or a dropped `.uuid()` now fails a test instead of silently
   changing both sides at once. Writing them caught a live defect: `.partial()` does not strip a
@@ -2084,7 +2122,7 @@ stay beside their component.
 - **No barrel file re-exports in app code.** Import directly from the specific module to enable tree-shaking. Barrel files are only allowed in `packages/*/src/index.ts` for public API.
 - **Lazy load heavy components.** Use `React.lazy()` or TanStack Router's built-in code splitting for routes.
 - **Memoize expensive computations.** Use `useMemo` for derived data, `useCallback` for stable function references passed to child components.
-- **Image optimization.** All images served from S3 must have responsive sizing. Course covers should have thumbnail variants.
+- **Image optimization.** All images served from S3 must have responsive sizing. Course covers should have thumbnail variants. ✅ Built 3 August 2026: `confirmUpload` resizes every resizable image into 400/800/1200-wide copies and declares the widths on the URL, `ResponsiveImage` turns that into a `srcset` on the web, and `CoverImage` picks one by device pixels on mobile. Always pass `sizes` — without it the browser judges every candidate against the full viewport and usually takes the largest.
 - **Database indexes.** Every column used in a `WHERE`, `JOIN`, or `ORDER BY` must have an appropriate index. Defined in the Drizzle schema.
 
 ### 17. Accessibility Standards
@@ -2104,8 +2142,10 @@ stay beside their component.
 ## Remaining Work Backlog
 
 Rewritten 3 August 2026 and re-verified against the tree the same day. **Nothing in the 21-phase plan is
-unbuilt.** Everything below is blocked on hardware or credentials outside this repository, is a judgement
-call rather than a task, or is a small deliberate gap recorded so it does not get rediscovered as a bug.
+unbuilt, and the last two items that needed code — thumbnail variants and the chunked progress tracker —
+were built the same day.** Everything below is blocked on hardware or credentials outside this repository,
+is a judgement call rather than a task, or is a small deliberate gap recorded so it does not get
+rediscovered as a bug.
 
 ### Needs hardware nobody has plugged in yet
 
@@ -2146,8 +2186,10 @@ call rather than a task, or is a small deliberate gap recorded so it does not ge
 - **Migration `0001` is unsafe against a populated database.** It adds `payments.course_id` as `NOT NULL`
   with no backfill. This database was empty and verified so before applying. BLOCKERS.md carries the
   manual three-step sequence for any deployment that has rows.
-- **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
-- **The progress tracker is a plain bar, not the chunked one DESIGN.md describes.** (Phase 14)
+- **Variant generation only applies from now on.** Images uploaded before 3 August 2026 have no smaller
+  copies and no marker, so they render exactly as they did. Backfilling the bucket would not help on its
+  own: the marker lives on the URL already written into `courses.cover_image_url` and the profile tables,
+  so a backfill has to rewrite those rows too. Worth doing when there is enough content for it to matter.
 - **Staff invites have no transport.** The temporary password reaches the new user through the creation
   response, read off by the admin and passed along out of band. The `email` queue was deleted rather than
   left declared with no consumer — reinstate it together with a transport, not before. (ADR-0002)

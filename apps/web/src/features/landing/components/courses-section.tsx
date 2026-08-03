@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Star } from "lucide-react";
 import type { JSX } from "react";
 
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { TeacherAvatar } from "@/features/landing/components/teacher-avatar";
 import type { LandingCourse } from "@/lib/api/landing";
 
@@ -24,10 +25,9 @@ function CourseTile({ course }: { course: LandingCourse }): JSX.Element {
     >
       <div className="h-64 overflow-hidden relative">
         {course.coverImageUrl !== null ? (
-          <img
-            decoding="async"
+          <ResponsiveImage
             height={512}
-            loading="lazy"
+            sizes="(min-width: 1280px) 400px, (min-width: 768px) 45vw, 100vw"
             width={820}
             alt={course.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"

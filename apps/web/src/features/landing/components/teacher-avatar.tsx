@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { cn } from "@/lib/utils";
 
 function initials(name: string): string {
@@ -26,9 +27,10 @@ export function TeacherAvatar({
 }): JSX.Element {
   if (profilePhoto !== null && profilePhoto.length > 0) {
     return (
-      <img
-        decoding="async"
-        loading="lazy"
+      <ResponsiveImage
+        // An avatar is never wider than a phone's short edge, so the smallest
+        // variant is always the right answer here.
+        sizes="96px"
         alt={`Portrait of ${name}`}
         className={cn("rounded-full object-cover shrink-0", className)}
         src={profilePhoto}

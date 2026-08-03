@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { AdminBugRecord } from "@/lib/api/admin";
@@ -82,9 +83,12 @@ function AdminBugDetailPage(): JSX.Element {
             </div>
             {bug.screenshotUrl ? (
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-                <img
-              decoding="async"
-              loading="lazy" alt="Bug screenshot" className="max-h-128 rounded-(--radius) object-contain" src={bug.screenshotUrl} />
+                <ResponsiveImage
+                  alt="Bug screenshot"
+                  className="max-h-128 rounded-(--radius) object-contain"
+                  sizes="(min-width: 1024px) 720px, 100vw"
+                  src={bug.screenshotUrl}
+                />
               </div>
             ) : (
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">

@@ -42,6 +42,8 @@ export interface UploadRecord {
   status: UploadStatus;
   updatedAt: string;
   userId: string;
+  /** Widths of the resized copies the API generated, or null when it made none. */
+  variantWidths: number[] | null;
   width: number | null;
 }
 

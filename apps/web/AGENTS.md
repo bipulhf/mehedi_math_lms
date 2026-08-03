@@ -16,7 +16,7 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
 src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
-src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input.
+src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input, progress-track, responsive-image.
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.
@@ -43,6 +43,22 @@ Two skeleton patterns coexist, and which one applies is decided by the route, no
 - A route **without a loader** has nothing to be pending on. The dashboard fetches client-side with TanStack Query, so those pages render their skeleton inline from `isPending`, with a ternary rather than `&&`.
 
 The plan originally said "every route". This split is the amended rule (`PLAN.md` §12); do not introduce a third pattern.
+
+## Images
+
+Never render an uploaded image with a bare `<img>`. Use `ResponsiveImage` from `src/components/ui/responsive-image.tsx` and give it a `sizes` — the API generates 400/800/1200-wide copies of every image it can resize and records them on the URL, and `sizes` is what lets the browser pick one before layout. Without it, every candidate is judged against the full viewport and the largest usually wins, which is the opposite of the point.
+
+A URL with no marker — typed in by hand, pointing at another host, uploaded before any of this existed — renders with no `srcset` at all. That is the whole reason the marker exists rather than deriving variant URLs by convention: a candidate that 404s breaks the image, and the browser does not fall back to `src`.
+
+`absolutePublicUrl` in `src/lib/seo.ts` strips the marker, so `og:image` and JSON-LD carry the plain URL. Crawlers fetch exactly what they are given and cache it against the page.
+
+Bundled assets (the logo, the hero illustration) are plain `<img>` — they have no variants and never will.
+
+## Progress
+
+`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `secondary` for what is done, `surface-container-highest` for what is not, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@mma/shared`, so web and mobile fill the same number of blocks.
+
+The course player draws its own instead, and should keep doing so: there each chunk is a specific lecture and the one being watched gets a third colour, which is more than this primitive models.
 
 ## Server state
 

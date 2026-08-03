@@ -6,6 +6,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { CategoryNode } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
 import { findCategoryBySlug } from "@/lib/category-tree";
@@ -83,11 +84,11 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
     <Card className="overflow-hidden">
       <div className="relative aspect-video overflow-hidden bg-surface-container-low">
         {course.coverImageUrl ? (
-          <img
+          <ResponsiveImage
             alt={course.title}
             className="h-full w-full object-cover"
             height={675}
-            loading="lazy"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             src={course.coverImageUrl}
             width={1200}
           />

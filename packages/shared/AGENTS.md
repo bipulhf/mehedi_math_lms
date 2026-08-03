@@ -7,7 +7,15 @@ src/validators/*.ts   One module per feature. index.ts re-exports all of them.
 src/types/roles.ts    userRoleValues / userRoleSchema / UserRole.
 src/constants/app.ts  appName, appDomain, appUrl.
 src/slug.ts           slugifySegment, buildSerialSlugCandidate, generateUniqueSlug, slugifyWithRandomSuffix.
+src/image-variants.ts imageVariantWidths, buildImageVariantKey, withImageVariants, readImageVariants,
+                      buildImageSrcSet, pickImageVariant.
+src/progress-chunks.ts maxProgressChunks, resolveProgressChunks.
 ```
+
+The last two are not validators, and they are here for the same reason the validators are: three runtimes have to agree.
+
+- **Image variants.** The API marks an uploaded image's URL with the widths it generated; the web app turns that into a `srcset` and the Expo app picks one URL by device pixels. If each side derived variant URLs on its own, a rename on one would 404 on the others — and a `srcset` candidate that 404s breaks the image, because the browser does not fall back to `src`.
+- **Progress chunks.** DESIGN.md's chunked tracker means turning a percentage into whole blocks, and the rounding rules — some progress never rounds to empty, nearly-done never rounds to full — are a product decision, not a rendering detail. Web and mobile draw different elements from the same numbers.
 
 `src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@mma/shared"` is the normal form. Subpath exports (`@mma/shared/validators/*`, `@mma/shared/types/*`, `@mma/shared/constants/*`) also exist but are rarely used.
 
@@ -17,7 +25,7 @@ Zod v4. Only dependency.
 
 `bun run test` runs `bun test src`. Every validator with a rule in it has a suite beside it.
 
-These schemas are the contract in both directions — the API validates requests with them and the web app resolves its React Hook Form fields against them — so a loosened `.min()` or a dropped `.uuid()` changes what the server accepts *and* what the client blocks, in one edit. Tests here exist to make that edit visible. When you add or relax a rule, assert both sides of it: the value that now passes and the neighbouring one that must still fail.
+These schemas are the contract in both directions — the API validates requests with them and the web app resolves its React Hook Form fields against them — so a loosened `.min()` or a dropped `.uuid()` changes what the server accepts _and_ what the client blocks, in one edit. Tests here exist to make that edit visible. When you add or relax a rule, assert both sides of it: the value that now passes and the neighbouring one that must still fail.
 
 Two traps the suite already pins:
 

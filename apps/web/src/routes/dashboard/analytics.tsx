@@ -19,6 +19,7 @@ import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProgressTrack } from "@/components/ui/progress-track";
 import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { chartTheme } from "@/lib/chart-theme";
@@ -310,12 +311,11 @@ function TeacherAnalyticsPage(): JSX.Element {
                                    <span className="text-[0.6rem] font-bold uppercase tracking-widest text-on-surface/40">Engagement Depth</span>
                                    <span className="text-sm font-display font-black text-secondary">{row.completionRate}%</span>
                                 </div>
-                                <div className="h-2 rounded-full bg-surface-container-highest overflow-hidden">
-                                   <div 
-                                     className="h-full bg-linear-to-r from-primary to-secondary transition-all duration-1000" 
-                                     style={{ width: `${Math.min(100, row.completionRate)}%` }}
-                                   />
-                                </div>
+                                <ProgressTrack
+                                  completed={Math.min(100, row.completionRate)}
+                                  label={`${row.courseTitle} completion rate`}
+                                  total={100}
+                                />
                              </div>
                           </div>
 

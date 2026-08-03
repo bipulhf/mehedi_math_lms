@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { FadeIn } from "@/components/common/fade-in";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { Button } from "@/components/ui/button";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { CourseSummary } from "@/lib/api/courses";
 
 export function CourseCard({
@@ -24,10 +25,9 @@ export function CourseCard({
         {/* Image / Thumbnail Section */}
         <div className="relative aspect-[16/10] overflow-hidden bg-surface-container-low group-hover:aspect-[16/9] transition-all duration-700 m-2 rounded-3xl">
           {course.coverImageUrl ? (
-            <img
-              decoding="async"
+            <ResponsiveImage
               height={675}
-              loading="lazy"
+              sizes="(min-width: 1280px) 380px, (min-width: 768px) 45vw, 100vw"
               width={1200}
               alt={course.title}
               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"

@@ -22,6 +22,7 @@ import { ImageCropUploader } from "@/components/uploads/image-crop-uploader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -405,9 +406,8 @@ export function CourseEditor({
                     )}
                   >
                     {values.coverImageUrl ? (
-                      <img
-              decoding="async"
-              loading="lazy"
+                      <ResponsiveImage
+                        sizes="(min-width: 1024px) 50vw, 100vw"
                         src={values.coverImageUrl}
                         className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         alt="Preview"

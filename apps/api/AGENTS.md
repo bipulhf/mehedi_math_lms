@@ -31,7 +31,7 @@ Layer rules:
 - Repositories never import from `services/`, `controllers/`, or `utils/response.ts`.
 - Services never touch the Hono `Context`. They take plain arguments and return plain data.
 - Controllers never call a repository directly.
-- Cross-feature reads go service → *other feature's repository* (e.g. `CommentService` takes `courseRepository` and `enrollmentRepository`), not service → service. `AdminUserService` → `StaffAccountService` is the exception, not the pattern.
+- Cross-feature reads go service → _other feature's repository_ (e.g. `CommentService` takes `courseRepository` and `enrollmentRepository`), not service → service. `AdminUserService` → `StaffAccountService` is the exception, not the pattern.
 
 ## Entry points
 
@@ -73,9 +73,9 @@ Prefer the middleware when you need clean 400s with field errors. Match the surr
 Enforcement is per-route via `src/middleware/auth.ts`:
 
 ```ts
-requireAuth()                          // active session
-requireRole("TEACHER", "ADMIN")        // one of these roles
-requireAdmin()                         // requireRole("ADMIN")
+requireAuth(); // active session
+requireRole("TEACHER", "ADMIN"); // one of these roles
+requireAdmin(); // requireRole("ADMIN")
 ```
 
 Both delegate to `AuthGuardService`. Roles are `STUDENT | TEACHER | ACCOUNTANT | ADMIN` from `@mma/shared`. A route with no guard is public — be deliberate about that.
@@ -87,8 +87,20 @@ Ownership and resource-level authorization belongs in the **service**, not the r
 - `src/lib/env.ts` — Zod-validated env plus derived `isS3Configured` / `isFirebaseConfigured` / `isSslCommerzConfigured` / `isOnecodesoftSmsConfigured` flags. Integrations default to `"replace-me"` placeholders; guard optional integrations behind these flags rather than assuming credentials exist.
 - `src/lib/redis.ts`, `src/lib/queues.ts` — ioredis client and three BullMQ queues: `notification`, `sms`, `file-processing`. Queue names are typed as `QueueName` in `src/types/app-bindings.ts`; adding a queue means updating both. There is deliberately no `email` queue — the staff-invite producer was removed and no transport was ever wired, so the queue went with it (see `BLOCKERS.md`).
 - `src/lib/logger.ts` — pino. Inside a request use `context.get("logger")`, which is already bound to the request id.
-- `src/lib/s3.ts` — AWS S3 client for uploads.
+- `src/lib/s3.ts` — AWS S3 client for uploads: presigned PUT for the client, plus `readStoredFile` / `writeStoredFile` / `deleteStoredFile` for objects the server itself handles.
 - Workers in `src/workers/` run as **separate processes** and build their own dependencies — they deliberately do not import the container. Keep them that way.
+
+## Uploads and image variants
+
+A confirmed image is resized into the widths in `@mma/shared`'s `imageVariantWidths` (400/800/1200), each copy stored beside the original as `<name>@<width>.<ext>`, and the row's `fileUrl` is marked with the widths that exist. `sharp` does the resizing; there is no ffmpeg-style shell-out.
+
+Three things about that are deliberate:
+
+- **It runs inside `confirmUpload`, not on the `file-processing` queue.** The only thing kept downstream of an upload is the URL that call returns — a course row holds `cover_image_url` and nothing else — and the editor saves it the instant confirm resolves. A worker would finish after that URL had already been written, leaving a marker nobody put on it.
+- **It is never fatal.** A corrupt file, an unresizable format, S3 refusing the write: all of them log a warning and return the original, unmarked. The image the user just uploaded is already in the bucket and already usable.
+- **`uploads.variant_widths` is the record of what exists.** Deletion reads it. Guessing the widths instead would orphan every variant the day that list changes.
+
+S3 access from the upload service goes through the injected `UploadFileStore` — the same reason `file-processing-processor.ts` takes a `StoredFileReader`. This workspace injects its way around S3 rather than mocking the module, and the `isS3Configured` 409 lives in `s3UploadFileStore` so a new path through the bucket cannot forget it.
 
 ## WebSockets
 

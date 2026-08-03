@@ -1,0 +1,1 @@
+ALTER TABLE "uploads" ADD COLUMN "variant_widths" integer[];

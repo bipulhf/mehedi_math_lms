@@ -18,6 +18,7 @@ export interface UploadRecord {
   status: UploadStatus;
   updatedAt: Date;
   userId: string;
+  variantWidths: number[] | null;
   width: number | null;
 }
 
@@ -39,6 +40,12 @@ interface ConfirmUploadInput {
   id: string;
   status: UploadStatus;
   width?: number | undefined;
+}
+
+interface RecordImageVariantsInput {
+  fileUrl: string;
+  id: string;
+  variantWidths: number[];
 }
 
 interface UpdateMediaMetadataInput {
@@ -66,6 +73,7 @@ function mapUploadRecord(record: typeof uploads.$inferSelect): UploadRecord {
     status: record.status,
     updatedAt: record.updatedAt,
     userId: record.userId,
+    variantWidths: record.variantWidths,
     width: record.width
   };
 }
@@ -116,6 +124,29 @@ export class UploadRepository {
 
     if (!record) {
       throw new Error("Failed to confirm upload record");
+    }
+
+    return mapUploadRecord(record);
+  }
+
+  /**
+   * Records the resized copies that now sit beside the original, and the URL
+   * that declares them. The URL is written here rather than only returned
+   * because it is what every later reader of this row will hand to a browser.
+   */
+  public async recordImageVariants(input: RecordImageVariantsInput): Promise<UploadRecord> {
+    const [record] = await db
+      .update(uploads)
+      .set({
+        fileUrl: input.fileUrl,
+        updatedAt: new Date(),
+        variantWidths: input.variantWidths
+      })
+      .where(eq(uploads.id, input.id))
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to record image variants");
     }
 
     return mapUploadRecord(record);

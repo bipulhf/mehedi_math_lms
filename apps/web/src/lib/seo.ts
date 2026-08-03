@@ -1,3 +1,4 @@
+import { readImageVariants } from "@mma/shared";
 import type { JSX } from "react";
 
 import type { CourseSummary } from "@/lib/api/courses";
@@ -31,13 +32,23 @@ function stripTrailingSlash(url: string): string {
   return url.replace(/\/$/, "");
 }
 
+/**
+ * Absolute, and stripped of the variant marker.
+ *
+ * A stored image URL may declare the smaller copies that exist beside it, which
+ * is useful to a browser choosing a `srcset` candidate and noise to a crawler
+ * reading `og:image` — Facebook and friends fetch exactly what they are given,
+ * and this is the URL that gets cached against the page.
+ */
 export function absolutePublicUrl(pathOrUrl: string): string {
-  if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) {
-    return pathOrUrl;
+  const { src } = readImageVariants(pathOrUrl);
+
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    return src;
   }
 
   const base = stripTrailingSlash(siteConfig.url);
-  const path = pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
+  const path = src.startsWith("/") ? src : `/${src}`;
 
   return `${base}${path}`;
 }

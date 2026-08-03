@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 
 interface ImageCropUploaderProps {
   aspect: number;
@@ -236,9 +237,12 @@ export function ImageCropUploader({
       </button>
       {value ? (
         <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3">
-          <img
-              decoding="async"
-              loading="lazy" alt={previewAlt ?? "Upload preview"} className="max-h-64 rounded-(--radius) object-contain" src={value} />
+          <ResponsiveImage
+            alt={previewAlt ?? "Upload preview"}
+            className="max-h-64 rounded-(--radius) object-contain"
+            sizes="(min-width: 768px) 480px, 100vw"
+            src={value}
+          />
         </div>
       ) : null}
       {cropModal ? (

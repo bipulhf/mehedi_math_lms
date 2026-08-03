@@ -7,6 +7,8 @@ import { certificateDisplayName } from "@/components/certificates/certificate-di
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProgressTrack } from "@/components/ui/progress-track";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
@@ -156,11 +158,10 @@ function MyCoursesPage(): JSX.Element {
             <div key={enrollment.id} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden group flex flex-col h-full hover:border-primary/30 transition-all duration-500">
                <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-xl pointer-events-none group-hover:bg-primary/10 transition-all duration-700 z-[-1]"></div>
               {enrollment.course.coverImageUrl ? (
-                <img
-              decoding="async"
-              loading="lazy"
+                <ResponsiveImage
                   alt={enrollment.course.title}
                   className="aspect-16/7 w-full object-cover border-b border-outline-variant/20"
+                  sizes="(min-width: 1280px) 45vw, 100vw"
                   src={enrollment.course.coverImageUrl}
                 />
               ) : (
@@ -191,12 +192,11 @@ function MyCoursesPage(): JSX.Element {
                     <span>Progress</span>
                     <span>{enrollment.progressPercentage}%</span>
                   </div>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-surface-container-low shadow-inner border border-outline-variant/5">
-                    <div
-                      className="h-full rounded-full bg-linear-to-r from-primary to-primary/60 transition-all duration-700 ease-out shadow-[0_0_12px_-2px_rgba(96,99,238,0.5)]"
-                      style={{ width: `${enrollment.progressPercentage}%` }}
-                    />
-                  </div>
+                  <ProgressTrack
+                    completed={enrollment.progressPercentage}
+                    label={`${enrollment.course.title} progress`}
+                    total={100}
+                  />
                 </div>
 
                 <div className="flex flex-wrap gap-3 pt-2">

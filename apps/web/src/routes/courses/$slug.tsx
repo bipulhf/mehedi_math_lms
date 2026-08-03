@@ -10,6 +10,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseDetail } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
@@ -204,9 +205,8 @@ function CourseDetailPage(): JSX.Element {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/20">
                     {course.teachers[0]?.profilePhoto ? (
-                      <img
-              decoding="async"
-              loading="lazy"
+                      <ResponsiveImage
+                        sizes="48px"
                         src={course.teachers[0].profilePhoto}
                         className="w-full h-full object-cover"
                         alt="Instructor"
@@ -238,9 +238,12 @@ function CourseDetailPage(): JSX.Element {
             <FadeIn delayClassName="animation-delay-400">
               <div className="relative rounded-4xl overflow-hidden aspect-video shadow-2xl group border-4 border-white">
                 {course.coverImageUrl ? (
-                  <img
-              decoding="async"
-              loading="lazy"
+                  <ResponsiveImage
+                    // The hero on the page a share link lands on, so it is worth
+                    // fetching eagerly rather than after the first layout pass.
+                    fetchPriority="high"
+                    loading="eager"
+                    sizes="(min-width: 1024px) 40vw, 100vw"
                     src={course.coverImageUrl}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     alt="Course Preview"
@@ -337,9 +340,8 @@ function CourseDetailPage(): JSX.Element {
             <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center md:items-start text-center md:text-left">
               <div className="w-12 h-20 md:w-20 md:h-20 rounded-3xl overflow-hidden shrink-0 rotate-2 shadow-2xl border-4 border-white transition-transform hover:rotate-0 duration-500">
                 {course.teachers[0]?.profilePhoto ? (
-                  <img
-              decoding="async"
-              loading="lazy"
+                  <ResponsiveImage
+                    sizes="80px"
                     src={course.teachers[0].profilePhoto}
                     className="w-full h-full object-cover"
                     alt="Instructor Profile"

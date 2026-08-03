@@ -14,6 +14,7 @@ import {
   EmptyState,
   ErrorNotice,
   Heading,
+  ProgressTrack,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
@@ -23,17 +24,7 @@ import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api";
 import { shareEnrollmentDocument } from "@/src/lib/documents";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { colors, radius, spacing } from "@/src/theme/tokens";
-
-function ProgressTrack({ percentage }: { percentage: number }): JSX.Element {
-  // The web player uses a chunked tracker; here the row is too small for
-  // chunks, so it is a single filled track using the same two tokens.
-  return (
-    <View style={styles.track}>
-      <View style={[styles.trackFill, { width: `${Math.min(100, Math.max(0, percentage))}%` }]} />
-    </View>
-  );
-}
+import { spacing } from "@/src/theme/tokens";
 
 /**
  * Downloading and sharing is a phone-shaped action, more so than a desktop one
@@ -82,7 +73,11 @@ const EnrollmentRow = memo(function EnrollmentRow({
             <CoverImage height={140} uri={enrollment.course.coverImageUrl} />
             <View style={styles.rowBody}>
               <Title>{enrollment.course.title}</Title>
-              <ProgressTrack percentage={enrollment.progressPercentage} />
+              <ProgressTrack
+                completed={enrollment.progressPercentage}
+                label={`${enrollment.course.title} progress`}
+                total={100}
+              />
               <View style={styles.rowMeta}>
                 <Body muted>{enrollment.progressPercentage}% complete</Body>
                 {enrollment.status === "COMPLETED" ? (
@@ -182,14 +177,7 @@ const styles = StyleSheet.create({
   rowAction: { gap: spacing.sm },
   rowBody: { gap: spacing.sm, paddingTop: spacing.md },
   rowMeta: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  skeletonList: { gap: spacing.lg, padding: spacing.lg },
-  track: {
-    backgroundColor: colors.surfaceContainerHighest,
-    borderRadius: radius.full,
-    height: 8,
-    overflow: "hidden"
-  },
-  trackFill: { backgroundColor: colors.secondary, height: 8 }
+  skeletonList: { gap: spacing.lg, padding: spacing.lg }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

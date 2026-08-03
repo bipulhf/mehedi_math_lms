@@ -9,6 +9,7 @@ import { CommentThreadSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { queryKeys } from "@/lib/query/keys";
@@ -43,9 +44,8 @@ function roleTone(role: LectureComment["user"]["role"]): "blue" | "gray" | "gree
 function Avatar({ comment }: { comment: LectureComment }): JSX.Element {
   if (comment.user.image) {
     return (
-      <img
-              decoding="async"
-              loading="lazy"
+      <ResponsiveImage
+        sizes="40px"
         alt={comment.user.name}
         className="size-10 rounded-full object-cover"
         src={comment.user.image}

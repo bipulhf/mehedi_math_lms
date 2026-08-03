@@ -1,12 +1,57 @@
 import type { AuthUser } from "@mma/auth/server";
-import type { UploadKind, UploadPurpose } from "@mma/shared";
+import { buildImageVariantKey, type UploadKind, type UploadPurpose, withImageVariants } from "@mma/shared";
 
 import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import { queues } from "@/lib/queues";
-import { createSignedUploadUrl, deleteStoredFile, getPublicFileUrl } from "@/lib/s3";
+import {
+  createSignedUploadUrl,
+  deleteStoredFile,
+  getPublicFileUrl,
+  readStoredFile,
+  writeStoredFile
+} from "@/lib/s3";
 import type { UploadRepository} from "@/repositories/upload-repository";
 import { type UploadRecord } from "@/repositories/upload-repository";
+import { generateImageVariants, isResizableImage } from "@/services/image-variants";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+
+/**
+ * The bucket, behind an interface, so the confirm and delete paths can be tested
+ * without one. Mirrors `StoredFileReader` in the file-processing processor --
+ * this workspace injects its way around S3 rather than mocking the module.
+ */
+export interface UploadFileStore {
+  delete: (key: string) => Promise<void>;
+  read: (key: string) => Promise<Uint8Array>;
+  write: (key: string, body: Uint8Array, contentType: string) => Promise<void>;
+}
+
+function requireS3Configuration(): void {
+  if (!env.isS3Configured) {
+    throw new ConflictError("S3 upload is not configured");
+  }
+}
+
+/**
+ * The configuration guard lives here rather than at each call site, so a new
+ * path through the bucket cannot forget it and crash where it should 409.
+ */
+export const s3UploadFileStore: UploadFileStore = {
+  delete: async (key: string) => {
+    requireS3Configuration();
+    await deleteStoredFile(key);
+  },
+  read: async (key: string) => {
+    requireS3Configuration();
+
+    return readStoredFile(key);
+  },
+  write: async (key: string, body: Uint8Array, contentType: string) => {
+    requireS3Configuration();
+    await writeStoredFile(key, body, contentType);
+  }
+};
 
 export interface CreatePresignedUploadRequest {
   contentType: string;
@@ -136,6 +181,7 @@ function formatUploadRecord(record: UploadRecord): UploadResponse {
     status: record.status,
     updatedAt: record.updatedAt.toISOString(),
     userId: record.userId,
+    variantWidths: record.variantWidths,
     width: record.width
   };
 }
@@ -158,13 +204,10 @@ function getFileExtension(fileName: string, contentType: string): string {
 }
 
 export class UploadService {
-  public constructor(private readonly uploadRepository: UploadRepository) {}
-
-  private requireS3Configuration(): void {
-    if (!env.isS3Configured) {
-      throw new ConflictError("S3 upload is not configured");
-    }
-  }
+  public constructor(
+    private readonly uploadRepository: UploadRepository,
+    private readonly fileStore: UploadFileStore = s3UploadFileStore
+  ) {}
 
   private validateUploadInput(input: CreatePresignedUploadRequest): UploadPurposeConfig {
     const config = uploadPurposeConfig[input.purpose];
@@ -202,11 +245,64 @@ export class UploadService {
     }
   }
 
+  /**
+   * Resizes a confirmed image into the shared variant widths and stores each one
+   * beside the original, then marks the row's URL with the widths that exist.
+   *
+   * Synchronous rather than queued, and deliberately: the only thing kept
+   * downstream is the URL this call returns, and the editor saves it the moment
+   * confirm resolves. A worker would finish after that URL had already been
+   * written to a course, leaving a marker nobody had put on it.
+   *
+   * Never fatal. A corrupt file, an unsupported format or S3 refusing the write
+   * all end the same way -- the original stands alone, unmarked, and the upload
+   * the user just made still succeeds.
+   */
+  private async storeImageVariants(upload: UploadRecord): Promise<UploadRecord> {
+    if (!isResizableImage(upload.contentType)) {
+      return upload;
+    }
+
+    try {
+      const original = await this.fileStore.read(upload.fileKey);
+      const variants = await generateImageVariants(original, upload.contentType);
+
+      if (variants.length === 0) {
+        return upload;
+      }
+
+      await Promise.all(
+        variants.map(async (variant) =>
+          this.fileStore.write(
+            buildImageVariantKey(upload.fileKey, variant.width),
+            variant.body,
+            variant.contentType
+          )
+        )
+      );
+
+      const variantWidths = variants.map((variant) => variant.width);
+
+      return await this.uploadRepository.recordImageVariants({
+        fileUrl: withImageVariants(upload.fileUrl, variantWidths),
+        id: upload.id,
+        variantWidths
+      });
+    } catch (error) {
+      logger.warn(
+        { err: error, uploadId: upload.id },
+        "Image variant generation failed; serving the original alone"
+      );
+
+      return upload;
+    }
+  }
+
   public async createPresignedUpload(
     actor: AuthUser,
     input: CreatePresignedUploadRequest
   ): Promise<PreparedUploadResponse> {
-    this.requireS3Configuration();
+    requireS3Configuration();
 
     this.validateUploadInput(input);
     const extension = getFileExtension(input.fileName, input.contentType);
@@ -267,6 +363,10 @@ export class UploadService {
       });
     }
 
+    if (confirmedUpload.kind === "IMAGE") {
+      return formatUploadRecord(await this.storeImageVariants(confirmedUpload));
+    }
+
     return formatUploadRecord(confirmedUpload);
   }
 
@@ -278,8 +378,16 @@ export class UploadService {
     }
 
     this.assertUploadAccess(upload, actor);
-    this.requireS3Configuration();
-    await deleteStoredFile(upload.fileKey);
+    // The store carries the "S3 is not configured" 409 now, so this reads as one
+    // delete of the original and then of its copies.
+    await this.fileStore.delete(upload.fileKey);
+    // The row is the only record of which copies exist. Guessing the widths
+    // instead would orphan every variant the day that list changes.
+    await Promise.all(
+      (upload.variantWidths ?? []).map(async (width) =>
+        this.fileStore.delete(buildImageVariantKey(upload.fileKey, width))
+      )
+    );
     await this.uploadRepository.deleteUpload(uploadId);
   }
 }

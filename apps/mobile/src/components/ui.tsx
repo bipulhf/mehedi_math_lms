@@ -1,11 +1,14 @@
+import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@mma/shared";
 import { Image } from "expo-image";
 import type { JSX, ReactNode } from "react";
 import { useEffect } from "react";
 import {
+  PixelRatio,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
   type StyleProp,
   type TextInputProps,
@@ -168,7 +171,14 @@ export function CoverImage({
   height?: number;
   uri: string | null;
 }): JSX.Element {
-  if (!uri) {
+  const { width } = useWindowDimensions();
+  // Device pixels, not layout points: a 390pt-wide phone at 3x needs 1170 real
+  // pixels, and asking for 390 would put a blurred image on the best screen.
+  const source = uri === null ? null : readImageVariants(uri);
+  const variantUri =
+    source === null ? null : pickImageVariant(source, Math.round(width * PixelRatio.get()));
+
+  if (variantUri === null) {
     return <View style={[styles.coverFallback, { height }]} />;
   }
 
@@ -177,10 +187,47 @@ export function CoverImage({
       contentFit="cover"
       // expo-image, not RN Image: it caches to disk, which is what makes the
       // catalogue usable on a second launch without a network.
-      source={{ uri }}
+      source={{ uri: variantUri }}
       style={[styles.cover, { height }]}
       transition={150}
     />
+  );
+}
+
+/**
+ * The chunked progress tracker from DESIGN.md, in the one shape the phone needs:
+ * `completed` out of `total`, where a caller holding only a percentage passes
+ * 100 as the total.
+ *
+ * The course player draws its own, because there each chunk is a named lecture
+ * and the one being watched gets a third colour. This is the version for a row
+ * in a list, where the only question is how far along the student is.
+ */
+export function ProgressTrack({
+  completed,
+  label,
+  total
+}: {
+  completed: number;
+  label: string;
+  total: number;
+}): JSX.Element {
+  const chunks = resolveProgressChunks(completed, total);
+
+  return (
+    <View
+      accessibilityLabel={label}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ max: total, min: 0, now: completed }}
+      style={styles.trackRow}
+    >
+      {Array.from({ length: chunks.total }, (_, index) => (
+        <View
+          key={index}
+          style={[styles.trackChunk, index < chunks.filled ? styles.trackChunkFilled : null]}
+        />
+      ))}
+    </View>
   );
 }
 
@@ -364,5 +411,16 @@ const styles = StyleSheet.create({
     color: colors.onSurface,
     fontFamily: fonts.displayBold,
     fontSize: typography.title.fontSize
-  }
+  },
+  trackChunk: {
+    backgroundColor: colors.surfaceContainerHighest,
+    borderRadius: radius.full,
+    flex: 1,
+    height: 8,
+    // Below this a chunk stops reading as a block and starts reading as a line,
+    // which is the thing DESIGN.md is avoiding.
+    minWidth: 6
+  },
+  trackChunkFilled: { backgroundColor: colors.secondary },
+  trackRow: { flexDirection: "row", gap: 4 }
 });
