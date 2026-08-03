@@ -85,7 +85,8 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 
 ## Reference documents
 
+- `GENEX_MIGRATION.md` — the in-flight conversion to Genex: locked decisions, what is cut, what is added, and the phase list. Read this first if the code and the older documents disagree.
 - `PLAN.md` — phased build roadmap (large; aspirational, not a spec of current state)
 - `docs/mobile-plan.md` — the staged plan for `apps/mobile`, from "it compiles" to a shippable build
-- `DESIGN.md` — UI and product design direction
+- `DESIGN.md` — the Genex design system. Authoritative on visuals.
 - `README.md` — setup and command reference

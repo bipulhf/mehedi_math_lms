@@ -1,81 +1,288 @@
-# Design System Specification: High-Performance LMS
+# Design System Specification: Genex
 
-## 1. Overview & Creative North Star
-**Creative North Star: The Digital Atelier**
-Traditional academic software is often cluttered, rigid, and uninspiring. This design system rejects the "filing cabinet" aesthetic in favor of a "Digital Atelier"—a space that feels curated, intentional, and premium. We achieve this through **Editorial Modernism**: a layout philosophy that treats learning content like a high-end journal rather than a database. 
+The visual language for **Genex**, a Bangla-first coaching platform. Derived
+from the design handoff in `design_handoff_genex/`, which stays the authority on
+pixel-level questions this document does not answer.
 
-By leveraging aggressive white space, sophisticated tonal layering, and an "Asymmetric Balance," we create a high-performance environment that reduces cognitive load while maintaining an authoritative, professional presence.
-
----
-
-## 2. Colors & Surface Philosophy
-The palette is rooted in deep teals and blues to establish an immediate sense of institutional trust, punctuated by a vibrant indigo accent for high-velocity actions.
-
-### The "No-Line" Rule
-To achieve a premium feel, **1px solid borders are strictly prohibited for sectioning.** Boundaries must be defined through background color shifts. For example, a `surface-container-low` section should sit on a `background` or `surface` base. Separation is achieved through contrast, not strokes.
-
-### Surface Hierarchy & Nesting
-Treat the UI as a series of physical layers. Use the `surface-container` tiers to create depth:
-- **Level 0 (Base):** `surface` (#faf8ff) – The main canvas.
-- **Level 1 (Sections):** `surface-container-low` (#f2f3ff) – Large content groupings.
-- **Level 2 (Cards):** `surface-container-lowest` (#ffffff) – Individual interactive units.
-- **Level 3 (Pop-overs):** `surface-container-highest` (#dae2fd) – Tooltips and active states.
-
-### Glass & Gradient
-- **The Signature CTA:** Use a subtle linear gradient for primary buttons, transitioning from `primary` (#000000) to `on-primary-container` (#028fb0). This adds a "soul" to the action that flat hex codes lack.
-- **Frosted Navigation:** Floating sidebars or headers should use `surface` with 80% opacity and a `24px` backdrop-blur. This allows content to bleed through softly, preventing the UI from feeling "pasted on."
+This replaces the previous "Digital Atelier" system wholesale. That system was
+built on tonal layering, gradients, shadows and a prohibition on 1px borders.
+Genex is the opposite on every one of those axes. If you find a rule from the
+old system still quoted somewhere in the codebase, it is stale — fix it.
 
 ---
 
-## 3. Typography
-The system utilizes a dual-sans pairing to balance academic authority with functional clarity.
+## 1. Creative north star
 
-- **Display & Headlines (Manrope):** Chosen for its geometric precision and slightly wider apertures. Use `display-lg` (3.5rem) for hero moments and `headline-md` (1.75rem) for course titles. This is the "Editorial" voice.
-- **Body & Interface (Inter):** The workhorse. Use `body-md` (0.875rem) for standard text. Its high x-height ensures readability during long study sessions.
-- **Labels (Inter):** Use `label-md` (0.75rem) in all-caps with a 0.05em letter-spacing for metadata (e.g., "COURSE PROGRESS").
+**Calm paper.** The client rejected a livelier earlier direction as visually
+stressful. What replaced it reads like a well-set printed workbook: warm paper,
+hairline rules, generous space, and a single orange accent used sparingly enough
+that it still means something when it appears.
 
----
+Three rules carry most of the weight:
 
-## 4. Elevation & Depth
-We move away from traditional Material shadows in favor of **Tonal Layering**.
-
-- **The Layering Principle:** Place a `surface-container-lowest` card on a `surface-container-low` section. This creates a soft, natural lift that mimics fine paper stacked on a desk.
-- **Ambient Shadows:** For "Floating" elements (Modals), use a multi-layered shadow: 
-  - `box-shadow: 0 10px 30px -10px rgba(19, 27, 46, 0.08);`
-  - The shadow color is a tinted version of `on-surface` (#131b2e), never pure black.
-- **The Ghost Border:** If a border is required for accessibility, use the `outline-variant` (#c6c6cd) at **15% opacity**. It should be felt, not seen.
+1. **No shadows.** Depth comes from the background washes and hairlines.
+2. **No animation.** Colour and border transitions on hover, nothing else. No
+   parallax, no entrance animation, nothing lifts or scales.
+3. **Accent discipline.** The accent appears roughly 6–10 times per page, never
+   as a large fill on a marketing page. In an app shell, exactly one button is
+   accent.
 
 ---
 
-## 5. Components
+## 2. Colour
+
+| Token | Hex | Use |
+| --- | --- | --- |
+| Ink | `#23211E` | primary text, primary buttons, dark surfaces |
+| Ink muted | `#4A453F` | body text inside cards, list rows |
+| Muted | `#6B6763` | secondary text, nav items, descriptions |
+| Muted light | `#8A857D` | labels, meta, table headers |
+| Muted faint | `#A8A29A` | timestamps, counters, disabled text |
+| Placeholder text | `#B4AEA6` | input placeholders, empty preview text |
+| Paper | `#FCFBF9` | page background base |
+| Card | `#FFFFFF` | cards, tables, panels |
+| Panel warm | `#F7F5F1` | footer and closing bands, row hover on light |
+| Row hover | `#FBF9F6` | table row hover inside white cards |
+| Placeholder fill | `#F1EEE9` | image, avatar and thumbnail placeholders |
+| Chip active | `#EFEBE4` | selected pill, active nav item background |
+| Hairline | `#E8E4DE` | every 1px divider and card border |
+| Hairline faint | `#F0EDE7` / `#F5F1EC` | dividers inside cards, between table rows |
+| Line strong | `#C9C3BB` | underlined text links, secondary button border |
+| Dot idle | `#DDD8D1` | unselected indicator dots, dashed borders |
+| Bar track | `#F1EEE9` | progress and chart track |
+| Bar idle | `#E4DED5` | non-peak chart bars |
+| **Accent** | `#EE5622` | active dots, enrol links, peak chart bar, alerts, checkbox fill, one primary CTA per app shell |
+
+**Dark actions are Ink, not accent.** The accent is for marking, not for
+filling.
+
+### The accent is a variable
+
+The handoff ships four alternates — `#EE5622` (default), `#23211E`, `#1F6F5C`,
+`#3B5BA5`. Implement it as a theme value. Never hardcode the orange.
+
+### Status colours
+
+There is no red/green/amber status palette. Statuses are drawn with the muted
+scale plus the accent for the one that needs attention:
+
+- neutral / success / settled → `Muted` text on `Chip active`
+- needs attention (stuck payment, licence expiring, pending approval) → accent text
+- withdrawn / refunded / archived → `Muted faint`
+
+Validation errors are the one exception and stay `#BA1A1A`.
+
+---
+
+## 3. Page background
+
+Applied once, at the outermost container, by the shared `PageBackground`:
+
+```css
+background-color: #FCFBF9;
+background-image:
+  radial-gradient(#EDE6DD 1px, transparent 1px),
+  radial-gradient(920px 550px at 92% -8%, rgba(238, 86, 34, .05), transparent 70%),
+  radial-gradient(780px 470px at -3% 40%, rgba(31, 111, 92, .045), transparent 72%),
+  radial-gradient(870px 520px at 100% 90%, rgba(59, 91, 165, .04), transparent 70%);
+background-size: 27px 27px, auto, auto, auto;
+```
+
+A 27px dot grid plus three corner washes — orange, sage, blue.
+
+Panels sitting **on** that background are translucent white so the texture shows
+through:
+
+| Surface | Value |
+| --- | --- |
+| Sidebars, filter rails | `rgba(255,255,255,.5)` |
+| Right rails (buy column, builder preview) | `rgba(255,255,255,.45)` |
+| Full-width bands | `rgba(255,255,255,.55)` |
+| Sticky headers | `rgba(252,251,249,.78)` marketing, `.82` app shells |
+
+Cards **inside** those areas are solid `#FFFFFF` with a `1px #E8E4DE` border.
+
+---
+
+## 4. Typography
+
+- **Hind Siliguri** — body, UI, headings. Weights 300, 400, 500, 600.
+- **Archivo** — Latin numerals, IDs, small all-caps labels. Weights 400–600.
+
+Long paragraphs are weight **300**. Headings are **500** and never 700+ — the
+calm register depends on it. `letter-spacing: -.01em` on headings ≥32px,
+`text-wrap: pretty` on long paragraphs.
+
+| Role | Size / weight / line-height |
+| --- | --- |
+| Marketing h1 | 44–54px / 500 / 1.25 |
+| Dashboard h1 | 34px / 500 / 1.3 |
+| Section h2 | 30–38px / 500 / 1.3–1.35 |
+| Card or row title | 20–24px / 500 / 1.35 |
+| Sub-head (h3) | 22–23px / 500 |
+| Lead paragraph | 19–20px / 300 / 1.85 |
+| Body | 17–18px / 300 / 1.8–1.9 |
+| Table cell | 17px / 300–400 |
+| Nav item | 17px / 400 |
+| Label, meta | 15–16px / 300–500 |
+| Stat number | 26–30px / 500 |
+| Archivo label | 11–14px, `letter-spacing: .06em` |
+
+Those are the desktop sizes. See §8 for how they scale down.
+
+**Bilingual note.** Headings are sized for Bangla, which runs roughly 20% longer
+than the English equivalent. Never constrain a text container to a fixed width,
+and check both locales at every breakpoint.
+
+---
+
+## 5. Spacing, radius, shape
+
+- Section padding: marketing `56px` horizontal / `56–96px` vertical; dashboards `34–40px`.
+- Header height: `82px` marketing, `74px` app shells. Sidebar `238px`. Right rails `380–396px`. Filter rail `296px`.
+- Gaps: `8–10px` chips, `18–24px` cards, `48–72px` big columns. Use flex/grid `gap`, never margins.
+- Radius: `4px` buttons and inputs, `100px` pills, `50%` dots and avatars, `3px` checkboxes. **Cards are square — 0px.**
+- Borders: `1px #E8E4DE` default, `1.5px` on decorative rings and step circles, `1px dashed #DDD8D1` on advisory and upload boxes.
+- **No shadows anywhere.**
+
+---
+
+## 6. Components
 
 ### Buttons
-- **Primary:** Gradient fill (`primary` to `on-primary-container`), white text, `md` (0.375rem) corner radius.
-- **Secondary:** `secondary-container` (#6063ee) with `on-secondary` (#ffffff) text.
-- **Tertiary/Ghost:** No fill; `on-surface` text. Becomes `surface-container-high` on hover.
 
-### Cards & Content Blocks
-- **Constraint:** No internal dividers. 
-- **Structure:** Use `16` (4rem) vertical spacing between major card elements. Use a `surface-container-low` background for the card body and a `surface-container-lowest` for the inner "Action Area" to create nesting.
+| Variant | Style |
+| --- | --- |
+| `ink` | `#23211E` fill, paper text, 4px radius. The default primary. |
+| `outline` | transparent, `1px #C9C3BB` border, Ink text |
+| `ghost` | no fill, Muted text; `#F7F5F1` on hover |
+| `accent` | accent fill. **One per app shell**, no more |
+| `accentLink` | accent text with a trailing arrow, no fill — the "enrol" affordance |
 
-### Input Fields
-- **Default State:** `surface-container-low` fill, no border, `sm` (0.125rem) radius.
-- **Active State:** `outline` (#76777d) ghost border (20% opacity) with a subtle `secondary` glow.
+No gradients, no shadows, no transform on hover.
 
-### Specialized LMS Components
-- **Progress Trackers:** Avoid thin lines. Use a "Chunked" bar using `secondary` for completion and `surface-container-highest` for the track.
-- **Course Navigator:** A vertical glassmorphic sidebar using `surface-container-low` at 80% opacity. Active states should use a "pill" shape in `secondary-fixed`.
+### Cards
+
+Square, solid white, `1px #E8E4DE`. Hover raises the border to `#C9C3BB` and
+nothing else moves.
+
+### Pills
+
+Unselected: transparent with a `1px #E8E4DE` border. Selected: `#EFEBE4` fill,
+Ink text, no border change. 100px radius.
+
+### Inputs
+
+4px radius, `1px #E8E4DE`, white fill, `#B4AEA6` placeholder. Focus darkens the
+border to `#C9C3BB`. No glow.
+
+### Tabs
+
+2px accent bottom border on the active tab, Ink label. Inactive tabs are Muted
+with no border.
+
+### Accordions
+
+Independent — opening one never closes another. `+` / `–` as text at the right
+edge. One item open by default.
+
+### Tables
+
+White card, `1px #E8E4DE` outer border, `1px #F5F1EC` between rows. Header cells
+are Muted light, 15–16px. Row hover `#FBF9F6`.
+
+### Progress
+
+Chunked, not a thin line. Filled chunks in the accent, track in `#F1EEE9`,
+square chunks with a small gap. The chunk-count rounding lives in
+`resolveProgressChunks` in shared code so web and mobile fill the same number.
+
+### Counters
+
+**Always derived, never hardcoded** — pending questions, pending approvals,
+tasks done, module and lesson counts, filtered result counts, checklist scores.
+A counter that can drift out of step with what it counts is a bug.
+
+### Empty states
+
+A dashed `1px #DDD8D1` box with a Muted sentence. Every list that can be empty
+needs one.
 
 ---
 
-## 6. Do’s and Don’ts
+## 7. Doodles
 
-### Do:
-- **Embrace Asymmetry:** Align course titles to the left but place metadata (time, credits) in a floating "Ghost" container on the right to create visual interest.
-- **Use "Space as Structure":** If two elements feel cluttered, increase spacing to `8` (2rem) rather than adding a divider line.
-- **Tint your Neutrals:** Ensure your "greys" always lean into the blue/teal spectrum of the palette.
+Decorative, subtle, all CSS — no illustration files. A small reused set:
 
-### Don’t:
-- **Don't use 100% Black:** Even for text, use `on-background` (#131b2e) to maintain a soft, premium feel.
-- **Don't use Default Shadows:** Avoid the "drop shadow" look. If it looks like a 2010 web app, increase the blur and decrease the opacity.
-- **Don't Square the Corners:** Always use the `DEFAULT` (0.25rem) or `md` (0.375rem) radius. Hard 90-degree angles feel too "industrial" for a modern learning environment.
+1. **Hand-drawn ring** around one word in a heading — absolutely positioned span, `border: 2px solid <accent>`, `border-radius: 50%`, `opacity: .32–.4`, `rotate(-3deg)`, `pointer-events: none`, inset `-12px` horizontally.
+2. **Dot patch** — `radial-gradient(#E2DDD6 1.5px, transparent 1.5px)` at `15px 15px`, roughly 100–130px square, in a section corner.
+3. **Quarter arc** — 64–76px circle, `1.5px solid #E6E0D8` with top and right border colours transparent, rotated about -24deg.
+4. **Diamond trio** — three 7px squares rotated 45°, tints `#E6DFD6`, `#EBE4DB`, `#F0EAE2`.
+5. **Hatched rule** above closing bands — `repeating-linear-gradient(45deg, #EAE3DA 0 2px, transparent 2px 8px)`, 6px tall.
+6. **Circled step number** — 44px circle, `1.5px #E8E4DE`, accent numeral.
+7. **Play glyph** — `clip-path: polygon(0 0, 100% 50%, 0 100%)` on a small div. No icon font.
+
+Any section owning a doodle is `position: relative; overflow: hidden`.
+
+---
+
+## 8. Responsive
+
+The handoff is authored at a fixed 1440px. This codebase ships **fully
+responsive**, mobile-first, with 1440px as the desktop target.
+
+- Two-column marketing bands collapse to one.
+- The filter rail and both dashboard sidebars become drawers.
+- Tables become stacked cards.
+- Right rails (buy card, builder preview) move below the main column.
+- Touch targets ≥44px.
+- Section padding steps down: `56px` → `24px` at the small breakpoint.
+- Display type steps down: marketing h1 `54px` → `32px`, dashboard h1 `34px` → `26px`.
+
+Nothing about the calm register changes on mobile. Still no shadows, still no
+motion.
+
+---
+
+## 9. Assets
+
+`apps/web/public/brand/` holds the logo:
+
+- `genex-mark.png` (361×360, transparent) — orange **G** with a black play triangle. Light backgrounds.
+- `genex-wordmark.png` (958×210, transparent) — "GENEX", black, italic condensed with a reversed E.
+- `genex-mark-light.png`, `genex-wordmark-light.png` — white-knockout, for dark backgrounds.
+
+Header lockup: mark at `28px` high (26px in app shells) plus wordmark at `16px`
+(15px), `9px` gap, both `display: block`.
+
+> ⚠️ These were traced from a white-background JPG. Get the original vector from
+> the client before shipping.
+
+Photography, thumbnails and avatars fall back to `#F1EEE9` rectangles with an
+Archivo caption. Keep the aspect ratios.
+
+---
+
+## 10. Localisation
+
+UI chrome is bilingual — Bangla default, English switchable. User-authored
+content (course titles, descriptions, category names, notices, messages) stays
+in whatever language it was written in.
+
+Keep the Bangla register plain: short sentences, informal "তুমি", no marketing
+bravado. Bangla numerals (০১২৩৪৫৬৭৮৯) when the locale is `bn`, `৳` before
+amounts, dates written out ("১২ আগস্ট"). The digit mapping, currency and date
+formatters are shared so web and mobile agree.
+
+---
+
+## 11. Don'ts
+
+- Don't add a shadow. Not a subtle one either.
+- Don't animate. No entrance, no lift, no scale, no spinner.
+- Don't round a card.
+- Don't use the accent as a large fill on a marketing page.
+- Don't hardcode the accent hex — it is a theme variable with four alternates.
+- Don't reach for a red/green status palette; see §2.
+- Don't hardcode a count that could be derived.
+- Don't constrain text to a fixed width — Bangla is longer than English.

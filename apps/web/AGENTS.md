@@ -16,7 +16,7 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
 src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
-src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input, progress-track, responsive-image.
+src/components/ui/   Primitives — button, card, input, label, badge, password-input, progress-track, responsive-image.
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.
@@ -37,6 +37,10 @@ There is no `src/providers/` directory — providers are composed in `src/routes
 
 No spinners, anywhere — `animate-spin` and "Loading…" are both absent from this workspace and must stay that way.
 
+No shimmer either, and no motion of any kind: `DESIGN.md` §1 forbids animation
+outright, so a skeleton is a still `#F1EEE9` block. If you are adding a keyframe
+to `app.css`, you are doing something the design rejects.
+
 Two skeleton patterns coexist, and which one applies is decided by the route, not by taste:
 
 - A route **with a `loader`** declares a `pendingComponent` — the five public pages do this. `defaultPendingMs` means a fast navigation skips it.
@@ -56,7 +60,7 @@ Bundled assets (the logo, the hero illustration) are plain `<img>` — they have
 
 ## Progress
 
-`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `secondary` for what is done, `surface-container-highest` for what is not, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@mma/shared`, so web and mobile fill the same number of blocks.
+`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@mma/shared`, so web and mobile fill the same number of blocks.
 
 The course player draws its own instead, and should keep doing so: there each chunk is a specific lecture and the one being watched gets a third colour, which is more than this primitive models.
 
@@ -157,15 +161,28 @@ Both take the redirect target from a query parameter, so both go through `isAllo
 
 ## Styling
 
-Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. The palette is a Material-style token set (`surface`, `surface-container-*`, `on-surface`, `primary`, `secondary-container`, `outline`, `error`, ...) plus `--radius-*`.
+Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. `DESIGN.md` is the authority on what the tokens mean; this section is only about how to reach them from code.
 
-Use the semantic tokens (`bg-surface-container`, `text-on-surface-variant`) rather than raw Tailwind colours like `bg-gray-100` or an arbitrary `text-[#c4353b]`. Validation text is `text-error`.
+The palette is the Genex warm-paper set — `ink`, `ink-muted`, `muted`, `muted-light`, `muted-faint`, `paper`, `card`, `panel-warm`, `hairline`, `line-strong`, `chip-active`, `placeholder-fill`, `bar-track`, `bar-idle`, and `accent`.
 
-Recharts is the one exception, and only because it writes colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The handful of values the charts need are mirrored as literals in `src/lib/chart-theme.ts` — add to that file rather than retyping a hex in a route.
+Use the tokens (`bg-paper`, `text-muted`, `border-hairline`) rather than raw Tailwind colours like `bg-gray-100` or an arbitrary `text-[#c4353b]`. Validation text is `text-error` — the one surviving red.
 
-DESIGN.md's No-Line Rule holds: 1px solid borders are prohibited for sectioning, and where a border is genuinely needed it is `outline-variant` at 15% opacity — felt, not seen. Fonts: `font-sans` (Inter) for body, `font-display` (Manrope) for headings.
+**The accent is a variable.** `--color-accent` has four shipped alternates. Never type `#EE5622` into a component.
 
-Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge classes. Follow `src/components/ui/button.tsx` when adding a primitive. Icons come from `lucide-react`.
+Recharts is the one exception to token discipline, and only because it writes colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The values the charts need are mirrored as literals in `src/lib/chart-theme.ts` — add to that file rather than retyping a hex in a route.
+
+Four rules from `DESIGN.md` that this codebase gets wrong most often:
+
+- **Hairlines are the sectioning tool.** `1px #E8E4DE` everywhere. The old "No-Line Rule" is gone.
+- **No shadows.** Not on cards, not on buttons, not on modals.
+- **No animation.** Colour and border transitions on hover, nothing else. Nothing lifts, scales or fades in.
+- **Cards are square.** `4px` is for buttons and inputs; `100px` for pills; `0` for cards.
+
+Fonts: `font-body` (Hind Siliguri) for everything, `font-mono-label` (Archivo) for Latin numerals, IDs and small all-caps labels.
+
+Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge classes. Follow `src/components/ui/button.tsx` when adding a primitive.
+
+Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip-path`, checks are drawn. `lucide-react` stays for dashboard-only surfaces with no design precedent (messages, admin tooling) and is kept out of the public pages.
 
 ## Forms
 
