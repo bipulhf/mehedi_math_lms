@@ -341,6 +341,21 @@ function AdminCoursesPage(): JSX.Element {
                               </Link>
                             </Button>
 
+                            <Button asChild size="sm" variant="ghost">
+                              <Link params={{ id: course.id }} to="/dashboard/courses/$id/notices">
+                                {t("manage.notices")}
+                              </Link>
+                            </Button>
+
+                            <Button asChild size="sm" variant="ghost">
+                              <Link
+                                params={{ id: course.id }}
+                                to="/dashboard/courses/$id/discussions"
+                              >
+                                {t("manage.discussions")}
+                              </Link>
+                            </Button>
+
                             {isArchived ? (
                               <Button
                                 size="sm"

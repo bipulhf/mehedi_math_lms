@@ -60,8 +60,10 @@ import { Route as DashboardAdminUsersIndexRouteImport } from './routes/dashboard
 import { Route as DashboardAdminUsersIdRouteImport } from './routes/dashboard/admin/users/$id'
 import { Route as DashboardCoursesIdAnalyticsRouteImport } from './routes/dashboard/courses/$id/analytics'
 import { Route as DashboardCoursesIdContentRouteImport } from './routes/dashboard/courses/$id/content'
+import { Route as DashboardCoursesIdDiscussionsRouteImport } from './routes/dashboard/courses/$id/discussions'
 import { Route as DashboardCoursesIdEditRouteImport } from './routes/dashboard/courses/$id/edit'
 import { Route as DashboardCoursesIdExamRouteImport } from './routes/dashboard/courses/$id/exam'
+import { Route as DashboardCoursesIdNoticesRouteImport } from './routes/dashboard/courses/$id/notices'
 import { Route as DashboardCoursesIdPublishRouteImport } from './routes/dashboard/courses/$id/publish'
 import { Route as DashboardCoursesIdTestsRouteImport } from './routes/dashboard/courses/$id/tests'
 import { Route as DashboardTestsTestIdSubmissionsRouteImport } from './routes/dashboard/tests/$testId/submissions'
@@ -331,6 +333,12 @@ const DashboardCoursesIdContentRoute =
     path: '/courses/$id/content',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardCoursesIdDiscussionsRoute =
+  DashboardCoursesIdDiscussionsRouteImport.update({
+    id: '/courses/$id/discussions',
+    path: '/courses/$id/discussions',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardCoursesIdEditRoute = DashboardCoursesIdEditRouteImport.update({
   id: '/courses/$id/edit',
   path: '/courses/$id/edit',
@@ -341,6 +349,12 @@ const DashboardCoursesIdExamRoute = DashboardCoursesIdExamRouteImport.update({
   path: '/courses/$id/exam',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCoursesIdNoticesRoute =
+  DashboardCoursesIdNoticesRouteImport.update({
+    id: '/courses/$id/notices',
+    path: '/courses/$id/notices',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardCoursesIdPublishRoute =
   DashboardCoursesIdPublishRouteImport.update({
     id: '/courses/$id/publish',
@@ -421,8 +435,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
+  '/dashboard/courses/$id/discussions': typeof DashboardCoursesIdDiscussionsRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/exam': typeof DashboardCoursesIdExamRoute
+  '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
@@ -480,8 +496,10 @@ export interface FileRoutesByTo {
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
+  '/dashboard/courses/$id/discussions': typeof DashboardCoursesIdDiscussionsRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/exam': typeof DashboardCoursesIdExamRoute
+  '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
@@ -541,8 +559,10 @@ export interface FileRoutesById {
   '/dashboard/admin/users/$id': typeof DashboardAdminUsersIdRoute
   '/dashboard/courses/$id/analytics': typeof DashboardCoursesIdAnalyticsRoute
   '/dashboard/courses/$id/content': typeof DashboardCoursesIdContentRoute
+  '/dashboard/courses/$id/discussions': typeof DashboardCoursesIdDiscussionsRoute
   '/dashboard/courses/$id/edit': typeof DashboardCoursesIdEditRoute
   '/dashboard/courses/$id/exam': typeof DashboardCoursesIdExamRoute
+  '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
@@ -603,8 +623,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
+    | '/dashboard/courses/$id/discussions'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/exam'
+    | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
     | '/dashboard/tests/$testId/submissions'
@@ -662,8 +684,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
+    | '/dashboard/courses/$id/discussions'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/exam'
+    | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
     | '/dashboard/tests/$testId/submissions'
@@ -722,8 +746,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin/users/$id'
     | '/dashboard/courses/$id/analytics'
     | '/dashboard/courses/$id/content'
+    | '/dashboard/courses/$id/discussions'
     | '/dashboard/courses/$id/edit'
     | '/dashboard/courses/$id/exam'
+    | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
     | '/dashboard/tests/$testId/submissions'
@@ -1113,6 +1139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesIdContentRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/courses/$id/discussions': {
+      id: '/dashboard/courses/$id/discussions'
+      path: '/courses/$id/discussions'
+      fullPath: '/dashboard/courses/$id/discussions'
+      preLoaderRoute: typeof DashboardCoursesIdDiscussionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/courses/$id/edit': {
       id: '/dashboard/courses/$id/edit'
       path: '/courses/$id/edit'
@@ -1125,6 +1158,13 @@ declare module '@tanstack/react-router' {
       path: '/courses/$id/exam'
       fullPath: '/dashboard/courses/$id/exam'
       preLoaderRoute: typeof DashboardCoursesIdExamRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses/$id/notices': {
+      id: '/dashboard/courses/$id/notices'
+      path: '/courses/$id/notices'
+      fullPath: '/dashboard/courses/$id/notices'
+      preLoaderRoute: typeof DashboardCoursesIdNoticesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/courses/$id/publish': {
@@ -1248,8 +1288,10 @@ interface DashboardRouteChildren {
   DashboardAdminUsersIdRoute: typeof DashboardAdminUsersIdRoute
   DashboardCoursesIdAnalyticsRoute: typeof DashboardCoursesIdAnalyticsRoute
   DashboardCoursesIdContentRoute: typeof DashboardCoursesIdContentRoute
+  DashboardCoursesIdDiscussionsRoute: typeof DashboardCoursesIdDiscussionsRoute
   DashboardCoursesIdEditRoute: typeof DashboardCoursesIdEditRoute
   DashboardCoursesIdExamRoute: typeof DashboardCoursesIdExamRoute
+  DashboardCoursesIdNoticesRoute: typeof DashboardCoursesIdNoticesRoute
   DashboardCoursesIdPublishRoute: typeof DashboardCoursesIdPublishRoute
   DashboardCoursesIdTestsRoute: typeof DashboardCoursesIdTestsRoute
   DashboardAdminBugsIndexRoute: typeof DashboardAdminBugsIndexRoute
@@ -1285,8 +1327,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminUsersIdRoute: DashboardAdminUsersIdRoute,
   DashboardCoursesIdAnalyticsRoute: DashboardCoursesIdAnalyticsRoute,
   DashboardCoursesIdContentRoute: DashboardCoursesIdContentRoute,
+  DashboardCoursesIdDiscussionsRoute: DashboardCoursesIdDiscussionsRoute,
   DashboardCoursesIdEditRoute: DashboardCoursesIdEditRoute,
   DashboardCoursesIdExamRoute: DashboardCoursesIdExamRoute,
+  DashboardCoursesIdNoticesRoute: DashboardCoursesIdNoticesRoute,
   DashboardCoursesIdPublishRoute: DashboardCoursesIdPublishRoute,
   DashboardCoursesIdTestsRoute: DashboardCoursesIdTestsRoute,
   DashboardAdminBugsIndexRoute: DashboardAdminBugsIndexRoute,
