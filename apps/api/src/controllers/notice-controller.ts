@@ -3,7 +3,7 @@ import type {
   CreateCourseNoticeInput,
   UpdateCourseNoticeInput,
   UserRole
-} from "@mma/shared";
+} from "@genex/shared";
 
 import type { NoticeService } from "@/services/notice-service";
 import type { AppBindings } from "@/types/app-bindings";

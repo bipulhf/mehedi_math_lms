@@ -20,7 +20,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { listMessageConversations } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
 import { useUiStore } from "@/stores/ui-store";
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 interface DashboardLayoutProps extends PropsWithChildren {
   isLoading?: boolean;

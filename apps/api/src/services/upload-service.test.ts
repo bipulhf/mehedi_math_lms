@@ -1,5 +1,5 @@
-import type { AuthUser } from "@mma/auth/server";
-import { readImageVariants } from "@mma/shared";
+import type { AuthUser } from "@genex/auth/server";
+import { readImageVariants } from "@genex/shared";
 import { describe, expect, test } from "bun:test";
 import sharp from "sharp";
 

@@ -5,12 +5,12 @@ import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { accounts, db, sessions, users, verificationTokens } from "@mma/db";
-import * as schema from "@mma/db/schema";
+import { accounts, db, sessions, users, verificationTokens } from "@genex/db";
+import * as schema from "@genex/db/schema";
 import { z } from "zod";
 
 const authEnvSchema = z.object({
-  APP_URL: z.url().default("https://mehedismathacademy.com"),
+  APP_URL: z.url().default("https://genex.com.bd"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
   BETTER_AUTH_URL: z.url().default("http://localhost:3001"),
   GOOGLE_CLIENT_ID: z.string().min(1).default("replace-me"),
@@ -28,7 +28,7 @@ const trustedOrigins = [
   "exp://127.0.0.1:8081",
   // The Expo app's deep-link scheme (app.json `scheme`). The mobile Google
   // flow finishes by redirecting the in-app browser back into the app.
-  "mma://"
+  "genex://"
 ];
 
 const isGoogleConfigured =
@@ -42,7 +42,7 @@ interface AuthUserFields extends UserWithRole {
 }
 
 export const auth = betterAuth({
-  appName: "Mehedi's Math Academy",
+  appName: "Genex",
   baseURL: parsedAuthEnv.BETTER_AUTH_URL,
   secret: parsedAuthEnv.BETTER_AUTH_SECRET,
   trustedOrigins,

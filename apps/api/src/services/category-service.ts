@@ -3,11 +3,11 @@ import type { UserRole ,
   createCategorySchema,
   reorderCategoriesSchema,
   updateCategorySchema
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 import {
   generateUniqueSlug
-} from "@mma/shared";
+} from "@genex/shared";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CategoryRepository} from "@/repositories/category-repository";

@@ -1,4 +1,4 @@
-import type { AdminSendSmsInput, AdminSmsHistoryQuery } from "@mma/shared";
+import type { AdminSendSmsInput, AdminSmsHistoryQuery } from "@genex/shared";
 
 import { env } from "@/lib/env";
 import { queues } from "@/lib/queues";

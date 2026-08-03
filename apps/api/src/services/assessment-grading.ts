@@ -3,7 +3,7 @@ import type {
   saveSubmissionAnswersSchema,
   submitTestSchema,
   updateQuestionSchema
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 
 import type { QuestionOptionRecord, QuestionRecord, TestRecord } from "@/repositories/test-repository";

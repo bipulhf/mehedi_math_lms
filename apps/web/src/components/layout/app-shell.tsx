@@ -76,7 +76,7 @@ export function AppShell({ children, isLoading, navItems, title }: AppShellProps
                 <Menu className="size-6 rotate-90" />
               </div>
               <p className="font-headline text-lg font-extrabold tracking-tight text-on-surface leading-tight">
-                Mehedi&apos;s Math Academy
+                Genex
               </p>
             </div>
             <Button

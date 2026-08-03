@@ -8,7 +8,7 @@
  * could send `?redirect=https://evil.test` and have our origin bounce a
  * signed-in user, one-time token and all, to their page.
  */
-const ALLOWED_REDIRECT_SCHEMES = ["mma:", "exp:", "exps:"] as const;
+const ALLOWED_REDIRECT_SCHEMES = ["genex:", "exp:", "exps:"] as const;
 
 export function isAllowedAppRedirect(target: string): boolean {
   try {

@@ -6,8 +6,8 @@ import {
   reorderCategoriesSchema,
   slugParamsSchema,
   updateCategorySchema
-} from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+} from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import { categoryController } from "@/lib/container";
 import { requireAdmin } from "@/middleware/auth";

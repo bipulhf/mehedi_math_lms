@@ -8,7 +8,7 @@ import type {
   updateChapterSchema,
   updateLectureSchema,
   updateMaterialSchema
-} from "@mma/shared";
+} from "@genex/shared";
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
 

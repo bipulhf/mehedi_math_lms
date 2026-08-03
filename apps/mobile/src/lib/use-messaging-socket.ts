@@ -1,4 +1,4 @@
-import type { WebsocketServerEvent } from "@mma/shared";
+import type { WebsocketServerEvent } from "@genex/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";

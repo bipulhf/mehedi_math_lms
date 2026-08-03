@@ -58,7 +58,7 @@ describe("createAdminUserSchema", () => {
       createAdminUserSchema.parse({
         confirmPassword: "hunter2hunter2",
         email: "admin@example.com",
-        name: "Mehedi",
+        name: "Tanvir",
         role: "ADMIN"
       }).confirmPassword
     ).toBe("hunter2hunter2");

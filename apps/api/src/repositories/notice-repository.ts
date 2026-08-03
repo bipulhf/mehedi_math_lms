@@ -1,4 +1,4 @@
-import { and, db, desc, eq, notices, users } from "@mma/db";
+import { and, db, desc, eq, notices, users } from "@genex/db";
 
 export interface NoticeRecord {
   content: string;

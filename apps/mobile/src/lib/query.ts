@@ -58,7 +58,7 @@ export function createMobileQueryClient(): QueryClient {
  * so the app opens with content rather than skeletons on a cold start.
  */
 export const asyncStoragePersister = createAsyncStoragePersister({
-  key: "mma.query-cache",
+  key: "genex.query-cache",
   storage: AsyncStorage,
   throttleTime: 2_000
 });

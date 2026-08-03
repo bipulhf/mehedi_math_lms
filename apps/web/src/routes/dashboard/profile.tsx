@@ -3,7 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 import { z } from "zod";
 
 import { ProfilePageSkeleton, RoleProfileForm } from "@/components/profile/profile-editor";

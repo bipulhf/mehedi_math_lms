@@ -1,5 +1,5 @@
-import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import { logger } from "@/lib/logger";
 import { queues } from "@/lib/queues";

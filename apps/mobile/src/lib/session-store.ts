@@ -6,7 +6,7 @@ import * as SecureStore from "expo-secure-store";
  * header. It goes in SecureStore rather than AsyncStorage because it is a
  * bearer credential: anything holding this string is the signed-in user.
  */
-const SESSION_COOKIE_KEY = "mma.session-cookie";
+const SESSION_COOKIE_KEY = "genex.session-cookie";
 
 let cachedCookie: string | null | undefined;
 

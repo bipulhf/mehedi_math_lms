@@ -8,8 +8,8 @@ import {
   reorderLecturesSchema,
   updateChapterSchema,
   updateMaterialSchema
-} from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+} from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import { contentController } from "@/lib/container";
 import { testController } from "@/lib/container";

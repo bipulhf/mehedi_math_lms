@@ -1,10 +1,10 @@
-import type { BasicProfileInput, StudentProfileInput, TeacherProfileInput } from "@mma/shared";
+import type { BasicProfileInput, StudentProfileInput, TeacherProfileInput } from "@genex/shared";
 
 import { apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
 
 /**
  * One module for the endpoints the app uses. The response shapes mirror the
- * API's own view types; where a validator exists it comes from `@mma/shared`
+ * API's own view types; where a validator exists it comes from `@genex/shared`
  * rather than being redeclared.
  */
 

@@ -17,8 +17,8 @@ import {
   teacherProfiles,
   users,
   type SQL
-} from "@mma/db";
-import type { CourseTeacherRole, UserRole } from "@mma/shared";
+} from "@genex/db";
+import type { CourseTeacherRole, UserRole } from "@genex/shared";
 
 /** A teacher and the authority they hold over one course. ADR-0006. */
 export interface CourseTeacherAssignment {

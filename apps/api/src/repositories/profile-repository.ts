@@ -9,9 +9,9 @@ import {
   studentProfiles,
   teacherProfiles,
   users
-} from "@mma/db";
+} from "@genex/db";
 
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 export interface StudentProfileRecord {
   address: string | null;

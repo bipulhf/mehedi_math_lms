@@ -14,8 +14,8 @@ import {
   slugParamsSchema,
   teacherDirectoryQuerySchema,
   updateCourseSchema
-} from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+} from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import {
   contentController,

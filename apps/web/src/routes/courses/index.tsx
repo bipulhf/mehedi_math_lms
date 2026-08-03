@@ -24,7 +24,7 @@ export const Route = createFileRoute("/courses/")({
 
     return seo({
       description:
-        "Explore every published mathematics program at Mehedi's Math Academy: pricing, teachers, and enrollment in one editorial catalog.",
+        "Explore every published mathematics program at Genex: pricing, teachers, and enrollment in one editorial catalog.",
       jsonLd: [
         catalogItemListFromCourses(courses),
         breadcrumbJsonLd([

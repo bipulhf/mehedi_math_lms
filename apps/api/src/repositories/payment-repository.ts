@@ -1,4 +1,4 @@
-import { and, db, desc, eq, payments, sql } from "@mma/db";
+import { and, db, desc, eq, payments, sql } from "@genex/db";
 
 export interface PaymentRecord {
   amount: string;

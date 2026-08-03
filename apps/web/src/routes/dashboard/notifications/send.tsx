@@ -6,7 +6,7 @@ import {
   userRoleSchema,
   type UserRole,
   userRoleValues
-} from "@mma/shared";
+} from "@genex/shared";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { BellRing, Target, Users, GraduationCap } from "lucide-react";
 import { RouteErrorView } from "@/components/common/route-error";
-import mmaLogo from "@/assets/mma-logo.svg";
+import genexMark from "@/assets/genex-mark.png";
 
 export const Route = createFileRoute("/dashboard/notifications/send")({
   component: SendNotificationPage,
@@ -153,7 +153,7 @@ function SendNotificationPage() {
             <img
               decoding="async"
               loading="lazy"
-              src={mmaLogo}
+              src={genexMark}
               alt=""
               className="h-10 w-10 brightness-[0.92] contrast-[1.05] relative z-10"
             />

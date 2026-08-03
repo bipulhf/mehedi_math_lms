@@ -1,4 +1,4 @@
-import type { UploadPurpose, UploadStatus } from "@mma/shared";
+import type { UploadPurpose, UploadStatus } from "@genex/shared";
 
 import { apiDelete, apiPost } from "@/lib/api/client";
 

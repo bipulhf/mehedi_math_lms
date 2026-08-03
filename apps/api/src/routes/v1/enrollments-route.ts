@@ -3,8 +3,8 @@ import {
   courseIdParamsSchema,
   createEnrollmentSchema,
   enrollmentIdParamsSchema
-} from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+} from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import { enrollmentController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { AnalyticsRepository } from "@/repositories/analytics-repository";

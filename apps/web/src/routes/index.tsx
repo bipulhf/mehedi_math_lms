@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
               organizationJsonLd(),
               itemListJsonLd(
                 "Featured courses",
-                "Recently published courses at Mehedi's Math Academy.",
+                "Recently published courses at Genex.",
                 courses.map((course) => ({
                   name: course.title,
                   path: `/courses/${course.slug}`
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/")({
             ]
           : [organizationJsonLd()],
       path: "/",
-      title: "Mehedi's Math Academy | The Digital Atelier for High-Performance Learning"
+      title: "Genex | The Digital Atelier for High-Performance Learning"
     });
   },
   loader: async () => ssrApiGet<LandingSnapshot>("/landing"),

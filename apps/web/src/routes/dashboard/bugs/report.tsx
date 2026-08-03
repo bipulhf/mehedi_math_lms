@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { toast } from "sonner";
-import { createBugReportSchema } from "@mma/shared";
+import { createBugReportSchema } from "@genex/shared";
 
 import { BugScreenshotUploadField } from "@/components/bugs/bug-screenshot-upload-field";
 import { Skeleton } from "@/components/ui/skeleton";

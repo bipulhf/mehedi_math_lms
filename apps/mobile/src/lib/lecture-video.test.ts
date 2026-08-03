@@ -9,9 +9,9 @@ import { resolveLectureVideo } from "@/src/lib/lecture-video";
 
 describe("resolveLectureVideo", () => {
   test("a media file plays in the app", () => {
-    expect(resolveLectureVideo("https://cdn.mma.test/lectures/calculus-01.mp4")).toEqual({
+    expect(resolveLectureVideo("https://cdn.genex.test/lectures/calculus-01.mp4")).toEqual({
       kind: "stream",
-      uri: "https://cdn.mma.test/lectures/calculus-01.mp4"
+      uri: "https://cdn.genex.test/lectures/calculus-01.mp4"
     });
   });
 

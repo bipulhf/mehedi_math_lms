@@ -1,4 +1,4 @@
-import { adminSendSmsSchema, userRoleValues, type UserRole } from "@mma/shared";
+import { adminSendSmsSchema, userRoleValues, type UserRole } from "@genex/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
-import mmaLogo from "@/assets/mma-logo.svg";
+import genexMark from "@/assets/genex-mark.png";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/dashboard/admin/sms")({
@@ -140,7 +140,7 @@ function AdminSmsPage() {
             <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
             <img
               decoding="async"
-              loading="lazy" src={mmaLogo} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
+              loading="lazy" src={genexMark} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
           </div>
           <div>
             <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">

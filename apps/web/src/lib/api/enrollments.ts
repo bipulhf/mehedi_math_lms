@@ -1,4 +1,4 @@
-import type { createEnrollmentSchema } from "@mma/shared";
+import type { createEnrollmentSchema } from "@genex/shared";
 import type { z } from "zod";
 
 import { apiClient, apiGet, apiPost } from "@/lib/api/client";

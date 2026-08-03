@@ -1,6 +1,6 @@
-import { and, conversationAccessLog, conversationReports, db, desc, eq, isNull } from "@mma/db";
+import { and, conversationAccessLog, conversationReports, db, desc, eq, isNull } from "@genex/db";
 
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 import type {
   ConversationReportListRecord,

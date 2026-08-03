@@ -19,7 +19,7 @@ export const Route = createFileRoute("/auth/sign-up")({
   head: () =>
     seo({
       description:
-        "Create your Mehedi's Math Academy learner account with email and password to unlock courses, progress, and messaging.",
+        "Create your Genex learner account with email and password to unlock courses, progress, and messaging.",
       path: "/auth/sign-up",
       title: "Create account"
     }),

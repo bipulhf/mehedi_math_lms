@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 import {
   conversationMessagesQuerySchema,
   createConversationSchema,
@@ -8,7 +8,7 @@ import {
   messagesConversationQuerySchema,
   reportConversationSchema,
   sendMessageSchema
-} from "@mma/shared";
+} from "@genex/shared";
 
 import { messageController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

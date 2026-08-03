@@ -12,7 +12,7 @@ import {
   payments,
   sql,
   users
-} from "@mma/db";
+} from "@genex/db";
 
 export interface EnrollmentRecord {
   /** Set when a refund withdrew the right to study. Independent of status. */

@@ -64,10 +64,10 @@ describe("studentProfileInputSchema", () => {
 describe("teacherProfileInputSchema", () => {
   test("long-form fields stop at 4000 characters", () => {
     expect(
-      teacherProfileInputSchema.safeParse({ bio: "a".repeat(4000), name: "Mehedi" }).success
+      teacherProfileInputSchema.safeParse({ bio: "a".repeat(4000), name: "Tanvir" }).success
     ).toBe(true);
     expect(
-      teacherProfileInputSchema.safeParse({ bio: "a".repeat(4001), name: "Mehedi" }).success
+      teacherProfileInputSchema.safeParse({ bio: "a".repeat(4001), name: "Tanvir" }).success
     ).toBe(false);
   });
 });
@@ -86,17 +86,17 @@ describe("the completion flag", () => {
   test("is optional, so an ordinary profile edit says nothing about it", () => {
     // Absent means "this finishes onboarding" — the behaviour every caller had
     // before the setup wizard started saving each step.
-    expect(basicProfileInputSchema.parse({ name: "Mehedi" }).isComplete).toBeUndefined();
+    expect(basicProfileInputSchema.parse({ name: "Tanvir" }).isComplete).toBeUndefined();
     expect(
-      teacherProfileInputSchema.parse({ name: "Mehedi" }).isComplete
+      teacherProfileInputSchema.parse({ name: "Tanvir" }).isComplete
     ).toBeUndefined();
   });
 
   test("carries false through, which is what keeps a half-filled wizard open", () => {
-    expect(studentProfileInputSchema.parse({ isComplete: false, name: "Mehedi" }).isComplete).toBe(
+    expect(studentProfileInputSchema.parse({ isComplete: false, name: "Tanvir" }).isComplete).toBe(
       false
     );
-    expect(teacherProfileInputSchema.parse({ isComplete: true, name: "Mehedi" }).isComplete).toBe(
+    expect(teacherProfileInputSchema.parse({ isComplete: true, name: "Tanvir" }).isComplete).toBe(
       true
     );
   });

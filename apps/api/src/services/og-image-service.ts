@@ -40,7 +40,7 @@ function renderOgSvg(primary: string, secondary: string | null): string {
       ? `<text x="80" y="290" fill="#dae2fd" font-family="Helvetica,Arial,sans-serif" font-size="28">${s}</text>`
       : ""
   }
-  <text x="80" y="560" fill="#dae2fd" font-family="Helvetica,Arial,sans-serif" font-size="22">Mehedi's Math Academy</text>
+  <text x="80" y="560" fill="#dae2fd" font-family="Helvetica,Arial,sans-serif" font-size="22">Genex</text>
 </svg>`;
 }
 
@@ -70,7 +70,7 @@ export class OgImageService {
 
   public defaultPng(): PngBytes {
     this.defaultPngCache ??= rasterise(
-      renderOgSvg("Mehedi's Math Academy", "Structured math courses and academic clarity.")
+      renderOgSvg("Genex", "Structured math courses and academic clarity.")
     );
 
     return this.defaultPngCache;
@@ -98,7 +98,7 @@ export class OgImageService {
 
     const subtitle = teacher.teacherProfile?.bio
       ? truncate(teacher.teacherProfile.bio.replace(/\s+/g, " ").trim(), 120)
-      : "Teacher · Mehedi's Math Academy";
+      : "Teacher · Genex";
 
     return rasterise(renderOgSvg(teacher.name, subtitle));
   }

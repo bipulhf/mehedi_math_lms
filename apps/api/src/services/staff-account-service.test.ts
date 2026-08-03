@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { createPasswordHash } from "@mma/auth/server";
+import { createPasswordHash } from "@genex/auth/server";
 
 import type { StaffAccountRepository } from "@/repositories/staff-account-repository";
 import { StaffAccountService } from "@/services/staff-account-service";

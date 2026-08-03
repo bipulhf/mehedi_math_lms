@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 import type { z } from "zod";
 import type {
   createQuestionSchema,
@@ -9,7 +9,7 @@ import type {
   submitTestSchema,
   updateQuestionSchema,
   updateTestSchema
-} from "@mma/shared";
+} from "@genex/shared";
 
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";

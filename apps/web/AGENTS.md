@@ -1,4 +1,4 @@
-# AGENTS.md — `@mma/web`
+# AGENTS.md — `@genex/web`
 
 TanStack Start (React 19 + Vite 8) web frontend. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -60,7 +60,7 @@ Bundled assets (the logo, the hero illustration) are plain `<img>` — they have
 
 ## Progress
 
-`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@mma/shared`, so web and mobile fill the same number of blocks.
+`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@genex/shared`, so web and mobile fill the same number of blocks.
 
 The course player draws its own instead, and should keep doing so: there each chunk is a specific lecture and the one being watched gets a third colour, which is more than this primitive models.
 
@@ -108,9 +108,9 @@ has none.
 `mobile-handoff.spec.ts` covers the two routes that redirect out of this app and
 into the Expo one. It belongs in E2E rather than in a unit test because what is
 being asserted is a `Location` header on a real response: that each route
-redirects into `mma://` and refuses every target outside the allow-list, that an
+redirects into `genex://` and refuses every target outside the allow-list, that an
 anonymous auth handoff carries an error and never a token, and that one-time
-tokens are not mintable over HTTP. **Redirects are never followed** — `mma://`
+tokens are not mintable over HTTP. **Redirects are never followed** — `genex://`
 is not fetchable, and following would turn a passing assertion into a
 connection error.
 
@@ -126,7 +126,7 @@ Never call `fetch` directly for API data. Two clients, for two contexts:
 
 **SSR / route loaders** — `src/lib/ssr-api.ts` (`ssrApiGet`, `ssrApiGetCourses`). It hits the API directly at `VITE_SSR_API_BASE_URL` (default `http://127.0.0.1:3001/api/v1`), bypassing the Vite proxy, and throws `SsrNotFoundError` on 404 so loaders can `throw notFound()`.
 
-Feature modules in `src/lib/api/` unwrap the API envelope and return `response.data`, so components see plain domain types. Add new endpoints there, one module per API feature, and derive input types from the `@mma/shared` Zod schemas rather than redeclaring them:
+Feature modules in `src/lib/api/` unwrap the API envelope and return `response.data`, so components see plain domain types. Add new endpoints there, one module per API feature, and derive input types from the `@genex/shared` Zod schemas rather than redeclaring them:
 
 ```ts
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
@@ -149,7 +149,7 @@ Auth gating is **client-side**, in the layout route. `src/routes/dashboard.tsx` 
 
 ## Auth
 
-`src/lib/auth.ts` re-exports `authClient` from `@mma/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@mma/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
+`src/lib/auth.ts` re-exports `authClient` from `@genex/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@genex/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
 
 Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`. Role lives at `session.session.role`.
 
@@ -186,7 +186,7 @@ Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip
 
 ## Forms
 
-`useZodForm` from `src/lib/forms/use-zod-form.ts` — react-hook-form with a `zodResolver`, taking the schema from `@mma/shared`:
+`useZodForm` from `src/lib/forms/use-zod-form.ts` — react-hook-form with a `zodResolver`, taking the schema from `@genex/shared`:
 
 ```ts
 const form = useZodForm({ schema: createCategorySchema, defaultValues: { ... } });

@@ -267,7 +267,7 @@ The plan's cross-cutting testing entry asks for three things. One is met.
 
 | Asked for | State |
 | --------- | ----- |
-| Unit tests for **services** | ✅ 8 service suites, 120 tests in `@mma/api` |
+| Unit tests for **services** | ✅ 8 service suites, 120 tests in `@genex/api` |
 | Unit tests for **validators** | ❌ **Zero.** `packages/shared/src/validators/` has 20 modules and no test file. |
 | Integration tests for API routes | ✅ 15, through the real Hono app |
 | E2E for **auth** | ✅ `apps/web/e2e/auth-gating.spec.ts` |

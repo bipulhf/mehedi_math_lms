@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 import type { ChapterRecord, ContentRepository } from "@/repositories/content-repository";
 import type { CourseRecord, CourseRepository } from "@/repositories/course-repository";

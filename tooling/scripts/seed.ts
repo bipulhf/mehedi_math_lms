@@ -1,6 +1,6 @@
-import { createPasswordHash } from "@mma/auth/server";
-import { accounts, and, db, eq, sql, users } from "@mma/db";
-import { generateUniqueSlug } from "@mma/shared";
+import { createPasswordHash } from "@genex/auth/server";
+import { accounts, and, db, eq, sql, users } from "@genex/db";
+import { generateUniqueSlug } from "@genex/shared";
 import { z } from "zod";
 
 const seedEnvSchema = z.object({

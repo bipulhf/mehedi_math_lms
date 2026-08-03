@@ -1,4 +1,4 @@
-import { buildImageSrcSet, readImageVariants } from "@mma/shared";
+import { buildImageSrcSet, readImageVariants } from "@genex/shared";
 import type { ImgHTMLAttributes, JSX } from "react";
 
 export interface ResponsiveImageProps

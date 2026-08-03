@@ -12,7 +12,7 @@ import {
   ne,
   or,
   users
-} from "@mma/db";
+} from "@genex/db";
 
 import {
   mapMessage,

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
     seo({
       description:
-        "Secure email and Google sign-in for Mehedi's Math Academy dashboards, courses, and messaging.",
+        "Secure email and Google sign-in for Genex dashboards, courses, and messaging.",
       path: "/auth/sign-in",
       title: "Sign in"
     }),

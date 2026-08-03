@@ -5,13 +5,13 @@ import type {
   bugReportStatusSchema,
   createAdminUserSchema,
   updateAdminUserSchema,
-  updateAdminUserStatusSchema} from "@mma/shared";
+  updateAdminUserStatusSchema} from "@genex/shared";
 import {
   userListStatusSchema,
   type AdminSendNotificationInput,
   type AdminSendSmsInput,
   type UserRole
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPatch, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";

@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@mma/shared";
+import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@genex/shared";
 
 import type { ReviewService } from "@/services/review-service";
 import type { AppBindings } from "@/types/app-bindings";

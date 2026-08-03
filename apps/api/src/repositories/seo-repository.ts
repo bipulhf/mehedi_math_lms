@@ -1,4 +1,4 @@
-import { and, categories, courses, db, eq, isNotNull, users } from "@mma/db";
+import { and, categories, courses, db, eq, isNotNull, users } from "@genex/db";
 
 export interface SitemapCourseRow {
   slug: string;

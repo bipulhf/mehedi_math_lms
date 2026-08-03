@@ -1,4 +1,4 @@
-import { imageVariantWidths } from "@mma/shared";
+import { imageVariantWidths } from "@genex/shared";
 import sharp, { type Sharp } from "sharp";
 
 export interface GeneratedImageVariant {

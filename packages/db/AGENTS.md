@@ -1,4 +1,4 @@
-# AGENTS.md — `@mma/db`
+# AGENTS.md — `@genex/db`
 
 Drizzle ORM schema, Postgres client, and migrations. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -29,7 +29,7 @@ drizzle.config.ts      Loads the root .env, points schema at src/schema/index.ts
 export { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, lt, ne, or, sql } from "drizzle-orm";
 ```
 
-Consumers import everything from `@mma/db` — `import { and, courses, db, eq } from "@mma/db"`. If a repository needs an operator that is not on that list (`gt`, `gte`, `sum`, `between`, ...), **add it to `src/index.ts`** rather than importing `drizzle-orm` directly in `apps/api`. Keeping one import surface is the point.
+Consumers import everything from `@genex/db` — `import { and, courses, db, eq } from "@genex/db"`. If a repository needs an operator that is not on that list (`gt`, `gte`, `sum`, `between`, ...), **add it to `src/index.ts`** rather than importing `drizzle-orm` directly in `apps/api`. Keeping one import surface is the point.
 
 ## Schema conventions
 
@@ -50,8 +50,8 @@ Follow `src/schema/categories.ts`:
 
 ## Auth tables
 
-`users`, `sessions`, `accounts`, and `verificationTokens` are owned by this package but consumed by Better Auth through the drizzle adapter in `@mma/auth`, which maps them to Better Auth's expected model names. Renaming a column on those four tables means updating the adapter mapping and `additionalFields` in every server config under `packages/auth/src/`.
+`users`, `sessions`, `accounts`, and `verificationTokens` are owned by this package but consumed by Better Auth through the drizzle adapter in `@genex/auth`, which maps them to Better Auth's expected model names. Renaming a column on those four tables means updating the adapter mapping and `additionalFields` in every server config under `packages/auth/src/`.
 
 ## Client
 
-`db` is a module-level singleton over a `pg.Pool`. `DATABASE_URL` is parsed with Zod at import time, so importing `@mma/db` in a process without that variable throws immediately — which is intended. Scripts and workers must load the root `.env` before importing (`bun --env-file ../../.env`).
+`db` is a module-level singleton over a `pg.Pool`. `DATABASE_URL` is parsed with Zod at import time, so importing `@genex/db` in a process without that variable throws immediately — which is intended. Scripts and workers must load the root `.env` before importing (`bun --env-file ../../.env`).

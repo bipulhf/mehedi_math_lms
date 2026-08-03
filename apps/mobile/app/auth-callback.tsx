@@ -2,7 +2,7 @@ import { Redirect } from "expo-router";
 import type { JSX } from "react";
 
 /**
- * The landing pad for `mma://auth-callback`.
+ * The landing pad for `genex://auth-callback`.
  *
  * `WebBrowser.openAuthSessionAsync` resolves with this URL and the caller reads
  * the token from it — but on Android the same deep link is also delivered

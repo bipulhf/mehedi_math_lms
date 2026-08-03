@@ -280,7 +280,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | Phase | Work | Status |
 | --- | --- | --- |
 | 0 | Rewrite `DESIGN.md` for Genex; fix `apps/web/AGENTS.md` §Styling / §Loading / §Progress / §Layout | ☑ |
-| 1 | Rename, everywhere (§7). Mechanical, no behaviour change | ☐ |
+| 1 | Rename, everywhere (§7). Mechanical, no behaviour change | ☑ |
 | 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☐ |
 | 3 | Design tokens: `app.css`, fonts, `PageBackground`, brand assets | ☐ |
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☐ |
@@ -306,6 +306,29 @@ the no-shimmer rule, §Progress retargeted at accent-on-track, and §Layout
 corrected — it listed `select`, `textarea` and `skeleton` in `components/ui/`
 and none of the three exist. Root `AGENTS.md` now points at this document first.
 Typecheck 8/8.
+
+**Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
+workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt
+with the real helpline and address, `mehedismathacademy.com` → `genex.com.bd`.
+
+Beyond the obvious string swap, five things carried real behaviour and would
+have broken silently:
+
+- `isAllowedAppRedirect`'s scheme allow-list — `mma:` → `genex:`. Left alone it
+  would have refused every deep link from the renamed Expo app.
+- Expo `scheme`, `slug`, `name` and both application ids (`com.genex.app`).
+- Redis pub/sub channels (`genex:messages:events`, `genex:messages:presence`,
+  `genex:notifications:events`) — publisher and subscriber have to agree.
+- Mobile storage keys (`genex.session-cookie`, `genex.query-cache`). This
+  invalidates any session stored on a device, which is fine on dev.
+- The payment transaction-id prefix, `MMA-` → `GENEX-`.
+
+The bundled `mma-logo.svg` (an "M" mark in the old indigo palette) is gone,
+replaced by `genex-mark.png` from the handoff; the four brand files are also in
+`apps/web/public/brand/`. Database recreated as `genex`, migrated and seeded —
+the old `academy` database was left in place rather than dropped.
+
+Typecheck 8/8, lint 8/8, tests 6/6 (309 passing).
 
 ---
 
@@ -335,3 +358,14 @@ Typecheck 8/8.
    feeds `BETTER_AUTH_URL` and the Google OAuth redirect URIs.
 2. **Brand vector** — the logo assets were traced from a white-background JPG.
    Ask the client for the original SVG/AI before shipping.
+3. **Repository directory** — still `mehedi_math_academy` on disk. Renaming it
+   mid-session would invalidate every open path, so it is left for you:
+
+   ```bash
+   mv /media/bipulhf/Drive2/mehedi_math_academy /media/bipulhf/Drive2/genex
+   ```
+
+   Nothing in the code depends on the directory name.
+4. **`BETTER_AUTH_URL`** — `.env` has it on `:3001`, the API port. Better Auth is
+   served by the **web** app, so it should be `http://localhost:3000`. Predates
+   this migration; flagged rather than changed.

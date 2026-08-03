@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from "@mma/auth/server";
+import type { AuthSession, AuthUser } from "@genex/auth/server";
 import type { Logger } from "pino";
 
 export type QueueName = "notification" | "sms" | "file-processing";

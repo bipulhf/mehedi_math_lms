@@ -1,4 +1,4 @@
-import { createCourseNoticeSchema } from "@mma/shared";
+import { createCourseNoticeSchema } from "@genex/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pin, Trash2 } from "lucide-react";
 import type { FormEvent, JSX } from "react";

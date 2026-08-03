@@ -7,7 +7,7 @@ import {
   inArray,
   lectureMaterials,
   lectures
-} from "@mma/db";
+} from "@genex/db";
 
 export interface ChapterRecord {
   courseId: string;

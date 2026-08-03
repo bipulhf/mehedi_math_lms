@@ -15,12 +15,12 @@ describe("resolveOrigins", () => {
   test("a configured origin wins, and a trailing slash does not double up", () => {
     expect(
       resolveOrigins({
-        configuredApiOrigin: "https://api.mma.test/",
-        configuredWebOrigin: "https://mma.test/",
+        configuredApiOrigin: "https://api.genex.test/",
+        configuredWebOrigin: "https://genex.test/",
         devHost: "192.168.0.9",
         platform: "ios"
       })
-    ).toEqual({ apiOrigin: "https://api.mma.test", webOrigin: "https://mma.test" });
+    ).toEqual({ apiOrigin: "https://api.genex.test", webOrigin: "https://genex.test" });
   });
 
   test("a device takes the host from the Metro connection, not from localhost", () => {

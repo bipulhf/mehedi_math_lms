@@ -24,3 +24,4 @@ apps/web/.playwright/
 # Expo
 apps/mobile/.expo/
 apps/mobile/dist/
+design_handoff_genex

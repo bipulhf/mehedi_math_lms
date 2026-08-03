@@ -10,7 +10,7 @@ export const Route = createFileRoute("/login")({
   head: () =>
     seo({
       description:
-        "Access your Mehedi's Math Academy student or instructor account with email, password, or Google OAuth.",
+        "Access your Genex student or instructor account with email, password, or Google OAuth.",
       // /login is a friendly alias for the same page as /auth/sign-in. Only
       // one of the two may claim to be the original.
       path: "/auth/sign-in",

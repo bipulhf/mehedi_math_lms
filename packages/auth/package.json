@@ -1,5 +1,5 @@
 {
-  "name": "@mma/auth",
+  "name": "@genex/auth",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -30,8 +30,8 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.6.25",
-    "@mma/db": "workspace:*",
-    "@mma/shared": "workspace:*",
+    "@genex/db": "workspace:*",
+    "@genex/shared": "workspace:*",
     "better-auth": "^1.6.25",
     "zod": "^4.4.3"
   }

@@ -9,7 +9,7 @@ export interface NotificationRealtimeEvent {
   userIds?: readonly string[];
 }
 
-const CHANNEL = "mma:notifications:events";
+const CHANNEL = "genex:notifications:events";
 
 interface LocalRegistration {
   connectionId: string;

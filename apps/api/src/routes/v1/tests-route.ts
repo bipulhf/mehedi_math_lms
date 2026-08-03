@@ -8,8 +8,8 @@ import {
   submitTestSchema,
   testIdParamsSchema,
   updateTestSchema
-} from "@mma/shared";
-import type { UserRole } from "@mma/shared";
+} from "@genex/shared";
+import type { UserRole } from "@genex/shared";
 
 import { testController } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";

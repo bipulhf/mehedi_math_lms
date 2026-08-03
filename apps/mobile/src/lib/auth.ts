@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 

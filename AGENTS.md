@@ -1,6 +1,6 @@
-# AGENTS.md — Mehedi's Math Academy
+# AGENTS.md — Genex
 
-Monorepo for **mehedismathacademy.com**, an LMS. Bun + Turborepo + TypeScript.
+Monorepo for **genex.com.bd**, an LMS. Bun + Turborepo + TypeScript.
 
 Nested `AGENTS.md` files exist per workspace. Read the one for the workspace you are editing — it holds the layer rules that matter for that code:
 
@@ -31,17 +31,17 @@ bun run db:migrate   # drizzle-kit migrate
 bun run db:seed
 ```
 
-Single workspace: `bun run --filter @mma/api dev` (or `cd apps/api && bun run dev`).
+Single workspace: `bun run --filter @genex/api dev` (or `cd apps/api && bun run dev`).
 
 **Package manager is `bun`, not npm.** The lockfile is `bun.lock`. Never hand-edit it.
 
 ## Workspace graph
 
 ```
-apps/web  ──┬─> @mma/auth ──┬─> @mma/db
-apps/api  ──┤               └─> @mma/shared
-            └─> @mma/shared
-tooling/scripts ─> @mma/auth, @mma/db, @mma/shared
+apps/web  ──┬─> @genex/auth ──┬─> @genex/db
+apps/api  ──┤               └─> @genex/shared
+            └─> @genex/shared
+tooling/scripts ─> @genex/auth, @genex/db, @genex/shared
 apps/mobile — standalone, no workspace deps yet
 ```
 
@@ -57,9 +57,9 @@ Packages are consumed as **TypeScript source**, not built output — `exports` i
 
 ### Auth topology (easy to get wrong)
 
-Better Auth's HTTP handler is mounted in the **web app**, not the API — `apps/web/src/routes/api/auth/$.ts` serves `/api/auth/*` using `@mma/auth/tanstack-server`. `BETTER_AUTH_URL` therefore points at the web origin (`http://localhost:3000`).
+Better Auth's HTTP handler is mounted in the **web app**, not the API — `apps/web/src/routes/api/auth/$.ts` serves `/api/auth/*` using `@genex/auth/tanstack-server`. `BETTER_AUTH_URL` therefore points at the web origin (`http://localhost:3000`).
 
-The API does not serve auth endpoints. It only *verifies* sessions: `sessionContextMiddleware` calls `auth.api.getSession()` from `@mma/auth/server` and puts `authSession` / `authUser` on the Hono context. See `packages/auth/AGENTS.md` for why there are three near-identical server configs.
+The API does not serve auth endpoints. It only *verifies* sessions: `sessionContextMiddleware` calls `auth.api.getSession()` from `@genex/auth/server` and puts `authSession` / `authUser` on the Hono context. See `packages/auth/AGENTS.md` for why there are three near-identical server configs.
 
 ## Conventions
 
@@ -81,7 +81,7 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 - Keep changes focused on the request. No drive-by refactors.
 - One logical change per commit. Conventional Commits (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `build`, `ci`).
 - After a change, run `bun run typecheck` and `bun run lint` for the affected workspace at minimum.
-- `bun run test` fans out to the workspaces that have tests: unit suites for `@mma/api` services and `@mma/shared` validators, plus the API's integration tests over the real Hono app. It needs Postgres and Redis. Playwright lives outside that task — `bun run --filter @mma/web test:e2e`.
+- `bun run test` fans out to the workspaces that have tests: unit suites for `@genex/api` services and `@genex/shared` validators, plus the API's integration tests over the real Hono app. It needs Postgres and Redis. Playwright lives outside that task — `bun run --filter @genex/web test:e2e`.
 
 ## Reference documents
 

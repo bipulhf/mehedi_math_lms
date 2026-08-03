@@ -6,7 +6,7 @@ import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardRoute,

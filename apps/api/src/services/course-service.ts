@@ -3,12 +3,12 @@ import type { UserRole ,
   listCoursesQuerySchema,
   rejectCourseSchema,
   updateCourseSchema
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 import {
   generateUniqueSlug
-} from "@mma/shared";
-import { courses, eq, inArray, or, type SQL } from "@mma/db";
+} from "@genex/shared";
+import { courses, eq, inArray, or, type SQL } from "@genex/db";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CategoryRepository } from "@/repositories/category-repository";

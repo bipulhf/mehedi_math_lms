@@ -1,4 +1,4 @@
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Redirect, Stack, useRouter } from "expo-router";
 import type { JSX } from "react";

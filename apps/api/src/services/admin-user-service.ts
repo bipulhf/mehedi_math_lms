@@ -1,4 +1,4 @@
-import { generateUniqueSlug } from "@mma/shared";
+import { generateUniqueSlug } from "@genex/shared";
 
 import type { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import type {

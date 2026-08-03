@@ -2,7 +2,7 @@ import type {
   CreateCourseNoticeInput,
   UpdateCourseNoticeInput,
   UserRole
-} from "@mma/shared";
+} from "@genex/shared";
 
 import type { CourseRecord } from "@/repositories/course-repository";
 import type { CourseRepository } from "@/repositories/course-repository";

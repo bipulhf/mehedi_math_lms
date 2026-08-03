@@ -24,12 +24,12 @@ function ContactPage(): JSX.Element {
     <PublicLayout
       eyebrow="Reach the team"
       title="We read every note from students, guardians, and school partners."
-      subtitle="Use the dashboard bug reporter for product issues, or email hello@mehedismathacademy.com for general inquiries while dedicated in-app messaging rolls out."
+      subtitle="Use the dashboard bug reporter for product issues, or email hello@genex.com.bd for general inquiries while dedicated in-app messaging rolls out."
     >
       <Card className="bg-surface-container-low">
         <CardContent className="space-y-3 p-6 text-sm leading-7 text-on-surface/80">
           <p>
-            <span className="font-semibold text-on-surface">Email:</span> hello@mehedismathacademy.com
+            <span className="font-semibold text-on-surface">Email:</span> hello@genex.com.bd
           </p>
           <p>
             <span className="font-semibold text-on-surface">Site:</span> {siteConfig.url}

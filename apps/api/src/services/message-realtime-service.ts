@@ -10,8 +10,8 @@ export interface MessageRealtimeEvent {
   userIds?: readonly string[];
 }
 
-const MESSAGE_REALTIME_CHANNEL = "mma:messages:events";
-const PRESENCE_HASH_KEY = "mma:messages:presence";
+const MESSAGE_REALTIME_CHANNEL = "genex:messages:events";
+const PRESENCE_HASH_KEY = "genex:messages:presence";
 
 interface LocalSocketEntry {
   connectionId: string;

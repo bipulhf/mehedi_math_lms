@@ -25,7 +25,7 @@ export const Route = createFileRoute("/dev/seo-preview")({
   head: () =>
     seo({
       description:
-        "Inspect how Mehedi's Math Academy meta tags render before publishing to production.",
+        "Inspect how Genex meta tags render before publishing to production.",
       path: "/dev/seo-preview",
       title: "SEO preview (dev)"
     }),

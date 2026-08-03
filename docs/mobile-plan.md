@@ -36,7 +36,7 @@ Verified:
 | Expo config is sound                         | `bunx expo-doctor` — 20/20                                                |
 | The module graph bundles                     | `bunx expo export --platform android` — 4.8MB Hermes bytecode, 33 assets  |
 | Every screen renders, with data and without  | `src/screens.test.tsx`                                                    |
-| 60 tests pass                                | `bun run --filter @mma/mobile test`                                       |
+| 60 tests pass                                | `bun run --filter @genex/mobile test`                                       |
 | **All 15 routes boot in a real browser**     | `expo export --platform web`, then each route loaded headless — see below |
 | **The native project generates**             | `bunx expo prebuild --platform android` — every config plugin resolves    |
 | **Both redirect hops behave over real HTTP** | `apps/web/e2e/mobile-handoff.spec.ts` — 8 tests against a running stack   |
@@ -89,9 +89,9 @@ the output with a server that maps `/sign-in` to `sign-in.html`, and load each r
 
 ### What still needs a phone
 
-- Start the API (`bun run --filter @mma/api dev`) and the web app (`bun run --filter @mma/web dev`) —
+- Start the API (`bun run --filter @genex/api dev`) and the web app (`bun run --filter @genex/web dev`) —
   mobile needs both: the API for data, the web origin for Better Auth and for the two redirect hops.
-- `bun run --filter @mma/mobile start`, then open on one Android emulator and one physical device.
+- `bun run --filter @genex/mobile start`, then open on one Android emulator and one physical device.
   The emulator matters because `resolveOrigins` has a `10.0.2.2` branch that only it exercises; the
   device matters because the Metro-host branch is the one a real handset takes. Both branches are
   unit-tested, and neither test proves the host is reachable.
@@ -182,7 +182,7 @@ request with a token; and that verifying a token that was never minted fails wit
 provider:
 
 - Add the Expo redirect to the Google console's authorised origins if the provider rejects the flow.
-- Walk it: tap through, complete consent, confirm the browser closes on `mma://auth-callback`.
+- Walk it: tap through, complete consent, confirm the browser closes on `genex://auth-callback`.
 - Let the token expire past its three minutes (must show a message, not a blank screen), and replay a
   consumed one (must be refused — it is single-use, and that is the security property the whole
   design rests on).
@@ -224,7 +224,7 @@ out. The note in `apps/mobile/AGENTS.md` claiming otherwise was wrong and has be
 So the form is native, which is what the alternative in this plan proposed for a different reason:
 
 - `src/lib/profile-form.ts` holds the fields, the schema and the initial values as one thing. The
-  schemas come from `@mma/shared` — the same ones the API validates against — and the API picks which
+  schemas come from `@genex/shared` — the same ones the API validates against — and the API picks which
   to apply from the session's role, so the screen sends the shape matching the role it rendered for.
 - `app/profile-complete.tsx` renders it, reports one message per field, and invalidates both the
   profile and the **session** on save, because `profileCompleted` lives on the session and the shell
@@ -241,7 +241,7 @@ back to the session for every field.
 ## Stage 6 — realtime messaging ✅
 
 `src/lib/use-messaging-socket.ts`, with the web client's hook as the reference — same endpoint, same
-event union. The union itself moved to `@mma/shared` as `WebsocketServerEvent`, because there are two
+event union. The union itself moved to `@genex/shared` as `WebsocketServerEvent`, because there are two
 clients now and a field added on the server has to reach both.
 
 What differs on mobile is lifecycle, which is what made this a boundary in the first place:
@@ -327,7 +327,7 @@ directory afterwards.
 - `app.json` has `"version": "1.0.0"` and `eas.json` sets `autoIncrement` on production only. Confirm
   that is the intended scheme before the first submission, because changing it afterwards is awkward.
 - **Confirm the application id before the first submission.** Prebuild demanded one and wrote
-  `com.anonymous.mehedismathacademy`; it is now `com.mehedismathacademy.app` on both platforms,
+  `com.anonymous.genex`; it is now `com.genex.app` on both platforms,
   derived from the domain. That is a placeholder replaced by a reasonable default, not a decision
   anyone made — and it is the one field that genuinely cannot change once an app is listed.
 

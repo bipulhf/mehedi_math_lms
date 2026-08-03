@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { lectureProgressParamsSchema } from "@mma/shared";
+import { lectureProgressParamsSchema } from "@genex/shared";
 
 import { progressController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

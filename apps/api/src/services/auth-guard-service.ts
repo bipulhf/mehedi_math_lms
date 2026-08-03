@@ -1,5 +1,5 @@
-import type { AuthSession, AuthUser } from "@mma/auth/server";
-import type { UserRole } from "@mma/shared";
+import type { AuthSession, AuthUser } from "@genex/auth/server";
+import type { UserRole } from "@genex/shared";
 
 import type { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { ForbiddenError, UnauthorizedError } from "@/utils/errors";

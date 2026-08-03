@@ -64,7 +64,7 @@ export class EnrollmentPdfService {
     const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
     const title = "Certificate of Completion";
-    const subtitle = "Mehedi's Math Academy";
+    const subtitle = "Genex";
 
     page.drawText(title, {
       color: rgb(0.15, 0.15, 0.2),
@@ -141,7 +141,7 @@ export class EnrollmentPdfService {
       y: 720
     });
 
-    page.drawText("Mehedi's Math Academy", {
+    page.drawText("Genex", {
       font,
       size: 11,
       x: 72,

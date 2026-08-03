@@ -2,10 +2,10 @@ import type { UserRole ,
   basicProfileInputSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
-} from "@mma/shared";
+} from "@genex/shared";
 import {
   generateUniqueSlug
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 
 import type {

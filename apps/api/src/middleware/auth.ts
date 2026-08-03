@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono";
-import type { UserRole } from "@mma/shared";
+import type { UserRole } from "@genex/shared";
 
 import { authGuardService } from "@/lib/container";
 import type { AppBindings } from "@/types/app-bindings";

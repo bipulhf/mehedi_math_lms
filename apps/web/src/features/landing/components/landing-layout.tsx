@@ -23,7 +23,7 @@ export function LandingLayout({ children, showGrid = true }: PropsWithChildren<{
               to="/"
               className="text-xl font-bold tracking-tighter text-on-surface font-headline"
             >
-              Mehedi's Math Academy
+              Genex
             </Link>
             <div className="hidden md:flex gap-8 items-center">
               <Link
@@ -94,9 +94,9 @@ export function LandingLayout({ children, showGrid = true }: PropsWithChildren<{
       <footer className="w-full border-t border-outline-variant/20 bg-surface-container-lowest">
         <div className="flex flex-col md:flex-row justify-between items-center px-12 py-16 gap-8 w-full max-w-7xl mx-auto">
           <div className="space-y-4 text-center md:text-left">
-            <span className="text-lg font-black text-on-surface">Mehedi's Math Academy</span>
+            <span className="text-lg font-black text-on-surface">Genex</span>
             <p className="font-inter text-xs tracking-wider uppercase text-on-surface-variant max-w-xs">
-              © {new Date().getFullYear()} Mehedi's Math Academy.
+              © {new Date().getFullYear()} Genex.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">

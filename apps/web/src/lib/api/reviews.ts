@@ -1,4 +1,4 @@
-import type { CreateCourseReviewInput } from "@mma/shared";
+import type { CreateCourseReviewInput } from "@genex/shared";
 
 import { apiGet, apiGetPaginated, apiPost, type PaginatedApiResponse } from "@/lib/api/client";
 

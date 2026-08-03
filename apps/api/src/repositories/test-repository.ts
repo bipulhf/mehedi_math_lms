@@ -13,12 +13,12 @@ import {
   testSubmissions,
   tests,
   users
-} from "@mma/db";
+} from "@genex/db";
 import type {
   QuestionType,
   TestSubmissionStatus,
   TestType
-} from "@mma/shared";
+} from "@genex/shared";
 
 /** One published Test and how the student has fared against it. ADR-0005. */
 export interface CourseTestResultRecord {

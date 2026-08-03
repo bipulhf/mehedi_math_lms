@@ -1,4 +1,4 @@
-import { reportConversationSchema, type ReportConversationInput } from "@mma/shared";
+import { reportConversationSchema, type ReportConversationInput } from "@genex/shared";
 import { ShieldAlert } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";

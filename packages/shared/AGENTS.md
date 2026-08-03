@@ -1,4 +1,4 @@
-# AGENTS.md — `@mma/shared`
+# AGENTS.md — `@genex/shared`
 
 The contract layer between the API, the web app, and scripts: Zod validators, shared types, and slug helpers. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -17,7 +17,7 @@ The last two are not validators, and they are here for the same reason the valid
 - **Image variants.** The API marks an uploaded image's URL with the widths it generated; the web app turns that into a `srcset` and the Expo app picks one URL by device pixels. If each side derived variant URLs on its own, a rename on one would 404 on the others — and a `srcset` candidate that 404s breaks the image, because the browser does not fall back to `src`.
 - **Progress chunks.** DESIGN.md's chunked tracker means turning a percentage into whole blocks, and the rounding rules — some progress never rounds to empty, nearly-done never rounds to full — are a product decision, not a rendering detail. Web and mobile draw different elements from the same numbers.
 
-`src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@mma/shared"` is the normal form. Subpath exports (`@mma/shared/validators/*`, `@mma/shared/types/*`, `@mma/shared/constants/*`) also exist but are rarely used.
+`src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@genex/shared"` is the normal form. Subpath exports (`@genex/shared/validators/*`, `@genex/shared/types/*`, `@genex/shared/constants/*`) also exist but are rarely used.
 
 Zod v4. Only dependency.
 

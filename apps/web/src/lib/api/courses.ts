@@ -3,7 +3,7 @@ import type {
   courseStatusSchema,
   rejectCourseSchema,
   updateCourseSchema
-} from "@mma/shared";
+} from "@genex/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
