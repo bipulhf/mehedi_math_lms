@@ -358,3 +358,35 @@ The root `package.json` currently provides:
 ## License
 
 This repository is private and intended for internal/product development use unless stated otherwise.
+
+## Linux: file watcher limits
+
+The dev servers watch the workspace packages as source, so a package edit
+hot-reloads. On Linux each watched file costs an inotify watch, and the
+per-user ceilings are low by default — `bun run dev` can die with:
+
+```
+Error: ENOSPC: System limit for number of file watchers reached
+```
+
+Raise both ceilings (needs root, survives reboot):
+
+```bash
+echo 'fs.inotify.max_user_watches=524288'  | sudo tee /etc/sysctl.d/60-inotify.conf
+echo 'fs.inotify.max_user_instances=1024' | sudo tee -a /etc/sysctl.d/60-inotify.conf
+sudo sysctl --system
+```
+
+Before reaching for that, check what is already holding watches. `watchman`
+(started by Expo) and editor indexers routinely hold tens of thousands:
+
+```bash
+cat /proc/sys/fs/inotify/max_user_watches
+watchman shutdown-server   # if you are not running the mobile app
+```
+
+Running only the workspaces you need also helps:
+
+```bash
+bun run dev --filter=@genex/web --filter=@genex/api
+```

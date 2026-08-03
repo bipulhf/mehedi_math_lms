@@ -120,6 +120,33 @@ The dashboard chunk compiles on first navigation, so the guard-redirect
 assertions allow 45s. Do not tighten that back to 15s: it made the suite fail
 cold and pass warm.
 
+## File watchers
+
+Packages are consumed as TypeScript source, so the dev server follows the
+`node_modules/@genex/*` symlinks out into `packages/` and watches the real
+files — that is what makes a package edit hot-reload. `server.watch.ignored` in
+`vite.config.ts` keeps it from descending into build output, caches and the
+mobile app on the way.
+
+That matters on Linux, where every watched file costs an inotify watch and the
+per-user ceilings are low by default. If `bun run dev` dies with
+`ENOSPC: System limit for number of file watchers reached`, the dev server is
+rarely the culprit — check what else is holding watches first:
+
+```bash
+cat /proc/sys/fs/inotify/max_user_watches      # total watches allowed
+cat /proc/sys/fs/inotify/max_user_instances    # watcher *instances* allowed
+```
+
+`watchman` (started by Expo) and an editor's indexer routinely hold tens of
+thousands between them. Running only the workspaces you need helps:
+
+```bash
+bun run dev --filter=@genex/web --filter=@genex/api
+```
+
+Raising the ceilings is the durable fix and needs root — see the README.
+
 ## Talking to the API
 
 Never call `fetch` directly for API data. Two clients, for two contexts:

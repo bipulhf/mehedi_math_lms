@@ -23,6 +23,25 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
+      // Packages are consumed as TypeScript source, so Vite follows the
+      // node_modules/@genex/* symlinks out into packages/ and watches real
+      // files there — which is what makes a package edit hot-reload. What it
+      // must not do is descend into build output and caches on the way: those
+      // are thousands of files that never trigger a useful reload, and on
+      // Linux every one of them costs an inotify watch.
+      watch: {
+        ignored: [
+          "**/node_modules/**",
+          "**/dist/**",
+          "**/.turbo/**",
+          "**/.git/**",
+          "**/test-results/**",
+          "**/playwright-report/**",
+          "**/coverage/**",
+          path.join(repoRoot, "design_handoff_genex/**"),
+          path.join(repoRoot, "apps/mobile/**")
+        ]
+      },
       proxy: {
         "/api/v1": {
           changeOrigin: true,
