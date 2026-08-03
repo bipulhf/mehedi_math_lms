@@ -50,6 +50,20 @@ export interface ContentChapter {
   updatedAt: string;
 }
 
+/** The public outline — titles and lengths, no video and no materials. */
+export interface CourseOutlineLesson {
+  durationSeconds: number | null;
+  id: string;
+  isPreview: boolean;
+  title: string;
+}
+
+export interface CourseOutlineChapter {
+  id: string;
+  lessons: readonly CourseOutlineLesson[];
+  title: string;
+}
+
 export type CreateChapterInput = z.infer<typeof createChapterSchema>;
 export type UpdateChapterInput = z.infer<typeof updateChapterSchema>;
 export type ReorderChaptersInput = z.infer<typeof reorderChaptersSchema>;

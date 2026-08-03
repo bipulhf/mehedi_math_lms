@@ -42,6 +42,7 @@ export interface CourseListItem {
   rejectedAt: string | null;
   reviewFeedback: string | null;
   slug: string;
+  stats: CourseRecord["stats"];
   status: CourseRecord["status"];
   submittedAt: string | null;
   teachers: CourseRecord["teachers"];
@@ -80,6 +81,7 @@ function mapCourse(course: CourseRecord): CourseDetailResponse {
     reviewFeedback: course.reviewFeedback,
     slug: course.slug,
     status: course.status,
+    stats: course.stats,
     submittedAt: course.submittedAt?.toISOString() ?? null,
     teachers: course.teachers,
     title: course.title,
@@ -287,6 +289,7 @@ export class CourseService {
 
     const repositoryQuery = {
       categoryId,
+      hasFreeLesson: query.hasFreeLesson,
       limit: query.limit,
       maxPrice: query.maxPrice,
       minPrice: query.minPrice,
@@ -324,6 +327,7 @@ export class CourseService {
             repositoryQuery.minPrice,
             repositoryQuery.maxPrice,
             repositoryQuery.search,
+            repositoryQuery.hasFreeLesson,
             repositoryQuery.page,
             repositoryQuery.limit
           ),

@@ -97,6 +97,13 @@ coursesRoutes.get("/:id", (context) => {
   );
 });
 
+// Public: the shape of the course, without anything enrolment pays for.
+coursesRoutes.get("/:courseId/outline", (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+
+  return contentController.getCourseOutline(context, params.courseId);
+});
+
 coursesRoutes.get("/:courseId/content", requireAuth(), (context) => {
   const params = courseContentParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");

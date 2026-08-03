@@ -56,7 +56,7 @@ export function SiteFooter(): JSX.Element {
 
           <FooterColumn title={t("footer.courses")}>
             {siteNavItems.map((item) => (
-              <Link className="hover:text-ink" key={item.labelKey} to={item.to}>
+              <Link className="hover:text-ink" key={item.labelKey} search={item.search} to={item.to}>
                 {t(item.labelKey)}
               </Link>
             ))}

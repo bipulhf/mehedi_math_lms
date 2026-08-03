@@ -53,6 +53,8 @@ export const rejectCourseSchema = z.object({
 export const listCoursesQuerySchema = z.object({
   categoryId: idSchema.optional(),
   categorySlug: z.string().trim().min(1).max(255).optional(),
+  /** ফ্রি ক্লাস — courses offering at least one preview lesson. */
+  hasFreeLesson: booleanQueryParamSchema.optional(),
   limit: z.coerce.number().int().positive().max(50).default(12),
   maxPrice: z.coerce.number().min(0).max(999999).optional(),
   minPrice: z.coerce.number().min(0).max(999999).optional(),

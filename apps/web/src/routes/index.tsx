@@ -8,14 +8,13 @@ import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import { ssrApiGet } from "@/lib/ssr-api";
 
-// Landing page components
-import { CategoriesSection } from "@/features/landing/components/categories-section";
-import { CoursesSection } from "@/features/landing/components/courses-section";
+import { PublicLayout } from "@/components/layout/public-layout";
 import { CtaSection } from "@/features/landing/components/cta-section";
+import { FaqSection } from "@/features/landing/components/faq-section";
 import { HeroSection } from "@/features/landing/components/hero-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
-import { PublicLayout } from "@/components/layout/public-layout";
-import { StatsSection } from "@/features/landing/components/stats-section";
+import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
+import { StepsSection } from "@/features/landing/components/steps-section";
 
 const EMPTY_SNAPSHOT: LandingSnapshot = {
   categories: [],
@@ -45,7 +44,7 @@ export const Route = createFileRoute("/")({
             ]
           : [organizationJsonLd()],
       path: "/",
-      title: "Genex | The Digital Atelier for High-Performance Learning"
+      title: siteConfig.name
     });
   },
   loader: async () => ssrApiGet<LandingSnapshot>("/landing"),
@@ -57,27 +56,14 @@ export const Route = createFileRoute("/")({
 function HomePageSkeleton(): JSX.Element {
   return (
     <PublicLayout>
-      <section className="max-w-7xl mx-auto px-8 pt-20 pb-32 grid lg:grid-cols-2 gap-16 items-center">
-        <div className="space-y-8">
-          <Skeleton className="h-6 w-56 rounded-full" />
-          <Skeleton className="h-20 w-full rounded-2xl" />
-          <Skeleton className="h-20 w-4/5 rounded-2xl" />
-          <Skeleton className="h-14 w-full rounded-xl" />
+      <div className="mx-auto grid w-full max-w-[90rem] gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_420px] lg:px-14 lg:py-24">
+        <div className="space-y-6">
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-4/5" />
+          <Skeleton className="h-12 w-2/3" />
         </div>
-        <Skeleton className="aspect-square w-full rounded-[2rem]" />
-      </section>
-      <section className="bg-surface-container-low py-20 px-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap gap-16">
-          {[0, 1, 2, 3].map((index) => (
-            <Skeleton key={index} className="h-16 w-40 rounded-2xl" />
-          ))}
-        </div>
-      </section>
-      <section className="max-w-7xl mx-auto px-8 py-32 grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {[0, 1, 2, 3, 4, 5].map((index) => (
-          <Skeleton key={index} className="h-[26rem] w-full rounded-4xl" />
-        ))}
-      </section>
+        <Skeleton className="hidden aspect-4/5 w-full lg:block" />
+      </div>
     </PublicLayout>
   );
 }
@@ -88,13 +74,14 @@ function HomePage(): JSX.Element {
   return (
     <PublicLayout>
       <HeroSection stats={snapshot.stats} />
-      <StatsSection stats={snapshot.stats} />
-      <CategoriesSection categories={snapshot.categories} />
-      <CoursesSection
+      <LevelPickerSection
+        categories={snapshot.categories}
         courses={snapshot.courses}
         publishedCourses={snapshot.stats.publishedCourses}
       />
+      <StepsSection />
       <InstructorsSection teachers={snapshot.teachers} />
+      <FaqSection />
       <CtaSection />
     </PublicLayout>
   );

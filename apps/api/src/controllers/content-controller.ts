@@ -8,6 +8,15 @@ import { success } from "@/utils/response";
 export class ContentController {
   public constructor(private readonly contentService: ContentService) {}
 
+  public async getCourseOutline(
+    context: Context<AppBindings>,
+    courseId: string
+  ): Promise<Response> {
+    const outline = await this.contentService.getCourseOutline(courseId);
+
+    return success(context, outline);
+  }
+
   public async getCourseContent(
     context: Context<AppBindings>,
     courseId: string,

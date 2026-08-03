@@ -1,30 +1,43 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useState, useMemo } from "react";
-import { Search, BookOpen, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { z } from "zod";
+
 import { CourseCard, CourseGridSkeleton } from "@/components/courses/course-card";
-import { FadeIn } from "@/components/common/fade-in";
+import { CourseFilterRail } from "@/components/courses/course-filter-rail";
+import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FilterPill } from "@/components/ui/pill";
+import { RingedWord } from "@/components/ui/doodles";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses } from "@/lib/api/courses";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
 import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { ssrApiGetCourses } from "@/lib/ssr-api";
-import { PublicLayout } from "@/components/layout/public-layout";
-import { Button } from "@/components/ui/button";
+
+const PAGE_SIZE = 24;
+
+const searchSchema = z.object({
+  /** ফ্রি ক্লাস in the header nav lands here. */
+  free: z.coerce.boolean().optional()
+});
+
+export type CourseSortOrder = "newest" | "priceLow" | "priceHigh";
 
 export const Route = createFileRoute("/courses/")({
+  validateSearch: (search) => searchSchema.parse(search),
   head: ({ loaderData }) => {
     const courses = loaderData?.coursesForLd ?? [];
 
     return seo({
       description:
-        "Explore every published mathematics program at Genex: pricing, teachers, and enrollment in one editorial catalog.",
+        "Explore every published course on Genex: level, subject, teacher and price in one catalogue.",
       jsonLd: [
         catalogItemListFromCourses(courses),
         breadcrumbJsonLd([
@@ -37,7 +50,7 @@ export const Route = createFileRoute("/courses/")({
     });
   },
   loader: async () => {
-    const { data } = await ssrApiGetCourses({ limit: 24, page: 1, status: "PUBLISHED" });
+    const { data } = await ssrApiGetCourses({ limit: PAGE_SIZE, page: 1, status: "PUBLISHED" });
 
     return { coursesForLd: data };
   },
@@ -45,152 +58,146 @@ export const Route = createFileRoute("/courses/")({
   errorComponent: RouteErrorView,
   pendingComponent: () => (
     <PublicLayout>
-      <div className="mx-auto max-w-7xl px-8 py-12">
+      <PublicSection>
         <CourseGridSkeleton />
-      </div>
+      </PublicSection>
     </PublicLayout>
   )
 });
 
-function flattenCategories(categories: readonly CategoryNode[]): readonly CategoryNode[] {
-  return categories.flatMap((category) => [category, ...flattenCategories(category.children)]);
+function sortCourses(
+  courses: readonly CourseSummary[],
+  order: CourseSortOrder
+): readonly CourseSummary[] {
+  if (order === "newest") {
+    return courses;
+  }
+
+  const direction = order === "priceLow" ? 1 : -1;
+
+  return [...courses].sort((a, b) => (Number(a.price) - Number(b.price)) * direction);
 }
 
 function CoursesCatalogPage(): JSX.Element {
-  const [categoryId, setCategoryId] = useState("all");
-  const [sortOrder, setSortOrder] = useState("newest");
+  const searchParams = Route.useSearch();
+  const t = useT();
+  const format = useFormat();
+
+  const [levelId, setLevelId] = useState<string | null>(null);
+  const [subjectId, setSubjectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState<CourseSortOrder>("newest");
+  const [isFreeOnly, setIsFreeOnly] = useState(searchParams.free === true);
+
   const { data: categories = [] } = useQuery<readonly CategoryNode[]>({
     queryFn: async () => listCategories(),
     queryKey: queryKeys.categories.list()
   });
-  const catalogueFilters = { categoryId, limit: 24, page: 1, search };
-  const { data: coursePage, isPending: isLoading } = useQuery({
+
+  // The subject narrows the level, so whichever is more specific decides the
+  // query. Sending both would need an `in` filter the endpoint does not have.
+  const categoryId = subjectId ?? levelId ?? undefined;
+  const filters = {
+    categoryId: categoryId ?? "all",
+    free: isFreeOnly,
+    limit: PAGE_SIZE,
+    page: 1,
+    search
+  };
+
+  const { data: coursePage, isPending } = useQuery({
     queryFn: async () =>
       listCourses({
-        categoryId: categoryId === "all" ? undefined : categoryId,
-        limit: 24,
+        ...(categoryId === undefined ? {} : { categoryId }),
+        ...(isFreeOnly ? { hasFreeLesson: true } : {}),
+        limit: PAGE_SIZE,
         page: 1,
-        search: search || undefined
+        ...(search.length === 0 ? {} : { search })
       }),
-    queryKey: queryKeys.courses.list(catalogueFilters)
+    queryKey: queryKeys.courses.list(filters)
   });
-  const courses: readonly CourseSummary[] = coursePage?.data ?? [];
 
-  const flatCategories = useMemo(() => flattenCategories(categories), [categories]);
+  const courses = useMemo(
+    () => sortCourses(coursePage?.data ?? [], sortOrder),
+    [coursePage?.data, sortOrder]
+  );
+
+  const resetFilters = (): void => {
+    setLevelId(null);
+    setSubjectId(null);
+    setSearch("");
+    setIsFreeOnly(false);
+  };
+
+  const sortOptions: readonly { label: string; value: CourseSortOrder }[] = [
+    { label: t("courses.sort.newest"), value: "newest" },
+    { label: t("courses.sort.priceLow"), value: "priceLow" },
+    { label: t("courses.sort.priceHigh"), value: "priceHigh" }
+  ];
 
   return (
-    <PublicLayout>
-      <div className="bg-surface min-h-screen">
-        {/* Search and Filters Bar */}
-        <section className="sticky top-20 z-40 bg-surface/80 backdrop-blur-2xl border-b border-outline-variant/10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-8 py-4 flex flex-col md:flex-row items-center gap-6 justify-between">
-            <div className="relative w-full md:max-w-md group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-outline group-focus-within:text-secondary transition-colors" />
-              <Input
-                placeholder="Search the archive..."
-                className="pl-11 h-12 rounded-2xl bg-surface-container-low border-outline-variant/20 focus:ring-2 focus:ring-secondary/20 transition-all font-medium"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+    <PublicLayout
+      eyebrow={t("nav.courses")}
+      subtitle={t("courses.lead")}
+      title={<RingedWord>{t("courses.title")}</RingedWord>}
+    >
+      <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-4 py-10 sm:px-8 lg:grid-cols-[296px_1fr] lg:gap-12 lg:px-14">
+        <CourseFilterRail
+          categories={categories}
+          isFreeOnly={isFreeOnly}
+          levelId={levelId}
+          onLevelChange={(next) => {
+            setLevelId(next);
+            setSubjectId(null);
+          }}
+          onReset={resetFilters}
+          onSearchChange={setSearch}
+          onSubjectChange={setSubjectId}
+          onToggleFreeOnly={() => setIsFreeOnly((current) => !current)}
+          search={search}
+          subjectId={subjectId}
+        />
 
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="flex-1 md:w-56 font-bold text-xs uppercase tracking-widest">
-                <Select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="rounded-2xl border-outline-variant/20 h-12"
+        <div className="min-w-0 space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-base text-muted">
+              {t("courses.resultCount", {
+                shown: format.number(courses.length),
+                total: format.number(coursePage?.pagination.total ?? courses.length)
+              })}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {sortOptions.map((option) => (
+                <FilterPill
+                  isSelected={sortOrder === option.value}
+                  key={option.value}
+                  onClick={() => setSortOrder(option.value)}
                 >
-                  <option value="all">All Specializations</option>
-                  {flatCategories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-
-              <div className="flex-1 md:w-48 font-bold text-xs uppercase tracking-widest">
-                <Select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="rounded-2xl border-outline-variant/20 h-12"
-                >
-                  <option value="newest">Newest Releases</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </Select>
-              </div>
+                  {option.label}
+                </FilterPill>
+              ))}
             </div>
           </div>
-        </section>
 
-        {/* Content Area */}
-        <main className="max-w-7xl mx-auto px-8 py-20 pb-40">
-          {isLoading ? (
+          {isPending ? (
             <CourseGridSkeleton />
           ) : courses.length === 0 ? (
-            <FadeIn>
-              <div className="text-center py-40 bg-surface-container-lowest rounded-4xl border border-dashed border-outline-variant/20 flex flex-col items-center gap-6">
-                <div className="size-20 rounded-full bg-surface-container-high flex items-center justify-center text-outline">
-                  <BookOpen className="size-8 opacity-20" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-headline font-black text-on-surface">
-                    No manuscripts found
-                  </h3>
-                  <p className="text-on-surface-variant mt-2 max-w-xs mx-auto text-sm italic">
-                    The intelligence archive currently contains no records matching your active
-                    parameters.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSearch("");
-                    setCategoryId("all");
-                  }}
-                  className="rounded-xl border-outline-variant/20 text-xs font-black uppercase tracking-widest"
-                >
-                  Clear Filters
+            <EmptyState
+              action={
+                <Button onClick={resetFilters} size="sm" variant="outline">
+                  {t("action.clearFilters")}
                 </Button>
-              </div>
-            </FadeIn>
+              }
+              message={t("empty.courses")}
+            />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid gap-5 sm:grid-cols-2">
               {courses.map((course) => (
-                <CourseCard key={course.id} course={course} />
+                <CourseCard course={course} key={course.id} />
               ))}
             </div>
           )}
-
-          {/* Pagination or Load More could go here if implemented in API */}
-        </main>
-
-        {/* CTA Footer Section */}
-        <section className="max-w-7xl mx-auto px-8 pb-32">
-          <div className="p-12 lg:p-20 bg-linear-to-br from-secondary to-on-primary-container rounded-5xl relative overflow-hidden text-center lg:text-left flex flex-col lg:flex-row items-center justify-between gap-12 group">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-48 -mt-48 transition-transform group-hover:scale-110 duration-700"></div>
-            <div className="relative z-10 max-w-2xl space-y-6">
-              <h2 className="text-4xl lg:text-5xl font-headline font-black text-white tracking-tighter">
-                Can't find the curriculum <br />
-                you're searching for?
-              </h2>
-              <p className="text-white/80 text-lg font-medium italic">
-                Join our academic advisory board to request specialized course content or explore
-                custom institutional solutions.
-              </p>
-            </div>
-            <div className="relative z-10 shrink-0">
-              <Button className="h-16 px-10 rounded-2xl bg-white text-secondary font-headline font-black text-lg shadow-2xl hover:scale-[1.05] transition-transform flex items-center gap-3">
-                Get in Touch
-                <ArrowRight className="size-5" />
-              </Button>
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
     </PublicLayout>
   );

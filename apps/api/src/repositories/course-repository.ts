@@ -13,6 +13,7 @@ import {
   inArray,
   lectures,
   or,
+  reviews,
   sql,
   teacherProfiles,
   users,
@@ -35,6 +36,27 @@ export interface CourseTeacherRecord {
   role: CourseTeacherRole;
   slug: string | null;
 }
+
+/**
+ * The numbers a catalogue card needs. Aggregated in one pass per page of
+ * results rather than one query per card — six cards on a page is six courses,
+ * not twelve extra round trips.
+ */
+export interface CourseStatsRecord {
+  freeLessonCount: number;
+  lectureCount: number;
+  reviewAverage: number | null;
+  reviewCount: number;
+  totalDurationSeconds: number;
+}
+
+const emptyStats: CourseStatsRecord = {
+  freeLessonCount: 0,
+  lectureCount: 0,
+  reviewAverage: null,
+  reviewCount: 0,
+  totalDurationSeconds: 0
+};
 
 export interface CourseRecord {
   category: {
@@ -60,6 +82,7 @@ export interface CourseRecord {
   reviewFeedback: string | null;
   slug: string;
   status: "DRAFT" | "PENDING" | "PUBLISHED" | "ARCHIVED";
+  stats: CourseStatsRecord;
   submittedAt: Date | null;
   teachers: readonly CourseTeacherRecord[];
   title: string;
@@ -68,6 +91,8 @@ export interface CourseRecord {
 
 export interface CourseListQuery {
   categoryId?: string | undefined;
+  /** Narrows to courses offering at least one preview lesson — ফ্রি ক্লাস. */
+  hasFreeLesson?: boolean | undefined;
   limit: number;
   maxPrice?: number | undefined;
   minPrice?: number | undefined;
@@ -142,11 +167,87 @@ export class CourseRepository {
       clauses.push(sql`${courses.price}::numeric <= ${String(query.maxPrice)}::numeric`);
     }
 
+    if (query.hasFreeLesson === true) {
+      // `exists` rather than a join: joining lectures would multiply the course
+      // rows and break both the page size and the total count.
+      clauses.push(
+        sql`exists (
+          select 1 from ${chapters}
+          join ${lectures} on ${lectures.chapterId} = ${chapters.id}
+          where ${chapters.courseId} = ${courses.id} and ${lectures.isPreview} = true
+        )`
+      );
+    }
+
     if (clauses.length === 0) {
       return undefined;
     }
 
     return clauses.length === 1 ? clauses[0] : and(...clauses);
+  }
+
+  /**
+   * Lesson and review aggregates for a page of courses, in two queries rather
+   * than two per course.
+   *
+   * They stay separate queries because joining lectures and reviews in one pass
+   * multiplies the rows against each other, and every count comes out as the
+   * product.
+   */
+  private async getStatsByCourseIds(
+    courseIds: readonly string[]
+  ): Promise<Map<string, CourseStatsRecord>> {
+    if (courseIds.length === 0) {
+      return new Map();
+    }
+
+    const ids = [...courseIds];
+    const [lessonRows, reviewRows] = await Promise.all([
+      db
+        .select({
+          courseId: chapters.courseId,
+          freeLessonCount: sql<string>`count(*) filter (where ${lectures.isPreview})`,
+          lectureCount: sql<string>`count(${lectures.id})`,
+          totalDurationSeconds: sql<string>`coalesce(sum(${lectures.videoDuration}), 0)`
+        })
+        .from(chapters)
+        .innerJoin(lectures, eq(lectures.chapterId, chapters.id))
+        .where(inArray(chapters.courseId, ids))
+        .groupBy(chapters.courseId),
+      db
+        .select({
+          courseId: reviews.courseId,
+          reviewAverage: sql<string | null>`avg(${reviews.rating})`,
+          reviewCount: sql<string>`count(*)`
+        })
+        .from(reviews)
+        .where(inArray(reviews.courseId, ids))
+        .groupBy(reviews.courseId)
+    ]);
+
+    const byCourseId = new Map<string, CourseStatsRecord>();
+
+    for (const row of lessonRows) {
+      byCourseId.set(row.courseId, {
+        ...emptyStats,
+        freeLessonCount: Number(row.freeLessonCount),
+        lectureCount: Number(row.lectureCount),
+        totalDurationSeconds: Number(row.totalDurationSeconds)
+      });
+    }
+
+    for (const row of reviewRows) {
+      const current = byCourseId.get(row.courseId) ?? emptyStats;
+      const average = row.reviewAverage === null ? null : Number(row.reviewAverage);
+
+      byCourseId.set(row.courseId, {
+        ...current,
+        reviewAverage: average === null ? null : Math.round(average * 10) / 10,
+        reviewCount: Number(row.reviewCount)
+      });
+    }
+
+    return byCourseId;
   }
 
   private async getTeachersByCourseIds(courseIds: readonly string[]): Promise<Map<string, readonly CourseTeacherRecord[]>> {
@@ -215,7 +316,8 @@ export class CourseRepository {
       title: string;
       updatedAt: Date;
     },
-    teachers: readonly CourseTeacherRecord[]
+    teachers: readonly CourseTeacherRecord[],
+    stats: CourseStatsRecord
   ): CourseRecord {
     return {
       category: {
@@ -240,6 +342,7 @@ export class CourseRepository {
       rejectedAt: row.rejectedAt,
       reviewFeedback: row.reviewFeedback,
       slug: row.slug,
+      stats,
       status: row.status,
       submittedAt: row.submittedAt,
       teachers,
@@ -286,9 +389,16 @@ export class CourseRepository {
       return null;
     }
 
-    const teachersByCourseId = await this.getTeachersByCourseIds([course.id]);
+    const [teachersByCourseId, statsByCourseId] = await Promise.all([
+      this.getTeachersByCourseIds([course.id]),
+      this.getStatsByCourseIds([course.id])
+    ]);
 
-    return this.mapCourse(course, teachersByCourseId.get(course.id) ?? []);
+    return this.mapCourse(
+      course,
+      teachersByCourseId.get(course.id) ?? [],
+      statsByCourseId.get(course.id) ?? emptyStats
+    );
   }
 
   public async findBySlug(slug: string): Promise<CourseRecord | null> {
@@ -346,10 +456,20 @@ export class CourseRepository {
       db.select({ value: count() }).from(courses).where(whereClause)
     ]);
 
-    const teachersByCourseId = await this.getTeachersByCourseIds(rows.map((row) => row.id));
+    const courseIds = rows.map((row) => row.id);
+    const [teachersByCourseId, statsByCourseId] = await Promise.all([
+      this.getTeachersByCourseIds(courseIds),
+      this.getStatsByCourseIds(courseIds)
+    ]);
 
     return {
-      items: rows.map((row) => this.mapCourse(row, teachersByCourseId.get(row.id) ?? [])),
+      items: rows.map((row) =>
+        this.mapCourse(
+          row,
+          teachersByCourseId.get(row.id) ?? [],
+          statsByCourseId.get(row.id) ?? emptyStats
+        )
+      ),
       total: totalRows[0]?.value ?? 0
     };
   }

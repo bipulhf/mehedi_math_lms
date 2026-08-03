@@ -25,6 +25,17 @@ export interface CourseTeacherSummary {
   slug: string | null;
 }
 
+export interface CourseStats {
+  /** Lessons anyone can watch without enrolling — `lectures.isPreview`. */
+  freeLessonCount: number;
+  lectureCount: number;
+  reviewAverage: number | null;
+  reviewCount: number;
+  /** Summed lesson duration. The design's "৬ মাস" has no column behind it;
+      this is the honest substitute. GENEX_MIGRATION.md §2. */
+  totalDurationSeconds: number;
+}
+
 export interface CourseSummary {
   category: {
     id: string;
@@ -48,6 +59,7 @@ export interface CourseSummary {
   rejectedAt: string | null;
   reviewFeedback: string | null;
   slug: string;
+  stats: CourseStats;
   status: z.infer<typeof courseStatusSchema>;
   submittedAt: string | null;
   teachers: readonly CourseTeacherSummary[];
@@ -80,6 +92,7 @@ function buildQueryString(
 
 export async function listCourses(query?: {
   categoryId?: string | undefined;
+  hasFreeLesson?: boolean | undefined;
   limit?: number | undefined;
   maxPrice?: number | undefined;
   minPrice?: number | undefined;
@@ -91,6 +104,7 @@ export async function listCourses(query?: {
   return apiGet<readonly CourseSummary[]>(
     `courses${buildQueryString({
       categoryId: query?.categoryId,
+      hasFreeLesson: query?.hasFreeLesson,
       limit: query?.limit,
       maxPrice: query?.maxPrice,
       minPrice: query?.minPrice,

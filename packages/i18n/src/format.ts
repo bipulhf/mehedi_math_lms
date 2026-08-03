@@ -75,6 +75,17 @@ export function formatCurrency(value: number | string, locale: Locale): string {
   return `৳${formatted}`;
 }
 
+/**
+ * A review average, to one decimal. `formatNumber` would round 4.8 to ৫ and
+ * quietly flatter every course on the page.
+ */
+export function formatRating(value: number, locale: Locale): string {
+  return numberFormatter(locale, {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1
+  }).format(value);
+}
+
 /** Takes a percentage, not a fraction: `formatPercent(78, "bn")` is `৭৮%`. */
 export function formatPercent(value: number, locale: Locale): string {
   return `${formatNumber(Math.round(value), locale)}%`;
@@ -143,6 +154,7 @@ export interface Formatters {
   readonly digits: (value: string) => string;
   readonly number: (value: number | string) => string;
   readonly percent: (value: number) => string;
+  readonly rating: (value: number) => string;
 }
 
 export function createFormatters(locale: Locale): Formatters {
@@ -152,6 +164,7 @@ export function createFormatters(locale: Locale): Formatters {
     dateTime: (value) => formatDateTime(value, locale),
     digits: (value) => toLocaleDigits(value, locale),
     number: (value) => formatNumber(value, locale),
-    percent: (value) => formatPercent(value, locale)
+    percent: (value) => formatPercent(value, locale),
+    rating: (value) => formatRating(value, locale)
   };
 }

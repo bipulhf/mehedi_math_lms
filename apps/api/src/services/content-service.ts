@@ -128,6 +128,27 @@ function mapChapter(
   };
 }
 
+/**
+ * What an anonymous visitor may see of a course's contents: the shape of it.
+ *
+ * Titles, ordering, lesson length and which lessons are free — everything the
+ * catalogue page needs to persuade someone. No `videoUrl`, no lesson body, no
+ * materials: those are what enrolment buys, and they are absent from the type
+ * rather than stripped later, so a future field cannot leak by being forgotten.
+ */
+export interface CourseOutlineLesson {
+  durationSeconds: number | null;
+  id: string;
+  isPreview: boolean;
+  title: string;
+}
+
+export interface CourseOutlineChapter {
+  id: string;
+  lessons: readonly CourseOutlineLesson[];
+  title: string;
+}
+
 export class ContentService {
   public constructor(
     private readonly contentRepository: ContentRepository,
@@ -263,6 +284,43 @@ export class ContentService {
         }
       ]);
     }
+  }
+
+  /**
+   * The public course outline. Published courses only — an unpublished course
+   * has no public page, so it has no public outline either.
+   */
+  public async getCourseOutline(courseId: string): Promise<readonly CourseOutlineChapter[]> {
+    const course = await this.courseRepository.findById(courseId);
+
+    if (!course || course.status !== "PUBLISHED") {
+      throw new NotFoundError("Course not found");
+    }
+
+    const chapterRecords = await this.contentRepository.listCourseChapters(courseId);
+    const lectureRecords = await this.contentRepository.listLecturesByChapterIds(
+      chapterRecords.map((chapter) => chapter.id)
+    );
+
+    const lessonsByChapterId = new Map<string, CourseOutlineLesson[]>();
+
+    for (const lecture of lectureRecords) {
+      const current = lessonsByChapterId.get(lecture.chapterId) ?? [];
+
+      current.push({
+        durationSeconds: lecture.videoDuration,
+        id: lecture.id,
+        isPreview: lecture.isPreview,
+        title: lecture.title
+      });
+      lessonsByChapterId.set(lecture.chapterId, current);
+    }
+
+    return chapterRecords.map((chapter) => ({
+      id: chapter.id,
+      lessons: lessonsByChapterId.get(chapter.id) ?? [],
+      title: chapter.title
+    }));
   }
 
   public async getCourseContent(

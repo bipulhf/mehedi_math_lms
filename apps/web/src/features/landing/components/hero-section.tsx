@@ -1,93 +1,77 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Award } from "lucide-react";
 import type { JSX } from "react";
 
-import heroAtelier from "@/assets/hero-atelier.svg";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
 import type { LandingStats } from "@/lib/api/landing";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
-function badgeFigure(stats: LandingStats): { label: string; value: string } | null {
-  if (stats.rating !== null) {
-    return { label: "Curated Quality", value: `${stats.rating.average}/5 from learners` };
-  }
-
-  if (stats.publishedCourses > 0) {
-    return {
-      label: "Curated Quality",
-      value: `${stats.publishedCourses} published ${stats.publishedCourses === 1 ? "course" : "courses"}`
-    };
-  }
-
-  return null;
-}
-
+/**
+ * The hero: a large headline with the ring doodle around one word, a lead
+ * paragraph, an Ink action beside an underlined one, and a stat row above a
+ * hairline.
+ *
+ * The design hardcodes which word is ringed. Here the sentence carries a
+ * `{ring}` placeholder instead, because the ringed word differs between Bangla
+ * and English and hardcoding it would circle the wrong one.
+ *
+ * Three figures, not the design's four — "৬ পরীক্ষা কেন্দ্র" has nothing behind
+ * it. GENEX_MIGRATION.md §2.
+ */
 export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
-  const figure = badgeFigure(stats);
+  const t = useT();
+  const format = useFormat();
+  const [beforeRing = "", afterRing = ""] = t("home.heroTitle").split("{ring}");
+
+  const figures: readonly { label: string; value: string }[] = [
+    { label: t("common.students"), value: format.number(stats.students) },
+    { label: t("common.teachers"), value: format.number(stats.teachers) },
+    { label: t("common.courses"), value: format.number(stats.publishedCourses) }
+  ];
 
   return (
-    <section className="relative px-8 pt-20 pb-32 max-w-7xl mx-auto overflow-hidden">
-      <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <div className="space-y-10 z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold tracking-[0.1em] text-secondary uppercase">
-            <span className="w-1 h-1 bg-secondary rounded-full"></span>
-            The New Standard of Learning
-          </div>
-          <h1 className="text-7xl font-extrabold font-headline leading-[1.05] tracking-tight text-on-background">
-            Elevating Your <br />
-            <span className="text-on-primary-container italic font-light">Academic Potential</span>
+    <section className="relative overflow-hidden">
+      <div className="mx-auto grid w-full max-w-[90rem] gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_420px] lg:items-center lg:px-14 lg:py-24">
+        <div className="space-y-7">
+          <h1 className="max-w-[20ch] text-4xl font-medium leading-tight tracking-tight text-ink sm:text-5xl lg:text-[3.375rem]">
+            {beforeRing}
+            <RingedWord>{t("home.heroTitleRing")}</RingedWord>
+            {afterRing}
           </h1>
-          <p className="text-lg text-on-surface-variant leading-relaxed max-w-lg font-light">
-            Experience a curated academic atelier designed for high-performance students. From SSC
-            foundations to professional mastery, we treat education as a craft.
+
+          <p className="max-w-[48ch] text-lg font-light leading-relaxed text-muted lg:text-xl">
+            {t("home.heroLead")}
           </p>
-          <div className="flex justify-between items-center w-full bg-surface-container-lowest border border-outline-variant/20 p-1.5 rounded-xl shadow-sm">
-            <div className="flex items-center flex-1">
-              <Search className="ml-4 text-outline size-5 shrink-0" />
-              <Input
-                className="bg-transparent border-none focus-visible:ring-0 shadow-none text-sm flex-1 py-3 px-3"
-                placeholder="What would you like to learn today?"
-                type="text"
-              />
-            </div>
-            <Button
-              asChild
-              className="bg-primary text-white px-8 h-full py-3 rounded-lg font-headline font-semibold text-sm hover:bg-on-surface transition-all shrink-0"
-            >
-              <Link to="/courses">Explore</Link>
+
+          <div className="flex flex-wrap items-center gap-6">
+            <Button asChild size="lg">
+              <Link to="/courses">{t("action.viewAllCourses")}</Link>
             </Button>
+            <Link
+              className="border-b border-line-strong pb-0.5 text-lg text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+              search={{ free: true }}
+              to="/courses"
+            >
+              {t("action.watchFreeClass")}
+            </Link>
           </div>
-        </div>
-        <div className="relative">
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
-          <div className="bg-surface-container-low rounded-[2rem] p-4 aspect-square overflow-hidden rotate-2 shadow-2xl shadow-primary/5">
-            <img
-              decoding="async"
-              // Above the fold: this is the LCP element, so it must not be lazy.
-              fetchPriority="high"
-              height={720}
-              loading="eager"
-              width={720}
-              alt="Abstract geometric composition of a curve, an axis grid and concentric circles"
-              className="w-full h-full object-cover rounded-[1.5rem]"
-              src={heroAtelier}
-            />
-          </div>
-          {figure !== null && (
-            <div className="absolute bottom-12 -left-12 bg-surface-container-lowest p-6 rounded-2xl shadow-xl border border-outline-variant/10 max-w-[240px]">
-              <div className="flex gap-4 items-center">
-                <div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-on-primary-container flex items-center justify-center text-white">
-                  <Award className="size-6" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-outline tracking-wider uppercase">
-                    {figure.label}
-                  </p>
-                  <p className="text-sm font-headline font-bold">{figure.value}</p>
-                </div>
+
+          <dl className="flex flex-wrap gap-x-11 gap-y-6 border-t border-hairline pt-8">
+            {figures.map((figure) => (
+              <div key={figure.label}>
+                <dd className="text-2xl font-medium text-ink sm:text-3xl">{figure.value}</dd>
+                <dt className="text-base font-light text-muted-light">{figure.label}</dt>
               </div>
-            </div>
-          )}
+            ))}
+          </dl>
+        </div>
+
+        {/* The design puts a photograph here. Until there is one, this is the
+            placeholder fill the design specifies for every missing image —
+            better than an illustration in the wrong palette. */}
+        <div className="relative hidden aspect-4/5 items-center justify-center bg-placeholder-fill lg:flex">
+          <DotPatch className="-bottom-4 -left-4" />
+          <QuarterArc className="-right-6 -top-6" />
         </div>
       </div>
     </section>

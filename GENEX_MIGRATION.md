@@ -289,7 +289,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 3 | Design tokens: `app.css`, fonts, page background, brand assets | ☑ |
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☑ |
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding. `/teachers` index and demo seed data, pulled forward | ☑ |
-| 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☐ |
+| 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☑ |
 | 7 | Teacher dashboard + the 5-step course builder | ☐ |
 | 8 | Student dashboard | ☐ |
 | 9 | Admin dashboard + accountant analytics | ☐ |
@@ -461,6 +461,46 @@ unfiltered list is a link that lies. Three items ship now, four after Phase 6.
 Typecheck 9/9, lint 9/9, tests 8/8. Verified on a running stack at 1440 and 390
 wide: header lockup, Bangla nav, the HELPLINE label with Bangla digits, doodles,
 the hatched rule above the footer, and course counts reading ২ কোর্স · ৪ শিক্ষার্থী.
+
+**Phase 6** — the four public screens.
+
+The API had to grow first. A catalogue card wants a lesson count, a total
+duration, a free-lesson count and a review average, and `CourseSummary` carried
+none of them. `CourseStatsRecord` now comes back with every course, aggregated
+in two queries per page rather than two per card, and joined as `exists` rather
+than a join so the page size and total count stay correct.
+
+Three things found along the way that were wrong before this phase:
+
+- **The buy card invented a discount.** It printed a struck-through "original"
+  price of `price × 2.5` and a "65% OFF" badge. The schema holds one price and
+  no discount, so both numbers were fabricated and shown to buyers as fact.
+  Gone.
+- **The class list was empty for everyone not signed in.** The detail page read
+  `/courses/:id/content`, which requires a session, and the loader swallowed the
+  401 into an empty array. The design makes that list the page's main selling
+  surface. There is now a public `GET /courses/:id/outline` returning titles,
+  ordering, lesson length and which lessons are free — and *not* `videoUrl`,
+  lesson bodies or materials. Those are absent from the response type rather
+  than stripped afterwards, so a field added later cannot leak by being
+  forgotten. Published courses only; a draft outline is a 404.
+- **Every seeded rating was exactly 4.0**, because the review branch only ran on
+  even indices and then added `index % 2`. Ratings now alternate.
+
+`format.rating` was added because `format.number` rounds to whole numbers, so a
+4.8 average rendered as ৫ — flattering every course on the page.
+
+ফ্রি ক্লাস is now in the nav, pointing at `/courses?free=true`, since the filter
+it needs finally exists.
+
+The homepage is rebuilt as the design has it: ringed hero word, a level picker
+whose left column filters its right, three circled steps, the teacher strip, an
+independent-row FAQ, and a closing band. `categories-section`, `courses-section`
+and `stats-section` are deleted — the first two became the level picker and the
+third folded into the hero. The hero's illustration slot is the design's
+placeholder fill rather than the old indigo SVG.
+
+Typecheck 9/9, lint 9/9, tests 8/8. Verified on a running stack.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

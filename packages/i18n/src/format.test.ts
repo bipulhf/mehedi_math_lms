@@ -5,6 +5,7 @@ import {
   formatDate,
   formatNumber,
   formatPercent,
+  formatRating,
   toLocaleDigits
 } from "./format";
 
@@ -39,6 +40,18 @@ describe("formatCurrency", () => {
   test("paisa show only when there are any", () => {
     expect(formatCurrency("5900.00", "en")).toBe("৳5,900");
     expect(formatCurrency("5900.50", "en")).toBe("৳5,900.50");
+  });
+});
+
+describe("formatRating", () => {
+  test("keeps one decimal, which formatNumber would round away", () => {
+    // 4.8 rounding to 5 would flatter every course on the page.
+    expect(formatRating(4.8, "en")).toBe("4.8");
+    expect(formatRating(4.8, "bn")).toBe("৪.৮");
+  });
+
+  test("a whole rating still shows its decimal, so a column stays aligned", () => {
+    expect(formatRating(5, "en")).toBe("5.0");
   });
 });
 

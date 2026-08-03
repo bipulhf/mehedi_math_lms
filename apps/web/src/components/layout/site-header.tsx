@@ -47,6 +47,7 @@ export function SiteHeader(): JSX.Element {
                 activeProps={{ className: "text-ink" }}
                 className="text-base text-muted transition-colors duration-150 hover:text-ink"
                 key={item.labelKey}
+                search={item.search}
                 to={item.to}
               >
                 {t(item.labelKey)}
@@ -110,6 +111,7 @@ export function SiteHeader(): JSX.Element {
               activeProps={{ className: "text-ink" }}
               className="flex min-h-11 items-center border-b border-hairline-faint text-base text-muted last:border-b-0"
               key={item.labelKey}
+              search={item.search}
               to={item.to}
             >
               {t(item.labelKey)}

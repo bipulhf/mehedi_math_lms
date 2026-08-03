@@ -419,13 +419,16 @@ async function main(): Promise<void> {
         })
         .onConflictDoNothing();
 
+      // Every other student leaves a review, alternating 5 and 4 so the
+      // averages are not all identical — a catalogue where every course scores
+      // exactly 4.0 tests nothing about how a rating renders.
       if (enrolledIndex % 2 === 0) {
         await db
           .insert(reviews)
           .values({
             comment: course.reviewComment,
             courseId,
-            rating: 4 + (enrolledIndex % 2),
+            rating: enrolledIndex % 4 === 0 ? 5 : 4,
             userId
           })
           .onConflictDoNothing();
