@@ -24,7 +24,27 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] }
+      use: {
+        ...devices["Desktop Chrome"],
+        // Pin the locale. The UI is bilingual and Bangla is the default, so an
+        // assertion on English copy would otherwise be asserting on a cookie
+        // nobody set. `en` is the fallback locale and the one these specs read.
+        storageState: {
+          cookies: [
+            {
+              domain: new URL(baseURL).hostname,
+              expires: -1,
+              httpOnly: false,
+              name: "genex_locale",
+              path: "/",
+              sameSite: "Lax",
+              secure: false,
+              value: "en"
+            }
+          ],
+          origins: []
+        }
+      }
     }
   ],
   reporter: process.env.CI ? "github" : "list",

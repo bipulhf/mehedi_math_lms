@@ -22,7 +22,9 @@ test.describe("public pages", () => {
   test("the catalogue lists courses and filters without a reload", async ({ page }) => {
     await page.goto("/courses");
 
-    const search = page.getByPlaceholder(/search/i).first();
+    // Located by type, not by placeholder: the placeholder is catalogue copy
+    // and changes with the locale.
+    const search = page.locator('input[type="search"]').first();
 
     await expect(search).toBeVisible();
     await search.fill("algebra");

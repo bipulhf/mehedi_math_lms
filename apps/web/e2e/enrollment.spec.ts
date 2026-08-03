@@ -67,7 +67,9 @@ test.describe("the enrolment call to action", () => {
 
     await page.goto(`/courses/${course?.slug ?? ""}`);
 
-    const enroll = page.getByRole("link", { name: /enroll/i }).first();
+    // Scoped to main: the site header also carries an "Enrol" call to action,
+    // and that one deliberately does not know which course you were looking at.
+    const enroll = page.locator("main").getByRole("link", { name: /enrol/i }).first();
 
     await expect(enroll).toBeVisible({ timeout: 15_000 });
     await enroll.click();

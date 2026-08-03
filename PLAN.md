@@ -1,3 +1,9 @@
+> **Superseded in part.** This repository is being converted to **Genex** and
+> its UI rebuilt on `design_handoff_genex/`. Read `GENEX_MIGRATION.md` first —
+> where that document and this one disagree, that one is current. The phases
+> below still describe how the system was built and why; the branding, the
+> design language and several product decisions in them are no longer accurate.
+
 ---
 name: LMS Platform Build Plan
 overview: A 21-phase plan to build "Genex" (genex.com.bd) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.

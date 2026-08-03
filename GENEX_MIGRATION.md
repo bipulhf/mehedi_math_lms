@@ -297,7 +297,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 9 | Admin dashboard + accountant analytics | ☑ |
 | 10 | System-only surfaces restyled (§3). Auth localised; the rest carry English copy — see §11 | ◐ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☑ |
-| 12 | Cleanup: compatibility aliases, `FadeIn`, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
+| 12 | Cleanup: E2E, `og-image`, `PLAN.md`. Aliases and `FadeIn` blocked on §11 | ◐ |
 
 Phases 0–5 are foundation and must land in order. 6–10 can be reordered or
 parallelised once 5 is in.
@@ -618,6 +618,29 @@ readers want anyway.
 
 Mobile tests: 60 passing across 7 suites.
 
+**Phase 12** — cleanup, partly blocked.
+
+`og-image-service` drew every share card as an indigo-to-navy gradient. It is
+now warm paper, ink text and a single accent rule — flat fills, which also
+rasterise to PNG more predictably than a gradient.
+
+The Playwright suite broke, correctly: five specs asserted on English copy that
+is now Bangla. The fix is to **pin the locale** rather than loosen the
+assertions — the config sets `genex_locale=en` as a cookie, which also exercises
+the mechanism the app uses. Two locators needed real fixes beyond that: the
+catalogue search is now found by `input[type="search"]` rather than by its
+placeholder, since a placeholder is catalogue copy; and the enrolment locator is
+scoped to `main`, because the site header now carries its own "Enrol" call to
+action which deliberately does not know which course you were looking at. 42
+specs pass.
+
+`PLAN.md` carries a note at the top pointing here.
+
+**Blocked:** the compatibility aliases in `app.css`, the `Button`/`Badge`
+variant aliases and `FadeIn` cannot be removed until the surfaces using them are
+rebuilt — which is the same work as §11. Removing them now would unstyle the
+dashboard.
+
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt
 with the real helpline and address, `mehedismathacademy.com` → `genex.com.bd`.
@@ -669,7 +692,15 @@ Typecheck 8/8, lint 8/8, tests 6/6 (309 passing).
    feeds `BETTER_AUTH_URL` and the Google OAuth redirect URIs.
 2. **Brand vector** — the logo assets were traced from a white-background JPG.
    Ask the client for the original SVG/AI before shipping.
-3. **Repository directory** — still `mehedi_math_academy` on disk. Renaming it
+3. **The dashboard copy is still English** — roughly 495 strings across 64
+   files. The surfaces are restyled and render correctly in the Genex palette;
+   what remains is moving their text into `packages/i18n`. The heaviest are
+   `course-content-builder-sections` (30), `admin/users` (29),
+   `assessment-builder` (27), `course-editor` (25), `profile-editor` (25) and
+   `dashboard/analytics` (23). Three cleanups wait on this: the compatibility
+   colour aliases in `app.css`, the `Button`/`Badge` variant aliases, and
+   `FadeIn` (41 uses).
+4. **Repository directory** — still `mehedi_math_academy` on disk. Renaming it
    mid-session would invalidate every open path, so it is left for you:
 
    ```bash
@@ -677,6 +708,6 @@ Typecheck 8/8, lint 8/8, tests 6/6 (309 passing).
    ```
 
    Nothing in the code depends on the directory name.
-4. **`BETTER_AUTH_URL`** — `.env` has it on `:3001`, the API port. Better Auth is
+5. **`BETTER_AUTH_URL`** — `.env` has it on `:3001`, the API port. Better Auth is
    served by the **web** app, so it should be `http://localhost:3000`. Predates
    this migration; flagged rather than changed.
