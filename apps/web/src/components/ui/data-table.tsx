@@ -53,11 +53,11 @@ export function DataTable<TRow>({
       <div className="hidden border border-hairline bg-card md:block">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-hairline">
+            <tr className="border-b border-hairline bg-panel-warm/40">
               {columns.map((column) => (
                 <th
                   className={cn(
-                    "px-5 py-4 text-sm font-normal text-muted-light",
+                    "px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-faint",
                     column.align === "end" ? "text-right" : "text-left"
                   )}
                   key={column.key}
@@ -77,7 +77,7 @@ export function DataTable<TRow>({
                 {columns.map((column) => (
                   <td
                     className={cn(
-                      "px-5 py-4 align-middle text-base font-light text-ink-muted",
+                      "px-4 py-3 align-middle text-sm font-light text-ink-muted",
                       column.align === "end" ? "text-right" : "text-left"
                     )}
                     key={column.key}
@@ -93,16 +93,16 @@ export function DataTable<TRow>({
 
       <div className="space-y-3 md:hidden">
         {rows.map((row) => (
-          <div className="border border-hairline bg-card p-5" key={rowKey(row)}>
+          <div className="border border-hairline bg-card p-4" key={rowKey(row)}>
             {columns
               .filter((column) => column.hideWhenStacked !== true)
               .map((column) => (
                 <div
-                  className="flex items-baseline justify-between gap-4 py-1.5"
+                  className="flex items-baseline justify-between gap-4 py-1"
                   key={column.key}
                 >
-                  <span className="text-sm text-muted-light">{column.header}</span>
-                  <span className="text-right text-base font-light text-ink-muted">
+                  <span className="text-xs text-muted-light">{column.header}</span>
+                  <span className="text-right text-sm font-light text-ink-muted">
                     {column.cell(row)}
                   </span>
                 </div>

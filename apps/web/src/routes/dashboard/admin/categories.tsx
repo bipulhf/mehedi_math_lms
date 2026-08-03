@@ -312,17 +312,17 @@ function AdminCategoriesPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Top Page Header Card */}
-      <div className="border border-hairline bg-card p-8 sm:p-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border border-hairline bg-card p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-medium text-ink">{t("admin.cat.title")}</h1>
-            <p className="mt-1 text-base font-light text-muted">
+            <h1 className="text-xl font-medium text-ink">{t("admin.cat.title")}</h1>
+            <p className="mt-0.5 text-sm font-light text-muted">
               Organize course taxonomy, root subjects, and academic levels in one clear view.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Badge tone="neutral">{categories.length} Root Domains</Badge>
             <Badge tone="neutral">{flattenCategoryIds(categories).length} Categories</Badge>
           </div>

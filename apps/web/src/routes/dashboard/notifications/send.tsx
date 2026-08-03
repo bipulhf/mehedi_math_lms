@@ -123,16 +123,16 @@ function SendNotificationPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="border border-hairline bg-card p-8 sm:p-10">
-        <div className="flex items-center gap-4">
-          <div className="flex size-12 items-center justify-center border border-hairline bg-panel-warm">
-            <img alt="" className="size-7" src={genexMark} />
+      <div className="border border-hairline bg-card p-6">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center border border-hairline bg-panel-warm">
+            <img alt="" className="size-6" src={genexMark} />
           </div>
           <div>
-            <h1 className="text-3xl font-medium text-ink">{t("notify.title")}</h1>
-            <p className="mt-1 text-base font-light text-muted">
+            <h1 className="text-xl font-medium text-ink">{t("notify.title")}</h1>
+            <p className="mt-0.5 text-sm font-light text-muted">
               {isAdmin ? t("notify.leadAdmin") : t("notify.leadTeacher")}
             </p>
           </div>
@@ -140,9 +140,9 @@ function SendNotificationPage(): JSX.Element {
       </div>
 
       {/* Main 2-Column Section */}
-      <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* Left Column: Form */}
-        <div className="border border-hairline bg-card p-8 sm:p-10">
+        <div className="border border-hairline bg-card p-6">
           <form className="space-y-6" onSubmit={(e) => void handleSubmit(e)}>
             {/* Title */}
             <div className="space-y-2">

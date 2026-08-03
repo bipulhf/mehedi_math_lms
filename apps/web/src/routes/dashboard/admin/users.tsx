@@ -141,19 +141,18 @@ function AdminUsersPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8 p-4 sm:p-0">
+    <div className="space-y-6">
       {/* Creation Surface */}
-      <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden group">
-
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="border border-hairline bg-card p-6">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="size-8 rounded-lg bg-ink/10 flex items-center justify-center text-ink">
-                <UserPlus className="size-5" />
+            <div className="mb-1 flex items-center gap-2.5">
+              <div className="flex size-7 items-center justify-center bg-panel-warm text-ink">
+                <UserPlus className="size-4" />
               </div>
-              <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("admin.users.staffTitle")}</h3>
+              <h2 className="text-xl font-medium text-ink">{t("admin.users.staffTitle")}</h2>
             </div>
-            <p className="text-sm text-muted font-light max-w-xl leading-relaxed">
+            <p className="max-w-xl text-sm font-light text-muted">
               Onboard new academic or operational staff. Temporary credentials will be generated
               securely.
             </p>
@@ -161,56 +160,44 @@ function AdminUsersPage(): JSX.Element {
         </div>
 
         <form
-          className="grid gap-6 lg:grid-cols-[1.2fr_1.2fr_1fr_auto] items-start"
+          className="grid gap-4 lg:grid-cols-[1.2fr_1.2fr_1fr_auto] items-end"
           onSubmit={onCreate}
         >
-          <div className="space-y-2">
-            <Label
-              htmlFor="create-name"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 ml-1"
-            >{t("admin.users.fullName")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="create-name">{t("admin.users.fullName")}</Label>
             <Input
+              error={errors.name?.message}
               id="create-name"
               placeholder="e.g. John Doe"
-              className="h-12 bg-panel-warm/50 border-hairline/30 px-4"
-              error={errors.name?.message}
               {...register("name")}
             />
           </div>
-          <div className="space-y-2">
-            <Label
-              htmlFor="create-email"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 ml-1"
-            >{t("admin.users.email")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="create-email">{t("admin.users.email")}</Label>
             <Input
-              id="create-email"
-              type="email"
-              placeholder="john@example.com"
-              className="h-12 bg-panel-warm/50 border-hairline/30 px-4"
               error={errors.email?.message}
+              id="create-email"
+              placeholder="john@example.com"
+              type="email"
               {...register("email")}
             />
           </div>
-          <div className="space-y-2">
-            <Label
-              htmlFor="create-role"
-              className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 ml-1"
-            >{t("admin.users.role")}</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="create-role">{t("admin.users.role")}</Label>
             <Select
-              id="create-role"
-              className="h-12 bg-panel-warm/50 border-hairline/30"
               error={errors.role?.message}
+              id="create-role"
               {...register("role")}
             >
               <option value="TEACHER">{t("role.teacherOption")}</option>
               <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
             </Select>
           </div>
-          <div className="lg:pt-[1.7rem]">
+          <div>
             <Button
-              className="h-12 px-8 font-body font-medium transition-all w-full lg:w-fit"
-              type="submit"
+              className="w-full lg:w-fit"
               disabled={isSubmitting}
+              type="submit"
             >
               {isSubmitting ? "Authorizing" : "Authorize Staff"}
             </Button>
@@ -231,32 +218,32 @@ function AdminUsersPage(): JSX.Element {
       </div>
 
       {/* List Surface */}
-      <div className="bg-card/80 border border-hairline/40 overflow-hidden">
-        <div className="p-8 border-b border-hairline/30">
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-8">
+      <div className="border border-hairline bg-card">
+        <div className="border-b border-hairline p-6">
+          <div className="mb-6 flex flex-col justify-between gap-6 xl:flex-row xl:items-center">
             <div>
-              <h4 className="font-body text-2xl font-medium tracking-tight text-ink leading-none mb-2">{t("admin.users.title")}</h4>
-              <p className="text-sm text-muted font-light">{t("admin.users.lead")}</p>
+              <h3 className="text-xl font-medium text-ink">{t("admin.users.title")}</h3>
+              <p className="text-sm font-light text-muted">{t("admin.users.lead")}</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 flex-1 max-w-4xl">
-              <div className="relative flex-1 group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-ink/30 group-focus-within:text-ink transition-colors" />
+            <div className="flex flex-col gap-3 sm:flex-row flex-1 max-w-3xl">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-faint" />
                 <Input
-                  placeholder={t("admin.users.search")}
-                  className="h-12 pl-11 bg-panel-warm/30 border-hairline/20 font-body transition-all focus:bg-panel-warm"
-                  value={search}
+                  className="pl-10"
                   onChange={(e) => setSearch(e.target.value)}
+                  placeholder={t("admin.users.search")}
+                  value={search}
                 />
               </div>
               <div className="flex gap-2">
                 <Select
-                  className="h-12 bg-panel-warm/30 border-hairline/20 min-w-32 sm:min-w-40"
-                  value={role}
+                  className="min-w-32 sm:min-w-40"
                   onChange={(e) => {
                     setRole(e.target.value);
                     setPage(1);
                   }}
+                  value={role}
                 >
                   <option value="">{t("admin.users.allRoles")}</option>
                   <option value="STUDENT">{t("role.student")}</option>
@@ -265,12 +252,12 @@ function AdminUsersPage(): JSX.Element {
                   <option value="ADMIN">{t("role.adminOption")}</option>
                 </Select>
                 <Select
-                  className="h-12 bg-panel-warm/30 border-hairline/20 min-w-32 sm:min-w-40"
-                  value={status}
+                  className="min-w-32 sm:min-w-40"
                   onChange={(e) => {
                     setStatus(e.target.value as "all" | "active" | "inactive");
                     setPage(1);
                   }}
+                  value={status}
                 >
                   <option value="all">{t("admin.users.anyStatus")}</option>
                   <option value="active">{t("admin.users.active")}</option>
@@ -279,8 +266,9 @@ function AdminUsersPage(): JSX.Element {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Mobile List View - Cards */}
+        {/* Mobile List View - Cards */}
           <div className="xl:hidden grid gap-4 grid-cols-1 md:grid-cols-2">
             {users.map((user) => (
               <div
@@ -546,6 +534,5 @@ function AdminUsersPage(): JSX.Element {
           </div>
         </div>
       </div>
-    </div>
   );
 }

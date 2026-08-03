@@ -56,10 +56,10 @@ export function AdminOverview(): JSX.Element {
   ].filter((item) => item.count > 0);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <SectionHeading title={t("nav.overview")} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label={t("dash.statRevenue")} value={format.currency(stats.revenue)} />
         <StatCard label={t("dash.statEnrollments")} value={format.number(stats.totalEnrollments)} />
         <StatCard label={t("dash.statStudents")} value={format.number(stats.totalStudents)} />
@@ -67,15 +67,15 @@ export function AdminOverview(): JSX.Element {
       </div>
 
       {watchlist.length > 0 ? (
-        <div className="border border-dashed border-dot-idle p-6">
+        <div className="border border-dashed border-dot-idle p-4">
           <p className="label-mono text-xs uppercase text-muted-faint">{t("dash.watchlist")}</p>
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-3 space-y-2">
             {watchlist.map((item) => (
               <li className="flex items-center justify-between gap-4" key={item.label}>
-                <Link className="text-base text-ink-muted hover:text-ink" to={item.to}>
+                <Link className="text-sm text-ink-muted hover:text-ink" to={item.to}>
                   {item.label}
                 </Link>
-                <span className="label-mono text-sm text-accent">{format.number(item.count)}</span>
+                <span className="label-mono text-xs font-semibold text-accent">{format.number(item.count)}</span>
               </li>
             ))}
           </ul>
@@ -84,7 +84,7 @@ export function AdminOverview(): JSX.Element {
 
       {analytics ? <RevenueBars points={analytics.revenueTrend} title={t("dash.statRevenue")} /> : null}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <SectionHeading
           action={
             <Button asChild size="sm" variant="outline">
@@ -99,13 +99,13 @@ export function AdminOverview(): JSX.Element {
           <ul className="border-t border-hairline">
             {analytics.completions.slice(0, 5).map((row) => (
               <li
-                className="flex items-center justify-between gap-4 border-b border-hairline-fainter py-4"
+                className="flex items-center justify-between gap-4 border-b border-hairline-fainter py-2.5"
                 key={row.courseId}
               >
-                <span className="min-w-0 flex-1 truncate text-base text-ink-muted">
+                <span className="min-w-0 flex-1 truncate text-sm text-ink-muted">
                   {row.courseTitle}
                 </span>
-                <span className="shrink-0 text-sm text-muted-light">
+                <span className="shrink-0 text-xs text-muted-light">
                   {format.number(row.enrollmentCount)} · {format.percent(row.completionRate)}
                 </span>
               </li>

@@ -29,21 +29,17 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        // `self-start` because a grid cell stretches its child, and a stretched
-        // flex row with `items-end` drops a lone heading to the bottom of the
-        // cell — which put the FAQ title level with the last question rather
-        // than the first.
-        "flex flex-col gap-4 self-start sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-3 self-start sm:flex-row sm:items-end sm:justify-between",
         className
       )}
     >
-      <div className="space-y-3">
+      <div className="space-y-1">
         {eyebrow === undefined ? null : (
           <p className="label-mono text-xs uppercase text-muted-faint">{eyebrow}</p>
         )}
-        <h2 className="text-2xl font-medium leading-tight text-ink sm:text-3xl">{title}</h2>
+        <h2 className="text-lg font-medium leading-tight text-ink sm:text-xl">{title}</h2>
         {description === undefined ? null : (
-          <p className="max-w-[60ch] text-base font-light leading-relaxed text-muted">
+          <p className="max-w-[60ch] text-sm font-light leading-relaxed text-muted">
             {description}
           </p>
         )}

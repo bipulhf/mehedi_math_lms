@@ -26,11 +26,11 @@ export function StatCard({
   value
 }: StatCardProps): JSX.Element {
   return (
-    <div className={cn("border border-hairline bg-card p-6", className)}>
-      <p className="text-sm text-muted-light">{label}</p>
-      <p className="mt-3 text-3xl font-medium text-ink">{value}</p>
+    <div className={cn("border border-hairline bg-card p-4 sm:p-5", className)}>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-faint">{label}</p>
+      <p className="mt-1.5 text-2xl font-medium text-ink">{value}</p>
       {delta === undefined ? null : (
-        <p className={cn("mt-2 text-sm", isDeltaAccent ? "text-accent" : "text-muted")}>{delta}</p>
+        <p className={cn("mt-1 text-xs", isDeltaAccent ? "text-accent" : "text-muted")}>{delta}</p>
       )}
     </div>
   );
