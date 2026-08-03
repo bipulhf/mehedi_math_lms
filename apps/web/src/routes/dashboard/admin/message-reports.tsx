@@ -147,19 +147,18 @@ function AdminMessageReportsPage(): JSX.Element {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[26rem_minmax(0,1fr)]">
-      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
-        <div className="border-b border-hairline/20 p-6 sm:p-8">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("rep.title")}</h3>
-          <p className="mt-2 text-xs font-light leading-relaxed text-muted">
-            An open report is the only thing that lets you read a private conversation. Every read is
-            recorded against your account.
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
+      <div className="border border-hairline bg-card">
+        <div className="border-b border-hairline p-5">
+          <h1 className="text-xl font-medium text-ink">{t("rep.title")}</h1>
+          <p className="mt-0.5 text-xs font-light text-muted">
+            An open report is the only thing that lets you read a private conversation. Every read is recorded against your account.
           </p>
         </div>
 
-        <div className="space-y-3 p-4">
+        <div className="space-y-2 p-3">
           {reports.length === 0 ? (
-            <div className="border border-hairline/20 bg-panel-warm/50 p-6 text-center text-sm font-light leading-7 text-muted">{t("rep.empty")}</div>
+            <div className="border border-hairline bg-panel-warm/40 p-4 text-center text-xs font-light text-muted">{t("rep.empty")}</div>
           ) : (
             reports.map((report) => (
               <button
@@ -167,28 +166,28 @@ function AdminMessageReportsPage(): JSX.Element {
                 type="button"
                 onClick={() => void handleReview(report)}
                 className={cn(
-                  "w-full rounded-3xl border p-5 text-left transition-colors",
+                  "w-full border p-3.5 text-left transition-colors cursor-pointer",
                   selectedReport?.id === report.id
-                    ? "border-ink/40 bg-ink/5"
-                    : "border-hairline/20 bg-panel-warm/40 hover:bg-panel-warm/70"
+                    ? "border-ink bg-panel-warm"
+                    : "border-hairline bg-card hover:bg-panel-warm/50"
                 )}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
                     <ShieldAlert className="size-4 shrink-0 text-error" />
-                    <span className="font-body text-sm font-bold text-ink">
+                    <span className="text-sm font-medium text-ink">
                       {report.reporter.name}
                     </span>
                     <Badge tone={roleTone(report.reporter.role)}>{report.reporter.role}</Badge>
                   </div>
-                  <span className="shrink-0 text-[0.7rem] text-ink/50">
+                  <span className="shrink-0 text-xs text-muted-faint">
                     {new Date(report.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted">
+                <p className="mt-2 line-clamp-2 text-xs font-light text-muted">
                   {report.reason}
                 </p>
-                <p className="mt-3 text-[0.7rem] uppercase tracking-widest text-ink/50">
+                <p className="mt-2 text-xs font-medium text-ink/70">
                   {report.participants.map((participant) => participant.name).join(" and ")}
                 </p>
               </button>
@@ -197,36 +196,36 @@ function AdminMessageReportsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
+      <div className="border border-hairline bg-card">
         {selectedReport ? (
           <>
-            <div className="flex flex-col gap-4 border-b border-hairline/20 p-6 sm:p-8 md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-col gap-3 border-b border-hairline p-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <h3 className="font-body text-xl font-medium text-ink">
+                <h2 className="text-lg font-medium text-ink">
                   {selectedReport.participants.map((participant) => participant.name).join(" and ")}
-                </h3>
-                <p className="mt-2 max-w-2xl text-sm font-light leading-relaxed text-muted">
+                </h2>
+                <p className="mt-0.5 max-w-2xl text-xs font-light text-muted">
                   Reported by {selectedReport.reporter.name} on{" "}
                   {formatTimestamp(selectedReport.createdAt)}: {selectedReport.reason}
                 </p>
               </div>
               <Button
-                type="button"
-                variant="outline"
-                className="shrink-0"
                 disabled={resolvingReportId === selectedReport.id}
                 onClick={() => void handleResolve(selectedReport)}
+                size="sm"
+                type="button"
+                variant="outline"
               >
-                <ShieldCheck className="mr-2 size-4" />{t("rep.resolve")}</Button>
+                <ShieldCheck className="mr-1.5 size-4" />{t("rep.resolve")}</Button>
             </div>
 
-            <div className="space-y-4 p-6 sm:p-8">
+            <div className="space-y-3 p-5">
               {isLoadingThread ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 5 }).map((_, index) => (
+                <div className="space-y-3">
+                  {Array.from({ length: 4 }).map((_, index) => (
                     <Skeleton
+                      className="h-16 w-2/3"
                       key={index}
-                      className="h-20 w-2/3 bg-chip-active"
                     />
                   ))}
                 </div>
@@ -235,57 +234,56 @@ function AdminMessageReportsPage(): JSX.Element {
                   <div
                     key={message.id}
                     className={cn(
-                      "rounded-3xl border p-5 shadow-sm",
+                      "border p-4",
                       message.isHidden
-                        ? "border-dashed border-hairline/40 bg-panel-warm/60"
-                        : "border-hairline/20 bg-paper"
+                        ? "border-dashed border-hairline bg-panel-warm/60"
+                        : "border-hairline bg-card"
                     )}
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-body text-sm font-bold text-ink">
+                        <span className="text-sm font-medium text-ink">
                           {message.sender.name}
                         </span>
                         <Badge tone={roleTone(message.sender.role)}>{message.sender.role}</Badge>
                         {message.isHidden ? <Badge tone="quiet">{t("rep.hidden")}</Badge> : null}
                       </div>
-                      <span className="text-[0.7rem] text-ink/50">
+                      <span className="text-xs text-muted-faint">
                         {formatTimestamp(message.createdAt)}
                       </span>
                     </div>
 
-                    {/* The original text, retained on purpose: hiding stops the harm, it does not erase it. */}
-                    <p className="mt-3 text-sm leading-7 text-ink">{message.content}</p>
+                    <p className="mt-2 text-sm text-ink">{message.content}</p>
 
                     {message.isHidden ? (
-                      <p className="mt-3 text-xs font-light text-muted">
-                        Participants see a placeholder in place of this message. You are seeing the
-                        original.
+                      <p className="mt-2 text-xs font-light text-muted-faint">
+                        Participants see a placeholder in place of this message. You are seeing the original.
                       </p>
                     ) : (
                       <Button
-                        type="button"
-                        variant="outline"
-                        className="mt-4"
+                        className="mt-3"
                         disabled={pendingMessageId === message.id}
                         onClick={() => void handleHide(message.id)}
+                        size="xs"
+                        type="button"
+                        variant="outline"
                       >
-                        <EyeOff className="mr-2 size-4" />{t("rep.hide")}</Button>
+                        <EyeOff className="mr-1 size-3.5" />{t("rep.hide")}</Button>
                     )}
                   </div>
                 ))
               ) : (
-                <div className="border border-hairline/20 bg-panel-warm/50 p-6 text-center text-sm font-light leading-7 text-muted">{t("rep.noMessages")}</div>
+                <div className="border border-hairline bg-panel-warm/40 p-4 text-center text-xs font-light text-muted">{t("rep.noMessages")}</div>
               )}
             </div>
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center p-12 text-center">
-            <div className="mb-6 flex size-20 items-center justify-center rounded-full border border-hairline/20 bg-chip-active text-ink/60">
-              <ShieldAlert className="size-8" />
+            <div className="mb-4 flex size-14 items-center justify-center border border-hairline bg-panel-warm text-ink">
+              <ShieldAlert className="size-6 text-muted-faint" />
             </div>
-            <h4 className="font-body text-xl font-bold text-ink">{t("rep.noneSelected")}</h4>
-            <p className="mt-3 max-w-md text-sm font-light leading-relaxed text-muted">{t("rep.pick")}</p>
+            <h2 className="text-lg font-medium text-ink">{t("rep.noneSelected")}</h2>
+            <p className="mt-1 max-w-xs text-xs font-light text-muted">{t("rep.pick")}</p>
           </div>
         )}
       </div>

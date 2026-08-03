@@ -14,20 +14,20 @@ import { cn } from "@/lib/utils";
  */
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius)]",
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius)]",
     "font-medium transition-colors duration-150 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong",
     "focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
-    "disabled:pointer-events-none disabled:opacity-55",
-    // Touch targets stay at least 44px. DESIGN.md §8.
-    "min-h-11"
+    "disabled:pointer-events-none disabled:opacity-55"
   ],
   {
     variants: {
       size: {
-        default: "px-6 py-3 text-base",
-        lg: "px-7 py-3.5 text-lg",
-        sm: "px-4 py-2 text-sm"
+        default: "h-9 px-4 text-xs font-semibold sm:text-sm",
+        lg: "h-10 px-5 text-sm font-semibold",
+        sm: "h-8 px-3 text-xs",
+        xs: "h-7 px-2.5 text-[0.7rem]",
+        icon: "size-8 p-0 shrink-0"
       },
       variant: {
         ink: "bg-ink text-paper hover:bg-ink-muted",

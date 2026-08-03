@@ -121,13 +121,13 @@ function PaymentsPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
-        <div className="mb-0">
-          <h3 className="font-body text-3xl font-medium tracking-tight text-ink">
-            {canManagePayments ? "Payment operations" : "Payment history"}
-          </h3>
-          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
+    <div className="space-y-6">
+      <div className="border border-hairline bg-card p-6">
+        <div>
+          <h1 className="text-xl font-medium text-ink">
+            {canManagePayments ? "Payment Operations" : "Payment History"}
+          </h1>
+          <p className="mt-0.5 text-sm font-light text-muted">
             {canManagePayments
               ? "Track revenue, review transactions, and handle refunds from the accounting surface."
               : "Review your tuition payments, gateway outcomes, and enrollment transaction timeline."}
@@ -136,98 +136,93 @@ function PaymentsPage(): JSX.Element {
       </div>
 
       {canManagePayments && stats ? (
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {[
-            // Through `format.currency`, so the taka sign sits tight against a
-            // grouped number instead of a bare "BDT" beside a raw one.
             { label: t("an.totalRevenue"), value: format.currency(stats.totalRevenue) },
             { label: t("pay.success"), value: format.number(stats.successfulPayments) },
             { label: t("pay.pending"), value: format.number(stats.pendingPayments) },
             { label: t("pay.refunded"), value: format.currency(stats.refundedRevenue) }
           ].map((stat, i) => (
-            <div key={i} className="bg-card/80 p-6 border border-hairline/30 relative overflow-hidden group">
-              <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/54">{stat.label}</p>
-              <p className="mt-2 text-2xl font-body font-medium text-ink">{stat.value}</p>
+            <div key={i} className="border border-hairline bg-card p-4 sm:p-5">
+              <p className="text-xs uppercase tracking-wider text-muted-faint">{stat.label}</p>
+              <p className="mt-1 text-2xl font-medium text-ink">{stat.value}</p>
             </div>
           ))}
         </section>
       ) : null}
 
       {canManagePayments ? (
-        <div className="bg-card/80 p-6 border border-hairline/40 relative w-full overflow-hidden">
-          <div className="grid gap-4 md:grid-cols-[0.4fr]">
-            <div className="space-y-2">
-              <Label htmlFor="payment-status-filter" className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("pay.filterStatus")}</Label>
-              <Select
-                id="payment-status-filter"
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
-                className="bg-panel-warm/50 border-hairline/30"
-              >
-                <option value="">{t("pay.allStatuses")}</option>
-                <option value="PENDING">{t("pay.pending")}</option>
-                <option value="SUCCESS">{t("pay.success")}</option>
-                <option value="FAILED">{t("pay.failed")}</option>
-                <option value="REFUNDED">{t("pay.refunded")}</option>
-              </Select>
-            </div>
+        <div className="border border-hairline bg-card p-6">
+          <div className="max-w-xs space-y-1">
+            <Label htmlFor="payment-status-filter">{t("pay.filterStatus")}</Label>
+            <Select
+              id="payment-status-filter"
+              onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
+              value={statusFilter}
+            >
+              <option value="">{t("pay.allStatuses")}</option>
+              <option value="PENDING">{t("pay.pending")}</option>
+              <option value="SUCCESS">{t("pay.success")}</option>
+              <option value="FAILED">{t("pay.failed")}</option>
+              <option value="REFUNDED">{t("pay.refunded")}</option>
+            </Select>
           </div>
         </div>
       ) : null}
 
-      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
-        <div className="p-0">
+      <div className="border border-hairline bg-card">
+        <div>
           {items.length === 0 ? (
-            <div className="p-8">
+            <div className="p-6">
               <EmptyState message={t("pay.empty")} />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-panel-warm/50 text-ink/54">
-                  <tr>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.course")}</th>
-                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.student")}</th> : null}
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.amount")}</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.status")}</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.transaction")}</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.created")}</th>
-                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.action")}</th> : null}
+                <thead>
+                  <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
+                    <th className="px-4 py-2.5">{t("pay.course")}</th>
+                    {canManagePayments ? <th className="px-4 py-2.5">{t("pay.student")}</th> : null}
+                    <th className="px-4 py-2.5">{t("pay.amount")}</th>
+                    <th className="px-4 py-2.5">{t("pay.status")}</th>
+                    <th className="px-4 py-2.5">{t("pay.transaction")}</th>
+                    <th className="px-4 py-2.5">{t("pay.created")}</th>
+                    {canManagePayments ? <th className="px-4 py-2.5">{t("pay.action")}</th> : null}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-hairline/20">
+                <tbody>
                   {items.map((item) => (
-                    <tr key={item.id} className="align-top group/row hover:bg-panel-warm/30 transition-colors">
-                      <td className="px-6 py-5">
-                        <div className="space-y-1">
-                          <p className="font-body font-bold text-ink group-hover/row:text-ink transition-colors">{item.course.title}</p>
-                          <p className="text-[0.65rem] font-mono text-muted bg-panel-warm/50 px-2 py-0.5 rounded-md inline-block">{item.course.id}</p>
+                    <tr key={item.id} className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-ink">{item.course.title}</span>
+                          <span className="text-xs font-mono text-muted-faint">{item.course.id.slice(0, 8)}…</span>
                         </div>
                       </td>
                       {canManagePayments ? (
-                        <td className="px-6 py-5">
-                          <div className="space-y-1">
-                            <p className="font-semibold text-ink">{item.user?.name ?? "Unknown"}</p>
-                            <p className="text-xs text-muted/70 font-light">{item.user?.email ?? "Unknown"}</p>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-ink">{item.user?.name ?? "Unknown"}</span>
+                            <span className="text-xs text-muted-faint">{item.user?.email ?? "Unknown"}</span>
                           </div>
                         </td>
                       ) : null}
-                      <td className="px-6 py-5 font-body font-medium text-ink">
-                                                  {Number(item.amount).toFixed(2)}
+                      <td className="px-4 py-3 font-medium text-ink">
+                        {Number(item.amount).toFixed(2)}
                       </td>
-                      <td className="px-6 py-5">
-                        <Badge tone={paymentTone(item.status)} className="rounded-full px-3">{item.status}</Badge>
+                      <td className="px-4 py-3">
+                        <Badge tone={paymentTone(item.status)}>{item.status}</Badge>
                       </td>
-                      <td className="px-6 py-5 text-[0.7rem] font-mono text-muted opacity-70">{item.transactionId}</td>
-                      <td className="px-6 py-5 text-xs text-muted font-light">
+                      <td className="px-4 py-3 text-xs font-mono text-muted-faint">{item.transactionId}</td>
+                      <td className="px-4 py-3 text-xs text-muted font-light">
                         {new Date(item.createdAt).toLocaleString("en-GB", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </td>
                       {canManagePayments ? (
-                        <td className="px-6 py-5">
+                        <td className="px-4 py-3">
                           {item.status === "SUCCESS" ? (
-                            <Button size="sm" variant="outline" className="font-body font-semibold px-4 h-9 border-hairline/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>{t("pay.refund")}</Button>
+                            <Button onClick={() => void handleRefund(item.id)} size="xs" variant="outline">{t("pay.refund")}</Button>
                           ) : (
-                            <span className="text-sm text-muted-faint">—</span>
+                            <span className="text-xs text-muted-faint">—</span>
                           )}
                         </td>
                       ) : null}

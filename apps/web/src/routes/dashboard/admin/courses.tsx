@@ -100,135 +100,134 @@ function AdminCoursesPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
-        <div className="mb-10">
-          <div className="flex items-center gap-4 mb-3">
-             <div className="size-12 bg-ink/10 flex items-center justify-center text-ink border border-ink/10">
-                <ShieldAlert className="size-6" />
-             </div>
-             <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("admin.approve.title")}</h3>
+    <div className="space-y-6">
+      <div className="border border-hairline bg-card p-6">
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center border border-hairline bg-panel-warm">
+              <ShieldAlert className="size-5" />
+            </div>
+            <h1 className="text-xl font-medium text-ink">{t("admin.approve.title")}</h1>
           </div>
-          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
+          <p className="max-w-2xl text-sm font-light leading-relaxed text-muted">
             Review pending academic proposals, curate high-quality content, and provide constructive feedback to fellow instructors.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4">
-          <Badge tone="neutral" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-violet-500/10 border-violet-500/20">
+        <div className="flex flex-wrap gap-2">
+          <Badge tone="neutral">
             {courses.length} pending proposals
           </Badge>
-          <Badge tone="neutral" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-green-500/10 border-green-500/20">{t("admin.approve.queue")}</Badge>
+          <Badge tone="neutral">{t("admin.approve.queue")}</Badge>
         </div>
       </div>
 
       {courses.length === 0 ? (
-        <div className="bg-card/40 border border-dashed border-hairline/20 py-24 text-center group transition-all hover:bg-card/60">
-          <div className="size-24 bg-panel-warm rounded-full flex items-center justify-center mx-auto mb-6 border border-hairline/10">
-            <CheckCircle2 className="size-10 text-ink/20 group-hover:text-ink transition-colors" />
+        <div className="border border-hairline bg-card/40 py-16 text-center">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center border border-hairline bg-panel-warm">
+            <CheckCircle2 className="size-8 text-muted-faint" />
           </div>
-          <p className="font-body text-2xl font-medium text-ink mb-2 tracking-tight">{t("admin.approve.emptyTitle")}</p>
-          <p className="text-sm text-muted max-w-xs mx-auto font-light leading-relaxed">{t("admin.approve.emptyLead")}</p>
+          <p className="text-lg font-medium text-ink">{t("admin.approve.emptyTitle")}</p>
+          <p className="mx-auto max-w-xs text-sm font-light text-muted">{t("admin.approve.emptyLead")}</p>
         </div>
       ) : (
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2">
           {courses.map((course) => (
             <div 
               key={course.id} 
-              className="group/card flex flex-col border border-hairline/40 bg-card/80 p-6 transition-all hover:border-ink/20 relative overflow-hidden"
+              className="flex flex-col border border-hairline bg-card p-5"
             >
-              
-              <div className="flex flex-col gap-6 relative z-10">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <CourseStatusBadge status={course.status} />
-                  <div className="flex items-center gap-2 text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 bg-panel-warm px-3 py-1 rounded-full border border-hairline/10">
+                  <span className="text-xs text-muted-faint">
                     Received {course.submittedAt ? new Date(course.submittedAt).toLocaleDateString() : "Just now"}
-                  </div>
+                  </span>
                 </div>
 
-                <div className="space-y-2">
-                  <h4 className="font-body text-2xl font-medium text-ink tracking-tight leading-tight group-hover/card:text-ink transition-colors">
+                <div className="space-y-1.5">
+                  <h2 className="text-lg font-medium text-ink">
                     {course.title}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge tone="quiet" className="rounded-full border-hairline/30 text-[0.6rem] font-bold bg-panel-warm text-muted">
-                      <Layers3 className="size-3 mr-1.5 opacity-50" />
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone="quiet">
+                      <Layers3 className="mr-1 size-3 opacity-50" />
                       {course.category.name}
                     </Badge>
-                     <Badge tone="quiet" className="rounded-full border-hairline/30 text-[0.6rem] font-bold bg-panel-warm text-muted">
-                      <GraduationCap className="size-3 mr-1.5 opacity-50" />
+                    <Badge tone="quiet">
+                      <GraduationCap className="mr-1 size-3 opacity-50" />
                       {course.isExamOnly ? "Assessment only" : "Comprehensive Course"}
                     </Badge>
                   </div>
                 </div>
 
                 {course.coverImageUrl ? (
-                  <div className="relative aspect-video w-full overflow-hidden border border-hairline/20 bg-panel-warm group-hover/card: transition-all">
+                  <div className="relative aspect-video w-full overflow-hidden border border-hairline bg-panel-warm">
                     <ResponsiveImage
                       alt={course.title}
-                      className="h-full w-full object-cover group-hover/card:scale-105"
+                      className="h-full w-full object-cover"
                       sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                       src={course.coverImageUrl}
                     />
-                    <div className="absolute inset-x-0 bottom-0 p-4 bg-linear-to-t from-black/60 to-transparent">
-                       <p className="text-[0.65rem] font-bold text-white uppercase tracking-widest opacity-80">Proposed by {course.creator.name}</p>
+                    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-3">
+                      <p className="text-xs font-semibold text-white">Proposed by {course.creator.name}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video w-full bg-panel-warm border border-hairline/10 flex items-center justify-center italic text-xs text-ink/30">{t("admin.approve.noCover")}</div>
+                  <div className="flex aspect-video w-full items-center justify-center border border-hairline bg-panel-warm text-xs italic text-muted-faint">{t("admin.approve.noCover")}</div>
                 )}
 
-                <p className="text-sm leading-relaxed text-muted font-light line-clamp-3 pl-4 border-l-2 border-ink/20 italic">
+                <p className="line-clamp-2 border-l-2 border-hairline pl-3 text-sm font-light italic text-muted">
                   &ldquo;{course.description}&rdquo;
                 </p>
 
-                <div className="space-y-4 bg-ink/3 p-5 border border-ink/5">
-                  <div className="space-y-2">
-                    <Label 
-                      htmlFor={`feedback-${course.id}`}
-                      className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                    >{t("admin.approve.feedback")}</Label>
+                <div className="space-y-3 border border-hairline bg-panel-warm/40 p-4">
+                  <div className="space-y-1">
+                    <Label htmlFor={`feedback-${course.id}`}>{t("admin.approve.feedback")}</Label>
                     <div className="relative">
                       <Textarea
+                        className="pl-9 text-sm"
                         id={`feedback-${course.id}`}
-                        placeholder={t("admin.approve.feedbackPlaceholder")}
-                        className="min-h-25 text-sm bg-panel-warm/80 border-hairline/30 font-body pl-10 focus:ring-ink/20 transition-all resize-none"
-                        value={feedbackByCourseId[course.id] ?? ""}
                         onChange={(event) =>
                           setFeedbackByCourseId((currentValues) => ({
                             ...currentValues,
                             [course.id]: event.target.value
                           }))
                         }
+                        placeholder={t("admin.approve.feedbackPlaceholder")}
+                        rows={2}
+                        value={feedbackByCourseId[course.id] ?? ""}
                       />
-                      <MessageSquareText className="absolute left-3.5 top-3.5 size-4 text-ink/30" />
+                      <MessageSquareText className="absolute left-3 top-3 size-4 text-muted-faint" />
                     </div>
                   </div>
 
-                  <div className="flex gap-3 pt-2">
+                  <div className="flex gap-2 pt-1">
                     <Button 
-                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest bg-ink hover:bg-ink-muted transition-all disabled:opacity-50"
-                      onClick={() => void handleApprove(course.id)}
+                      className="flex-1"
                       disabled={actioningId === course.id}
+                      onClick={() => void handleApprove(course.id)}
                     >
                       {actioningId === course.id ? (
                         <Skeleton className="h-4 w-12 bg-white/20" />
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="size-4" />{t("admin.approve.approve")}</div>
+                        <>
+                          <CheckCircle2 className="mr-1.5 size-4" />{t("admin.approve.approve")}
+                        </>
                       )}
                     </Button>
                     <Button 
-                      variant="outline"
-                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest border-hairline/30 hover:bg-chip-active transition-all disabled:opacity-50"
-                      onClick={() => void handleReject(course.id)}
+                      className="flex-1"
                       disabled={actioningId === course.id}
+                      onClick={() => void handleReject(course.id)}
+                      variant="outline"
                     >
                       {actioningId === course.id ? (
                         <Skeleton className="h-4 w-12 bg-ink/10" />
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <XCircle className="size-4 text-red-500/60" />{t("admin.approve.reject")}</div>
+                        <>
+                          <XCircle className="mr-1.5 size-4 text-error" />{t("admin.approve.reject")}
+                        </>
                       )}
                     </Button>
                   </div>

@@ -135,65 +135,57 @@ function AdminSmsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
-
-        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
-          <div className="flex w-16 h-16 items-center justify-center bg-chip-active border border-hairline/30 relative overflow-hidden group/logo">
-            <div className="absolute inset-0 bg-ink/5 group-hover/logo:bg-ink/10 transition-colors"></div>
-            <img
-              decoding="async"
-              loading="lazy" src={genexMark} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
+    <div className="space-y-6">
+      <div className="border border-hairline bg-card p-6">
+        <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <div className="flex size-10 items-center justify-center border border-hairline bg-panel-warm shrink-0">
+            <img alt="" className="size-6" src={genexMark} />
           </div>
           <div>
-            <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("sms.title")}</h3>
-            <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
-              Dispatch synchronized announcements across the academic network. Target specific
-              cohorts or broadcast to all active scholars.
+            <h1 className="text-xl font-medium text-ink">{t("sms.title")}</h1>
+            <p className="mt-0.5 max-w-2xl text-sm font-light text-muted">
+              Dispatch synchronized announcements across the academic network. Target specific cohorts or broadcast to all active scholars.
             </p>
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {providerOk === false ? (
-            <div className="border border-amber-500/20 bg-amber-500/5 px-6 py-4 flex items-center gap-4 text-amber-600">
+            <div className="border border-amber-500/20 bg-amber-500/5 px-4 py-3 flex items-center gap-3 text-amber-600">
               <div className="size-2 rounded-full bg-amber-500"></div>
-              <p className="text-xs font-bold uppercase tracking-widest leading-none">
+              <p className="text-xs font-bold uppercase tracking-wider">
                 Provider Configuration Missing:{" "}
-                <span className="text-ink/60 normal-case font-medium ml-2 italic underline underline-offset-4 decoration-amber-500/30">{t("sms.needCredentials")}</span>
+                <span className="text-ink/60 normal-case font-medium ml-1 italic">{t("sms.needCredentials")}</span>
               </p>
             </div>
           ) : providerOk === true ? (
-            <div className="border border-green-500/20 bg-green-500/5 px-6 py-4 flex items-center gap-4 text-green-600">
+            <div className="border border-green-500/20 bg-green-500/5 px-4 py-3 flex items-center gap-3 text-green-600">
               <div className="size-2 rounded-full bg-green-500"></div>
-              <p className="text-xs font-bold uppercase tracking-widest leading-none">
+              <p className="text-xs font-bold uppercase tracking-wider">
                 System Active:{" "}
-                <span className="text-ink/60 normal-case font-medium ml-2">{t("sms.connected")}</span>
+                <span className="text-ink/60 normal-case font-medium ml-1">{t("sms.connected")}</span>
               </p>
             </div>
           ) : null}
 
-          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-8 max-w-3xl">
-            <div className="space-y-3">
-              <Label
-                htmlFor="sms-body"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-              >{t("sms.message")}</Label>
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6 max-w-3xl">
+            <div className="space-y-2">
+              <Label htmlFor="sms-body">{t("sms.message")}</Label>
               <textarea
+                className="w-full border border-hairline bg-card p-3.5 text-sm text-ink transition-colors focus:border-ink focus:outline-none placeholder:text-placeholder"
                 id="sms-body"
-                value={message}
+                maxLength={1000}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={t("sms.placeholder")}
                 required
-                maxLength={1000}
-                rows={5}
-                className="w-full bg-panel-warm/50 border border-hairline/30 px-6 py-4 text-base text-ink focus:outline-none focus:ring-4 focus:ring-ink/10 focus:border-ink/40 transition-all font-body resize-none placeholder:text-ink/20"
+                rows={3}
+                value={message}
               />
             </div>
 
-            <div className="space-y-4">
-              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("sms.targeting")}</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>{t("sms.targeting")}</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                   { id: "all_students", label: "All Students" },
                   { id: "role", label: "By Staff Role" },
@@ -202,37 +194,20 @@ function AdminSmsPage() {
                   <label
                     key={mode.id}
                     className={cn(
-                      "flex items-center gap-3 p-4 rounded-2xl border transition-all group/mode",
+                      "flex items-center gap-2.5 p-3 border transition-colors cursor-pointer",
                       targetMode === mode.id
-                        ? "bg-ink/5 border-ink/30 shadow-sm"
-                        : "bg-panel-warm/30 border-hairline/20 hover:border-hairline/40"
+                        ? "bg-panel-warm border-ink"
+                        : "bg-card border-hairline hover:border-hairline/60"
                     )}
                   >
-                    <div
-                      className={cn(
-                        "size-4 rounded-full border-2 flex items-center justify-center transition-all",
-                        targetMode === mode.id
-                          ? "border-ink bg-ink"
-                          : "border-hairline group-hover/mode:border-ink/30"
-                      )}
-                    >
-                      {targetMode === mode.id && (
-                        <div className="size-1.5 rounded-full bg-white"></div>
-                      )}
-                    </div>
                     <input
-                      type="radio"
-                      className="sr-only"
-                      name="sms-aud"
                       checked={targetMode === mode.id}
+                      className="size-4 accent-ink"
+                      name="sms-aud"
                       onChange={() => setTargetMode(mode.id as "all_students" | "role" | "course")}
+                      type="radio"
                     />
-                    <span
-                      className={cn(
-                        "text-sm font-bold tracking-tight transition-colors",
-                        targetMode === mode.id ? "text-ink" : "text-ink/60"
-                      )}
-                    >
+                    <span className="text-sm font-medium text-ink">
                       {mode.label}
                     </span>
                   </label>
@@ -240,18 +215,15 @@ function AdminSmsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
               {targetMode === "role" && (
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="sms-role"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                  >{t("sms.roleFilter")}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="sms-role">{t("sms.roleFilter")}</Label>
                   <select
+                    className="w-full border border-hairline bg-card h-10 px-3 text-sm text-ink"
                     id="sms-role"
-                    value={targetRole}
                     onChange={(e) => setTargetRole(e.target.value as UserRole)}
-                    className="h-12 w-full bg-panel-warm/50 border border-hairline/30 px-5 text-sm font-bold text-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
+                    value={targetRole}
                   >
                     {userRoleValues.map((value) => (
                       <option key={value} value={value}>
@@ -262,30 +234,26 @@ function AdminSmsPage() {
                 </div>
               )}
               {targetMode === "course" && (
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="sms-course"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                  >{t("sms.courseId")}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="sms-course">{t("sms.courseId")}</Label>
                   <Input
                     id="sms-course"
-                    className="h-12 bg-panel-warm/50 border-hairline/30 px-5 font-mono text-sm"
-                    value={courseId}
                     onChange={(e) => setCourseId(e.target.value)}
                     placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
                     required
+                    value={courseId}
                   />
                 </div>
               )}
               <Button
-                type="submit"
                 disabled={submitting || providerOk === false}
-                className="h-14 px-10 font-body font-medium transition-all disabled:opacity-40 disabled: disabled:grayscale"
+                size="lg"
+                type="submit"
               >
                 {submitting ? (
                   <Skeleton className="h-4 w-20 bg-white/20" />
                 ) : (
-                  "Queue batch dispatch"
+                  "Queue Batch Dispatch"
                 )}
               </Button>
             </div>
@@ -293,17 +261,14 @@ function AdminSmsPage() {
         </div>
       </div>
 
-      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
-        <div className="p-8 sm:p-10 border-b border-hairline/30 flex items-center justify-between">
+      <div className="border border-hairline bg-card">
+        <div className="p-6 border-b border-hairline flex items-center justify-between">
           <div>
-            <h4 className="font-body text-2xl font-medium tracking-tight text-ink leading-none">{t("sms.history")}</h4>
-            <p className="mt-2 text-sm text-muted font-light">{t("sms.historyLead")}</p>
+            <h2 className="text-xl font-medium text-ink">{t("sms.history")}</h2>
+            <p className="text-sm font-light text-muted">{t("sms.historyLead")}</p>
           </div>
           {history.length > 0 && (
-            <Badge
-              tone="neutral"
-              className="rounded-full px-4 font-bold text-[0.65rem] uppercase tracking-widest"
-            >
+            <Badge tone="neutral">
               {history.length} batches
             </Badge>
           )}
@@ -311,46 +276,46 @@ function AdminSmsPage() {
 
         <div className="overflow-x-auto">
           {historyLoading ? (
-            <div className="p-12 space-y-4">
+            <div className="p-6 space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton
+                  className="h-10 w-full"
                   key={i}
-                  className="h-14 w-full bg-chip-active/50"
                 />
               ))}
             </div>
           ) : history.length === 0 ? (
-            <div className="p-8">
+            <div className="p-6">
               <EmptyState message={t("sms.historyEmpty")} />
             </div>
           ) : (
-            <table className="w-full text-left whitespace-nowrap">
+            <table className="w-full text-left whitespace-nowrap border-collapse">
               <thead>
-                <tr className="bg-panel-warm/30 border-b border-hairline/20 font-bold text-[0.65rem] uppercase tracking-widest text-ink/50">
-                  <th className="px-10 py-5">{t("sms.time")}</th>
-                  <th className="px-10 py-5">{t("sms.target")}</th>
-                  <th className="px-10 py-5">{t("sms.state")}</th>
-                  <th className="px-10 py-5 text-right">{t("sms.sent")}</th>
-                  <th className="px-10 py-5 text-right">{t("sms.failed")}</th>
-                  <th className="px-10 py-5 text-right font-light opacity-50">{t("sms.skipped")}</th>
+                <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
+                  <th className="px-4 py-2.5">{t("sms.time")}</th>
+                  <th className="px-4 py-2.5">{t("sms.target")}</th>
+                  <th className="px-4 py-2.5">{t("sms.state")}</th>
+                  <th className="px-4 py-2.5 text-right">{t("sms.sent")}</th>
+                  <th className="px-4 py-2.5 text-right">{t("sms.failed")}</th>
+                  <th className="px-4 py-2.5 text-right font-light opacity-50">{t("sms.skipped")}</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((row) => (
                   <tr
+                    className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover"
                     key={row.id}
-                    className="group border-b border-hairline/10 transition-colors hover:bg-ink/2"
                   >
-                    <td className="px-10 py-6">
+                    <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="font-bold text-ink tracking-tight group-hover:text-ink transition-colors">
+                        <span className="text-sm font-medium text-ink">
                           {new Date(row.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
                             year: "numeric"
                           })}
                         </span>
-                        <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold mt-1">
+                        <span className="text-xs text-muted-faint">
                           {new Date(row.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit"
@@ -358,37 +323,30 @@ function AdminSmsPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-10 py-6">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-ink/70 uppercase tracking-tighter">
+                        <span className="text-xs font-medium text-ink">
                           {row.targetKind.replace("_", " ")}
                         </span>
                         {row.targetRole && (
-                          <Badge tone="quiet" className="scale-75 origin-left">
+                          <Badge tone="quiet">
                             {row.targetRole}
                           </Badge>
                         )}
                       </div>
                     </td>
-                    <td className="px-10 py-6">
-                      <span
-                        className={cn(
-                          "text-[0.65rem] font-bold uppercase tracking-widest px-3 py-1 rounded-full border",
-                          row.status === "COMPLETED"
-                            ? "bg-green-500/10 border-green-500/30 text-green-600"
-                            : "bg-amber-500/10 border-amber-500/30 text-amber-600"
-                        )}
-                      >
+                    <td className="px-4 py-3">
+                      <Badge tone={row.status === "COMPLETED" ? "neutral" : "attention"}>
                         {row.status}
-                      </span>
+                      </Badge>
                     </td>
-                    <td className="px-10 py-6 text-right tabular-nums font-bold text-ink">
+                    <td className="px-4 py-3 text-right text-sm font-medium text-ink">
                       {row.sentCount}
                     </td>
-                    <td className="px-10 py-6 text-right tabular-nums font-bold text-red-500/70">
+                    <td className="px-4 py-3 text-right text-sm font-medium text-error">
                       {row.failedCount}
                     </td>
-                    <td className="px-10 py-6 text-right tabular-nums text-ink/30 font-light">
+                    <td className="px-4 py-3 text-right text-sm text-muted-faint">
                       {row.skippedCount}
                     </td>
                   </tr>

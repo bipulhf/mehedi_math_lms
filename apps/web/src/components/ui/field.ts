@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  */
 export function fieldClassName(error: string | undefined, className?: string): string {
   return cn(
-    "w-full rounded-[var(--radius)] border bg-card px-4 text-base text-ink",
+    "w-full rounded-[var(--radius)] border bg-card px-3.5 text-sm text-ink",
     "transition-colors duration-150 ease-out",
     "placeholder:text-placeholder",
     "focus-visible:outline-none focus-visible:border-line-strong",
@@ -20,5 +20,5 @@ export function fieldClassName(error: string | undefined, className?: string): s
   );
 }
 
-/** Every field is at least 44px tall. DESIGN.md §8. */
-export const fieldHeightClassName = "h-12";
+/** Fields are compact 40px (h-10) tall for high-density UI. */
+export const fieldHeightClassName = "h-10";
