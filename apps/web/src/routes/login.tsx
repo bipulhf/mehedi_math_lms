@@ -25,10 +25,7 @@ function LoginAlias(): JSX.Element {
   const t = useT();
 
   return (
-    <AuthLayout
-      title={t("auth.signIn")}
-      description="Email, Google OAuth, and role-aware dashboard flows are already wired into the shared auth foundation."
-    >
+    <AuthLayout description={t("auth.signInLead")} title={t("auth.signIn")}>
       <SignInPage />
     </AuthLayout>
   );

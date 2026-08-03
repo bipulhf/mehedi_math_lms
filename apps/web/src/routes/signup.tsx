@@ -28,10 +28,7 @@ function SignupAlias(): JSX.Element {
   const search = Route.useSearch();
 
   return (
-    <AuthLayout
-      title={t("auth.signUp")}
-      description="Sign up with your email and password to unlock course enrollment, profile setup, and your learning dashboard."
-    >
+    <AuthLayout description={t("auth.signUpLead")} title={t("auth.signUp")}>
       <SignUpPage courseSlug={search.courseSlug} />
     </AuthLayout>
   );

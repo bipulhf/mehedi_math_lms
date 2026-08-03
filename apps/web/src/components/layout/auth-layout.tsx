@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX, PropsWithChildren } from "react";
 
-import { DotPatch, QuarterArc } from "@/components/ui/doodles";
+import { DiamondTrio, DotPatch, QuarterArc, RingedWord, StepCircle } from "@/components/ui/doodles";
 import { useT } from "@/lib/i18n/locale-context";
 import { siteConfig } from "@/lib/site";
 
@@ -11,23 +11,40 @@ interface AuthLayoutProps extends PropsWithChildren {
 }
 
 /**
- * Sign-in and sign-up. The handoff never designed these screens, so the chrome
- * is derived from the marketing bands rather than invented: paper background,
- * one white card with a hairline, the same doodles, no shadow.
- *
- * The old version put a marketing column beside the form. That column is gone —
- * someone on this page has already decided to sign in, and the design spends
- * its persuasion on the homepage.
+ * Sign-in and sign-up layout. Feature showcase on desktop, crisp form card,
+ * warm paper background, hairline rules, doodles, and full i18n support.
  */
 export function AuthLayout({ children, description, title }: AuthLayoutProps): JSX.Element {
   const t = useT();
+  const [beforeRing = "", afterRing = ""] = t("auth.heroTitle").split("{ring}");
+
+  const features = [
+    {
+      description: t("auth.feature1Desc"),
+      number: "01",
+      title: t("auth.feature1Title")
+    },
+    {
+      description: t("auth.feature2Desc"),
+      number: "02",
+      title: t("auth.feature2Title")
+    },
+    {
+      description: t("auth.feature3Desc"),
+      number: "03",
+      title: t("auth.feature3Title")
+    }
+  ];
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden">
-      <DotPatch className="-left-4 top-24 hidden lg:block" />
-      <QuarterArc className="bottom-32 right-24 hidden lg:block" />
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-paper">
+      {/* Background Doodles */}
+      <DotPatch className="-left-4 top-24 hidden opacity-60 lg:block" />
+      <QuarterArc className="bottom-20 right-24 hidden opacity-70 lg:block" />
+      <DiamondTrio className="left-1/3 top-16 hidden opacity-60 lg:block" />
 
-      <div className="mx-auto flex w-full max-w-[90rem] items-center justify-between px-4 py-6 sm:px-8 lg:px-14">
+      {/* Header Bar */}
+      <header className="mx-auto flex w-full max-w-[90rem] items-center justify-between px-4 py-6 sm:px-8 lg:px-14">
         <Link aria-label={siteConfig.name} className="flex items-center gap-2.5" to="/">
           <img alt="" className="block h-7 w-auto" src="/brand/genex-mark.png" />
           <img alt={siteConfig.name} className="block h-4 w-auto" src="/brand/genex-wordmark.png" />
@@ -38,15 +55,54 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
         >
           {t("auth.backHome")}
         </Link>
-      </div>
+      </header>
 
-      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
-        <div className="w-full max-w-[27rem] border border-hairline bg-card p-8 sm:p-10">
-          <div className="mb-8 space-y-3">
-            <h1 className="text-3xl font-medium leading-tight text-ink">{title}</h1>
-            <p className="text-base font-light leading-relaxed text-muted">{description}</p>
+      {/* Main Container */}
+      <main className="mx-auto flex w-full max-w-[90rem] flex-1 items-center px-4 py-8 sm:px-8 lg:px-14 lg:py-12">
+        <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_450px] lg:gap-16">
+          {/* Left Column - Brand & Value Showcase (Visible on Large Screens) */}
+          <div className="hidden space-y-8 lg:block">
+            {/* Trust Pill */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card/80 px-4 py-1.5 shadow-xs backdrop-blur-md">
+              <span className="inline-block size-2 rounded-full bg-accent" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-ink">
+                {t("auth.trustBadge")}
+              </span>
+            </div>
+
+            {/* Hero Title */}
+            <h2 className="text-3xl font-medium leading-tight tracking-tight text-ink lg:text-4xl">
+              {beforeRing}
+              <RingedWord>{t("auth.heroTitleRing")}</RingedWord>
+              {afterRing}
+            </h2>
+
+            {/* Feature List */}
+            <div className="space-y-6 pt-2">
+              {features.map((feature) => (
+                <div className="flex gap-4" key={feature.number}>
+                  <StepCircle>{feature.number}</StepCircle>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-medium text-ink">{feature.title}</h3>
+                    <p className="max-w-[42ch] text-base font-light leading-relaxed text-muted">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          {children}
+
+          {/* Right Column - Auth Form Card */}
+          <div className="mx-auto w-full max-w-[28rem] lg:mx-0 lg:max-w-none">
+            <div className="border border-hairline bg-card p-8 sm:p-10">
+              <div className="mb-8 space-y-2">
+                <h1 className="text-3xl font-medium leading-tight text-ink">{title}</h1>
+                <p className="text-base font-light leading-relaxed text-muted">{description}</p>
+              </div>
+              {children}
+            </div>
+          </div>
         </div>
       </main>
     </div>
