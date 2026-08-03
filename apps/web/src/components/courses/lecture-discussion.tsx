@@ -27,7 +27,9 @@ interface LectureDiscussionProps {
   lectureId: string;
 }
 
-function roleTone(role: LectureComment["user"]["role"]): "neutral" | "quiet" | "neutral" | "neutral" {
+function roleTone(
+  role: LectureComment["user"]["role"]
+): "neutral" | "quiet" | "neutral" | "neutral" {
   if (role === "ADMIN") {
     return "neutral";
   }
@@ -101,7 +103,9 @@ function CommentComposer({
           {isPending ? "Saving" : submitLabel}
         </Button>
         {onCancel ? (
-          <Button variant="outline" onClick={onCancel}>{t("common.cancel")}</Button>
+          <Button variant="outline" onClick={onCancel}>
+            {t("common.cancel")}
+          </Button>
         ) : null}
       </div>
     </div>
@@ -166,19 +170,22 @@ function CommentItem({
           {!comment.isDeleted ? (
             <div className="flex flex-wrap gap-2">
               {comment.parentId === null ? (
-                <Button
-                  variant="ghost"
-                  onClick={() => onReply(comment.id, "")}
-                >
-                  <Reply className="size-4" />{t("disc.reply")}</Button>
+                <Button variant="ghost" onClick={() => onReply(comment.id, "")}>
+                  <Reply className="size-4" />
+                  {t("disc.reply")}
+                </Button>
               ) : null}
               {comment.isEditable ? (
                 <Button variant="ghost" onClick={() => setIsEditing(true)}>
-                  <Pencil className="size-4" />{t("action.edit")}</Button>
+                  <Pencil className="size-4" />
+                  {t("action.edit")}
+                </Button>
               ) : null}
               {comment.isEditable ? (
                 <Button variant="ghost" onClick={() => void onDelete(comment.id)}>
-                  <Trash2 className="size-4" />{t("disc.delete")}</Button>
+                  <Trash2 className="size-4" />
+                  {t("disc.delete")}
+                </Button>
               ) : null}
             </div>
           ) : null}
@@ -367,114 +374,115 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
           <span className="sr-only">{isOpen ? t("disc.collapse") : t("disc.expand")}</span>
         </button>
       </CardHeader>
-      {isOpen ? <CardContent className="space-y-4 border-t border-hairline pt-5">
-        {canDiscuss ? (
-          <CommentComposer
-            isPending={isCreating}
-            placeholder={t("disc.placeholder")}
-            submitLabel="Post comment"
-            onSubmit={async (value) => {
-              setIsCreating(true);
+      {isOpen ? (
+        <CardContent className="space-y-4 border-t border-hairline pt-5">
+          {canDiscuss ? (
+            <CommentComposer
+              isPending={isCreating}
+              placeholder={t("disc.placeholder")}
+              submitLabel="Post comment"
+              onSubmit={async (value) => {
+                setIsCreating(true);
 
-              try {
-                const createdComment = await createLectureComment({
-                  content: value.trim(),
-                  lectureId
-                });
-                patchLoadedComments((loaded) => [createdComment, ...loaded]);
-                toast.success(t("disc.posted"));
-              } finally {
-                setIsCreating(false);
-              }
-            }}
-          />
-        ) : null}
+                try {
+                  const createdComment = await createLectureComment({
+                    content: value.trim(),
+                    lectureId
+                  });
+                  patchLoadedComments((loaded) => [createdComment, ...loaded]);
+                  toast.success(t("disc.posted"));
+                } finally {
+                  setIsCreating(false);
+                }
+              }}
+            />
+          ) : null}
 
-        {isLoading && comments.length === 0 ? (
-          <CommentThreadSkeleton />
-        ) : comments.length === 0 ? (
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper p-4 text-sm leading-7 text-ink/68">{t("disc.empty")}</div>
-        ) : (
-          <div className="space-y-3">
-            {comments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                currentUserId={currentUserId}
-                onDelete={(id) => Promise.resolve(setDeleteTarget(id))}
-                onReply={async (parentId, content) => {
-                  if (content === "") {
-                    setReplyTargetId(parentId || null);
-                    return;
-                  }
+          {isLoading && comments.length === 0 ? (
+            <CommentThreadSkeleton />
+          ) : comments.length === 0 ? (
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper p-4 text-sm leading-7 text-ink/68">
+              {t("disc.empty")}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {comments.map((comment) => (
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  currentUserId={currentUserId}
+                  onDelete={(id) => Promise.resolve(setDeleteTarget(id))}
+                  onReply={async (parentId, content) => {
+                    if (content === "") {
+                      setReplyTargetId(parentId || null);
+                      return;
+                    }
 
-                  setSubmittingReplyId(parentId);
+                    setSubmittingReplyId(parentId);
 
-                  try {
-                    const createdReply = await createLectureComment({
-                      content: content.trim(),
-                      lectureId,
-                      parentId
-                    });
-                    patchLoadedComments((loaded) =>
-                      loaded.map((item) =>
-                        item.id === parentId
-                          ? {
-                              ...item,
-                              replies: [...item.replies, createdReply]
-                            }
-                          : item
-                      )
-                    );
-                    setReplyTargetId(null);
-                    toast.success(t("disc.replied"));
-                  } finally {
-                    setSubmittingReplyId(null);
-                  }
-                }}
-                onUpdate={async (id, content) => {
-                  setUpdatingId(id);
+                    try {
+                      const createdReply = await createLectureComment({
+                        content: content.trim(),
+                        lectureId,
+                        parentId
+                      });
+                      patchLoadedComments((loaded) =>
+                        loaded.map((item) =>
+                          item.id === parentId
+                            ? {
+                                ...item,
+                                replies: [...item.replies, createdReply]
+                              }
+                            : item
+                        )
+                      );
+                      setReplyTargetId(null);
+                      toast.success(t("disc.replied"));
+                    } finally {
+                      setSubmittingReplyId(null);
+                    }
+                  }}
+                  onUpdate={async (id, content) => {
+                    setUpdatingId(id);
 
-                  try {
-                    const updatedComment = await updateComment(id, {
-                      content: content.trim()
-                    });
-                    patchLoadedComments((loaded) =>
-                      loaded.map((item) =>
-                        item.id === id
-                          ? updatedComment
-                          : {
-                              ...item,
-                              replies: item.replies.map((reply) =>
-                                reply.id === id ? updatedComment : reply
-                              )
-                            }
-                      )
-                    );
-                    toast.success(t("disc.updated"));
-                  } finally {
-                    setUpdatingId(null);
-                  }
-                }}
-                replyTargetId={replyTargetId}
-                submittingReplyId={submittingReplyId}
-                updatingId={updatingId}
-              />
-            ))}
-          </div>
-        )}
+                    try {
+                      const updatedComment = await updateComment(id, {
+                        content: content.trim()
+                      });
+                      patchLoadedComments((loaded) =>
+                        loaded.map((item) =>
+                          item.id === id
+                            ? updatedComment
+                            : {
+                                ...item,
+                                replies: item.replies.map((reply) =>
+                                  reply.id === id ? updatedComment : reply
+                                )
+                              }
+                        )
+                      );
+                      toast.success(t("disc.updated"));
+                    } finally {
+                      setUpdatingId(null);
+                    }
+                  }}
+                  replyTargetId={replyTargetId}
+                  submittingReplyId={submittingReplyId}
+                  updatingId={updatingId}
+                />
+              ))}
+            </div>
+          )}
 
-        {hasNextPage ? (
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => void fetchNextPage()}
-            >
-              Load more comments ({totalLoaded} loaded)
-            </Button>
-          </div>
-        ) : null}
-      </CardContent> : null}
+          {hasNextPage ? (
+            <div className="flex justify-center">
+              <Button variant="outline" onClick={() => void fetchNextPage()}>
+                Load more comments ({totalLoaded} loaded)
+              </Button>
+            </div>
+          ) : null}
+        </CardContent>
+      ) : null}
 
       <ConfirmDialog
         cancelLabel={t("common.cancel")}

@@ -5,6 +5,7 @@ import {
   createLectureSchema,
   createMaterialSchema,
   materialIdParamsSchema,
+  reorderCourseItemsSchema,
   reorderLecturesSchema,
   updateChapterSchema,
   updateMaterialSchema
@@ -83,6 +84,21 @@ chaptersRoutes.patch("/:id/lectures/reorder", requireRole("ADMIN", "TEACHER"), a
   const authSession = context.get("authSession");
 
   return contentController.reorderLectures(
+    context,
+    params.id,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+chaptersRoutes.patch("/:id/items/reorder", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = chapterIdParamsSchema.parse(context.req.param());
+  const payload = reorderCourseItemsSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return testController.reorderCourseItems(
     context,
     params.id,
     payload,

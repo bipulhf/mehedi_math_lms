@@ -1,5 +1,6 @@
 import type { MessageKey } from "./bn";
 import { authoringEn } from "./authoring-en";
+import { discussionEn } from "./discussion-en";
 
 /**
  * The English catalogue. Typed as a complete record of `MessageKey`, so a key
@@ -10,6 +11,7 @@ import { authoringEn } from "./authoring-en";
  */
 export const en: Readonly<Record<MessageKey, string>> = {
   ...authoringEn,
+  ...discussionEn,
   "action.back": "Back",
   "action.cancel": "Cancel",
   "action.clearFilters": "Clear filters",
@@ -91,6 +93,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "detail.includeTests": "A test at the end of each chapter",
   "detail.noReviews": "No reviews yet",
   "detail.openPlayer": "Open the course",
+  "detail.previewLocked": "This class opens after you enrol",
+  "detail.previewOpen": "Watch this free class",
+  "detail.previewUnavailable": "This free class cannot be shown right now.",
   "detail.qualifications": "Qualifications",
   "detail.reviewSummary": "{average} · {count} reviews",
   "detail.signIn": "Sign in to enrol",
@@ -598,21 +603,6 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "cbx.fileDeleted": "File deleted",
   "cbx.chapterReordered": "Module order updated",
   "cbx.lessonReordered": "Class order updated",
-  "disc.title": "Discussion",
-  "disc.collapse": "Collapse discussion",
-  "disc.expand": "Expand discussion",
-  "disc.lead": "Ask a question or leave useful context about this lecture.",
-  "disc.you": "You",
-  "disc.reply": "Reply",
-  "disc.delete": "Delete",
-  "disc.empty": "No comments yet. Write the first one.",
-  "disc.editPlaceholder": "Edit your comment",
-  "disc.replyPlaceholder": "Write a reply",
-  "disc.placeholder": "Ask a question or leave a note about this class",
-  "disc.posted": "Comment posted",
-  "disc.deleted": "Comment deleted",
-  "disc.replied": "Reply posted",
-  "disc.updated": "Comment updated",
   "auser.lead": "Account details, profile and recent activity.",
   "auser.email": "Email",
   "auser.viewStudent": "View student profile",

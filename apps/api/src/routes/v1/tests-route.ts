@@ -51,12 +51,7 @@ testsRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.deleteTest(
-    context,
-    params.id,
-    authUser!.id,
-    authSession!.role as UserRole
-  );
+  return testController.deleteTest(context, params.id, authUser!.id, authSession!.role as UserRole);
 });
 
 testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -74,20 +69,24 @@ testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (c
   );
 });
 
-testsRoutes.patch("/:testId/questions/reorder", requireRole("ADMIN", "TEACHER"), async (context) => {
-  const params = testQuestionParamsSchema.parse(context.req.param());
-  const payload = reorderQuestionsSchema.parse(await context.req.json());
-  const authUser = context.get("authUser");
-  const authSession = context.get("authSession");
+testsRoutes.patch(
+  "/:testId/questions/reorder",
+  requireRole("ADMIN", "TEACHER"),
+  async (context) => {
+    const params = testQuestionParamsSchema.parse(context.req.param());
+    const payload = reorderQuestionsSchema.parse(await context.req.json());
+    const authUser = context.get("authUser");
+    const authSession = context.get("authSession");
 
-  return testController.reorderQuestions(
-    context,
-    params.testId,
-    payload,
-    authUser!.id,
-    authSession!.role as UserRole
-  );
-});
+    return testController.reorderQuestions(
+      context,
+      params.testId,
+      payload,
+      authUser!.id,
+      authSession!.role as UserRole
+    );
+  }
+);
 
 testsRoutes.post("/:id/submissions/start", requireAuth(), (context) => {
   const params = testIdParamsSchema.parse(context.req.param());

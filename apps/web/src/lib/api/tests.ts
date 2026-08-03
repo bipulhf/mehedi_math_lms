@@ -3,6 +3,7 @@ import type {
   createQuestionSchema,
   createTestSchema,
   gradeSubmissionSchema,
+  reorderCourseItemsSchema,
   reorderQuestionsSchema,
   saveSubmissionAnswersSchema,
   submitTestSchema,
@@ -37,6 +38,7 @@ export interface AssessmentTestSummary {
   isPublished: boolean;
   passingScore: number | null;
   questionCount: number;
+  sortOrder: number;
   title: string;
   totalMarks: number;
   type: "MCQ" | "WRITTEN" | "MIXED";
@@ -88,6 +90,7 @@ export type CreateTestInput = z.infer<typeof createTestSchema>;
 export type UpdateTestInput = z.infer<typeof updateTestSchema>;
 export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 export type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
+export type ReorderCourseItemsInput = z.infer<typeof reorderCourseItemsSchema>;
 export type ReorderQuestionsInput = z.infer<typeof reorderQuestionsSchema>;
 export type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 export type SubmitTestInput = z.infer<typeof submitTestSchema>;
@@ -153,6 +156,18 @@ export async function reorderQuestions(
 ): Promise<AssessmentTestDetail> {
   const response = await apiPatch<ReorderQuestionsInput, AssessmentTestDetail>(
     `tests/${testId}/questions/reorder`,
+    values
+  );
+
+  return response.data;
+}
+
+export async function reorderCourseItems(
+  chapterId: string,
+  values: ReorderCourseItemsInput
+): Promise<{ chapterId: string }> {
+  const response = await apiPatch<ReorderCourseItemsInput, { chapterId: string }>(
+    `chapters/${chapterId}/items/reorder`,
     values
   );
 

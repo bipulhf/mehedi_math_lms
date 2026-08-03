@@ -1,11 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  ArrowRight,
-  FileText,
-  Plus,
-  Trash2
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, Plus } from "lucide-react";
 import type { ChangeEvent, DragEvent, JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -32,11 +26,10 @@ import {
   createLectureMaterial,
   deleteLecture,
   deleteLectureMaterial,
-  reorderLectures,
   updateLecture
 } from "@/lib/api/content";
-import type { AssessmentChapterSummary } from "@/lib/api/tests";
-import { createTest, deleteTest } from "@/lib/api/tests";
+import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/tests";
+import { createTest, deleteTest, reorderCourseItems } from "@/lib/api/tests";
 import { uploadCourseMaterial } from "@/lib/api/uploads";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
@@ -63,10 +56,15 @@ interface CourseLectureBuilderProps {
 
 type DeleteTarget = { id: string; kind: "exam" } | { id: string; kind: "lecture" };
 
-interface DraggedLecture {
+interface DraggedCourseItem {
   chapterId: string;
-  lectureId: string;
+  id: string;
+  kind: "EXAM" | "LECTURE";
 }
+
+type CourseOutlineItem =
+  | { exam: AssessmentTestSummary; id: string; kind: "EXAM"; sortOrder: number }
+  | { id: string; kind: "LECTURE"; lecture: ContentLecture; sortOrder: number };
 
 function createEmptyDraft(): LectureDraft {
   return {
@@ -81,6 +79,28 @@ function createEmptyDraft(): LectureDraft {
   };
 }
 
+function getChapterItems(
+  chapter: ContentChapter,
+  assessments: readonly AssessmentChapterSummary[]
+): CourseOutlineItem[] {
+  const exams = assessments.find((assessment) => assessment.chapterId === chapter.id)?.tests ?? [];
+
+  return [
+    ...chapter.lectures.map((lecture) => ({
+      id: lecture.id,
+      kind: "LECTURE" as const,
+      lecture,
+      sortOrder: lecture.sortOrder
+    })),
+    ...exams.map((exam) => ({
+      exam,
+      id: exam.id,
+      kind: "EXAM" as const,
+      sortOrder: exam.sortOrder
+    }))
+  ].sort((first, second) => first.sortOrder - second.sortOrder);
+}
+
 export function CourseLectureBuilder({
   assessments,
   chapters,
@@ -92,7 +112,7 @@ export function CourseLectureBuilder({
   const [activeChapterId, setActiveChapterId] = useState(chapters[0]?.id ?? "");
   const [draft, setDraft] = useState<LectureDraft>(createEmptyDraft);
   const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
-  const [draggedLecture, setDraggedLecture] = useState<DraggedLecture | null>(null);
+  const [draggedItem, setDraggedItem] = useState<DraggedCourseItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [isWorking, setIsWorking] = useState(false);
 
@@ -130,6 +150,25 @@ export function CourseLectureBuilder({
     return true;
   };
 
+  const appendCourseItem = async (
+    chapterId: string,
+    item: CourseOutlineItem
+  ): Promise<void> => {
+    await reorderCourseItems(chapterId, {
+      items: chapters.flatMap((chapter) => {
+        const chapterItems = getChapterItems(chapter, assessments);
+        const orderedItems = chapter.id === chapterId ? [...chapterItems, item] : chapterItems;
+
+        return orderedItems.map((courseItem, index) => ({
+          chapterId: chapter.id,
+          id: courseItem.id,
+          kind: courseItem.kind,
+          sortOrder: index
+        }));
+      })
+    });
+  };
+
   const handleCreate = async (): Promise<void> => {
     if (!activeChapter || !validateDraft()) {
       return;
@@ -144,12 +183,25 @@ export function CourseLectureBuilder({
           questionTab.opener = null;
         }
 
-        const exam = await createTest(activeChapter.id, {
-          description: draft.description,
-          isPublished: false,
-          title: draft.title,
-          type: "MCQ"
-        });
+        let exam: AssessmentTestSummary;
+
+        try {
+          exam = await createTest(activeChapter.id, {
+            description: draft.description,
+            isPublished: false,
+            title: draft.title,
+            type: "MCQ"
+          });
+          await appendCourseItem(activeChapter.id, {
+            exam,
+            id: exam.id,
+            kind: "EXAM",
+            sortOrder: exam.sortOrder
+          });
+        } catch (error) {
+          questionTab?.close();
+          throw error;
+        }
         resetComposer();
         await onRefresh();
         const examUrl = `/dashboard/courses/${encodeURIComponent(courseId)}/exam?examId=${encodeURIComponent(exam.id)}`;
@@ -181,6 +233,13 @@ export function CourseLectureBuilder({
           title: draft.title
         });
       }
+
+      await appendCourseItem(activeChapter.id, {
+        id: lecture.id,
+        kind: "LECTURE",
+        lecture,
+        sortOrder: lecture.sortOrder
+      });
 
       resetComposer();
       await onRefresh();
@@ -260,17 +319,18 @@ export function CourseLectureBuilder({
     });
   };
 
-  const saveLectureOrder = async (
-    lectureLists: ReadonlyMap<string, readonly ContentLecture[]>,
+  const saveCourseItemOrder = async (
+    itemLists: ReadonlyMap<string, readonly CourseOutlineItem[]>,
     targetChapterId: string
   ): Promise<void> => {
     setIsWorking(true);
     try {
-      await reorderLectures(targetChapterId, {
+      await reorderCourseItems(targetChapterId, {
         items: chapters.flatMap((chapter) =>
-          (lectureLists.get(chapter.id) ?? []).map((lecture, index) => ({
+          (itemLists.get(chapter.id) ?? []).map((item, index) => ({
             chapterId: chapter.id,
-            id: lecture.id,
+            id: item.id,
+            kind: item.kind,
             sortOrder: index
           }))
         )
@@ -282,73 +342,75 @@ export function CourseLectureBuilder({
     }
   };
 
-  const handleMoveLecture = async (
+  const handleMoveItem = async (
     chapterId: string,
-    lectureId: string,
+    itemId: string,
     offset: -1 | 1
   ): Promise<void> => {
     const chapter = chapters.find((item) => item.id === chapterId);
-    const currentIndex = chapter?.lectures.findIndex((lecture) => lecture.id === lectureId) ?? -1;
+    const chapterItems = chapter ? getChapterItems(chapter, assessments) : [];
+    const currentIndex = chapterItems.findIndex((item) => item.id === itemId);
     const targetIndex = currentIndex + offset;
 
-    if (!chapter || currentIndex < 0 || targetIndex < 0 || targetIndex >= chapter.lectures.length) {
+    if (!chapter || currentIndex < 0 || targetIndex < 0 || targetIndex >= chapterItems.length) {
       return;
     }
 
-    const reordered = [...chapter.lectures];
-    const [movedLecture] = reordered.splice(currentIndex, 1);
+    const reordered = [...chapterItems];
+    const [movedItem] = reordered.splice(currentIndex, 1);
 
-    if (!movedLecture) {
+    if (!movedItem) {
       return;
     }
 
-    reordered.splice(targetIndex, 0, movedLecture);
-    const lectureLists = new Map(
-      chapters.map((item) => [item.id, item.id === chapterId ? reordered : item.lectures] as const)
+    reordered.splice(targetIndex, 0, movedItem);
+    const itemLists = new Map(
+      chapters.map((item) => [
+        item.id,
+        item.id === chapterId ? reordered : getChapterItems(item, assessments)
+      ] as const)
     );
-    await saveLectureOrder(lectureLists, chapterId);
+    await saveCourseItemOrder(itemLists, chapterId);
   };
 
-  const handleLectureDrop = async (
+  const handleItemDrop = async (
     event: DragEvent<HTMLElement>,
     targetChapterId: string,
-    targetLectureId?: string | undefined
+    targetItemId?: string | undefined
   ): Promise<void> => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (!draggedLecture || draggedLecture.lectureId === targetLectureId || isWorking) {
-      setDraggedLecture(null);
+    if (!draggedItem || draggedItem.id === targetItemId || isWorking) {
+      setDraggedItem(null);
       return;
     }
 
-    const lectureLists = new Map(
-      chapters.map((chapter) => [chapter.id, [...chapter.lectures]] as const)
+    const itemLists = new Map<string, CourseOutlineItem[]>(
+      chapters.map((chapter) => [chapter.id, getChapterItems(chapter, assessments)] as const)
     );
-    const sourceLectures = lectureLists.get(draggedLecture.chapterId);
-    const targetLectures = lectureLists.get(targetChapterId);
-    const sourceIndex = sourceLectures?.findIndex(
-      (lecture) => lecture.id === draggedLecture.lectureId
-    );
+    const sourceItems = itemLists.get(draggedItem.chapterId);
+    const targetItems = itemLists.get(targetChapterId);
+    const sourceIndex = sourceItems?.findIndex((item) => item.id === draggedItem.id);
 
-    if (!sourceLectures || !targetLectures || sourceIndex === undefined || sourceIndex < 0) {
-      setDraggedLecture(null);
+    if (!sourceItems || !targetItems || sourceIndex === undefined || sourceIndex < 0) {
+      setDraggedItem(null);
       return;
     }
 
-    const [movedLecture] = sourceLectures.splice(sourceIndex, 1);
+    const [movedItem] = sourceItems.splice(sourceIndex, 1);
 
-    if (!movedLecture) {
-      setDraggedLecture(null);
+    if (!movedItem) {
+      setDraggedItem(null);
       return;
     }
 
-    const targetIndex = targetLectureId
-      ? targetLectures.findIndex((lecture) => lecture.id === targetLectureId)
-      : targetLectures.length;
-    targetLectures.splice(targetIndex < 0 ? targetLectures.length : targetIndex, 0, movedLecture);
-    setDraggedLecture(null);
-    await saveLectureOrder(lectureLists, targetChapterId);
+    const targetIndex = targetItemId
+      ? targetItems.findIndex((item) => item.id === targetItemId)
+      : targetItems.length;
+    targetItems.splice(targetIndex < 0 ? targetItems.length : targetIndex, 0, movedItem);
+    setDraggedItem(null);
+    await saveCourseItemOrder(itemLists, targetChapterId);
   };
 
   const handleDelete = async (): Promise<void> => {
@@ -427,22 +489,19 @@ export function CourseLectureBuilder({
       <section className="space-y-4 border-t border-hairline pt-6">
         <div>
           <h2 className="text-xl font-medium text-ink">{t("author.lectureOutlineTitle")}</h2>
-          <p className="mt-1 text-base font-light text-muted">
-            {t("author.lectureOutlineLead")}
-          </p>
+          <p className="mt-1 text-base font-light text-muted">{t("author.lectureOutlineLead")}</p>
         </div>
 
         <div className="space-y-5">
           {chapters.map((chapter, chapterIndex) => {
-            const chapterExams =
-              assessments.find((assessment) => assessment.chapterId === chapter.id)?.tests ?? [];
+            const chapterItems = getChapterItems(chapter, assessments);
 
             return (
               <section
                 className="border border-hairline bg-panel-warm/40"
                 key={chapter.id}
                 onDragOver={(event) => event.preventDefault()}
-                onDrop={(event) => void handleLectureDrop(event, chapter.id)}
+                onDrop={(event) => void handleItemDrop(event, chapter.id)}
               >
                 <header className="flex items-start gap-4 border-b border-hairline bg-card p-4 sm:p-5">
                   <span className="label-mono pt-1 text-sm text-muted-faint">
@@ -459,38 +518,53 @@ export function CourseLectureBuilder({
                 </header>
 
                 <div className="space-y-2 p-3 sm:p-4">
-                  {chapter.lectures.map((lecture, lectureIndex) => (
-                    <LectureOutlineRow
-                      count={chapter.lectures.length}
-                      index={lectureIndex}
-                      isDragging={draggedLecture?.lectureId === lecture.id}
-                      isWorking={isWorking}
-                      key={lecture.id}
-                      lecture={lecture}
-                      onDelete={() => setDeleteTarget({ id: lecture.id, kind: "lecture" })}
-                      onDragEnd={() => setDraggedLecture(null)}
-                      onDragStart={() =>
-                        setDraggedLecture({ chapterId: chapter.id, lectureId: lecture.id })
-                      }
-                      onDrop={(event) =>
-                        void handleLectureDrop(event, chapter.id, lecture.id)
-                      }
-                      onEdit={() => startEditLecture(chapter.id, lecture)}
-                      onMove={(offset) =>
-                        void handleMoveLecture(chapter.id, lecture.id, offset)
-                      }
-                    />
-                  ))}
-                  {chapterExams.map((exam) => (
-                    <ExamOutlineRow
-                      courseId={courseId}
-                      exam={exam}
-                      key={exam.id}
-                      onDelete={() => setDeleteTarget({ id: exam.id, kind: "exam" })}
-                    />
-                  ))}
+                  {chapterItems.map((item, itemIndex) =>
+                    item.kind === "LECTURE" ? (
+                      <LectureOutlineRow
+                        count={chapterItems.length}
+                        index={itemIndex}
+                        isDragging={draggedItem?.id === item.id}
+                        isWorking={isWorking}
+                        key={item.id}
+                        lecture={item.lecture}
+                        onDelete={() => setDeleteTarget({ id: item.id, kind: "lecture" })}
+                        onDragEnd={() => setDraggedItem(null)}
+                        onDragStart={() =>
+                          setDraggedItem({
+                            chapterId: chapter.id,
+                            id: item.id,
+                            kind: item.kind
+                          })
+                        }
+                        onDrop={(event) => void handleItemDrop(event, chapter.id, item.id)}
+                        onEdit={() => startEditLecture(chapter.id, item.lecture)}
+                        onMove={(offset) => void handleMoveItem(chapter.id, item.id, offset)}
+                      />
+                    ) : (
+                      <ExamOutlineRow
+                        count={chapterItems.length}
+                        courseId={courseId}
+                        exam={item.exam}
+                        index={itemIndex}
+                        isDragging={draggedItem?.id === item.id}
+                        isWorking={isWorking}
+                        key={item.id}
+                        onDelete={() => setDeleteTarget({ id: item.id, kind: "exam" })}
+                        onDragEnd={() => setDraggedItem(null)}
+                        onDragStart={() =>
+                          setDraggedItem({
+                            chapterId: chapter.id,
+                            id: item.id,
+                            kind: item.kind
+                          })
+                        }
+                        onDrop={(event) => void handleItemDrop(event, chapter.id, item.id)}
+                        onMove={(offset) => void handleMoveItem(chapter.id, item.id, offset)}
+                      />
+                    )
+                  )}
 
-                  {chapter.lectures.length === 0 && chapterExams.length === 0 ? (
+                  {chapterItems.length === 0 ? (
                     <div className="border border-dashed border-dot-idle bg-card px-5 py-8 text-center">
                       <p className="text-base font-medium text-ink">{t("author.lectureEmpty")}</p>
                       <p className="mt-1 text-sm font-light text-muted">

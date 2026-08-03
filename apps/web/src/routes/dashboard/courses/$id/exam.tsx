@@ -38,11 +38,7 @@ function CourseExamQuestionPage(): JSX.Element {
           </p>
         </div>
         <Button asChild className="h-11 shrink-0" variant="outline">
-          <Link
-            params={{ id }}
-            search={{ stage: "lectures" }}
-            to="/dashboard/courses/$id/content"
-          >
+          <Link params={{ id }} search={{ stage: "lectures" }} to="/dashboard/courses/$id/content">
             <ArrowLeft className="size-4" />
             {t("action.back")}
           </Link>

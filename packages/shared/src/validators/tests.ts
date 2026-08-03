@@ -93,6 +93,17 @@ export const updateQuestionSchema = z
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
 
+export const reorderCourseItemsSchema = z.object({
+  items: z.array(
+    z.object({
+      chapterId: idSchema,
+      id: idSchema,
+      kind: z.enum(["EXAM", "LECTURE"]),
+      sortOrder: z.number().int().min(0)
+    })
+  )
+});
+
 export const reorderQuestionsSchema = z.object({
   items: z.array(
     z.object({

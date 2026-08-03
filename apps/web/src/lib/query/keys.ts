@@ -37,7 +37,8 @@ export const queryKeys = {
   },
   content: {
     all: () => ["content"] as const,
-    course: (courseId: string) => ["content", "course", courseId] as const
+    course: (courseId: string) => ["content", "course", courseId] as const,
+    lecturePreview: (lectureId: string) => ["content", "lecture-preview", lectureId] as const
   },
   courses: {
     all: () => ["courses"] as const,

@@ -4,6 +4,7 @@ import type {
   createQuestionSchema,
   createTestSchema,
   gradeSubmissionSchema,
+  reorderCourseItemsSchema,
   reorderQuestionsSchema,
   saveSubmissionAnswersSchema,
   submitTestSchema,
@@ -50,6 +51,7 @@ type CreateTestInput = z.infer<typeof createTestSchema>;
 type UpdateTestInput = z.infer<typeof updateTestSchema>;
 type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
+type ReorderCourseItemsInput = z.infer<typeof reorderCourseItemsSchema>;
 type ReorderQuestionsInput = z.infer<typeof reorderQuestionsSchema>;
 type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 type SubmitTestInput = z.infer<typeof submitTestSchema>;
@@ -166,6 +168,7 @@ export class TestService {
         isPublished: test.isPublished,
         passingScore: test.passingScore,
         questionCount: questionCountMap.get(test.id) ?? 0,
+        sortOrder: test.sortOrder,
         title: test.title,
         totalMarks: totalMarksMap.get(test.id) ?? 0,
         type: test.type
@@ -207,6 +210,7 @@ export class TestService {
       isPublished: record.isPublished,
       passingScore: record.passingScore,
       questionCount: 0,
+      sortOrder: record.sortOrder,
       title: record.title,
       totalMarks: 0,
       type: record.type
@@ -244,6 +248,7 @@ export class TestService {
       isPublished: record.isPublished,
       passingScore: record.passingScore,
       questionCount: existingQuestions.length,
+      sortOrder: record.sortOrder,
       title: record.title,
       totalMarks: existingQuestions.reduce((sum, question) => sum + question.marks, 0),
       type: record.type
@@ -279,6 +284,7 @@ export class TestService {
       passingScore: test.passingScore,
       questionCount: questions.length,
       questions,
+      sortOrder: test.sortOrder,
       title: test.title,
       totalMarks,
       type: test.type
@@ -390,6 +396,62 @@ export class TestService {
     await this.testRepository.deleteQuestion(questionId);
 
     return { id: questionId };
+  }
+
+  public async reorderCourseItems(
+    chapterId: string,
+    input: ReorderCourseItemsInput,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<{ chapterId: string }> {
+    const chapter = await this.access.requireManageableChapter(
+      chapterId,
+      currentUserId,
+      currentUserRole
+    );
+    const chapters = await this.contentRepository.listCourseChapters(chapter.courseId);
+    const chapterIds = chapters.map((item) => item.id);
+    const validChapterIds = new Set(chapterIds);
+    const lectures = await this.contentRepository.listLecturesByChapterIds(chapterIds);
+    const tests = await this.testRepository.listTestsByChapterIds(chapterIds);
+    const lectureIds = new Set(lectures.map((lecture) => lecture.id));
+    const testIds = new Set(tests.map((test) => test.id));
+
+    const isValid = input.items.every(
+      (item) =>
+        validChapterIds.has(item.chapterId) &&
+        (item.kind === "LECTURE" ? lectureIds.has(item.id) : testIds.has(item.id))
+    );
+
+    if (!isValid) {
+      throw new ValidationError("Course item reorder payload is invalid", [
+        {
+          field: "items",
+          message: "Items can only be moved inside this course"
+        }
+      ]);
+    }
+
+    await this.contentRepository.reorderLectures(
+      input.items
+        .filter((item) => item.kind === "LECTURE")
+        .map((item) => ({
+          chapterId: item.chapterId,
+          id: item.id,
+          sortOrder: item.sortOrder
+        }))
+    );
+    await this.testRepository.reorderTests(
+      input.items
+        .filter((item) => item.kind === "EXAM")
+        .map((item) => ({
+          chapterId: item.chapterId,
+          id: item.id,
+          sortOrder: item.sortOrder
+        }))
+    );
+
+    return { chapterId };
   }
 
   public async reorderQuestions(

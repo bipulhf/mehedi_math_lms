@@ -100,6 +100,23 @@ export class TestController {
     return success(context, data, 200, "Question deleted successfully");
   }
 
+  public async reorderCourseItems(
+    context: Context<AppBindings>,
+    chapterId: string,
+    input: Parameters<TestService["reorderCourseItems"]>[1],
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<Response> {
+    const data = await this.testService.reorderCourseItems(
+      chapterId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
+
+    return success(context, data, 200, "Course item order updated successfully");
+  }
+
   public async reorderQuestions(
     context: Context<AppBindings>,
     testId: string,

@@ -17,6 +17,15 @@ export class ContentController {
     return success(context, outline);
   }
 
+  public async getLecturePreview(
+    context: Context<AppBindings>,
+    lectureId: string
+  ): Promise<Response> {
+    const lecture = await this.contentService.getLecturePreview(lectureId);
+
+    return success(context, lecture);
+  }
+
   public async getCourseContent(
     context: Context<AppBindings>,
     courseId: string,

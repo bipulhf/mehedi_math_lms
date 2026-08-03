@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
 import { useT } from "@/lib/i18n/locale-context";
+import { getEmbedVideoUrl } from "@/lib/video";
 
 interface PdfLecturePreviewProps {
   existingUrl: string;
@@ -11,39 +12,6 @@ interface PdfLecturePreviewProps {
 
 interface VideoLecturePreviewProps {
   url: string;
-}
-
-function getEmbedVideoUrl(value: string): string | null {
-  try {
-    const url = new URL(value);
-    const hostname = url.hostname.replace(/^www\./, "");
-
-    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
-      const videoId = url.searchParams.get("v");
-
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-    }
-
-    if (hostname === "youtu.be") {
-      const videoId = url.pathname.split("/").filter(Boolean)[0];
-
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-    }
-
-    if (hostname === "vimeo.com") {
-      const videoId = url.pathname.split("/").filter(Boolean)[0];
-
-      return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
-    }
-
-    if (hostname === "player.vimeo.com") {
-      return value;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
 }
 
 export function VideoLecturePreview({ url }: VideoLecturePreviewProps): JSX.Element | null {

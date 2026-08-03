@@ -25,6 +25,7 @@ import type { ContentChapter, ContentLecture, ContentMaterial } from "@/lib/api/
 import { markLectureComplete, type CourseProgressResponse } from "@/lib/api/progress";
 import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/tests";
 import { useT } from "@/lib/i18n/locale-context";
+import { getEmbedVideoUrl } from "@/lib/video";
 
 interface CoursePlayerProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -50,39 +51,6 @@ interface NavigationTestItem {
 }
 
 type NavigationItem = NavigationLectureItem | NavigationTestItem;
-
-function getEmbedVideoUrl(value: string): string | null {
-  try {
-    const url = new URL(value);
-    const hostname = url.hostname.replace(/^www\./, "");
-
-    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
-      const videoId = url.searchParams.get("v");
-
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-    }
-
-    if (hostname === "youtu.be") {
-      const videoId = url.pathname.replace("/", "");
-
-      return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-    }
-
-    if (hostname === "vimeo.com") {
-      const videoId = url.pathname.split("/").filter(Boolean)[0];
-
-      return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
-    }
-
-    if (hostname === "player.vimeo.com") {
-      return value;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 function getPdfMaterial(lecture: ContentLecture): ContentMaterial | null {
   return lecture.materials.find((material) => material.fileType === "application/pdf") ?? null;
@@ -162,6 +130,59 @@ function MaterialLinks({
   );
 }
 
+function CourseNavigationItemButton({
+  isCompleted,
+  isSelected,
+  item,
+  onSelect
+}: {
+  isCompleted: boolean;
+  isSelected: boolean;
+  item: NavigationItem;
+  onSelect: () => void;
+}): JSX.Element {
+  const t = useT();
+
+  return (
+    <button
+      className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
+        isSelected
+          ? "border-accent bg-accent/10"
+          : "border-hairline bg-panel-warm hover:bg-panel-warm"
+      }`}
+      type="button"
+      onClick={onSelect}
+    >
+      <div className="min-w-0">
+        <p className="truncate font-medium text-ink">{item.title}</p>
+        <p className="text-xs text-ink/58">
+          {item.kind === "lecture" ? (
+            <>
+              {getPdfMaterial(item.lecture)
+                ? t("author.pdf")
+                : item.lecture.type === "TEXT"
+                  ? t("cb.textLesson")
+                  : t("author.video")} {" "}
+              · {item.lecture.videoDuration ? `${item.lecture.videoDuration} min` : "Self-paced"}
+            </>
+          ) : (
+            <>
+              Assessment · {item.test.questionCount} questions · {item.test.totalMarks} marks
+            </>
+          )}
+        </p>
+      </div>
+      {item.kind === "test" ? (
+        <BookOpen className="size-4 shrink-0 text-ink/52" />
+      ) : isCompleted ? (
+        <CheckCircle2 className="size-4 shrink-0 text-accent" />
+      ) : (
+        <Circle className="size-4 shrink-0 text-ink/42" />
+      )}
+    </button>
+  );
+}
+
 export function CoursePlayer({
   assessments,
   content,
@@ -187,25 +208,31 @@ export function CoursePlayer({
     const items: NavigationItem[] = [];
 
     for (const chapter of content) {
-      for (const lecture of chapter.lectures) {
-        items.push({
+      const chapterItems: NavigationItem[] = chapter.lectures.map((lecture) => ({
           chapterId: chapter.id,
           id: `lecture:${lecture.id}`,
-          kind: "lecture",
+          kind: "lecture" as const,
           lecture,
           title: lecture.title
-        });
-      }
+        }));
 
-      for (const test of testsByChapterId.get(chapter.id) ?? []) {
-        items.push({
+      chapterItems.push(
+        ...(testsByChapterId.get(chapter.id) ?? []).map((test) => ({
           chapterId: chapter.id,
           id: `test:${test.id}`,
-          kind: "test",
+          kind: "test" as const,
           test,
           title: test.title
-        });
-      }
+        }))
+      );
+      chapterItems.sort((first, second) => {
+        const firstOrder = first.kind === "lecture" ? first.lecture.sortOrder : first.test.sortOrder;
+        const secondOrder =
+          second.kind === "lecture" ? second.lecture.sortOrder : second.test.sortOrder;
+
+        return firstOrder - secondOrder;
+      });
+      items.push(...chapterItems);
     }
 
     return items;
@@ -405,104 +432,109 @@ export function CoursePlayer({
               </CardHeader>
               <CardContent className="space-y-4">
                 {content.map((chapter) => {
+                  const chapterNavigationItems = navigationItems.filter(
+                    (item) => item.chapterId === chapter.id
+                  );
                   const isChapterOpen = openChapterId === chapter.id;
-                  const itemCount =
-                    chapter.lectures.length + (testsByChapterId.get(chapter.id)?.length ?? 0);
 
                   return (
-                  <div key={chapter.id} className="border border-hairline bg-paper">
-                    <button
-                      aria-expanded={isChapterOpen}
-                      className="flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left"
-                      type="button"
-                      onClick={() =>
-                        setOpenChapterId((current) =>
-                          current === chapter.id && selectedItem?.chapterId !== chapter.id
-                            ? null
-                            : chapter.id
-                        )
-                      }
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="block font-semibold text-ink">{chapter.title}</span>
-                        {chapter.description ? (
-                          <span className="mt-1 block text-sm leading-6 text-ink/62">
-                            {chapter.description}
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted">{itemCount}</span>
-                      <span aria-hidden="true" className="w-4 text-center text-xl text-muted">
-                        {isChapterOpen ? "−" : "+"}
-                      </span>
-                    </button>
+                    <div key={chapter.id} className="border border-hairline bg-paper">
+                      <button
+                        aria-expanded={isChapterOpen}
+                        className="flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left"
+                        type="button"
+                        onClick={() =>
+                          setOpenChapterId((current) =>
+                            current === chapter.id && selectedItem?.chapterId !== chapter.id
+                              ? null
+                              : chapter.id
+                          )
+                        }
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-semibold text-ink">{chapter.title}</span>
+                          {chapter.description ? (
+                            <span className="mt-1 block text-sm leading-6 text-ink/62">
+                              {chapter.description}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted">
+                          {chapterNavigationItems.length}
+                        </span>
+                        <span aria-hidden="true" className="w-4 text-center text-xl text-muted">
+                          {isChapterOpen ? "−" : "+"}
+                        </span>
+                      </button>
 
-                    {isChapterOpen ? <div className="grid gap-2 border-t border-hairline p-3">
-                      {chapter.lectures.map((lecture) => {
-                        const lectureProgress = progressByLectureId.get(lecture.id);
-                        const isSelected = selectedItemId === `lecture:${lecture.id}`;
+                      {isChapterOpen ? (
+                        <div className="grid gap-2 border-t border-hairline p-3">
+                          {chapter.lectures.map((lecture) => {
+                            const lectureProgress = progressByLectureId.get(lecture.id);
+                            const isSelected = selectedItemId === `lecture:${lecture.id}`;
 
-                        return (
-                          <button
-                            key={lecture.id}
-                            className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                              isSelected
-                                ? "border-accent bg-accent/10"
-                                : "border-hairline bg-panel-warm hover:bg-panel-warm"
-                            }`}
-                            type="button"
-                            onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate font-medium text-ink">{lecture.title}</p>
-                              <p className="text-xs text-ink/58">
-                                {getPdfMaterial(lecture)
-                                  ? t("author.pdf")
-                                  : lecture.type === "TEXT"
-                                    ? t("cb.textLesson")
-                                    : t("author.video")}{" "}
-                                ·{" "}
-                                {lecture.videoDuration
-                                  ? `${lecture.videoDuration} min`
-                                  : "Self-paced"}
-                              </p>
-                            </div>
-                            {lectureProgress?.isCompleted ? (
-                              <CheckCircle2 className="size-4 shrink-0 text-accent" />
-                            ) : (
-                              <Circle className="size-4 shrink-0 text-ink/42" />
-                            )}
-                          </button>
-                        );
-                      })}
+                            return (
+                              <button
+                                key={lecture.id}
+                                className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
+                                  isSelected
+                                    ? "border-accent bg-accent/10"
+                                    : "border-hairline bg-panel-warm hover:bg-panel-warm"
+                                }`}
+                                type="button"
+                                onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-ink">{lecture.title}</p>
+                                  <p className="text-xs text-ink/58">
+                                    {getPdfMaterial(lecture)
+                                      ? t("author.pdf")
+                                      : lecture.type === "TEXT"
+                                        ? t("cb.textLesson")
+                                        : t("author.video")}{" "}
+                                    ·{" "}
+                                    {lecture.videoDuration
+                                      ? `${lecture.videoDuration} min`
+                                      : "Self-paced"}
+                                  </p>
+                                </div>
+                                {lectureProgress?.isCompleted ? (
+                                  <CheckCircle2 className="size-4 shrink-0 text-accent" />
+                                ) : (
+                                  <Circle className="size-4 shrink-0 text-ink/42" />
+                                )}
+                              </button>
+                            );
+                          })}
 
-                      {(testsByChapterId.get(chapter.id) ?? []).map((test) => {
-                        const isSelected = selectedItemId === `test:${test.id}`;
+                          {(testsByChapterId.get(chapter.id) ?? []).map((test) => {
+                            const isSelected = selectedItemId === `test:${test.id}`;
 
-                        return (
-                          <button
-                            key={test.id}
-                            className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
-                              isSelected
-                                ? "border-accent bg-accent/10"
-                                : "border-hairline bg-panel-warm hover:bg-panel-warm"
-                            }`}
-                            type="button"
-                            onClick={() => setSelectedItemId(`test:${test.id}`)}
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate font-medium text-ink">{test.title}</p>
-                              <p className="text-xs text-ink/58">
-                                Assessment · {test.questionCount} questions · {test.totalMarks}{" "}
-                                marks
-                              </p>
-                            </div>
-                            <BookOpen className="size-4 shrink-0 text-ink/52" />
-                          </button>
-                        );
-                      })}
-                    </div> : null}
-                  </div>
+                            return (
+                              <button
+                                key={test.id}
+                                className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
+                                  isSelected
+                                    ? "border-accent bg-accent/10"
+                                    : "border-hairline bg-panel-warm hover:bg-panel-warm"
+                                }`}
+                                type="button"
+                                onClick={() => setSelectedItemId(`test:${test.id}`)}
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-ink">{test.title}</p>
+                                  <p className="text-xs text-ink/58">
+                                    Assessment · {test.questionCount} questions · {test.totalMarks}{" "}
+                                    marks
+                                  </p>
+                                </div>
+                                <BookOpen className="size-4 shrink-0 text-ink/52" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
                   );
                 })}
               </CardContent>

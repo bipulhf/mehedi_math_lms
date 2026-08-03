@@ -17,6 +17,13 @@ import type { AppBindings } from "@/types/app-bindings";
 
 export const lecturesRoutes = new Hono<AppBindings>();
 
+// Public: a free lesson plays on the course page without an account.
+lecturesRoutes.get("/:id/preview", (context) => {
+  const params = lectureIdParamsSchema.parse(context.req.param());
+
+  return contentController.getLecturePreview(context, params.id);
+});
+
 lecturesRoutes.get("/:lectureId/comments", requireRole("STUDENT", "TEACHER", "ADMIN"), (context) => {
   const params = lectureCommentsParamsSchema.parse(context.req.param());
   const query = commentsQuerySchema.parse(context.req.query());

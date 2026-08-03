@@ -397,6 +397,23 @@ export class TestRepository {
     await db.delete(testQuestions).where(eq(testQuestions.id, id));
   }
 
+  public async reorderTests(
+    items: readonly { chapterId: string; id: string; sortOrder: number }[]
+  ): Promise<void> {
+    await db.transaction(async (transaction) => {
+      for (const item of items) {
+        await transaction
+          .update(tests)
+          .set({
+            chapterId: item.chapterId,
+            sortOrder: item.sortOrder,
+            updatedAt: new Date()
+          })
+          .where(eq(tests.id, item.id));
+      }
+    });
+  }
+
   public async reorderQuestions(
     items: readonly {
       id: string;

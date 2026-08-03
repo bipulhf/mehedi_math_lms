@@ -16,7 +16,7 @@ import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Tabs } from "@/components/ui/tabs";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseOutlineChapter } from "@/lib/api/content";
-import type { CourseDetail } from "@/lib/api/courses";
+import type { CourseDetail, CourseTeacherSummary } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
@@ -145,7 +145,6 @@ function CourseDetailPage(): JSX.Element {
   // refines it, so a failed refresh falls back rather than blanking the rating.
   const reviewSummary = reviewData?.summary ?? loaderReviewSummary;
   const reviews: readonly CourseReviewPublic[] = reviewData?.reviews ?? [];
-  const teacher = course.teachers[0];
   const meta = courseMetaParts(course.stats, t, format);
 
   const handleEnroll = async (): Promise<void> => {
@@ -230,24 +229,31 @@ function CourseDetailPage(): JSX.Element {
           {tab === "curriculum" ? <CourseCurriculum chapters={content} /> : null}
 
           {tab === "teacher" ? (
-            teacher ? (
-              <div className="flex flex-col gap-5 sm:flex-row">
-                <Avatar className="size-24" name={teacher.name} photo={teacher.profilePhoto} />
-                <div className="space-y-3">
-                  <p className="text-xl font-medium text-ink">{teacher.name}</p>
-                  {teacher.slug === null ? null : (
-                    <Link
-                      className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
-                      params={{ slug: teacher.slug }}
-                      to="/teachers/$slug"
-                    >
-                      {t("detail.viewTeacherPage")}
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ) : (
+            course.teachers.length === 0 ? (
               <EmptyState message={t("empty.generic")} />
+            ) : (
+              <ul className="border-t border-hairline">
+                {course.teachers.map((teacher: CourseTeacherSummary) => (
+                  <li
+                    className="flex flex-col gap-5 border-b border-hairline-faint py-6 sm:flex-row"
+                    key={teacher.id}
+                  >
+                    <Avatar className="size-24" name={teacher.name} photo={teacher.profilePhoto} />
+                    <div className="space-y-3">
+                      <p className="text-xl font-medium text-ink">{teacher.name}</p>
+                      {teacher.slug === null ? null : (
+                        <Link
+                          className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+                          params={{ slug: teacher.slug }}
+                          to="/teachers/$slug"
+                        >
+                          {t("detail.viewTeacherPage")}
+                        </Link>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )
           ) : null}
 

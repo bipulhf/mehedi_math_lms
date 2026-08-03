@@ -134,20 +134,56 @@ export function LectureOutlineRow({
 }
 
 export function ExamOutlineRow({
+  count,
   courseId,
   exam,
-  onDelete
+  index,
+  isDragging,
+  isWorking,
+  onDelete,
+  onDragEnd,
+  onDragStart,
+  onDrop,
+  onMove
 }: {
+  count: number;
   courseId: string;
   exam: AssessmentTestSummary;
+  index: number;
+  isDragging: boolean;
+  isWorking: boolean;
   onDelete: () => void;
+  onDragEnd: () => void;
+  onDragStart: () => void;
+  onDrop: (event: DragEvent<HTMLDivElement>) => void;
+  onMove: (offset: -1 | 1) => void;
 }): JSX.Element {
   const t = useT();
   const format = useFormat();
 
   return (
-    <div className="flex flex-col gap-3 border border-hairline bg-card p-3 sm:flex-row sm:items-center sm:p-4">
+    <div
+      aria-grabbed={isDragging}
+      className={`flex flex-col gap-3 border bg-card p-3 sm:flex-row sm:items-center sm:p-4 ${
+        isDragging ? "border-accent" : "border-hairline"
+      }`}
+      draggable={!isWorking}
+      onDragEnd={onDragEnd}
+      onDragOver={(event) => event.preventDefault()}
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = "move";
+        onDragStart();
+      }}
+      onDrop={onDrop}
+    >
       <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex size-11 shrink-0 cursor-grab items-center justify-center text-muted-faint"
+          title={t("author.dragLecture")}
+        >
+          <GripVertical className="size-5" />
+        </span>
         <span className="flex size-11 shrink-0 items-center justify-center border border-hairline bg-panel-warm text-muted">
           <ListChecks className="size-5" />
         </span>
@@ -159,6 +195,28 @@ export function ExamOutlineRow({
         </div>
       </div>
       <div className="flex items-center gap-1 self-end sm:self-center">
+        <Button
+          aria-label={t("ab.moveUp")}
+          className="size-11"
+          disabled={isWorking || index === 0}
+          size="icon"
+          title={t("ab.moveUp")}
+          variant="ghost"
+          onClick={() => onMove(-1)}
+        >
+          <ArrowUp className="size-4" />
+        </Button>
+        <Button
+          aria-label={t("ab.moveDown")}
+          className="size-11"
+          disabled={isWorking || index === count - 1}
+          size="icon"
+          title={t("ab.moveDown")}
+          variant="ghost"
+          onClick={() => onMove(1)}
+        >
+          <ArrowDown className="size-4" />
+        </Button>
         <Button asChild className="h-11" variant="ghost">
           <Link
             params={{ id: courseId }}

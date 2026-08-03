@@ -64,6 +64,18 @@ export interface CourseOutlineChapter {
   title: string;
 }
 
+/** A free lesson's playable body — served to anyone, no session needed. */
+export interface CourseLecturePreview {
+  content: string | null;
+  description: string | null;
+  durationSeconds: number | null;
+  id: string;
+  materials: readonly ContentMaterial[];
+  title: string;
+  type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
+  videoUrl: string | null;
+}
+
 export type CreateChapterInput = z.infer<typeof createChapterSchema>;
 export type UpdateChapterInput = z.infer<typeof updateChapterSchema>;
 export type ReorderChaptersInput = z.infer<typeof reorderChaptersSchema>;
@@ -75,6 +87,12 @@ export type UpdateMaterialInput = z.infer<typeof updateMaterialSchema>;
 
 export async function getCourseContent(courseId: string): Promise<readonly ContentChapter[]> {
   const response = await apiGet<readonly ContentChapter[]>(`courses/${courseId}/content`);
+
+  return response.data;
+}
+
+export async function getLecturePreview(lectureId: string): Promise<CourseLecturePreview> {
+  const response = await apiGet<CourseLecturePreview>(`lectures/${lectureId}/preview`);
 
   return response.data;
 }

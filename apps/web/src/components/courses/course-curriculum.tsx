@@ -1,6 +1,7 @@
 import { useMemo, useState, type JSX } from "react";
 
 import { formatCourseLength } from "@/components/courses/course-meta";
+import { CoursePreviewDialog } from "@/components/courses/course-preview-dialog";
 import { AccordionRow } from "@/components/ui/accordion";
 import { RingedPlay } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -24,6 +25,7 @@ export function CourseCurriculum({
   const [openIds, setOpenIds] = useState<ReadonlySet<string>>(
     () => new Set(chapters[0] ? [chapters[0].id] : [])
   );
+  const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
 
   const lessonCount = useMemo(
     () => chapters.reduce((total, chapter) => total + chapter.lessons.length, 0),
@@ -93,23 +95,39 @@ export function CourseCurriculum({
           >
             <ul className="space-y-1 pl-4 sm:pl-12">
               {chapter.lessons.map((lesson) => (
-                <LessonRow key={lesson.id} lesson={lesson} />
+                <LessonRow
+                  key={lesson.id}
+                  lesson={lesson}
+                  onPlay={() => setPreviewLessonId(lesson.id)}
+                />
               ))}
             </ul>
           </AccordionRow>
         ))}
       </div>
+
+      <CoursePreviewDialog lessonId={previewLessonId} onClose={() => setPreviewLessonId(null)} />
     </div>
   );
 }
 
-function LessonRow({ lesson }: { lesson: CourseOutlineLesson }): JSX.Element {
+/**
+ * A free lesson is a button — it opens the class in a dialog without leaving
+ * the page. A paid one stays inert text; there is nothing behind it to click.
+ */
+function LessonRow({
+  lesson,
+  onPlay
+}: {
+  lesson: CourseOutlineLesson;
+  onPlay: () => void;
+}): JSX.Element {
   const t = useT();
   const format = useFormat();
   const length = formatCourseLength(lesson.durationSeconds ?? 0, t, format);
 
-  return (
-    <li className="flex items-center gap-3 py-2">
+  const body = (
+    <>
       <RingedPlay />
       <span className="min-w-0 flex-1 truncate text-base font-light text-ink-muted">
         {lesson.title}
@@ -120,6 +138,27 @@ function LessonRow({ lesson }: { lesson: CourseOutlineLesson }): JSX.Element {
         </span>
       ) : null}
       {length === null ? null : <span className="text-sm text-muted-light">{length}</span>}
+    </>
+  );
+
+  if (!lesson.isPreview) {
+    return (
+      <li className="flex items-center gap-3 py-2" title={t("detail.previewLocked")}>
+        {body}
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <button
+        aria-label={`${t("detail.previewOpen")} — ${lesson.title}`}
+        className="flex w-full items-center gap-3 py-2 text-left transition-colors hover:text-accent"
+        onClick={onPlay}
+        type="button"
+      >
+        {body}
+      </button>
     </li>
   );
 }

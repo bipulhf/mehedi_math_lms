@@ -30,6 +30,7 @@ export interface AssessmentTestSummary {
   isPublished: boolean;
   passingScore: number | null;
   questionCount: number;
+  sortOrder: number;
   title: string;
   totalMarks: number;
   type: "MCQ" | "WRITTEN" | "MIXED";

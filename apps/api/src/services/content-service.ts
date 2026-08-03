@@ -149,6 +149,22 @@ export interface CourseOutlineChapter {
   title: string;
 }
 
+/**
+ * A single free lesson, playable without an account. Only a lecture the teacher
+ * marked `isPreview` on a published course ever reaches this shape — anything
+ * else is a 404, so a guessed id cannot unlock a paid lesson.
+ */
+export interface CourseLecturePreview {
+  content: string | null;
+  description: string | null;
+  durationSeconds: number | null;
+  id: string;
+  materials: readonly ContentMaterial[];
+  title: string;
+  type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
+  videoUrl: string | null;
+}
+
 export class ContentService {
   public constructor(
     private readonly contentRepository: ContentRepository,
@@ -321,6 +337,37 @@ export class ContentService {
       lessons: lessonsByChapterId.get(chapter.id) ?? [],
       title: chapter.title
     }));
+  }
+
+  /**
+   * The playable body of a free lesson. Same publication rule as the outline:
+   * an unpublished course has no public page, so it has no free lesson either.
+   */
+  public async getLecturePreview(lectureId: string): Promise<CourseLecturePreview> {
+    const lecture = await this.contentRepository.findLectureById(lectureId);
+
+    if (!lecture || !lecture.isPreview) {
+      throw new NotFoundError("Lecture not found");
+    }
+
+    const course = await this.courseRepository.findById(lecture.courseId);
+
+    if (!course || course.status !== "PUBLISHED") {
+      throw new NotFoundError("Lecture not found");
+    }
+
+    const materials = await this.contentRepository.listLectureMaterialsByLectureIds([lecture.id]);
+
+    return {
+      content: lecture.content,
+      description: lecture.description,
+      durationSeconds: lecture.videoDuration,
+      id: lecture.id,
+      materials: materials.map(mapMaterial),
+      title: lecture.title,
+      type: lecture.type,
+      videoUrl: lecture.videoUrl
+    };
   }
 
   public async getCourseContent(

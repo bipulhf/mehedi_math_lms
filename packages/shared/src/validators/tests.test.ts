@@ -4,6 +4,7 @@ import {
   createQuestionSchema,
   createTestSchema,
   gradeSubmissionSchema,
+  reorderCourseItemsSchema,
   saveSubmissionAnswersSchema,
   submitTestSchema,
   testTypeSchema,
@@ -109,6 +110,27 @@ describe("createQuestionSchema", () => {
 describe("updateQuestionSchema", () => {
   test("refuses an empty patch", () => {
     expect(updateQuestionSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("reorderCourseItemsSchema", () => {
+  test("orders lectures and exams in the same chapter outline", () => {
+    expect(
+      reorderCourseItemsSchema.safeParse({
+        items: [
+          { chapterId: UUID, id: OTHER_UUID, kind: "LECTURE", sortOrder: 0 },
+          { chapterId: UUID, id: UUID, kind: "EXAM", sortOrder: 1 }
+        ]
+      }).success
+    ).toBe(true);
+  });
+
+  test("rejects an unknown item kind", () => {
+    expect(
+      reorderCourseItemsSchema.safeParse({
+        items: [{ chapterId: UUID, id: OTHER_UUID, kind: "PDF", sortOrder: 0 }]
+      }).success
+    ).toBe(false);
   });
 });
 

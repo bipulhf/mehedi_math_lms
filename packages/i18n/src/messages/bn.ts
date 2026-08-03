@@ -1,4 +1,5 @@
 import { authoringBn } from "./authoring-bn";
+import { discussionBn } from "./discussion-bn";
 
 /**
  * The Bangla catalogue, and the source of truth for what keys exist.
@@ -13,6 +14,7 @@ import { authoringBn } from "./authoring-bn";
  */
 export const bn = {
   ...authoringBn,
+  ...discussionBn,
   "action.back": "আগের ধাপ",
   "action.cancel": "বাদ দাও",
   "action.clearFilters": "ফিল্টার মুছে দাও",
@@ -94,6 +96,9 @@ export const bn = {
   "detail.includeTests": "অধ্যায়ভিত্তিক পরীক্ষা",
   "detail.noReviews": "এখনো কোনো রিভিউ আসেনি",
   "detail.openPlayer": "ক্লাসে ঢোকো",
+  "detail.previewLocked": "এই ক্লাসটি ভর্তি হওয়ার পরে দেখা যাবে",
+  "detail.previewOpen": "ফ্রি ক্লাসটি দেখ",
+  "detail.previewUnavailable": "ফ্রি ক্লাসটি এখন দেখানো যাচ্ছে না।",
   "detail.qualifications": "শিক্ষাগত যোগ্যতা",
   "detail.reviewSummary": "{average} · {count}টি রিভিউ",
   "detail.signIn": "লগ ইন করে ভর্তি হও",
@@ -596,21 +601,6 @@ export const bn = {
   "cbx.fileDeleted": "ফাইল মুছে ফেলা হয়েছে",
   "cbx.chapterReordered": "মডিউলের ক্রম বদলানো হয়েছে",
   "cbx.lessonReordered": "ক্লাসের ক্রম বদলানো হয়েছে",
-  "disc.title": "আলোচনা",
-  "disc.collapse": "আলোচনা বন্ধ কর",
-  "disc.expand": "আলোচনা খোল",
-  "disc.lead": "এই ক্লাস নিয়ে প্রশ্ন কর বা দরকারি তথ্য রেখে দাও।",
-  "disc.you": "তুমি",
-  "disc.reply": "উত্তর দাও",
-  "disc.delete": "মুছে ফেল",
-  "disc.empty": "এখনো কোনো মন্তব্য নেই। প্রথমটা তুমিই লেখ।",
-  "disc.editPlaceholder": "মন্তব্যটা ঠিক কর",
-  "disc.replyPlaceholder": "উত্তর লেখ",
-  "disc.placeholder": "এই ক্লাস নিয়ে প্রশ্ন বা মন্তব্য লেখ",
-  "disc.posted": "মন্তব্য যোগ হয়েছে",
-  "disc.deleted": "মন্তব্য মুছে ফেলা হয়েছে",
-  "disc.replied": "উত্তর যোগ হয়েছে",
-  "disc.updated": "মন্তব্য বদলানো হয়েছে",
   "auser.lead": "অ্যাকাউন্টের তথ্য, প্রোফাইল আর সাম্প্রতিক কাজ।",
   "auser.email": "ইমেইল",
   "auser.viewStudent": "শিক্ষার্থীর প্রোফাইল দেখ",
