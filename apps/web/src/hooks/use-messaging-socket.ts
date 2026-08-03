@@ -18,6 +18,9 @@ import { buildApiWebSocketUrl } from "@/lib/ws-url";
  */
 export type MessagingSocketEvent = WebsocketServerEvent;
 
+/** Backoff between reconnects: 1s, 2s, 4s, 8s, then every 15s. */
+const RECONNECT_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000] as const;
+
 export function totalUnread(conversations: readonly MessageConversation[]): number {
   return conversations.reduce((sum, conversation) => sum + conversation.unreadCount, 0);
 }
@@ -25,6 +28,12 @@ export function totalUnread(conversations: readonly MessageConversation[]): numb
 interface MessagingSocketOptions {
   currentUserId: string | null;
   enabled: boolean;
+  /**
+   * Called after a dropped socket comes back. Events that happened while it was
+   * down were delivered to nobody, so the page refetches rather than carrying a
+   * thread that is quietly missing messages.
+   */
+  onReconnect?: () => void;
   /** The debounced term, so the participant cache patched here is the one on screen. */
   participantSearch: string;
   selectedConversationId: string | null;
@@ -40,10 +49,17 @@ interface MessagingSocketOptions {
  *
  * It writes into the page's local state rather than the query cache because the
  * thread is driven by events rather than fetches — see `apps/web/AGENTS.md`.
+ *
+ * The connection outlives everything except the signed-in user: selecting
+ * another conversation reads the current selection from a ref rather than
+ * reopening the socket, and a socket that closes for any other reason is dialled
+ * again on a backoff. A page that needs a manual reload to show a message is
+ * indistinguishable from a page with no socket at all.
  */
 export function useMessagingSocket({
   currentUserId,
   enabled,
+  onReconnect,
   participantSearch,
   selectedConversationId,
   setConversations,
@@ -58,26 +74,26 @@ export function useMessagingSocket({
   const socketRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
+  // Values the message handler reads but must not reconnect for.
+  const selectedConversationIdRef = useRef(selectedConversationId);
+  const participantSearchRef = useRef(participantSearch);
+  const onReconnectRef = useRef(onReconnect);
+
+  selectedConversationIdRef.current = selectedConversationId;
+  participantSearchRef.current = participantSearch;
+  onReconnectRef.current = onReconnect;
+
   useEffect(() => {
     if (!enabled || !currentUserId) {
       return;
     }
 
-    const socket = new WebSocket(buildApiWebSocketUrl("messages/ws"));
+    let isDisposed = false;
+    let attempt = 0;
+    let reconnectTimeoutId: number | null = null;
+    let hasConnectedOnce = false;
 
-    socketRef.current = socket;
-    socket.onopen = () => {
-      setIsConnected(true);
-    };
-    socket.onclose = () => {
-      setIsConnected(false);
-    };
-    socket.onerror = () => {
-      setIsConnected(false);
-    };
-    socket.onmessage = (event) => {
-      const payload = JSON.parse(String(event.data)) as MessagingSocketEvent;
-
+    const handleEvent = (payload: MessagingSocketEvent): void => {
       if (payload.type === "presence:update") {
         setConversations((current) =>
           current.map((conversation) =>
@@ -95,7 +111,7 @@ export function useMessagingSocket({
         // Presence for the search results comes from the next refetch; a
         // stale online dot in a transient dropdown is not worth cache surgery.
         queryClient.setQueryData<readonly MessageParticipant[]>(
-          queryKeys.messages.participants(participantSearch),
+          queryKeys.messages.participants(participantSearchRef.current),
           (current) =>
             current?.map((participant) =>
               participant.id === payload.data.userId
@@ -149,6 +165,8 @@ export function useMessagingSocket({
         return;
       }
 
+      const selected = selectedConversationIdRef.current;
+
       setConversations((current) => {
         const nextConversations = current
           .map((conversation) =>
@@ -168,9 +186,7 @@ export function useMessagingSocket({
                   },
                   lastMessageAt: payload.data.createdAt,
                   unreadCount:
-                    selectedConversationId === payload.conversationId
-                      ? 0
-                      : conversation.unreadCount + 1,
+                    selected === payload.conversationId ? 0 : conversation.unreadCount + 1,
                   updatedAt: payload.data.createdAt
                 }
               : conversation
@@ -212,9 +228,7 @@ export function useMessagingSocket({
               },
               lastMessageAt: payload.data.createdAt,
               unreadCount:
-                selectedConversationId === payload.conversationId
-                  ? 0
-                  : existing.conversation.unreadCount + 1,
+                selected === payload.conversationId ? 0 : existing.conversation.unreadCount + 1,
               updatedAt: payload.data.createdAt
             },
             items: existing.items.some((message) => message.id === payload.data.id)
@@ -237,28 +251,125 @@ export function useMessagingSocket({
         };
       });
 
-      if (selectedConversationId === payload.conversationId) {
+      if (selected === payload.conversationId) {
         void markConversationRead(payload.conversationId);
       }
     };
 
+    const scheduleReconnect = (): void => {
+      if (isDisposed || reconnectTimeoutId !== null) {
+        return;
+      }
+
+      const delay = RECONNECT_DELAYS_MS[Math.min(attempt, RECONNECT_DELAYS_MS.length - 1)] ?? 15_000;
+
+      attempt += 1;
+      reconnectTimeoutId = window.setTimeout(() => {
+        reconnectTimeoutId = null;
+        connect();
+      }, delay);
+    };
+
+    function connect(): void {
+      if (isDisposed) {
+        return;
+      }
+
+      const socket = new WebSocket(buildApiWebSocketUrl("messages/ws"));
+
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        attempt = 0;
+        setIsConnected(true);
+
+        if (hasConnectedOnce) {
+          onReconnectRef.current?.();
+        }
+
+        hasConnectedOnce = true;
+      };
+      socket.onclose = () => {
+        setIsConnected(false);
+        scheduleReconnect();
+      };
+      socket.onerror = () => {
+        setIsConnected(false);
+        // `onclose` always follows `onerror`, and it is the one that retries.
+      };
+      socket.onmessage = (event) => {
+        handleEvent(JSON.parse(String(event.data)) as MessagingSocketEvent);
+      };
+    }
+
+    // A laptop that slept, or a phone that backgrounded the tab, comes back with
+    // a socket the browser already killed. Retry now rather than on the backoff.
+    const reconnectNow = (): void => {
+      if (isDisposed || socketRef.current?.readyState === WebSocket.OPEN) {
+        return;
+      }
+
+      if (reconnectTimeoutId !== null) {
+        window.clearTimeout(reconnectTimeoutId);
+        reconnectTimeoutId = null;
+      }
+
+      attempt = 0;
+      connect();
+    };
+
+    const handleVisibilityChange = (): void => {
+      if (document.visibilityState === "visible") {
+        reconnectNow();
+      }
+    };
+
+    connect();
+    window.addEventListener("online", reconnectNow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
-      socket.close();
+      isDisposed = true;
+      window.removeEventListener("online", reconnectNow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      if (reconnectTimeoutId !== null) {
+        window.clearTimeout(reconnectTimeoutId);
+      }
+
+      const socket = socketRef.current;
+
+      if (socket) {
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.onmessage = null;
+        socket.onopen = null;
+        socket.close();
+      }
+
       socketRef.current = null;
       setIsConnected(false);
     };
-    // Only identity and selection reopen the socket. The setters and the query
-    // client are stable, and reconnecting on every render would thrash it.
-  }, [currentUserId, enabled, selectedConversationId]);
+    // Only the signed-in identity reopens the socket. Selection and search are
+    // read from refs inside the handler.
+  }, [
+    currentUserId,
+    enabled,
+    queryClient,
+    setConversations,
+    setMessageUnreadCount,
+    setThreads,
+    setTypingConversationId
+  ]);
 
   const sendTypingEvent = (type: "typing:start" | "typing:stop"): void => {
-    if (!selectedConversationId || socketRef.current?.readyState !== WebSocket.OPEN) {
+    if (!selectedConversationIdRef.current || socketRef.current?.readyState !== WebSocket.OPEN) {
       return;
     }
 
     socketRef.current.send(
       JSON.stringify({
-        conversationId: selectedConversationId,
+        conversationId: selectedConversationIdRef.current,
         type
       })
     );

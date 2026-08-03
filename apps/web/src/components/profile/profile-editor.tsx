@@ -21,7 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { cn } from "@/lib/utils";
 
 interface StudentProfileFormProps {
   description: string;
@@ -101,31 +102,42 @@ function StepRail({
   activeStep: number;
   steps: readonly { description: string; label: string }[];
 }): JSX.Element {
+  const t = useT();
+  const format = useFormat();
+
   return (
-    <div className="grid gap-3 sm:grid-cols-3 mb-8">
+    <ol className="grid gap-3 sm:grid-cols-3">
       {steps.map((step, index) => (
-        <div
-          key={step.label}
-          className={[
-            "rounded-2xl border px-5 py-5 transition-all duration-300 ease-out",
+        <li
+          aria-current={index === activeStep ? "step" : undefined}
+          className={cn(
+            "border p-4 transition-colors",
             index === activeStep
-              ? "border-ink/30 bg-ink/5 shadow-inner scale-[1.02]"
-              : "border-hairline/30 bg-panel-warm opacity-60"
-          ].join(" ")}
+              ? "border-line-strong bg-chip-active"
+              : "border-hairline bg-panel-warm"
+          )}
+          key={step.label}
         >
           <div className="flex items-center gap-3">
-            <div className={["flex size-6 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-colors", index === activeStep ? "bg-ink text-white" : "bg-hairline/30 text-ink/50"].join(" ")}>
-              {index + 1}
-            </div>
-            <p className="text-[0.7rem] font-bold uppercase tracking-widest text-ink/50">
-              Step {index + 1}
-            </p>
+            {/* The circled step number of DESIGN.md §7: 1.5px ring, accent
+                numeral, no fill and no shadow. */}
+            <span
+              className={cn(
+                "label-mono flex size-8 shrink-0 items-center justify-center rounded-full border-[1.5px] border-hairline text-xs",
+                index === activeStep ? "text-accent" : "text-muted-light"
+              )}
+            >
+              {format.number(index + 1)}
+            </span>
+            <span className="label-mono text-[11px] uppercase text-muted-light">
+              {t("prof.step", { number: format.number(index + 1) })}
+            </span>
           </div>
-          <p className="mt-4 font-body text-lg font-semibold text-ink">{step.label}</p>
-          <p className="mt-1 text-sm leading-6 text-muted font-light">{step.description}</p>
-        </div>
+          <p className="mt-3 text-base font-medium text-ink">{step.label}</p>
+          <p className="mt-1 text-sm font-light leading-relaxed text-muted">{step.description}</p>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -375,10 +387,10 @@ export function StudentProfileForm({
   });
 
   return (
-    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
-      <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
-        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
+    <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+      <div className="border-b border-hairline pb-5">
+        <h1 className="text-2xl font-medium text-ink">{title}</h1>
+        <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">{description}</p>
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={studentSteps} />
@@ -390,8 +402,10 @@ export function StudentProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-hairline/20">
-            <Button className="h-12 font-body font-semibold px-8 hover:bg-chip-active transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>{t("common.previous")}</Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between mt-8 border-t border-hairline pt-6">
+            <Button className="h-11" disabled={step === 0} onClick={() => setStep(step - 1)} type="button" variant="outline">
+              {t("common.previous")}
+            </Button>
             {/* The keys are load-bearing. Without them React reuses one DOM
                 node for both buttons and only swaps `type`, so the click that
                 advances to the last step finds itself on a submit button by the
@@ -399,12 +413,12 @@ export function StudentProfileForm({
                 itself. Distinct keys make it a different node. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < studentSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
-                  {isSubmitting ? "Saving..." : "Continue"}
+                <Button key="next" className="h-11 w-full sm:w-auto" disabled={isSubmitting} onClick={() => void onNext()} type="button">
+                  {isSubmitting ? t("prof.saving") : t("prof.continue")}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
-                                    {isSubmitting ? "Saving profile..." : "Save profile"}
+                <Button key="save" className="h-11 w-full sm:w-auto" disabled={isSubmitting} type="submit">
+                  {isSubmitting ? t("prof.saving") : t("prof.saveProfile")}
                 </Button>
               )}
             </div>
@@ -490,10 +504,10 @@ export function TeacherProfileForm({
   });
 
   return (
-    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
-      <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
-        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
+    <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+      <div className="border-b border-hairline pb-5">
+        <h1 className="text-2xl font-medium text-ink">{title}</h1>
+        <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">{description}</p>
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={teacherSteps} />
@@ -505,19 +519,21 @@ export function TeacherProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-hairline/20">
-            <Button className="h-12 font-body font-semibold px-8 hover:bg-chip-active transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>{t("common.previous")}</Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between mt-8 border-t border-hairline pt-6">
+            <Button className="h-11" disabled={step === 0} onClick={() => setStep(step - 1)} type="button" variant="outline">
+              {t("common.previous")}
+            </Button>
             {/* See the note in StudentProfileForm: the keys stop React reusing
                 one node for Continue and Save, which turned the click that
                 reached the last step into a submit. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < teacherSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
-                  {isSubmitting ? "Saving..." : "Continue"}
+                <Button key="next" className="h-11 w-full sm:w-auto" disabled={isSubmitting} onClick={() => void onNext()} type="button">
+                  {isSubmitting ? t("prof.saving") : t("prof.continue")}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
-                                    {isSubmitting ? "Saving profile..." : "Save profile"}
+                <Button key="save" className="h-11 w-full sm:w-auto" disabled={isSubmitting} type="submit">
+                  {isSubmitting ? t("prof.saving") : t("prof.saveProfile")}
                 </Button>
               )}
             </div>
@@ -554,10 +570,10 @@ export function BasicProfileForm({
   const profilePhotoValue = watch("profilePhoto");
 
   return (
-    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
-      <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
-        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
+    <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+      <div className="border-b border-hairline pb-5">
+        <h1 className="text-2xl font-medium text-ink">{title}</h1>
+        <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">{description}</p>
       </div>
       <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-6 md:grid-cols-2">
@@ -577,9 +593,9 @@ export function BasicProfileForm({
             />
           </div>
         </div>
-        <div className="pt-8 mt-8 border-t border-hairline/20 flex justify-end">
-          <Button className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Saving profile..." : "Save profile"}
+        <div className="mt-8 border-t border-hairline pt-6 flex justify-end">
+          <Button className="h-11 w-full sm:w-auto" disabled={isSubmitting} type="submit">
+            {isSubmitting ? t("prof.saving") : t("prof.saveProfile")}
           </Button>
         </div>
       </form>
@@ -635,33 +651,33 @@ export function RoleProfileForm({
 export function ProfilePageSkeleton(): JSX.Element {
   return (
     <div className="space-y-6">
-      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden">
+      <div className="w-full border border-hairline bg-card p-6 sm:p-8">
         <div className="space-y-4 mb-10">
-          <Skeleton className="h-8 w-64 bg-chip-active" />
-          <Skeleton className="h-5 w-full max-w-xl bg-chip-active" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-5 w-full max-w-xl" />
         </div>
         <div className="space-y-8">
           <div className="grid gap-3 sm:grid-cols-3">
-            <Skeleton className="h-32 bg-chip-active" />
-            <Skeleton className="h-32 bg-chip-active" />
-            <Skeleton className="h-32 bg-chip-active" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-20 w-full bg-chip-active md:col-span-2" />
-            <Skeleton className="h-20 w-full bg-chip-active" />
-            <Skeleton className="h-20 w-full bg-chip-active" />
-            <Skeleton className="h-36 w-full bg-chip-active md:col-span-2" />
+            <Skeleton className="h-20 w-full md:col-span-2" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-36 w-full md:col-span-2" />
           </div>
         </div>
       </div>
 
-      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden opacity-50">
-        <Skeleton className="h-8 w-48 bg-chip-active mb-4" />
-        <Skeleton className="h-5 w-full max-w-lg bg-chip-active mb-8" />
+      <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-5 w-full max-w-lg mb-8" />
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-20 bg-chip-active md:col-span-2" />
-          <Skeleton className="h-20 bg-chip-active md:col-span-2" />
-          <Skeleton className="h-12 w-full sm:w-48 bg-chip-active" />
+          <Skeleton className="h-20 md:col-span-2" />
+          <Skeleton className="h-20 md:col-span-2" />
+          <Skeleton className="h-12 w-full sm:w-48" />
         </div>
       </div>
     </div>

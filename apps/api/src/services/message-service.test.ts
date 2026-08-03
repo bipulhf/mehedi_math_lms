@@ -21,6 +21,8 @@ interface Overrides {
   hasOpenReport?: boolean;
   hiddenAt?: Date | null;
   messageMissing?: boolean;
+  /** Whether the pair share a live enrolment — what opens a conversation. */
+  shareLiveEnrollment?: boolean;
 }
 
 interface Calls {
@@ -58,7 +60,11 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Messa
   } as unknown as ConversationRecord;
 
   const messageRepository = {
+    createConversation: async () => conversation,
+    findActiveUserById: async () => teacher,
+    findConversationBetweenUsers: async () => null,
     findConversationById: async () => conversation,
+    shareLiveEnrollment: async () => overrides.shareLiveEnrollment ?? true,
     findMessageById: async () => (overrides.messageMissing ? null : message),
     hideMessage: async (messageId: string, hiddenById: string) => {
       calls.hidden.push({ hiddenById, messageId });
@@ -215,5 +221,27 @@ describe("MessageService.hideMessage", () => {
     });
 
     await expect(service.hideMessage("msg-1", "admin-1")).rejects.toBeInstanceOf(ConflictError);
+  });
+});
+
+describe("MessageService.createConversation", () => {
+  test("a student can open a thread with a teacher of a course they are enrolled on", async () => {
+    const { service } = buildService();
+    const conversation = await service.createConversation(
+      { participantId: "teacher-1" },
+      "student-1",
+      "STUDENT"
+    );
+
+    expect(conversation.id).toBe("conv-1");
+    expect(conversation.user.id).toBe("teacher-1");
+  });
+
+  test("a student cannot open a thread with a teacher they never enrolled with", async () => {
+    const { service } = buildService({ shareLiveEnrollment: false });
+
+    await expect(
+      service.createConversation({ participantId: "teacher-1" }, "student-1", "STUDENT")
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 });

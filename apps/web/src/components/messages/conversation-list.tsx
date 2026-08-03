@@ -1,15 +1,26 @@
-import { Wifi, WifiOff } from "lucide-react";
 import type { JSX } from "react";
 
 import { initials, roleTone } from "@/components/messages/message-presentation";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import type { MessageConversation, MessageParticipant } from "@/lib/api/messages";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
+
+/** A dot in the muted scale — DESIGN.md §2 has no green/red status palette. */
+function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("size-2 shrink-0 rounded-full", isOnline ? "bg-accent" : "bg-dot-idle")}
+    />
+  );
+}
 
 /** The inbox pane: connection state, search, participant lookup, and the threads. */
 export function ConversationList({
+  className,
   conversations,
   conversationSearch,
   currentUserRole,
@@ -22,6 +33,7 @@ export function ConversationList({
   participantSearch,
   selectedConversationId
 }: {
+  className?: string | undefined;
   conversations: readonly MessageConversation[];
   conversationSearch: string;
   currentUserRole: string | null;
@@ -35,111 +47,127 @@ export function ConversationList({
   selectedConversationId: string | null;
 }): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   return (
-    <div className="bg-card/80 border border-hairline/40 relative flex flex-col overflow-hidden group">
-      <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-hairline/20">
+    <div
+      className={cn(
+        "min-h-0 min-w-0 flex-col overflow-hidden border border-hairline bg-card",
+        className
+      )}
+    >
+      <div className="shrink-0 space-y-4 border-b border-hairline p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("msg.inbox")}</h3>
-            <p className="mt-2 text-xs text-muted font-light leading-relaxed">{t("msg.inboxLead")}</p>
+          <div className="min-w-0">
+            <h2 className="text-xl font-medium text-ink">{t("msg.inbox")}</h2>
+            <p className="mt-1 text-sm font-light leading-relaxed text-muted">
+              {t("msg.inboxLead")}
+            </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-panel-warm/50 border border-hairline/20 px-3 py-2 text-xs text-ink/68">
-            {isSocketConnected ? (
-              <Wifi className="size-3.5 text-emerald-600" />
-            ) : (
-              <WifiOff className="size-3.5 text-rose-600" />
+          <span
+            className={cn(
+              "label-mono inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-pill)] border border-hairline px-2.5 py-1 text-[11px] uppercase",
+              isSocketConnected ? "text-muted" : "text-accent"
             )}
-            <span>{isSocketConnected ? "Live" : "Offline"}</span>
-          </div>
+          >
+            <PresenceDot isOnline={isSocketConnected} />
+            {isSocketConnected ? t("msg.live") : t("msg.reconnecting")}
+          </span>
         </div>
+
         <Input
+          onChange={(event) => onConversationSearchChange(event.target.value)}
           placeholder={t("msg.searchConversations")}
           value={conversationSearch}
-          onChange={(event) => onConversationSearchChange(event.target.value)}
-          className="h-12 bg-panel-warm/50 border-hairline/30"
         />
-        <div className="space-y-3 bg-panel-warm/40 border border-hairline/20 p-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-ink/54">{t("msg.startNew")}</p>
+
+        <div className="space-y-3 border border-hairline bg-panel-warm p-3">
+          <p className="label-mono text-[11px] uppercase text-muted-light">{t("msg.startNew")}</p>
           <Input
-            placeholder={currentUserRole === "STUDENT" ? "Find a teacher" : "Find a student"}
-            value={participantSearch}
             onChange={(event) => onParticipantSearchChange(event.target.value)}
-            className="h-10 bg-paper border-hairline/30"
+            placeholder={currentUserRole === "STUDENT" ? t("msg.findTeacher") : t("msg.findStudent")}
+            value={participantSearch}
           />
           {participantResults.length > 0 ? (
-            <div className="space-y-2">
+            <ul className="border-t border-hairline-faint">
               {participantResults.map((participant) => (
-                <button
-                  key={participant.id}
-                  type="button"
-                  className="flex w-full items-center justify-between bg-paper px-4 py-3 text-left transition-colors hover:bg-chip-active border border-hairline/10"
-                  onClick={() => onStartConversation(participant.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-chip-active text-sm font-semibold text-ink">
-                      {initials(participant.name)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-ink">{participant.name}</p>
-                      <p className="text-xs text-ink/60">
-                        {participant.isOnline ? "Online now" : "Offline"}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge tone={roleTone(participant.role)}>{participant.role}</Badge>
-                </button>
+                <li key={participant.id}>
+                  <button
+                    className="flex w-full min-h-12 items-center justify-between gap-3 border-b border-hairline-faint bg-card px-3 py-2.5 text-left transition-colors hover:bg-row-hover"
+                    onClick={() => onStartConversation(participant.id)}
+                    type="button"
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="label-mono flex size-9 shrink-0 items-center justify-center rounded-full bg-placeholder-fill text-xs text-muted-light">
+                        {initials(participant.name)}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-base text-ink">
+                          {participant.name}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-sm text-muted-light">
+                          <PresenceDot isOnline={participant.isOnline} />
+                          {participant.isOnline ? t("msg.online") : t("msg.offline")}
+                        </span>
+                      </span>
+                    </span>
+                    <Badge tone={roleTone(participant.role)}>{participant.role}</Badge>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : null}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {conversations.length > 0 ? (
-          conversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              type="button"
-              className={cn(
-                "w-full rounded-3xl px-4 py-4 text-left transition-all duration-300 ease-out border",
-                selectedConversationId === conversation.id
-                  ? "bg-paper border-hairline/40 shadow-md ring-1 ring-ink/10"
-                  : "bg-card/50 border-transparent hover:bg-panel-warm/80 hover:border-hairline/20 hover:shadow-sm"
-              )}
-              onClick={() => onSelectConversation(conversation.id)}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate font-semibold text-ink">
-                      {conversation.user.name}
+          <ul>
+            {conversations.map((conversation) => (
+              <li key={conversation.id}>
+                <button
+                  aria-current={selectedConversationId === conversation.id ? "true" : undefined}
+                  className={cn(
+                    "flex w-full min-h-16 items-start gap-3 border-b border-hairline-faint px-4 py-3 text-left transition-colors",
+                    selectedConversationId === conversation.id
+                      ? "bg-chip-active"
+                      : "bg-card hover:bg-row-hover"
+                  )}
+                  onClick={() => onSelectConversation(conversation.id)}
+                  type="button"
+                >
+                  <span className="label-mono mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-placeholder-fill text-xs text-muted-light">
+                    {initials(conversation.user.name)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <PresenceDot isOnline={conversation.user.isOnline} />
+                      <span className="truncate text-base font-medium text-ink">
+                        {conversation.user.name}
+                      </span>
                     </span>
-                    <span
-                      className={cn(
-                        "size-2 rounded-full",
-                        conversation.user.isOnline ? "bg-emerald-500" : "bg-slate-300"
-                      )}
-                    />
-                  </div>
-                  <p className="mt-1 truncate text-sm text-ink/62">
-                    {conversation.lastMessage?.content ?? "No messages yet"}
-                  </p>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  {conversation.lastMessageAt ? (
-                    <span className="text-[0.7rem] text-ink/50">
-                      {new Date(conversation.lastMessageAt).toLocaleDateString()}
+                    <span className="mt-1 block truncate text-sm font-light text-muted">
+                      {conversation.lastMessage?.content ?? t("msg.noMessagesYet")}
                     </span>
-                  ) : null}
-                  {conversation.unreadCount > 0 ? (
-                    <Badge tone="neutral">{conversation.unreadCount}</Badge>
-                  ) : null}
-                </div>
-              </div>
-            </button>
-          ))
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-1.5">
+                    {conversation.lastMessageAt ? (
+                      <span className="text-xs text-muted-faint">
+                        {format.date(conversation.lastMessageAt)}
+                      </span>
+                    ) : null}
+                    {conversation.unreadCount > 0 ? (
+                      <span className="label-mono rounded-[var(--radius-pill)] bg-accent px-2 py-0.5 text-[11px] text-paper">
+                        {format.number(conversation.unreadCount)}
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         ) : (
-          <div className="bg-panel-warm/50 border border-hairline/20 p-6 text-sm leading-7 text-muted font-light text-center">{t("msg.noConversations")}</div>
+          <EmptyState className="m-4" message={t("msg.noConversations")} />
         )}
       </div>
     </div>

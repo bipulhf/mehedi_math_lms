@@ -168,9 +168,9 @@ function DashboardProfilePage(): JSX.Element {
   const teacherPageSlug = profile?.user.slug ?? null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <RoleProfileForm
-        description="Keep your profile current so enrollment, teacher visibility, and course interactions stay accurate across the academy."
+        description={t("prof.lead")}
         initialProfile={profile ?? fetchedProfile ?? null}
         isSubmitting={isSubmitting}
         onSubmitBasic={handleBasicSubmit}
@@ -181,41 +181,45 @@ function DashboardProfilePage(): JSX.Element {
       />
 
       {profile?.user.role === "TEACHER" ? (
-        <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
-          <div className="mb-8 text-center sm:text-left">
-            <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("prof.teacherCard")}</h3>
-            <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
-              The public teacher page uses your bio, qualifications, specializations, and published
-              courses.
+        <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+          <div className="border-b border-hairline pb-5">
+            <h2 className="text-xl font-medium text-ink">{t("prof.teacherCard")}</h2>
+            <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">
+              {t("prof.teacherCardLead")}
             </p>
           </div>
           {/* The public page is addressed by slug, not id — `/teachers/<uuid>`
               is a 404. The slug is generated when the profile is saved, so a
               teacher who has never saved one has no page to preview yet. */}
           {teacherPageSlug ? (
-            <button
-              className="inline-flex h-12 items-center justify-center bg-chip-active px-8 font-body font-semibold text-sm text-ink transition-all hover:bg-chip-active"
-              type="button"
+            <Button
+              className="mt-5 h-11"
               onClick={() =>
                 void router.navigate({
-                  to: "/teachers/$slug",
-                  params: { slug: teacherPageSlug }
+                  params: { slug: teacherPageSlug },
+                  to: "/teachers/$slug"
                 })
               }
-            >{t("prof.previewTeacher")}</button>
+              type="button"
+              variant="outline"
+            >
+              {t("prof.previewTeacher")}
+            </Button>
           ) : (
-            <p className="text-sm leading-6 text-ink/62">{t("prof.noSlug")}</p>
+            <p className="mt-5 text-base font-light leading-relaxed text-muted">{t("prof.noSlug")}</p>
           )}
         </div>
       ) : null}
 
-      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
-        <div className="mb-8 text-center sm:text-left">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("prof.changePassword")}</h3>
-          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{t("prof.changePasswordLead")}</p>
+      <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+        <div className="border-b border-hairline pb-5">
+          <h2 className="text-xl font-medium text-ink">{t("prof.changePassword")}</h2>
+          <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">
+            {t("prof.changePasswordLead")}
+          </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handlePasswordChange}>
+        <form className="mt-6 space-y-6" onSubmit={handlePasswordChange}>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="current-password">{t("prof.currentPassword")}</Label>
@@ -246,14 +250,10 @@ function DashboardProfilePage(): JSX.Element {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-hairline/20 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-ink/50 font-light">{t("prof.passwordNote")}</p>
-            <Button
-              className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all"
-              type="submit"
-              disabled={isPasswordSubmitting}
-            >
-              {isPasswordSubmitting ? "Updating..." : "Update password"}
+          <div className="flex flex-col gap-3 border-t border-hairline pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-light text-muted-light">{t("prof.passwordNote")}</p>
+            <Button className="h-11 w-full sm:w-auto" disabled={isPasswordSubmitting} type="submit">
+              {isPasswordSubmitting ? t("prof.updatingPassword") : t("prof.updatePassword")}
             </Button>
           </div>
         </form>

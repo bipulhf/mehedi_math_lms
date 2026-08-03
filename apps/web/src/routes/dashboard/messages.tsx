@@ -48,6 +48,11 @@ function DashboardMessagesPage(): JSX.Element {
   const [isLoadingThread, setIsLoadingThread] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [reportingConversationId, setReportingConversationId] = useState<string | null>(null);
+  // Below `xl` the two panes do not fit side by side, so the page becomes
+  // master-detail: the inbox, then the thread, with a way back. A conversation
+  // auto-selected on load must not push a phone straight into a thread the
+  // reader never asked for, which is why this is separate from the selection.
+  const [isThreadOpenOnMobile, setIsThreadOpenOnMobile] = useState(false);
   // The sidebar badge reads this slice; it has no ancestor in common with this page.
   const setMessageUnreadCount = useUiStore((state) => state.setMessageUnreadCount);
   const typingTimeoutRef = useRef<number | null>(null);
@@ -100,12 +105,14 @@ function DashboardMessagesPage(): JSX.Element {
     });
   };
 
-  const refreshConversations = async (): Promise<void> => {
+  const refreshConversations = async ({ silent = false } = {}): Promise<void> => {
     if (!canUseMessaging) {
       return;
     }
 
-    setIsLoadingConversations(true);
+    if (!silent) {
+      setIsLoadingConversations(true);
+    }
 
     try {
       const nextConversations = await listMessageConversations();
@@ -114,7 +121,22 @@ function DashboardMessagesPage(): JSX.Element {
       setMessageUnreadCount(totalUnread(nextConversations));
       syncConversationSelection(nextConversations);
     } finally {
-      setIsLoadingConversations(false);
+      if (!silent) {
+        setIsLoadingConversations(false);
+      }
+    }
+  };
+
+  /**
+   * Anything that happened while the socket was down reached nobody, so a
+   * reconnect refetches the inbox and the open thread instead of trusting the
+   * state that was frozen at the moment the connection dropped.
+   */
+  const resyncAfterReconnect = (): void => {
+    void refreshConversations({ silent: true });
+
+    if (selectedConversationId) {
+      void loadConversation(selectedConversationId);
     }
   };
 
@@ -235,6 +257,7 @@ function DashboardMessagesPage(): JSX.Element {
   const { isConnected: isSocketConnected, sendTypingEvent } = useMessagingSocket({
     currentUserId,
     enabled: canUseMessaging && Boolean(session),
+    onReconnect: resyncAfterReconnect,
     participantSearch: debouncedParticipantSearch,
     selectedConversationId,
     setConversations,
@@ -261,6 +284,7 @@ function DashboardMessagesPage(): JSX.Element {
       return next;
     });
     setSelectedConversationId(conversation.id);
+    setIsThreadOpenOnMobile(true);
   };
 
   const handleComposerChange = (value: string): void => {
@@ -343,25 +367,29 @@ function DashboardMessagesPage(): JSX.Element {
 
   if (!session || !canUseMessaging) {
     return (
-      <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden group">
-        <div className="mb-4">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("msg.unavailable")}</h3>
-          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{t("msg.teacherStudentOnly")}</p>
-        </div>
+      <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+        <h2 className="text-2xl font-medium text-ink">{t("msg.unavailable")}</h2>
+        <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">
+          {t("msg.teacherStudentOnly")}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[24rem_minmax(0,1fr)] h-[calc(100vh-8rem)]">
+    <div className="grid h-[calc(100dvh-11rem)] min-h-125 grid-cols-1 gap-4 xl:h-[calc(100dvh-9rem)] xl:grid-cols-[22rem_minmax(0,1fr)] xl:gap-6">
       <ConversationList
+        className={isThreadOpenOnMobile ? "hidden xl:flex" : "flex"}
         conversations={filteredConversations}
         conversationSearch={conversationSearch}
         currentUserRole={currentUserRole}
         isSocketConnected={isSocketConnected}
         onConversationSearchChange={setConversationSearch}
         onParticipantSearchChange={setParticipantSearch}
-        onSelectConversation={setSelectedConversationId}
+        onSelectConversation={(conversationId) => {
+          setSelectedConversationId(conversationId);
+          setIsThreadOpenOnMobile(true);
+        }}
         onStartConversation={(participantId) => void handleStartConversation(participantId)}
         participantResults={participantResults}
         participantSearch={participantSearch}
@@ -369,6 +397,8 @@ function DashboardMessagesPage(): JSX.Element {
       />
 
       <MessageThread
+        className={isThreadOpenOnMobile ? "flex" : "hidden xl:flex"}
+        onBack={() => setIsThreadOpenOnMobile(false)}
         composerValue={composerValue}
         currentUserRole={currentUserRole}
         isLoadingThread={isLoadingThread}

@@ -2,10 +2,13 @@ import {
   and,
   conversations,
   count,
+  courseTeachers,
   db,
   desc,
+  enrollments,
   eq,
   ilike,
+  inArray,
   isNull,
   lt,
   messages,
@@ -34,7 +37,63 @@ export type {
 } from "@/repositories/message-record-mappers";
 
 
+/**
+ * The ids a student may message: every teacher assigned to a course the student
+ * holds a live enrolment on. A cancelled enrolment ends the entitlement, so it
+ * ends the conversation channel with it — `cancelledAt`, not `status`, is what
+ * carries entitlement here. ADR-0001.
+ */
+function teacherIdsForStudent(studentId: string) {
+  return db
+    .select({ id: courseTeachers.teacherId })
+    .from(courseTeachers)
+    .innerJoin(
+      enrollments,
+      and(
+        eq(enrollments.courseId, courseTeachers.courseId),
+        eq(enrollments.userId, studentId),
+        isNull(enrollments.cancelledAt)
+      )
+    );
+}
+
+/** The mirror image: the students enrolled on the courses this teacher teaches. */
+function studentIdsForTeacher(teacherId: string) {
+  return db
+    .select({ id: enrollments.userId })
+    .from(enrollments)
+    .innerJoin(
+      courseTeachers,
+      and(
+        eq(courseTeachers.courseId, enrollments.courseId),
+        eq(courseTeachers.teacherId, teacherId)
+      )
+    )
+    .where(isNull(enrollments.cancelledAt));
+}
+
 export class MessageRepository {
+  /**
+   * Whether a student and a teacher share a live enrolment — the one thing that
+   * opens a conversation between them.
+   */
+  public async shareLiveEnrollment(studentId: string, teacherId: string): Promise<boolean> {
+    const rows = await db
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .innerJoin(
+        courseTeachers,
+        and(
+          eq(courseTeachers.courseId, enrollments.courseId),
+          eq(courseTeachers.teacherId, teacherId)
+        )
+      )
+      .where(and(eq(enrollments.userId, studentId), isNull(enrollments.cancelledAt)))
+      .limit(1);
+
+    return rows.length > 0;
+  }
+
   public async findActiveUserById(userId: string): Promise<MessageParticipantRecord | null> {
     const user = await db.query.users.findFirst({
       columns: {
@@ -79,6 +138,15 @@ export class MessageRepository {
       searchTerm && searchTerm.length > 0
         ? or(ilike(users.name, `%${searchTerm}%`), ilike(users.email, `%${searchTerm}%`))
         : undefined;
+    // Messaging follows enrolment: a student reaches the teachers of the courses
+    // they bought, and a teacher reaches the students on the courses they teach.
+    // Nobody can open a thread with a stranger.
+    const enrolmentFilter = inArray(
+      users.id,
+      input.currentUserRole === "STUDENT"
+        ? teacherIdsForStudent(input.currentUserId)
+        : studentIdsForTeacher(input.currentUserId)
+    );
 
     const rows = await db.query.users.findMany({
       columns: {
@@ -96,9 +164,15 @@ export class MessageRepository {
             eq(users.isActive, true),
             eq(users.role, targetRole),
             ne(users.id, input.currentUserId),
+            enrolmentFilter,
             searchFilter
           )
-        : and(eq(users.isActive, true), eq(users.role, targetRole), ne(users.id, input.currentUserId)),
+        : and(
+            eq(users.isActive, true),
+            eq(users.role, targetRole),
+            ne(users.id, input.currentUserId),
+            enrolmentFilter
+          ),
       with: {
         studentProfile: {
           columns: {

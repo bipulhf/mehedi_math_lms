@@ -239,6 +239,24 @@ export class MessageService {
       throw new ForbiddenError("Conversations are only allowed between students and teachers");
     }
 
+    // The search endpoint already hides everyone outside the enrolment, but the
+    // participant id arrives from the client, so the rule is enforced here too —
+    // a filtered list is a convenience, not an authorisation check.
+    const studentId = currentUserRole === "STUDENT" ? currentUserId : participantId;
+    const teacherId = currentUserRole === "STUDENT" ? participantId : currentUserId;
+    const isEnrolledTogether = await this.messageRepository.shareLiveEnrollment(
+      studentId,
+      teacherId
+    );
+
+    if (!isEnrolledTogether) {
+      throw new ForbiddenError(
+        currentUserRole === "STUDENT"
+          ? "You can only message teachers of courses you are enrolled in"
+          : "You can only message students enrolled in your courses"
+      );
+    }
+
     return participant;
   }
 

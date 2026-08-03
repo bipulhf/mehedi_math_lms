@@ -43,9 +43,14 @@ export default defineConfig(({ mode }) => {
         ]
       },
       proxy: {
+        // `ws` is what carries `/api/v1/messages/ws` and `/api/v1/notifications/ws`
+        // through to the API. Without it the upgrade request is answered by the
+        // dev server itself, every socket fails to open, and the messages page
+        // silently degrades to "reload to see new messages".
         "/api/v1": {
           changeOrigin: true,
-          target: "http://localhost:3001"
+          target: "http://localhost:3001",
+          ws: true
         },
         "/api/health": {
           changeOrigin: true,

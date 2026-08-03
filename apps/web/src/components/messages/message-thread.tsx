@@ -1,14 +1,11 @@
-import { EyeOff, MessageSquareText, SendHorizontal, ShieldAlert } from "lucide-react";
+import { ArrowLeft, EyeOff, SendHorizontal, ShieldAlert } from "lucide-react";
 import type { JSX, RefObject } from "react";
 
 import { MessageThreadSkeleton } from "@/components/common/skeletons";
-import {
-  formatTimestamp,
-  initials,
-  roleTone
-} from "@/components/messages/message-presentation";
+import { formatTimestamp, initials, roleTone } from "@/components/messages/message-presentation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { MessageConversationThread } from "@/lib/api/messages";
@@ -17,63 +14,67 @@ import { useT } from "@/lib/i18n/locale-context";
 
 type ThreadMessage = MessageConversationThread["items"][number];
 
-/** Shown while no thread is selected. */
+/** Shown while no thread is selected — desktop only; a phone shows the inbox. */
 function EmptyThreadPane({ currentUserRole }: { currentUserRole: string | null }): JSX.Element {
   const t = useT();
 
   return (
     <>
-      <div className="p-8 sm:p-12 space-y-4 border-b border-hairline/20 shrink-0 bg-card/50">
-        <h3 className="font-body text-2xl font-medium text-ink">{t("msg.workspace")}</h3>
-        <p className="text-sm text-muted font-light">{t("msg.pick")}</p>
+      <div className="shrink-0 space-y-1 border-b border-hairline p-4 sm:p-5">
+        <h2 className="text-xl font-medium text-ink">{t("msg.workspace")}</h2>
+        <p className="text-sm font-light text-muted">{t("msg.pick")}</p>
       </div>
-      <div className="flex-1 flex flex-col p-6 sm:p-12 items-center justify-center">
-        <div className="flex flex-col items-center justify-center bg-panel-warm/30 border border-hairline/10 p-12 text-center max-w-lg w-full">
-          <div className="w-20 h-20 rounded-full bg-chip-active flex items-center justify-center mb-6 border border-hairline/20 text-ink/60">
-            <MessageSquareText className="size-8" />
-          </div>
-          <h4 className="font-body text-xl font-bold text-ink">{t("msg.noneSelected")}</h4>
-          <p className="mt-3 text-sm leading-relaxed text-muted font-light">
-            Search for a {currentUserRole === "STUDENT" ? "teacher" : "student"} on the left to
-            start a direct conversation.
-          </p>
-        </div>
+      <div className="flex min-h-0 flex-1 items-center justify-center p-4 sm:p-8">
+        <EmptyState
+          className="w-full max-w-lg"
+          message={
+            currentUserRole === "STUDENT" ? t("msg.noneSelectedStudent") : t("msg.noneSelectedTeacher")
+          }
+        />
       </div>
     </>
   );
 }
 
+/**
+ * Own messages are ink on paper, the other side is paper on ink's hairline —
+ * square corners, no shadow, no gradient. DESIGN.md §5, §6.
+ */
 function MessageBubble({ message }: { message: ThreadMessage }): JSX.Element {
+  const t = useT();
+
   return (
     <div
       className={cn(
-        "max-w-[85%] rounded-3xl px-5 py-4 shadow-sm border",
+        "max-w-[85%] border px-4 py-3 sm:max-w-[75%]",
         message.isHidden
-          ? "bg-panel-warm/60 text-muted border-hairline/30 border-dashed"
+          ? "border-dashed border-dot-idle bg-panel-warm text-muted"
           : message.isOwn
-            ? "ml-auto bg-ink text-paper border-ink/20 rounded-tr-sm"
-            : "bg-paper text-ink border-hairline/20 rounded-tl-sm",
+            ? "ml-auto border-ink bg-ink text-paper"
+            : "border-hairline bg-card text-ink",
         message.isHidden && message.isOwn ? "ml-auto" : undefined
       )}
     >
       <div className="space-y-2">
         {message.isHidden ? (
-          <p className="flex items-center gap-2 text-sm italic leading-7">
-            <EyeOff className="size-4 shrink-0" />
+          <p className="flex items-start gap-2 text-base font-light italic leading-relaxed">
+            <EyeOff className="mt-1 size-4 shrink-0" />
             {message.content}
           </p>
         ) : (
-          <p className="text-sm leading-7">{message.content}</p>
+          <p className="whitespace-pre-wrap text-base font-light leading-relaxed">
+            {message.content}
+          </p>
         )}
         <div
           className={cn(
-            "flex items-center justify-between gap-3 text-[0.7rem]",
-            message.isOwn && !message.isHidden ? "text-paper/72" : "text-ink/54"
+            "flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs",
+            message.isOwn && !message.isHidden ? "text-paper/70" : "text-muted-light"
           )}
         >
           <span>{formatTimestamp(message.createdAt)}</span>
           <span>
-            {message.isOwn ? (message.readAt ? "Seen" : "Sent") : message.sender.name}
+            {message.isOwn ? (message.readAt ? t("msg.seen") : t("msg.sent")) : message.sender.name}
           </span>
         </div>
       </div>
@@ -83,12 +84,14 @@ function MessageBubble({ message }: { message: ThreadMessage }): JSX.Element {
 
 /** The right-hand pane: thread header, message list, and composer. */
 export function MessageThread({
+  className,
   composerValue,
   currentUserRole,
   isLoadingThread,
   isSending,
   messageSearch,
   messagesViewportRef,
+  onBack,
   onComposerChange,
   onLoadOlder,
   onMessageSearchChange,
@@ -98,12 +101,15 @@ export function MessageThread({
   typingConversationId,
   visibleMessages
 }: {
+  className?: string | undefined;
   composerValue: string;
   currentUserRole: string | null;
   isLoadingThread: boolean;
   isSending: boolean;
   messageSearch: string;
   messagesViewportRef: RefObject<HTMLDivElement | null>;
+  /** Returns to the inbox on the master-detail breakpoint. */
+  onBack: () => void;
   onComposerChange: (value: string) => void;
   onLoadOlder: () => void;
   onMessageSearchChange: (value: string) => void;
@@ -116,61 +122,84 @@ export function MessageThread({
   const t = useT();
 
   return (
-    <div className="bg-card/80 border border-hairline/40 relative flex flex-col overflow-hidden">
+    <div
+      className={cn(
+        "min-h-0 min-w-0 flex-col overflow-hidden border border-hairline bg-card",
+        className
+      )}
+    >
       {thread ? (
         <>
-          <div className="p-6 sm:px-8 space-y-4 border-b border-hairline/20 shrink-0 bg-card/50 z-10">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-4">
-                  <div className="flex size-14 items-center justify-center rounded-full bg-linear-to-br from-ink/20 to-ink/5 border border-ink/20 text-sm font-body font-bold text-ink">
-                    {initials(thread.conversation.user.name)}
-                  </div>
-                  <div>
-                    <h3 className="font-body text-xl font-medium text-ink">
-                      {thread.conversation.user.name}
-                    </h3>
-                    <div className="mt-1 flex items-center gap-2">
-                      <Badge tone={roleTone(thread.conversation.user.role)}>
-                        {thread.conversation.user.role}
-                      </Badge>
-                      <span className="text-sm text-ink/60">
-                        {thread.conversation.user.isOnline ? "Online" : "Offline"}
-                      </span>
-                    </div>
+          <div className="shrink-0 space-y-3 border-b border-hairline p-4 sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <button
+                  aria-label={t("action.back")}
+                  className="inline-flex size-11 shrink-0 items-center justify-center border border-hairline text-ink transition-colors hover:border-line-strong xl:hidden"
+                  onClick={onBack}
+                  type="button"
+                >
+                  <ArrowLeft className="size-4" />
+                </button>
+                <span className="label-mono flex size-11 shrink-0 items-center justify-center rounded-full bg-placeholder-fill text-sm text-muted-light">
+                  {initials(thread.conversation.user.name)}
+                </span>
+                <div className="min-w-0">
+                  <h2 className="truncate text-lg font-medium text-ink">
+                    {thread.conversation.user.name}
+                  </h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge tone={roleTone(thread.conversation.user.role)}>
+                      {thread.conversation.user.role}
+                    </Badge>
+                    <span className="text-sm text-muted-light">
+                      {typingConversationId === thread.conversation.id
+                        ? t("msg.typing", { name: thread.conversation.user.name })
+                        : thread.conversation.user.isOnline
+                          ? t("msg.online")
+                          : t("msg.offline")}
+                    </span>
                   </div>
                 </div>
-                {typingConversationId === thread.conversation.id ? (
-                  <p className="text-sm text-ink/62">
-                    {thread.conversation.user.name} is typing...
-                  </p>
-                ) : null}
               </div>
-              <div className="flex w-full items-center gap-3 md:max-w-md">
-                <Input
-                  placeholder={t("msg.search")}
-                  value={messageSearch}
-                  onChange={(event) => onMessageSearchChange(event.target.value)}
-                  className="h-11 bg-panel-warm/50 border-hairline/30"
-                />
+
+              <div className="flex w-full items-start gap-3 lg:max-w-sm">
+                <div className="min-w-0 flex-1">
+                  <Input
+                    onChange={(event) => onMessageSearchChange(event.target.value)}
+                    placeholder={t("msg.search")}
+                    value={messageSearch}
+                  />
+                </div>
                 <Button
-                  type="button"
-                  variant="outline"
                   className="h-11 shrink-0"
                   onClick={() => onReport(thread.conversation.id)}
+                  type="button"
+                  variant="outline"
                 >
-                  <ShieldAlert className="mr-2 size-4" />{t("msg.report")}</Button>
+                  <ShieldAlert className="size-4" />
+                  <span className="hidden sm:inline">{t("msg.report")}</span>
+                </Button>
               </div>
             </div>
           </div>
-          <div className="flex-1 flex flex-col p-6 sm:px-8 overflow-hidden">
+
+          <div className="flex min-h-0 flex-1 flex-col gap-3 p-4 sm:p-5">
             {thread.nextCursor ? (
-              <Button type="button" variant="outline" onClick={onLoadOlder}>{t("msg.loadOlder")}</Button>
+              <Button
+                className="shrink-0 self-center"
+                onClick={onLoadOlder}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                {t("msg.loadOlder")}
+              </Button>
             ) : null}
 
             <div
+              className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border border-hairline bg-panel-warm p-3 sm:p-4"
               ref={messagesViewportRef}
-              className="flex-1 flex flex-col gap-4 overflow-y-auto bg-panel-warm/30 border border-hairline/10 p-6 scroll-smooth"
             >
               {isLoadingThread ? (
                 <MessageThreadSkeleton />
@@ -179,26 +208,36 @@ export function MessageThread({
                   <MessageBubble key={message.id} message={message} />
                 ))
               ) : (
-                <div className="bg-panel-warm/50 border border-hairline/20 p-6 text-sm leading-7 text-muted font-light text-center">{t("msg.noMatch")}</div>
+                <EmptyState className="my-auto" message={t("msg.noMatch")} />
               )}
             </div>
 
-            <div className="bg-panel-warm/50 border border-hairline/20 p-4 mt-6 shrink-0">
+            <div className="shrink-0 space-y-3 border border-hairline bg-panel-warm p-3 sm:p-4">
               <Textarea
-                placeholder={t("msg.placeholder")}
-                className="min-h-24 bg-paper border-transparent focus-visible:ring-0 resize-none text-base p-4"
-                value={composerValue}
+                className="min-h-20 bg-card sm:min-h-24"
                 onChange={(event) => onComposerChange(event.target.value)}
+                onKeyDown={(event) => {
+                  // Enter sends, Shift+Enter breaks the line — the convention
+                  // every chat the reader already uses follows.
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    onSend();
+                  }
+                }}
+                placeholder={t("msg.placeholder")}
+                value={composerValue}
               />
-              <div className="mt-4 flex items-center justify-between gap-3 px-2">
-                <p className="text-xs text-muted font-light">{t("msg.permanent")}</p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-light text-muted-light">{t("msg.permanent")}</p>
                 <Button
-                  type="button"
-                  className="rounded-full px-6 h-12 font-body font-semibold"
+                  className="h-11 shrink-0"
                   disabled={isSending || composerValue.trim().length === 0}
                   onClick={onSend}
+                  type="button"
                 >
-                  <SendHorizontal className="mr-2 size-4" />{t("msg.send")}</Button>
+                  <SendHorizontal className="size-4" />
+                  {t("msg.send")}
+                </Button>
               </div>
             </div>
           </div>
