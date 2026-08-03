@@ -1,18 +1,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Plus, Search, Sparkles } from "lucide-react";
+import { Plus, Search, Sparkles, X } from "lucide-react";
 import type { JSX } from "react";
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { FormProvider } from "react-hook-form";
 import { toast } from "sonner";
 import { createCategorySchema } from "@genex/shared";
 
 import { IconPicker } from "@/components/categories/icon-picker";
-
 import { CategorySelector } from "@/components/categories/category-selector";
 import { CategoryTree } from "@/components/categories/category-tree";
 import { RouteErrorView } from "@/components/common/route-error";
-import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -145,17 +143,21 @@ function serializeCategoryTree(
 
 function AdminCategoriesPage(): JSX.Element {
   const t = useT();
-
   const queryClient = useQueryClient();
+
   const { data: categories = [], isPending: isLoading } = useQuery({
     queryFn: async () => listCategories({ includeInactive: true }),
     queryKey: queryKeys.categories.list({ includeInactive: true })
   });
-  const formRef = useRef<HTMLFormElement>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryNode | null>(null);
+
   const form = useZodForm<CreateCategoryInput>({
     defaultValues: {
       description: "",
@@ -167,6 +169,7 @@ function AdminCategoriesPage(): JSX.Element {
     },
     schema: createCategorySchema
   });
+
   const {
     formState: { errors },
     handleSubmit,
@@ -207,38 +210,35 @@ function AdminCategoriesPage(): JSX.Element {
     await queryClient.invalidateQueries({ queryKey: queryKeys.categories.all() });
   };
 
-  const syncEditingForm = (category: CategoryNode | null): void => {
-    setEditingCategory(category);
-    reset({
-      description: category?.description ?? "",
-      icon: category?.icon ?? "",
-      isActive: category?.isActive ?? true,
-      name: category?.name ?? "",
-      parentId: category?.parentId ?? "",
-      sortOrder: category?.sortOrder ?? 0
-    });
-
-    if (category) {
-      setTimeout(() => {
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 0);
-    }
-  };
-
-  const handleAddSubcategory = (parent: CategoryNode): void => {
+  const openCreateModal = (parentCategory?: CategoryNode): void => {
     setEditingCategory(null);
     reset({
       description: "",
       icon: "",
       isActive: true,
       name: "",
-      parentId: parent.id,
-      sortOrder: parent.children.length
+      parentId: parentCategory?.id ?? "",
+      sortOrder: parentCategory ? parentCategory.children.length : categories.length
     });
-    toast.info(`Parent category set to "${parent.name}"`);
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 0);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (category: CategoryNode): void => {
+    setEditingCategory(category);
+    reset({
+      description: category.description ?? "",
+      icon: category.icon ?? "",
+      isActive: category.isActive ?? true,
+      name: category.name ?? "",
+      parentId: category.parentId ?? "",
+      sortOrder: category.sortOrder ?? 0
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = (): void => {
+    setIsModalOpen(false);
+    setEditingCategory(null);
   };
 
   const onSubmit = handleSubmit(async (values) => {
@@ -253,7 +253,7 @@ function AdminCategoriesPage(): JSX.Element {
         toast.success(t("admin.cat.created"));
       }
 
-      syncEditingForm(null);
+      closeModal();
       await loadCategories();
     } finally {
       setIsSubmitting(false);
@@ -269,7 +269,7 @@ function AdminCategoriesPage(): JSX.Element {
     toast.success(t("admin.cat.deleted"));
 
     if (editingCategory?.id === category.id) {
-      syncEditingForm(null);
+      closeModal();
     }
 
     await loadCategories();
@@ -302,25 +302,10 @@ function AdminCategoriesPage(): JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div className="border border-hairline bg-card p-8">
           <Skeleton className="mb-4 h-8 w-48" />
-          <Skeleton className="mb-8 h-4 w-full max-w-sm" />
-          <div className="grid gap-8 xl:grid-cols-2">
-            <CategoryTreeSkeleton rows={6} />
-            <div className="space-y-6">
-              <Skeleton className="h-32 w-full" />
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div className="flex gap-4" key={i}>
-                  <Skeleton className="size-10 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/3" />
-                    <Skeleton className="h-3 w-2/3" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Skeleton className="h-4 w-96" />
         </div>
       </div>
     );
@@ -328,68 +313,103 @@ function AdminCategoriesPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
+      {/* Top Page Header Card */}
       <div className="border border-hairline bg-card p-8 sm:p-10">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-medium text-ink">{t("admin.cat.title")}</h1>
             <p className="mt-1 text-base font-light text-muted">
-              Organize course taxonomy, manage root levels and subject subcategories.
+              Organize course taxonomy, root subjects, and academic levels in one clear view.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge tone="neutral">{categories.length} root levels</Badge>
-            <Badge tone="neutral">{flattenCategoryIds(categories).length} total categories</Badge>
+            <Badge tone="neutral">{categories.length} Root Domains</Badge>
+            <Badge tone="neutral">{flattenCategoryIds(categories).length} Categories</Badge>
           </div>
         </div>
       </div>
 
-      {/* 2-Column Main Workspace */}
-      <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-        {/* Form Column */}
-        <div className="self-start xl:sticky xl:top-8">
-          <div className="border border-hairline bg-card p-6 sm:p-8">
-            {/* Mode Indicator Banner */}
+      {/* Main Single Stream Category Workspace */}
+      <div className="border border-hairline bg-card p-6 sm:p-8">
+        {/* Unified Search & Action Bar */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-faint" />
+            <Input
+              className="pl-10"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("admin.cat.searchPlaceholder")}
+              value={searchQuery}
+            />
+          </div>
+          <Button onClick={() => openCreateModal()} size="lg" type="button">
+            <Plus className="mr-2 size-4" />
+            {t("admin.cat.add")}
+          </Button>
+        </div>
+
+        {/* Taxonomy Tree View */}
+        {filteredCategories.length === 0 ? (
+          <EmptyState className="my-12" message={t("admin.cat.noResults")} />
+        ) : (
+          <CategoryTree
+            categories={filteredCategories}
+            draggedCategoryId={draggedCategoryId}
+            editingCategoryId={editingCategory?.id}
+            onAddSubcategory={(parent) => openCreateModal(parent)}
+            onDelete={(category) => void handleDelete(category)}
+            onDragCategory={setDraggedCategoryId}
+            onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
+            onEdit={(category) => openEditModal(category)}
+          />
+        )}
+      </div>
+
+      {/* Dead-Simple Focused Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-xs animate-in fade-in">
+          <div
+            className="relative w-full max-w-lg border border-hairline bg-card p-8 shadow-2xl animate-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
             <div className="mb-6 flex items-center justify-between border-b border-hairline pb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-accent" />
-                <h2 className="text-lg font-medium text-ink">
-                  {editingCategory ? t("admin.cat.editingHeader") : t("admin.cat.creatingHeader")}
+                <Sparkles className="size-5 text-accent" />
+                <h2 className="text-xl font-medium text-ink">
+                  {editingCategory
+                    ? `${t("admin.cat.editingHeader")}: ${editingCategory.name}`
+                    : t("admin.cat.creatingHeader")}
                 </h2>
               </div>
-              {editingCategory ? (
-                <Button
-                  onClick={() => syncEditingForm(null)}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                >
-                  <ArrowLeft className="mr-1.5 size-3.5" />
-                  {t("admin.cat.cancelEdit")}
-                </Button>
-              ) : null}
+              <button
+                className="p-1 text-muted hover:text-ink transition-colors"
+                onClick={closeModal}
+                type="button"
+              >
+                <X className="size-5" />
+              </button>
             </div>
 
+            {/* Modal Form */}
             <FormProvider {...form}>
-              <form className="space-y-6" ref={formRef} onSubmit={onSubmit}>
+              <form className="space-y-5" onSubmit={onSubmit}>
                 <div className="space-y-2">
-                  <Label htmlFor="category-name">{t("common.name")}</Label>
+                  <Label htmlFor="cat-name">{t("common.name")}</Label>
                   <Input
                     error={errors.name?.message}
-                    id="category-name"
+                    id="cat-name"
                     placeholder="e.g. Higher Mathematics"
                     {...register("name")}
                   />
                 </div>
 
-                <IconPicker error={errors.icon?.message} name="icon" />
-
                 <div className="space-y-2">
-                  <Label htmlFor="category-parent">{t("admin.cat.parent")}</Label>
+                  <Label htmlFor="cat-parent">{t("admin.cat.parent")}</Label>
                   <CategorySelector
                     categories={availableParentCategories}
                     error={errors.parentId?.message}
-                    id="category-parent"
+                    id="cat-parent"
                     onChange={(value) =>
                       setValue("parentId", value, { shouldDirty: true, shouldValidate: true })
                     }
@@ -397,22 +417,24 @@ function AdminCategoriesPage(): JSX.Element {
                   />
                 </div>
 
+                <IconPicker error={errors.icon?.message} name="icon" />
+
                 <div className="space-y-2">
-                  <Label htmlFor="category-description">{t("common.description")}</Label>
+                  <Label htmlFor="cat-description">{t("common.description")}</Label>
                   <Textarea
                     error={errors.description?.message}
-                    id="category-description"
-                    rows={3}
+                    id="cat-description"
+                    rows={2}
                     {...register("description")}
                   />
                 </div>
 
-                <div className="grid gap-6 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="category-sort-order">{t("admin.cat.sortOrder")}</Label>
+                    <Label htmlFor="cat-sort">{t("admin.cat.sortOrder")}</Label>
                     <Input
                       error={errors.sortOrder?.message}
-                      id="category-sort-order"
+                      id="cat-sort"
                       type="number"
                       {...register("sortOrder", { valueAsNumber: true })}
                     />
@@ -421,7 +443,7 @@ function AdminCategoriesPage(): JSX.Element {
                   <div className="space-y-2">
                     <Label>{t("admin.cat.visibility")}</Label>
                     <div className="flex h-10 items-center justify-between border border-hairline bg-panel-warm px-4">
-                      <span className="text-sm font-light text-muted">Active in catalog</span>
+                      <span className="text-sm font-light text-muted">Active</span>
                       <input
                         className="size-4 accent-accent"
                         type="checkbox"
@@ -431,7 +453,8 @@ function AdminCategoriesPage(): JSX.Element {
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                {/* Modal Footer Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-hairline">
                   <Button className="flex-1" disabled={isSubmitting} size="lg" type="submit">
                     {isSubmitting
                       ? t("common.loading")
@@ -439,65 +462,15 @@ function AdminCategoriesPage(): JSX.Element {
                         ? "Save Changes"
                         : t("admin.cat.add")}
                   </Button>
-                  {editingCategory ? (
-                    <Button
-                      onClick={() => syncEditingForm(null)}
-                      size="lg"
-                      type="button"
-                      variant="outline"
-                    >
-                      {t("common.cancel")}
-                    </Button>
-                  ) : null}
+                  <Button onClick={closeModal} size="lg" type="button" variant="outline">
+                    {t("common.cancel")}
+                  </Button>
                 </div>
               </form>
             </FormProvider>
           </div>
         </div>
-
-        {/* Tree Column */}
-        <div className="space-y-6">
-          <div className="border border-hairline bg-card p-6">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-xl font-medium text-ink">{t("admin.cat.treeTitle")}</h2>
-                <p className="text-sm font-light text-muted">{t("admin.cat.treeLead")}</p>
-              </div>
-              <Button onClick={() => syncEditingForm(null)} size="sm" type="button">
-                <Plus className="mr-1.5 size-4" />
-                {t("admin.cat.add")}
-              </Button>
-            </div>
-
-            {/* Quick Search Filter */}
-            <div className="relative mb-6">
-              <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-faint" />
-              <Input
-                className="pl-10"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("admin.cat.searchPlaceholder")}
-                value={searchQuery}
-              />
-            </div>
-
-            {/* Tree View */}
-            {filteredCategories.length === 0 ? (
-              <EmptyState className="my-8" message={t("admin.cat.noResults")} />
-            ) : (
-              <CategoryTree
-                categories={filteredCategories}
-                draggedCategoryId={draggedCategoryId}
-                editingCategoryId={editingCategory?.id}
-                onAddSubcategory={handleAddSubcategory}
-                onDelete={(category) => void handleDelete(category)}
-                onDragCategory={setDraggedCategoryId}
-                onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
-                onEdit={syncEditingForm}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
