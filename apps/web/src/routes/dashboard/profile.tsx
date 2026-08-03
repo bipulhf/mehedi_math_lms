@@ -160,6 +160,10 @@ function DashboardProfilePage(): JSX.Element {
     return <ProfilePageSkeleton />;
   }
 
+  // Null until the profile has been saved once, which is when the slug is
+  // generated — and the slug, not the id, is what addresses the public page.
+  const teacherPageSlug = profile?.user.slug ?? null;
+
   return (
     <div className="space-y-6">
       <RoleProfileForm
@@ -185,15 +189,27 @@ function DashboardProfilePage(): JSX.Element {
               courses.
             </p>
           </div>
-          <button
-            className="inline-flex h-12 items-center justify-center rounded-2xl bg-surface-container-highest px-8 font-headline font-semibold text-sm text-on-surface transition-all duration-300 hover:bg-surface-container-high hover:shadow-sm"
-            type="button"
-            onClick={() =>
-              void router.navigate({ to: "/teachers/$id", params: { id: profile.user.id } })
-            }
-          >
-            Preview public teacher profile
-          </button>
+          {/* The public page is addressed by slug, not id — `/teachers/<uuid>`
+              is a 404. The slug is generated when the profile is saved, so a
+              teacher who has never saved one has no page to preview yet. */}
+          {teacherPageSlug ? (
+            <button
+              className="inline-flex h-12 items-center justify-center rounded-2xl bg-surface-container-highest px-8 font-headline font-semibold text-sm text-on-surface transition-all duration-300 hover:bg-surface-container-high hover:shadow-sm"
+              type="button"
+              onClick={() =>
+                void router.navigate({
+                  to: "/teachers/$slug",
+                  params: { slug: teacherPageSlug }
+                })
+              }
+            >
+              Preview public teacher profile
+            </button>
+          ) : (
+            <p className="text-sm leading-6 text-on-surface/62">
+              Save your profile once and a public page will be published at its own address.
+            </p>
+          )}
         </div>
       ) : null}
 
