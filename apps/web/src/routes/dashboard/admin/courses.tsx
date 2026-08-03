@@ -10,7 +10,8 @@ import {
   Plus,
   Eye,
   Archive,
-  ArchiveRestore
+  ArchiveRestore,
+  X
 } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -21,7 +22,9 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
@@ -58,7 +61,9 @@ function AdminCoursesPage(): JSX.Element {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [feedbackByCourseId, setFeedbackByCourseId] = useState<Record<string, string>>({});
+  const [rejectTarget, setRejectTarget] = useState<CourseSummary | null>(null);
+  const [rejectFeedback, setRejectFeedback] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const filters = { limit: 12, page, search, status: status === "ALL" ? undefined : status };
   const { data, isPending: isLoading } = useQuery({
@@ -91,18 +96,36 @@ function AdminCoursesPage(): JSX.Element {
   };
 
   const handleReject = (course: CourseSummary): void => {
-    const feedback = feedbackByCourseId[course.id]?.trim() ?? "";
+    setRejectFeedback("");
+    setRejectTarget(course);
+  };
+
+  const closeRejectModal = (): void => {
+    setRejectTarget(null);
+    setRejectFeedback("");
+  };
+
+  const submitReject = async (): Promise<void> => {
+    const feedback = rejectFeedback.trim();
 
     if (feedback.length < 8) {
       toast.error(t("admin.approve.needFeedback"));
       return;
     }
 
-    void withBusy(course.id, async () => {
-      await rejectCourse(course.id, { feedback });
+    if (!rejectTarget) {
+      return;
+    }
+
+    setIsRejecting(true);
+    try {
+      await rejectCourse(rejectTarget.id, { feedback });
       toast.success(t("admin.approve.sentBack"));
+      closeRejectModal();
       await loadCourses();
-    });
+    } finally {
+      setIsRejecting(false);
+    }
   };
 
   const handleArchive = (course: CourseSummary): void => {
@@ -354,25 +377,6 @@ function AdminCoursesPage(): JSX.Element {
                               </>
                             )}
                           </div>
-
-                          {isPending && (
-                            <div className="flex w-full items-center gap-2">
-                              <div className="relative flex-1">
-                                <MessageSquareText className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-faint" />
-                                <Input
-                                  className="h-8 pl-8 text-sm"
-                                  onChange={(event) =>
-                                    setFeedbackByCourseId((currentValues) => ({
-                                      ...currentValues,
-                                      [course.id]: event.target.value
-                                    }))
-                                  }
-                                  placeholder={t("admin.approve.feedbackPlaceholder")}
-                                  value={feedbackByCourseId[course.id] ?? ""}
-                                />
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -408,6 +412,82 @@ function AdminCoursesPage(): JSX.Element {
           </Button>
         </div>
       </div>
+
+      {/* Reject / send-back modal */}
+      {rejectTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40">
+          <div
+            className="relative w-full max-w-lg border border-hairline bg-card p-8"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reject-modal-title"
+          >
+            <div className="mb-6 flex items-start justify-between border-b border-hairline pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <MessageSquareText className="size-5 text-error" />
+                  <h2 className="text-xl font-medium text-ink" id="reject-modal-title">
+                    {t("admin.approve.reject")}
+                  </h2>
+                </div>
+                <p className="mt-1 text-xs text-muted-faint">
+                  Why was &ldquo;{rejectTarget.title}&rdquo; sent back?
+                </p>
+              </div>
+              <button
+                className="p-1 text-muted hover:text-ink transition-colors"
+                onClick={closeRejectModal}
+                type="button"
+                aria-label="Close"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form
+              className="space-y-5"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitReject();
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="reject-feedback">{t("admin.approve.feedback")}</Label>
+                <Textarea
+                  autoFocus
+                  className="text-sm"
+                  id="reject-feedback"
+                  maxLength={2000}
+                  onChange={(event) => setRejectFeedback(event.target.value)}
+                  placeholder={t("admin.approve.feedbackPlaceholder")}
+                  required
+                  rows={4}
+                  value={rejectFeedback}
+                />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-faint">
+                    {rejectFeedback.length} / 2000
+                  </span>
+                  {rejectFeedback.trim().length > 0 && rejectFeedback.trim().length < 8 && (
+                    <span className="text-xs text-error">{t("admin.approve.needFeedback")}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-hairline">
+                <Button className="flex-1" disabled={isRejecting} size="lg" type="submit">
+                  <XCircle className="mr-1.5 size-4" />
+                  {isRejecting ? "Sending back…" : t("admin.approve.reject")}
+                </Button>
+                <Button onClick={closeRejectModal} size="lg" type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
