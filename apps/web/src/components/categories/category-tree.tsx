@@ -1,4 +1,4 @@
-import { GripVertical, Pencil, Trash2, Layers3 } from "lucide-react";
+import { GripVertical, Pencil, Plus, Trash2, Layers3 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import type { DragEvent, JSX } from "react";
 
@@ -12,6 +12,7 @@ interface CategoryTreeProps {
   categories: readonly CategoryNode[];
   draggedCategoryId: string | null;
   editingCategoryId?: string | null | undefined;
+  onAddSubcategory?: ((parent: CategoryNode) => void) | undefined;
   onDelete: (category: CategoryNode) => void;
   onDragCategory: (categoryId: string | null) => void;
   onDropOnCategory: (targetCategoryId: string | null) => void;
@@ -28,6 +29,7 @@ function CategoryTreeItem({
   depth,
   draggedCategoryId,
   editingCategoryId,
+  onAddSubcategory,
   onDelete,
   onDragCategory,
   onDropOnCategory,
@@ -103,6 +105,17 @@ function CategoryTreeItem({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+            {onAddSubcategory && (
+              <Button
+                size="sm"
+                type="button"
+                variant="outline"
+                onClick={() => onAddSubcategory(category)}
+                className="h-10 px-4 font-bold text-xs border-hairline/30 hover:bg-ink/5 hover:text-ink transition-all flex-1 sm:flex-initial"
+              >
+                <Plus className="size-3.5 mr-2" />{t("admin.cat.addSubcategory")}
+              </Button>
+            )}
             <Button
               size="sm"
               type="button"
@@ -130,6 +143,7 @@ function CategoryTreeItem({
           depth={depth + 1}
           draggedCategoryId={draggedCategoryId}
           editingCategoryId={editingCategoryId}
+          onAddSubcategory={onAddSubcategory}
           onDelete={onDelete}
           onDragCategory={onDragCategory}
           onDropOnCategory={onDropOnCategory}
@@ -144,6 +158,7 @@ export function CategoryTree({
   categories,
   draggedCategoryId,
   editingCategoryId,
+  onAddSubcategory,
   onDelete,
   onDragCategory,
   onDropOnCategory,
@@ -153,7 +168,7 @@ export function CategoryTree({
 
   return (
     <div
-      className="space-y-6 bg-panel-warm/30 p-4 sm:p-6 border border-hairline/10 min-h-125 [--depth-gap:0.5rem] sm:[--depth-gap:1.5rem] lg:[--depth-gap:2.5rem]"
+      className="min-h-125 space-y-6 border border-hairline/10 bg-panel-warm/30 p-4 sm:p-6 [--depth-gap:0.5rem] sm:[--depth-gap:1.5rem] lg:[--depth-gap:2.5rem]"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -164,11 +179,12 @@ export function CategoryTree({
         <div className="space-y-4">
           {categories.map((category) => (
             <CategoryTreeItem
-              key={category.id}
               category={category}
               depth={0}
               draggedCategoryId={draggedCategoryId}
               editingCategoryId={editingCategoryId}
+              key={category.id}
+              onAddSubcategory={onAddSubcategory}
               onDelete={onDelete}
               onDragCategory={onDragCategory}
               onDropOnCategory={onDropOnCategory}
@@ -177,8 +193,8 @@ export function CategoryTree({
           ))}
         </div>
       ) : (
-        <div className="bg-card/40 border border-hairline/20 p-12 text-center">
-          <Layers3 className="size-12 mx-auto mb-4 opacity-10" />
+        <div className="border border-hairline/20 bg-card/40 p-12 text-center">
+          <Layers3 className="mx-auto mb-4 size-12 opacity-10" />
           <p className="text-sm font-light italic text-ink/40">{t("cat.dormant")}</p>
         </div>
       )}

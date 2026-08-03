@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Layers3 } from "lucide-react";
+import { ArrowLeft, Plus, Search, Sparkles } from "lucide-react";
 import type { JSX } from "react";
 import { useMemo, useState, useRef } from "react";
 import { FormProvider } from "react-hook-form";
@@ -15,6 +15,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,31 @@ export const Route = createFileRoute("/dashboard/admin/categories")({
   component: AdminCategoriesPage,
   errorComponent: RouteErrorView
 } as never);
+
+function filterCategoryTree(
+  items: readonly CategoryNode[],
+  query: string
+): readonly CategoryNode[] {
+  if (!query.trim()) {
+    return items;
+  }
+  const q = query.toLowerCase().trim();
+
+  return items
+    .map((item) => {
+      const matchesSelf =
+        item.name.toLowerCase().includes(q) || item.slug.toLowerCase().includes(q);
+      const filteredChildren = filterCategoryTree(item.children, query);
+      if (matchesSelf || filteredChildren.length > 0) {
+        return {
+          ...item,
+          children: matchesSelf ? item.children : filteredChildren
+        };
+      }
+      return null;
+    })
+    .filter((item): item is CategoryNode => item !== null);
+}
 
 function flattenCategoryIds(categories: readonly CategoryNode[]): readonly string[] {
   return categories.flatMap((category) => [category.id, ...flattenCategoryIds(category.children)]);
@@ -127,6 +153,7 @@ function AdminCategoriesPage(): JSX.Element {
   });
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [draggedCategoryId, setDraggedCategoryId] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryNode | null>(null);
   const form = useZodForm<CreateCategoryInput>({
@@ -149,6 +176,11 @@ function AdminCategoriesPage(): JSX.Element {
     watch
   } = form;
   const selectedParentId = watch("parentId") ?? "";
+
+  const filteredCategories = useMemo(
+    () => filterCategoryTree(categories, searchQuery),
+    [categories, searchQuery]
+  );
 
   const availableParentCategories = useMemo(() => {
     if (!editingCategory) {
@@ -191,6 +223,22 @@ function AdminCategoriesPage(): JSX.Element {
         formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 0);
     }
+  };
+
+  const handleAddSubcategory = (parent: CategoryNode): void => {
+    setEditingCategory(null);
+    reset({
+      description: "",
+      icon: "",
+      isActive: true,
+      name: "",
+      parentId: parent.id,
+      sortOrder: parent.children.length
+    });
+    toast.info(`Parent category set to "${parent.name}"`);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 0);
   };
 
   const onSubmit = handleSubmit(async (values) => {
@@ -244,7 +292,6 @@ function AdminCategoriesPage(): JSX.Element {
     });
 
     setDraggedCategoryId(null);
-    // Optimistic: the tree redraws in the dragged position before the round trip.
     queryClient.setQueryData(queryKeys.categories.list({ includeInactive: true }), nextTree);
     await reorderCategories({
       items: serializeCategoryTree(nextTree, null)
@@ -256,19 +303,19 @@ function AdminCategoriesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
-          <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
-          <Skeleton className="h-4 w-full max-w-sm bg-chip-active mb-8" />
+        <div className="border border-hairline bg-card p-8">
+          <Skeleton className="mb-4 h-8 w-48" />
+          <Skeleton className="mb-8 h-4 w-full max-w-sm" />
           <div className="grid gap-8 xl:grid-cols-2">
             <CategoryTreeSkeleton rows={6} />
             <div className="space-y-6">
-              <Skeleton className="h-32 w-full bg-chip-active" />
+              <Skeleton className="h-32 w-full" />
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex gap-4">
-                  <Skeleton className="size-10 rounded-full bg-chip-active" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-1/3 bg-chip-active" />
-                    <Skeleton className="h-3 w-2/3 bg-chip-active" />
+                <div className="flex gap-4" key={i}>
+                  <Skeleton className="size-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-2/3" />
                   </div>
                 </div>
               ))}
@@ -281,161 +328,173 @@ function AdminCategoriesPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-card/80 p-5 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
-        <div className="mb-8">
-          <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("admin.cat.title")}</h3>
-          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
-            Build the academic taxonomy, shape parent-child relationships, and keep course browsing
-            organized.
-          </p>
+      {/* Page Header */}
+      <div className="border border-hairline bg-card p-8 sm:p-10">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-medium text-ink">{t("admin.cat.title")}</h1>
+            <p className="mt-1 text-base font-light text-muted">
+              Organize course taxonomy, manage root levels and subject subcategories.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge tone="neutral">{categories.length} root levels</Badge>
+            <Badge tone="neutral">{flattenCategoryIds(categories).length} total categories</Badge>
+          </div>
         </div>
+      </div>
 
-        <div className="grid gap-8 lg:gap-10 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="xl:sticky xl:top-8 self-start">
+      {/* 2-Column Main Workspace */}
+      <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
+        {/* Form Column */}
+        <div className="self-start xl:sticky xl:top-8">
+          <div className="border border-hairline bg-card p-6 sm:p-8">
+            {/* Mode Indicator Banner */}
+            <div className="mb-6 flex items-center justify-between border-b border-hairline pb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-accent" />
+                <h2 className="text-lg font-medium text-ink">
+                  {editingCategory ? t("admin.cat.editingHeader") : t("admin.cat.creatingHeader")}
+                </h2>
+              </div>
+              {editingCategory ? (
+                <Button
+                  onClick={() => syncEditingForm(null)}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  <ArrowLeft className="mr-1.5 size-3.5" />
+                  {t("admin.cat.cancelEdit")}
+                </Button>
+              ) : null}
+            </div>
+
             <FormProvider {...form}>
-              <form ref={formRef} className="space-y-6" onSubmit={onSubmit}>
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="category-name"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                  >{t("common.name")}</Label>
+              <form className="space-y-6" ref={formRef} onSubmit={onSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="category-name">{t("common.name")}</Label>
                   <Input
-                    id="category-name"
-                    className="h-12 bg-panel-warm/50 border-hairline/30 font-body"
                     error={errors.name?.message}
+                    id="category-name"
+                    placeholder="e.g. Higher Mathematics"
                     {...register("name")}
                   />
                 </div>
 
-                <IconPicker name="icon" error={errors.icon?.message} />
+                <IconPicker error={errors.icon?.message} name="icon" />
 
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="category-parent"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                  >{t("admin.cat.parent")}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="category-parent">{t("admin.cat.parent")}</Label>
                   <CategorySelector
-                    id="category-parent"
                     categories={availableParentCategories}
                     error={errors.parentId?.message}
-                    value={selectedParentId}
+                    id="category-parent"
                     onChange={(value) =>
                       setValue("parentId", value, { shouldDirty: true, shouldValidate: true })
                     }
+                    value={selectedParentId}
                   />
                 </div>
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="category-description"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                  >{t("common.description")}</Label>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category-description">{t("common.description")}</Label>
                   <Textarea
-                    id="category-description"
-                    className="min-h-24 bg-panel-warm/50 border-hairline/30 font-body"
                     error={errors.description?.message}
+                    id="category-description"
+                    rows={3}
                     {...register("description")}
                   />
                 </div>
-                <div className="grid gap-6">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="category-sort-order"
-                      className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
-                    >{t("admin.cat.sortOrder")}</Label>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="category-sort-order">{t("admin.cat.sortOrder")}</Label>
                     <Input
+                      error={errors.sortOrder?.message}
                       id="category-sort-order"
                       type="number"
-                      className="h-12 bg-panel-warm/50 border-hairline/30 font-body"
-                      error={errors.sortOrder?.message}
                       {...register("sortOrder", { valueAsNumber: true })}
                     />
                   </div>
-                  <div className="bg-panel-warm/50 border border-hairline/30 p-5">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/80">{t("admin.cat.visibility")}</p>
-                        <p className="text-[0.65rem] text-ink/50 font-light mt-1">{t("admin.cat.hiddenNote")}</p>
-                      </div>
-                      <label className="inline-flex items-center gap-3 group/toggle">
-                        <input type="checkbox" className="sr-only peer" {...register("isActive")} />
-                        <div className="relative w-11 h-6 bg-chip-active peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                        <span className="text-xs font-bold uppercase tracking-tighter text-ink/70 peer-checked:text-accent group-hover/toggle:text-ink transition-colors">{t("admin.users.active")}</span>
-                      </label>
+
+                  <div className="space-y-2">
+                    <Label>{t("admin.cat.visibility")}</Label>
+                    <div className="flex h-10 items-center justify-between border border-hairline bg-panel-warm px-4">
+                      <span className="text-sm font-light text-muted">Active in catalog</span>
+                      <input
+                        className="size-4 accent-accent"
+                        type="checkbox"
+                        {...register("isActive")}
+                      />
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-4 pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="h-12 px-8 font-body font-medium transition-all"
-                  >
-                    {isSubmitting ? (
-                      <Skeleton className="h-4 w-20 bg-white/20" />
-                    ) : editingCategory ? (
-                      "Update category"
-                    ) : (
-                      "Create category"
-                    )}
+
+                <div className="flex gap-3 pt-2">
+                  <Button className="flex-1" disabled={isSubmitting} size="lg" type="submit">
+                    {isSubmitting
+                      ? t("common.loading")
+                      : editingCategory
+                        ? "Save Changes"
+                        : t("admin.cat.add")}
                   </Button>
                   {editingCategory ? (
                     <Button
+                      onClick={() => syncEditingForm(null)}
+                      size="lg"
                       type="button"
                       variant="outline"
-                      onClick={() => syncEditingForm(null)}
-                      className="h-12 px-6 border-hairline/30 transition-all hover:bg-chip-active"
-                    >{t("common.cancel")}</Button>
+                    >
+                      {t("common.cancel")}
+                    </Button>
                   ) : null}
                 </div>
               </form>
             </FormProvider>
           </div>
+        </div>
 
-          <div className="space-y-6">
-            <div className="bg-ink/5 border border-ink/10 p-6 sm:p-8 relative overflow-hidden group/tree-header">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
-                <div className="bg-ink/10 p-4 text-ink border border-ink/10 w-fit">
-                  <Layers3 className="size-6" />
-                </div>
-                <div>
-                  <h5 className="font-body text-xl font-medium text-ink tracking-tight leading-none">{t("admin.cat.treeTitle")}</h5>
-                  <p className="mt-2 text-sm text-muted font-light leading-relaxed">{t("admin.cat.treeLead")}</p>
-                </div>
-                {editingCategory && (
-                  <Button
-                    size="sm"
-                    onClick={() => syncEditingForm(null)}
-                    className="h-10 bg-ink/10 text-ink border border-ink/20 hover:bg-ink/20 font-bold transition-all ml-auto"
-                  >{t("admin.cat.add")}</Button>
-                )}
+        {/* Tree Column */}
+        <div className="space-y-6">
+          <div className="border border-hairline bg-card p-6">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-medium text-ink">{t("admin.cat.treeTitle")}</h2>
+                <p className="text-sm font-light text-muted">{t("admin.cat.treeLead")}</p>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3 relative z-10">
-                <Badge
-                  tone="neutral"
-                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-green-500/20"
-                >
-                  {categories.length} root domains
-                </Badge>
-                <Badge
-                  tone="neutral"
-                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-blue-500/20"
-                >
-                  {flattenCategoryIds(categories).length} total nodes
-                </Badge>
-              </div>
+              <Button onClick={() => syncEditingForm(null)} size="sm" type="button">
+                <Plus className="mr-1.5 size-4" />
+                {t("admin.cat.add")}
+              </Button>
             </div>
 
-            <div className="bg-panel-warm/30 p-2 border border-hairline/10 min-h-125">
+            {/* Quick Search Filter */}
+            <div className="relative mb-6">
+              <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-faint" />
+              <Input
+                className="pl-10"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("admin.cat.searchPlaceholder")}
+                value={searchQuery}
+              />
+            </div>
+
+            {/* Tree View */}
+            {filteredCategories.length === 0 ? (
+              <EmptyState className="my-8" message={t("admin.cat.noResults")} />
+            ) : (
               <CategoryTree
-                categories={categories}
+                categories={filteredCategories}
                 draggedCategoryId={draggedCategoryId}
                 editingCategoryId={editingCategory?.id}
+                onAddSubcategory={handleAddSubcategory}
                 onDelete={(category) => void handleDelete(category)}
                 onDragCategory={setDraggedCategoryId}
                 onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
                 onEdit={syncEditingForm}
               />
-            </div>
+            )}
           </div>
         </div>
       </div>
