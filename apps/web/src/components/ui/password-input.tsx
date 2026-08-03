@@ -1,11 +1,14 @@
-import { Eye, EyeOff } from "lucide-react";
 import { useState, type JSX } from "react";
 
+import { fieldClassName, fieldHeightClassName } from "@/components/ui/field";
 import type { InputProps } from "@/components/ui/input";
+import { useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 export function PasswordInput({ className, error, ...props }: InputProps): JSX.Element {
   const [isVisible, setIsVisible] = useState(false);
+  const t = useT();
+  const toggleLabel = isVisible ? t("field.hidePassword") : t("field.showPassword");
 
   return (
     <div className="space-y-2">
@@ -13,23 +16,18 @@ export function PasswordInput({ className, error, ...props }: InputProps): JSX.E
         <input
           {...props}
           type={isVisible ? "text" : "password"}
-          className={cn(
-            "h-12 w-full rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 pr-12 text-sm text-on-surface",
-            "placeholder:text-on-surface/45 transition-all duration-150 ease-out",
-            "shadow-[inset_0_0_0_1px_rgba(118,119,125,0.14)]",
-            "focus-visible:outline-none",
-            error ? "shadow-[inset_0_0_0_1px_rgba(196,53,59,0.24)]" : undefined,
-            className
-          )}
+          className={cn(fieldClassName(error), fieldHeightClassName, "pr-16", className)}
         />
+        {/* Words rather than an eye icon: the design uses no icon font, and a
+            crossed-out eye is the one glyph people reliably read backwards. */}
         <button
           type="button"
-          aria-label={isVisible ? "Hide password" : "Show password"}
+          aria-label={toggleLabel}
           aria-pressed={isVisible}
-          className="absolute inset-y-0 right-0 inline-flex w-12 items-center justify-center text-on-surface/55 transition-colors hover:text-on-surface focus-visible:outline-none"
+          className="absolute inset-y-0 right-0 inline-flex items-center px-4 text-sm text-muted transition-colors hover:text-ink focus-visible:outline-none"
           onClick={() => setIsVisible((current) => !current)}
         >
-          {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          {toggleLabel}
         </button>
       </div>
       {error ? <p className="text-sm text-error">{error}</p> : null}

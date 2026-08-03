@@ -4,43 +4,59 @@ import type { ButtonHTMLAttributes, JSX, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * DESIGN.md §6. Flat fills, 4px radius, no gradients, no shadows, and nothing
+ * that moves on hover — the design's whole motion budget is a colour or border
+ * transition.
+ *
+ * `accent` is rationed: one per app shell, never on a marketing page. Dark
+ * actions are `ink`.
+ */
 const buttonVariants = cva(
   [
-    "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)]",
-    "text-sm font-semibold transition-all duration-150 ease-out",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-container/30",
-    "focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+    "cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius)]",
+    "font-medium transition-colors duration-150 ease-out",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong",
+    "focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
     "disabled:pointer-events-none disabled:opacity-55",
+    // Touch targets stay at least 44px. DESIGN.md §8.
     "min-h-11"
   ],
   {
     variants: {
       size: {
-        default: "px-4 py-2.5",
-        lg: "px-5 py-3",
-        sm: "px-3.5 py-2"
+        default: "px-6 py-3 text-base",
+        lg: "px-7 py-3.5 text-lg",
+        sm: "px-4 py-2 text-sm"
       },
       variant: {
-        default:
-          "bg-primary text-white shadow-[0_2px_4px_rgba(0,0,0,0.05)] hover:-translate-y-0.5 hover:bg-on-surface",
-        gradient:
-          "bg-linear-to-br from-primary to-on-primary-container text-white shadow-[0_10px_30px_-10px_rgba(19,27,46,0.18)] hover:-translate-y-0.5 hover:brightness-105 active:scale-95 border-0",
-        secondary:
-          "bg-secondary-container text-white shadow-[0_10px_30px_-10px_rgba(19,27,46,0.12)] hover:-translate-y-0.5 hover:brightness-105",
-        ghost: "bg-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest/60",
-        outline:
-          "bg-surface-container-lowest text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.15)] hover:bg-surface-container-highest/50"
+        ink: "bg-ink text-paper hover:bg-ink-muted",
+        accent: "bg-accent text-paper hover:brightness-95",
+        outline: "bg-transparent text-ink border border-line-strong hover:bg-panel-warm",
+        ghost: "bg-transparent text-muted hover:bg-panel-warm hover:text-ink",
+        /** Accent text with no fill — the "ভর্তি হও →" affordance. */
+        accentLink: "bg-transparent px-0 text-accent hover:brightness-90 min-h-0",
+        /** An underlined text link. `#C9C3BB` rule, ink text. */
+        underline:
+          "bg-transparent px-0 text-ink border-b border-line-strong rounded-none hover:text-accent hover:border-accent min-h-0",
+
+        // Names kept only so the screens that have not been rebuilt keep
+        // compiling. Each resolves to its Genex equivalent. Remove in Phase 12.
+        default: "bg-ink text-paper hover:bg-ink-muted",
+        gradient: "bg-ink text-paper hover:bg-ink-muted",
+        secondary: "bg-accent text-paper hover:brightness-95"
       }
     },
     defaultVariants: {
       size: "default",
-      variant: "default"
+      variant: "ink"
     }
   }
 );
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   children: ReactNode;
 }

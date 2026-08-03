@@ -2,24 +2,43 @@ import type { HTMLAttributes, JSX } from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Status marks, drawn in the muted scale rather than a red/green/amber
+ * palette. DESIGN.md §2: the accent is reserved for the one status that
+ * genuinely needs attention, and everything else stays quiet.
+ *
+ * A payment that is stuck and a licence about to expire earn `attention`. A
+ * successful payment does not — nothing is wrong, so nothing should shout.
+ */
 const toneClasses = {
-  amber: "bg-amber-100 text-amber-900",
-  blue: "bg-sky-100 text-sky-900",
-  gray: "bg-slate-200 text-slate-800",
-  green: "bg-emerald-100 text-emerald-900",
-  red: "bg-rose-100 text-rose-900",
-  violet: "bg-violet-100 text-violet-900"
+  /** Needs someone to act. The only accent-coloured status. */
+  attention: "bg-card text-accent border border-hairline",
+  /** Withdrawn, refunded, archived — present but no longer live. */
+  faded: "bg-card text-muted-faint border border-hairline",
+  /** The default. Published, settled, active, everything ordinary. */
+  neutral: "bg-chip-active text-ink",
+  /** Draft, pending, not yet real. */
+  quiet: "bg-card text-muted border border-hairline",
+
+  // Names kept so screens that have not been rebuilt keep compiling. Remove in
+  // Phase 12.
+  amber: "bg-card text-accent border border-hairline",
+  blue: "bg-chip-active text-ink",
+  gray: "bg-card text-muted border border-hairline",
+  green: "bg-chip-active text-ink",
+  red: "bg-card text-error border border-hairline",
+  violet: "bg-chip-active text-ink"
 } as const;
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: keyof typeof toneClasses;
 }
 
-export function Badge({ className, tone = "gray", ...props }: BadgeProps): JSX.Element {
+export function Badge({ className, tone = "neutral", ...props }: BadgeProps): JSX.Element {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.06em]",
+        "inline-flex items-center rounded-[var(--radius-pill)] px-3 py-1 text-sm font-normal",
         toneClasses[tone],
         className
       )}

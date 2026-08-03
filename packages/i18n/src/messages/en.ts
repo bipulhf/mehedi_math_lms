@@ -44,6 +44,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "empty.courses": "No course matches that search",
   "empty.generic": "Nothing to show here yet",
 
+  "field.hidePassword": "Hide",
+  "field.showPassword": "Show",
+
   "footer.about": "Genex",
   "footer.address": "Address",
   "footer.copyright": "© {year} Genex",

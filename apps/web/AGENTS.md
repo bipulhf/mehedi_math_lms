@@ -16,7 +16,9 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
 src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
-src/components/ui/   Primitives — button, card, input, label, select, textarea, badge, skeleton, password-input, progress-track, responsive-image.
+src/components/ui/   Primitives — button, card, input, label, select, textarea, checkbox, badge, pill, skeleton,
+                     password-input, progress-track, responsive-image, avatar, tabs, accordion, data-table,
+                     empty-state, stat-card, dot-row, price-text, section-heading, doodles, field (shared classes).
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.
@@ -181,6 +183,10 @@ Four rules from `DESIGN.md` that this codebase gets wrong most often:
 Fonts: `font-body` (Hind Siliguri) for everything, `font-mono-label` (Archivo) for Latin numerals, IDs and small all-caps labels.
 
 Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge classes. Follow `src/components/ui/button.tsx` when adding a primitive.
+
+Input, textarea, select and password-input all draw their surface from `fieldClassName` in `src/components/ui/field.ts`. They used to be four copies of the same class string, which is how three of them ended up with a focus glow the fourth did not have. Add a field variant there, not in one of the four.
+
+`Button` still accepts `default`, `gradient` and `secondary`, and `Badge` still accepts `blue`, `gray`, `green`, `violet`, `amber` and `red`. Those are compatibility names for screens that have not been rebuilt yet — each resolves to its Genex equivalent and all of them go in Phase 12. New markup uses `ink` / `accent` / `outline` / `ghost` / `accentLink` / `underline`, and `neutral` / `quiet` / `attention` / `faded`.
 
 Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip-path`, checks are drawn. `lucide-react` stays for dashboard-only surfaces with no design precedent (messages, admin tooling) and is kept out of the public pages.
 

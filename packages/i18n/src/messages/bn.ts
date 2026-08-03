@@ -46,6 +46,9 @@ export const bn = {
   "empty.courses": "এই নামে কোনো কোর্স পাওয়া যায়নি",
   "empty.generic": "এখানে দেখানোর মতো কিছু নেই",
 
+  "field.hidePassword": "লুকাও",
+  "field.showPassword": "দেখাও",
+
   "footer.about": "জেনেক্স",
   "footer.address": "ঠিকানা",
   "footer.copyright": "© {year} জেনেক্স",

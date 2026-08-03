@@ -1,0 +1,37 @@
+import type { JSX, ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
+
+export interface StatCardProps {
+  className?: string | undefined;
+  /** A movement note — "+১২%". Accent only when it is worth acting on. */
+  delta?: ReactNode;
+  isDeltaAccent?: boolean | undefined;
+  label: string;
+  value: ReactNode;
+}
+
+/**
+ * The KPI card used across all three dashboards: a muted label over a large
+ * number, with an optional movement note.
+ *
+ * The number is 26–30px at weight 500 (DESIGN.md §4) — large enough to scan,
+ * never bold enough to shout.
+ */
+export function StatCard({
+  className,
+  delta,
+  isDeltaAccent = false,
+  label,
+  value
+}: StatCardProps): JSX.Element {
+  return (
+    <div className={cn("border border-hairline bg-card p-6", className)}>
+      <p className="text-sm text-muted-light">{label}</p>
+      <p className="mt-3 text-3xl font-medium text-ink">{value}</p>
+      {delta === undefined ? null : (
+        <p className={cn("mt-2 text-sm", isDeltaAccent ? "text-accent" : "text-muted")}>{delta}</p>
+      )}
+    </div>
+  );
+}

@@ -287,7 +287,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 1 | Rename, everywhere (§7). Mechanical, no behaviour change | ☑ |
 | 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☑ |
 | 3 | Design tokens: `app.css`, fonts, page background, brand assets | ☑ |
-| 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☐ |
+| 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☑ |
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding | ☐ |
 | 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile, plus the new `/teachers` index | ☐ |
 | 7 | Teacher dashboard + the 5-step course builder | ☐ |
@@ -379,6 +379,44 @@ The hero illustration (`hero-atelier.svg`) is still the old indigo asset and
 looks wrong against the new palette. It is homepage content — Phase 6.
 
 Typecheck 9/9, lint 9/9, tests 8/8, web build clean.
+
+**Phase 4** — eight primitives rewritten, thirteen added.
+
+The four field components turned out to be four copies of one class string,
+which is how three of them had a focus glow the fourth did not. They now share
+`fieldClassName` in `ui/field.ts`.
+
+`Button` and `Badge` keep their old variant names as aliases, because 73 files
+pass `variant="outline"` and 38 pass a `tone`. Removing the names would have
+meant editing every one of them inside a primitives commit. Each alias resolves
+to its Genex equivalent and they all go in Phase 12.
+
+`Badge`'s tone set was the sharpest conflict with the design. It had
+amber/rose/emerald/violet/sky, and DESIGN.md §2 allows roughly 6–10 accent marks
+per page with no other saturated colour at all. The replacement is
+`neutral` / `quiet` / `attention` / `faded`: a stuck payment or an expiring
+licence earns the accent, a *successful* payment does not, because nothing is
+wrong and nothing should shout.
+
+Two smaller judgements. `PasswordInput` lost its eye icon for the words
+দেখাও / লুকাও — the design ships no icon font, and a crossed-out eye is the one
+glyph people reliably read backwards. `ProgressTrack` gained an `isComplete`
+flag that fills in `line-strong` instead of accent, because the design spends
+accent on what still needs doing and a finished course does not.
+
+`DataTable` renders a real table at `md` and up and one card per row below it,
+from the same `columns` array — a table scrolling sideways inside a phone hides
+the column carrying the decision. The doodle set is seven CSS-only marks, all
+`pointer-events-none`; `RingedWord` wraps its word rather than being positioned
+by hand, so it survives that word changing length between Bangla and English.
+
+`TeacherAvatar` now delegates to the new `Avatar` and keeps its name, since the
+landing sections ask for "the teacher's face" rather than a generic avatar.
+
+Verified on a running stack at 1440 and 390 wide: no page errors, fields render
+hairlined, and the password toggle reads দেখাও under the Bangla locale.
+
+Typecheck 9/9, lint 9/9, tests 8/8.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

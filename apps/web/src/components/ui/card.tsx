@@ -2,6 +2,14 @@ import type { HTMLAttributes, JSX, PropsWithChildren } from "react";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Square, solid white, one hairline. DESIGN.md §6.
+ *
+ * The missing radius and missing shadow are both deliberate. Depth on this
+ * surface comes from the page texture showing through translucent panels, and
+ * a card is what sits solidly on top of it. Hover raises the border to
+ * `line-strong`; nothing lifts or scales.
+ */
 export function Card({
   children,
   className,
@@ -9,10 +17,7 @@ export function Card({
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
     <div
-      className={cn(
-        "rounded-[var(--radius)] bg-surface-container-lowest shadow-[0_10px_30px_-16px_rgba(19,27,46,0.12)]",
-        className
-      )}
+      className={cn("border border-hairline bg-card transition-colors duration-150", className)}
       {...props}
     >
       {children}
@@ -26,7 +31,7 @@ export function CardHeader({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
-    <div className={cn("space-y-2 p-6", className)} {...props}>
+    <div className={cn("space-y-3 p-6", className)} {...props}>
       {children}
     </div>
   );
@@ -38,7 +43,10 @@ export function CardTitle({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLHeadingElement>>): JSX.Element {
   return (
-    <h3 className={cn("font-display text-2xl font-semibold tracking-[-0.02em] text-on-surface", className)} {...props}>
+    <h3
+      className={cn("text-xl font-medium leading-snug text-ink sm:text-2xl", className)}
+      {...props}
+    >
       {children}
     </h3>
   );
@@ -50,7 +58,7 @@ export function CardDescription({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLParagraphElement>>): JSX.Element {
   return (
-    <p className={cn("text-sm leading-6 text-on-surface/70", className)} {...props}>
+    <p className={cn("text-base font-light leading-relaxed text-muted", className)} {...props}>
       {children}
     </p>
   );
