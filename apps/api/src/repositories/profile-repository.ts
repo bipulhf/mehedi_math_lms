@@ -66,6 +66,9 @@ export interface PublicTeacherProfileRecord extends ProfileUserRecord {
 }
 
 export interface StudentProfileInputRecord {
+  /** Only the final step of onboarding sets this; every other save leaves
+      `profileCompleted` exactly as it found it. */
+  markComplete: boolean;
   address: string | null;
   classOrGrade: string | null;
   dateOfBirth: Date | null;
@@ -79,6 +82,9 @@ export interface StudentProfileInputRecord {
 }
 
 export interface TeacherProfileInputRecord {
+  /** Only the final step of onboarding sets this; every other save leaves
+      `profileCompleted` exactly as it found it. */
+  markComplete: boolean;
   bio: string | null;
   name: string;
   phone: string | null;
@@ -90,6 +96,9 @@ export interface TeacherProfileInputRecord {
 }
 
 export interface BasicProfileInputRecord {
+  /** Only the final step of onboarding sets this; every other save leaves
+      `profileCompleted` exactly as it found it. */
+  markComplete: boolean;
   name: string;
   profilePhoto: string | null;
   slug: string | null;
@@ -285,7 +294,7 @@ export class ProfileRepository {
         .set({
           image: input.profilePhoto,
           name: input.name,
-          profileCompleted: true,
+          ...(input.markComplete ? { profileCompleted: true } : {}),
           slug: input.slug ?? undefined,
           updatedAt: new Date()
         })
@@ -342,7 +351,7 @@ export class ProfileRepository {
         .set({
           image: input.profilePhoto,
           name: input.name,
-          profileCompleted: true,
+          ...(input.markComplete ? { profileCompleted: true } : {}),
           slug: input.slug ?? undefined,
           updatedAt: new Date()
         })
@@ -394,7 +403,7 @@ export class ProfileRepository {
       .set({
         image: input.profilePhoto,
         name: input.name,
-        profileCompleted: true,
+        ...(input.markComplete ? { profileCompleted: true } : {}),
         slug: input.slug ?? undefined,
         updatedAt: new Date()
       })

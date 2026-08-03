@@ -140,8 +140,17 @@ export function AppShell({ children, isLoading, navItems, title }: AppShellProps
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 space-y-6">
-          <header className="rounded-4xl bg-surface-container-lowest/80 p-4 backdrop-blur-3xl border border-outline-variant/40 shadow-xl relative overflow-hidden group min-h-20 flex items-center">
-            <div className="absolute -top-12 -right-12 w-48 h-48 bg-secondary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-secondary/10 z-[-1]"></div>
+          {/* Two things keep the notification panel visible, and both are easy
+              to undo by accident:
+              - no `overflow-hidden`, which clipped the panel at the header's
+                own edge. The orb below gets its own clipping box instead.
+              - `z-30`. `backdrop-blur` makes this header a stacking context, so
+                the panel's own z-50 cannot escape it; without a z-index here the
+                blurred content card below — later in the DOM — paints over it. */}
+          <header className="rounded-4xl bg-surface-container-lowest/80 p-4 backdrop-blur-3xl border border-outline-variant/40 shadow-xl relative z-30 group min-h-20 flex items-center">
+            <div className="absolute inset-0 rounded-4xl overflow-hidden pointer-events-none z-[-1]">
+              <div className="absolute -top-12 -right-12 w-48 h-48 bg-secondary/5 rounded-full blur-2xl transition-all duration-1000 group-hover:bg-secondary/10"></div>
+            </div>
             <div className="flex items-center justify-between w-full relative z-10 px-2 lg:px-4">
               <div className="flex items-center gap-4">
                 <Button

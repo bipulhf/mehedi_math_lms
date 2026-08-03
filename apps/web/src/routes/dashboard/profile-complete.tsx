@@ -50,6 +50,10 @@ function CompleteProfilePage(): JSX.Element {
   // never "still loading" from the user's point of view.
   const isLoading = needsCompletion && isPending;
 
+  // `fetchedProfile` is read directly below rather than waiting for this effect
+  // to copy it into state: React Hook Form captures its defaults on the first
+  // render, and that render would otherwise see null and mount an empty wizard
+  // over a half-finished profile.
   useEffect(() => {
     if (fetchedProfile) {
       setProfile(fetchedProfile);
@@ -92,6 +96,13 @@ function CompleteProfilePage(): JSX.Element {
 
     try {
       const nextProfile = await updateStudentProfile(values);
+
+      // A step save is progress, not completion: keep the user where they are.
+      if (values.isComplete === false) {
+        setProfile(nextProfile);
+        return;
+      }
+
       await finishFlow(nextProfile, "Student profile completed");
     } finally {
       setIsSubmitting(false);
@@ -103,6 +114,13 @@ function CompleteProfilePage(): JSX.Element {
 
     try {
       const nextProfile = await updateTeacherProfile(values);
+
+      // A step save is progress, not completion: keep the user where they are.
+      if (values.isComplete === false) {
+        setProfile(nextProfile);
+        return;
+      }
+
       await finishFlow(nextProfile, "Teacher profile completed");
     } finally {
       setIsSubmitting(false);
@@ -114,6 +132,13 @@ function CompleteProfilePage(): JSX.Element {
 
     try {
       const nextProfile = await updateBasicProfile(values);
+
+      // A step save is progress, not completion: keep the user where they are.
+      if (values.isComplete === false) {
+        setProfile(nextProfile);
+        return;
+      }
+
       await finishFlow(nextProfile, "Profile completed");
     } finally {
       setIsSubmitting(false);
@@ -127,7 +152,7 @@ function CompleteProfilePage(): JSX.Element {
   return (
     <RoleProfileForm
       description="Finish this guided setup once so the dashboard can unlock the rest of your role-specific experience."
-      initialProfile={profile}
+      initialProfile={profile ?? fetchedProfile ?? null}
       isSubmitting={isSubmitting}
       onSubmitBasic={handleBasicSubmit}
       onSubmitStudent={handleStudentSubmit}

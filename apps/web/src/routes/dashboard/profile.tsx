@@ -91,7 +91,11 @@ function DashboardProfilePage(): JSX.Element {
       const nextProfile = await updateStudentProfile(values);
       setProfile(nextProfile);
       await refetchSession();
-      toast.success("Student profile updated");
+
+      // Each step of the form saves. Only the last one is worth a toast.
+      if (values.isComplete !== false) {
+        toast.success("Student profile updated");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +108,11 @@ function DashboardProfilePage(): JSX.Element {
       const nextProfile = await updateTeacherProfile(values);
       setProfile(nextProfile);
       await refetchSession();
-      toast.success("Teacher profile updated");
+
+      // Each step of the form saves. Only the last one is worth a toast.
+      if (values.isComplete !== false) {
+        toast.success("Teacher profile updated");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -117,7 +125,11 @@ function DashboardProfilePage(): JSX.Element {
       const nextProfile = await updateBasicProfile(values);
       setProfile(nextProfile);
       await refetchSession();
-      toast.success("Profile updated");
+
+      // Each step of the form saves. Only the last one is worth a toast.
+      if (values.isComplete !== false) {
+        toast.success("Profile updated");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +164,7 @@ function DashboardProfilePage(): JSX.Element {
     <div className="space-y-6">
       <RoleProfileForm
         description="Keep your profile current so enrollment, teacher visibility, and course interactions stay accurate across the academy."
-        initialProfile={profile}
+        initialProfile={profile ?? fetchedProfile ?? null}
         isSubmitting={isSubmitting}
         onSubmitBasic={handleBasicSubmit}
         onSubmitStudent={handleStudentSubmit}

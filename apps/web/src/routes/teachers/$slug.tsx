@@ -5,6 +5,7 @@ import { FadeIn } from "@/components/common/fade-in";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TeacherAvatar } from "@/features/landing/components/teacher-avatar";
 import type { PublicTeacherProfileData, TeacherCourseSummary } from "@/lib/api/profiles";
 import { breadcrumbJsonLd, seo, teacherPersonJsonLd } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
@@ -85,6 +86,15 @@ function TeacherProfilePage(): JSX.Element {
             </p>
             <div className="grid gap-6 lg:grid-cols-[1fr_0.8fr]">
               <div className="space-y-3">
+                {/* The photo was being generated into `og:image` and the JSON-LD
+                    while the page itself never showed it. */}
+                <TeacherAvatar
+                  className="size-24 text-2xl"
+                  name={profile.user.name}
+                  profilePhoto={
+                    profile.teacherProfile?.profilePhoto ?? profile.user.image ?? null
+                  }
+                />
                 <CardTitle className="text-4xl">{profile.user.name}</CardTitle>
                 <CardDescription className="max-w-2xl text-base leading-7">
                   {profile.teacherProfile?.bio ??

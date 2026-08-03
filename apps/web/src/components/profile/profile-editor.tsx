@@ -317,6 +317,7 @@ export function StudentProfileForm({
   });
   const {
     formState: { errors },
+    getValues,
     handleSubmit,
     register,
     setValue,
@@ -325,6 +326,14 @@ export function StudentProfileForm({
   } = form;
   const profilePhotoValue = watch("profilePhoto");
 
+  /**
+   * Validates the step being left, saves it, then advances.
+   *
+   * Saving here rather than only at the end is the point: a wizard that keeps
+   * everything in memory loses it all to a closed tab or a dead battery.
+   * `isComplete: false` says "store this, but I am not finished" -- the flag
+   * that stops the dashboard bouncing a half-filled profile back to the start.
+   */
   const onNext = async (): Promise<void> => {
     const currentStep = studentSteps[step];
 
@@ -334,9 +343,19 @@ export function StudentProfileForm({
 
     const isValid = await trigger(currentStep.fields);
 
-    if (isValid) {
-      setStep((currentStep) => Math.min(currentStep + 1, studentSteps.length - 1));
+    if (!isValid) {
+      return;
     }
+
+    try {
+      await onSubmit({ ...getValues(), isComplete: false });
+    } catch {
+      // The API client has already raised a toast. Staying on this step is the
+      // right outcome -- advancing would imply the answers were kept.
+      return;
+    }
+
+    setStep((current) => Math.min(current + 1, studentSteps.length - 1));
   };
 
   const handleStudentFormSubmit = handleSubmit(async (values) => {
@@ -345,7 +364,7 @@ export function StudentProfileForm({
       return;
     }
 
-    await onSubmit(values);
+    await onSubmit({ ...values, isComplete: true });
   });
 
   return (
@@ -369,13 +388,18 @@ export function StudentProfileForm({
             <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
+            {/* The keys are load-bearing. Without them React reuses one DOM
+                node for both buttons and only swaps `type`, so the click that
+                advances to the last step finds itself on a submit button by the
+                time the browser runs its default action — and the form submits
+                itself. Distinct keys make it a different node. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < studentSteps.length - 1 ? (
-                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" onClick={() => void onNext()}>
-                  Continue
+                <Button key="next" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                  {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
@@ -409,6 +433,7 @@ export function TeacherProfileForm({
   });
   const {
     formState: { errors },
+    getValues,
     handleSubmit,
     register,
     setValue,
@@ -417,6 +442,14 @@ export function TeacherProfileForm({
   } = form;
   const profilePhotoValue = watch("profilePhoto");
 
+  /**
+   * Validates the step being left, saves it, then advances.
+   *
+   * Saving here rather than only at the end is the point: a wizard that keeps
+   * everything in memory loses it all to a closed tab or a dead battery.
+   * `isComplete: false` says "store this, but I am not finished" -- the flag
+   * that stops the dashboard bouncing a half-filled profile back to the start.
+   */
   const onNext = async (): Promise<void> => {
     const currentStep = teacherSteps[step];
 
@@ -426,9 +459,19 @@ export function TeacherProfileForm({
 
     const isValid = await trigger(currentStep.fields);
 
-    if (isValid) {
-      setStep((currentStep) => Math.min(currentStep + 1, teacherSteps.length - 1));
+    if (!isValid) {
+      return;
     }
+
+    try {
+      await onSubmit({ ...getValues(), isComplete: false });
+    } catch {
+      // The API client has already raised a toast. Staying on this step is the
+      // right outcome -- advancing would imply the answers were kept.
+      return;
+    }
+
+    setStep((current) => Math.min(current + 1, teacherSteps.length - 1));
   };
 
   const handleTeacherFormSubmit = handleSubmit(async (values) => {
@@ -437,7 +480,7 @@ export function TeacherProfileForm({
       return;
     }
 
-    await onSubmit(values);
+    await onSubmit({ ...values, isComplete: true });
   });
 
   return (
@@ -461,13 +504,16 @@ export function TeacherProfileForm({
             <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
+            {/* See the note in StudentProfileForm: the keys stop React reusing
+                one node for Continue and Save, which turned the click that
+                reached the last step into a submit. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < teacherSteps.length - 1 ? (
-                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" onClick={() => void onNext()}>
-                  Continue
+                <Button key="next" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                  {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}

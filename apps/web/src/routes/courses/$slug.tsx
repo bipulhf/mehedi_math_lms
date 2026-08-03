@@ -360,6 +360,18 @@ function CourseDetailPage(): JSX.Element {
                   <p className="text-on-surface-variant leading-relaxed text-sm font-medium italic">
                     {course.teachers[0]?.bio || ""}
                   </p>
+                  {/* The public teacher page existed but nothing on a course
+                      pointed at it, which is the page a student is most likely
+                      to want next. A teacher with no slug has no page yet. */}
+                  {course.teachers[0]?.slug ? (
+                    <Link
+                      className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-on-primary-container"
+                      params={{ slug: course.teachers[0].slug }}
+                      to="/teachers/$slug"
+                    >
+                      View full teacher profile
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </div>

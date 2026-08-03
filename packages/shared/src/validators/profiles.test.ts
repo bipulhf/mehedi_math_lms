@@ -74,7 +74,37 @@ describe("teacherProfileInputSchema", () => {
 
 describe("basicProfileInputSchema", () => {
   test("carries the name and photo only — staff have no extended profile", () => {
-    expect(Object.keys(basicProfileInputSchema.shape).sort()).toEqual(["name", "profilePhoto"]);
+    expect(Object.keys(basicProfileInputSchema.shape).sort()).toEqual([
+      "isComplete",
+      "name",
+      "profilePhoto"
+    ]);
+  });
+});
+
+describe("the completion flag", () => {
+  test("is optional, so an ordinary profile edit says nothing about it", () => {
+    // Absent means "this finishes onboarding" — the behaviour every caller had
+    // before the setup wizard started saving each step.
+    expect(basicProfileInputSchema.parse({ name: "Mehedi" }).isComplete).toBeUndefined();
+    expect(
+      teacherProfileInputSchema.parse({ name: "Mehedi" }).isComplete
+    ).toBeUndefined();
+  });
+
+  test("carries false through, which is what keeps a half-filled wizard open", () => {
+    expect(studentProfileInputSchema.parse({ isComplete: false, name: "Mehedi" }).isComplete).toBe(
+      false
+    );
+    expect(teacherProfileInputSchema.parse({ isComplete: true, name: "Mehedi" }).isComplete).toBe(
+      true
+    );
+  });
+
+  test("rejects a non-boolean rather than coercing one", () => {
+    expect(teacherProfileInputSchema.safeParse({ isComplete: "false", name: "M" }).success).toBe(
+      false
+    );
   });
 });
 

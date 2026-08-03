@@ -205,6 +205,7 @@ export class ProfileService {
         : currentProfile.slug;
 
     const updatedProfile = await this.profileRepository.saveStudentProfile(userId, {
+      markComplete: input.isComplete !== false,
       address: normalizeOptionalString(input.address),
       classOrGrade: normalizeOptionalString(input.classOrGrade),
       dateOfBirth: normalizeOptionalDate(input.dateOfBirth),
@@ -241,6 +242,7 @@ export class ProfileService {
         : currentProfile.slug;
 
     const updatedProfile = await this.profileRepository.saveTeacherProfile(userId, {
+      markComplete: input.isComplete !== false,
       bio: normalizeOptionalString(input.bio),
       name: nextName,
       phone: normalizeOptionalString(input.phone),
@@ -275,6 +277,7 @@ export class ProfileService {
         : currentProfile.slug;
 
     const updatedProfile = await this.profileRepository.saveBasicProfile(userId, {
+      markComplete: input.isComplete !== false,
       name: nextName,
       profilePhoto: normalizeOptionalString(input.profilePhoto),
       slug: nextSlug
