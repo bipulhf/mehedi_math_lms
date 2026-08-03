@@ -46,7 +46,7 @@ export const Route = createFileRoute("/dashboard/analytics")({
 
 function AnalyticsSkeleton(): JSX.Element {
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8">
       <StatsGridSkeleton cards={3} />
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartSkeleton />
@@ -94,7 +94,7 @@ function TeacherAnalyticsPage(): JSX.Element {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-surface-container-lowest/40 rounded-4xl border border-dashed border-outline-variant/40">
+      <div className="flex flex-col items-center justify-center py-20 bg-surface-container-lowest/40 border border-dashed border-outline-variant/40">
         <Info className="size-10 text-on-surface/20 mb-4" />
         <p className="text-sm text-on-surface/40 font-medium italic">Unable to load instructional intelligence.</p>
       </div>
@@ -102,18 +102,17 @@ function TeacherAnalyticsPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000">
+    <div className="space-y-8">
       {/* Premium Header */}
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-24 -right-24 size-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-1000 z-[-1]" />
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-3">
              <div className="flex items-center gap-3 mb-2">
-                <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/10">
+                <div className="size-10 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
                    <BarChart3 className="size-6" />
                 </div>
-                <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Instructor Intelligence</h3>
+                <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Instructor Intelligence</h3>
              </div>
              <p className="text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed italic">
                Monitor your academic impact, track revenue trajectories, and analyze the engagement depth across your entire digital curriculum.
@@ -121,16 +120,16 @@ function TeacherAnalyticsPage(): JSX.Element {
           </div>
 
           <div className="flex flex-wrap gap-4">
-             <div className="px-6 py-4 bg-surface-container-low rounded-3xl border border-outline-variant/10 shadow-sm flex flex-col justify-center min-w-32">
+             <div className="px-6 py-4 bg-surface-container-low border border-outline-variant/10 flex flex-col justify-center min-w-32">
                 <span className="text-[0.6rem] font-bold uppercase tracking-widest text-on-surface/40 mb-1">Total Impact</span>
-                <span className="text-2xl font-display font-black text-primary leading-none">{data.totalEnrollments.toLocaleString()}</span>
+                <span className="text-2xl font-display font-medium text-primary leading-none">{data.totalEnrollments.toLocaleString()}</span>
                 <span className="text-[0.6rem] font-bold text-green-500 flex items-center gap-1 mt-1">
                    <TrendingUp className="size-3" /> Enrollments
                 </span>
              </div>
-             <div className="px-6 py-4 bg-surface-container-low rounded-3xl border border-outline-variant/10 shadow-sm flex flex-col justify-center min-w-32">
+             <div className="px-6 py-4 bg-surface-container-low border border-outline-variant/10 flex flex-col justify-center min-w-32">
                 <span className="text-[0.6rem] font-bold uppercase tracking-widest text-on-surface/40 mb-1">Catalog Size</span>
-                <span className="text-2xl font-display font-black text-on-surface leading-none">{data.courseCount}</span>
+                <span className="text-2xl font-display font-medium text-on-surface leading-none">{data.courseCount}</span>
                 <span className="text-[0.6rem] font-bold text-on-surface/40 mt-1">Published Courses</span>
              </div>
           </div>
@@ -267,13 +266,13 @@ function TeacherAnalyticsPage(): JSX.Element {
       </div>
 
       {/* Course Specific Depth */}
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
          <div className="p-8 border-b border-outline-variant/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-               <h4 className="text-xl font-headline font-extrabold text-on-surface mb-1">Curriculum Performance Index</h4>
+               <h4 className="text-xl font-body font-medium text-on-surface mb-1">Curriculum Performance Index</h4>
                <p className="text-[0.7rem] text-on-surface/40 font-bold uppercase tracking-widest leading-none">Granular Engagement Metrics</p>
             </div>
-            <Badge tone="gray" className="rounded-full px-4 py-2 text-[0.6rem] font-black bg-surface-container-low border border-outline-variant/20">
+            <Badge tone="gray" className="rounded-full px-4 py-2 text-[0.6rem] font-medium bg-surface-container-low border border-outline-variant/20">
                {data.completions.length} CURRICULA ANALYZED
             </Badge>
          </div>
@@ -287,14 +286,14 @@ function TeacherAnalyticsPage(): JSX.Element {
                <div className="grid gap-4">
                   {data.completions.map((row) => (
                     <FadeIn key={row.courseId} className="group overflow-hidden">
-                       <div className="flex flex-col lg:flex-row lg:items-center gap-6 p-6 rounded-3xl border border-outline-variant/20 bg-surface-container-low/30 hover:bg-surface-container-low hover:border-primary/20 transition-all duration-300 relative shadow-sm hover:shadow-xl">
+                       <div className="flex flex-col lg:flex-row lg:items-center gap-6 p-6 border border-outline-variant/20 bg-surface-container-low/30 hover:bg-surface-container-low hover:border-primary/20 transition-all relative">
                           <div className="flex-1 space-y-4">
                              <div className="flex items-center gap-3">
-                                <div className="size-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
+                                <div className="size-10 bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
                                    <BookOpen className="size-5" />
                                 </div>
                                 <div>
-                                   <p className="font-headline font-bold text-on-surface group-hover:text-primary transition-colors leading-tight">{row.courseTitle}</p>
+                                   <p className="font-body font-bold text-on-surface group-hover:text-primary transition-colors leading-tight">{row.courseTitle}</p>
                                    <div className="flex items-center gap-4 mt-1">
                                       <span className="text-[0.65rem] font-bold text-on-surface/40 flex items-center gap-1">
                                          <Users className="size-3" /> {row.enrollmentCount} Registered
@@ -309,7 +308,7 @@ function TeacherAnalyticsPage(): JSX.Element {
                              <div className="space-y-2">
                                 <div className="flex justify-between items-end">
                                    <span className="text-[0.6rem] font-bold uppercase tracking-widest text-on-surface/40">Engagement Depth</span>
-                                   <span className="text-sm font-display font-black text-secondary">{row.completionRate}%</span>
+                                   <span className="text-sm font-display font-medium text-secondary">{row.completionRate}%</span>
                                 </div>
                                 <ProgressTrack
                                   completed={Math.min(100, row.completionRate)}
@@ -320,7 +319,7 @@ function TeacherAnalyticsPage(): JSX.Element {
                           </div>
 
                           <div className="shrink-0 flex items-center gap-3">
-                             <Button asChild variant="outline" className="h-11 rounded-2xl border-outline-variant/30 px-6 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:bg-primary hover:text-white hover:border-primary">
+                             <Button asChild variant="outline" className="h-11 border-outline-variant/30 px-6 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:bg-primary hover:text-white hover:border-primary">
                                 <Link to="/dashboard/courses/$id/analytics" params={{ id: row.courseId }} className="flex items-center gap-2">
                                    Intelligence Hub
                                    <ArrowUpRight className="size-3.5" />
@@ -359,13 +358,13 @@ function StatsCard({
   };
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-xl p-6 rounded-4xl border border-outline-variant/40 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all group">
+    <div className="bg-surface-container-lowest/80 p-6 border border-outline-variant/40 hover:border-primary/20 transition-all group">
        <div className={cn("size-12 rounded-2xl mb-4 flex items-center justify-center transition-transform group-hover:scale-110", colorStyles[color])}>
           <Icon className="size-6" />
        </div>
        <div className="space-y-1">
           <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-on-surface/40">{label}</p>
-          <p className="text-3xl font-display font-black text-on-surface leading-none">{value.toLocaleString()}</p>
+          <p className="text-3xl font-display font-medium text-on-surface leading-none">{value.toLocaleString()}</p>
           <p className="text-[0.65rem] text-on-surface/40 font-medium italic mt-2">{description}</p>
        </div>
     </div>
@@ -382,9 +381,9 @@ function ChartCard({
   children: React.ReactNode 
 }): JSX.Element {
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-sm flex flex-col h-120">
+    <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 flex flex-col h-120">
        <div className="mb-8">
-          <h4 className="text-xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">{title}</h4>
+          <h4 className="text-xl font-body font-medium text-on-surface tracking-tight leading-tight">{title}</h4>
           <p className="text-[0.65rem] font-bold text-on-surface/30 uppercase tracking-widest">{subtitle}</p>
        </div>
        <div className="flex-1 min-h-0">

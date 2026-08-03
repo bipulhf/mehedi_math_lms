@@ -106,7 +106,7 @@ export function CourseFilterRail({
       </div>
 
       <button
-        className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+        className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
         onClick={onReset}
         type="button"
       >

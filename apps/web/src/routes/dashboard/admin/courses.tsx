@@ -69,24 +69,24 @@ function AdminCoursesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
           <div className="grid gap-6 lg:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="space-y-4 rounded-4xl bg-surface-container-low/50 p-6 border border-outline-variant/10 shadow-sm">
+              <div key={i} className="space-y-4 bg-surface-container-low/50 p-6 border border-outline-variant/10">
                 <div className="flex justify-between items-center">
                   <Skeleton className="h-6 w-24 rounded-full bg-surface-container-highest" />
                   <Skeleton className="h-4 w-32 bg-surface-container-highest" />
                 </div>
                 <div className="space-y-2">
-                  <Skeleton className="h-8 w-3/4 bg-surface-container-highest rounded-xl" />
+                  <Skeleton className="h-8 w-3/4 bg-surface-container-highest" />
                   <Skeleton className="h-4 w-full bg-surface-container-highest" />
                 </div>
-                <Skeleton className="aspect-video w-full rounded-2xl bg-surface-container-highest" />
+                <Skeleton className="aspect-video w-full bg-surface-container-highest" />
                 <div className="flex gap-3 pt-2">
-                  <Skeleton className="h-10 flex-1 rounded-xl bg-primary/20" />
-                  <Skeleton className="h-10 flex-1 rounded-xl bg-surface-container-highest" />
+                  <Skeleton className="h-10 flex-1 bg-primary/20" />
+                  <Skeleton className="h-10 flex-1 bg-surface-container-highest" />
                 </div>
               </div>
             ))}
@@ -97,15 +97,14 @@ function AdminCoursesPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+    <div className="space-y-8">
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="mb-10">
           <div className="flex items-center gap-4 mb-3">
-             <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/10">
+             <div className="size-12 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
                 <ShieldAlert className="size-6" />
              </div>
-             <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+             <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
               Approval workshop
             </h3>
           </div>
@@ -115,21 +114,21 @@ function AdminCoursesPage(): JSX.Element {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          <Badge tone="violet" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-violet-500/10 border-violet-500/20 shadow-sm">
+          <Badge tone="violet" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-violet-500/10 border-violet-500/20">
             {courses.length} pending proposals
           </Badge>
-          <Badge tone="green" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-green-500/10 border-green-500/20 shadow-sm">
+          <Badge tone="green" className="rounded-full px-5 py-2 font-bold text-[0.7rem] uppercase tracking-widest bg-green-500/10 border-green-500/20">
             Curated queue
           </Badge>
         </div>
       </div>
 
       {courses.length === 0 ? (
-        <div className="rounded-4xl bg-surface-container-lowest/40 border border-dashed border-outline-variant/20 py-24 text-center group transition-all hover:bg-surface-container-lowest/60">
-          <div className="size-24 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-outline-variant/10 group-hover:scale-105 transition-transform duration-500">
+        <div className="bg-surface-container-lowest/40 border border-dashed border-outline-variant/20 py-24 text-center group transition-all hover:bg-surface-container-lowest/60">
+          <div className="size-24 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-6 border border-outline-variant/10">
             <CheckCircle2 className="size-10 text-primary/20 group-hover:text-primary transition-colors" />
           </div>
-          <p className="font-headline text-2xl font-extrabold text-on-surface mb-2 tracking-tight">The workshop is quiet</p>
+          <p className="font-body text-2xl font-medium text-on-surface mb-2 tracking-tight">The workshop is quiet</p>
           <p className="text-sm text-on-surface-variant max-w-xs mx-auto font-light leading-relaxed">
             All academic proposals have been curated. Take a moment to breathe before the next surge.
           </p>
@@ -139,9 +138,8 @@ function AdminCoursesPage(): JSX.Element {
           {courses.map((course) => (
             <div 
               key={course.id} 
-              className="group/card flex flex-col rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 backdrop-blur-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:border-primary/20 relative overflow-hidden"
+              className="group/card flex flex-col border border-outline-variant/40 bg-surface-container-lowest/80 p-6 transition-all hover:border-primary/20 relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/2 rounded-full -mr-16 -mt-16 blur-2xl group-hover/card:bg-primary/5 transition-colors"></div>
               
               <div className="flex flex-col gap-6 relative z-10">
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -152,7 +150,7 @@ function AdminCoursesPage(): JSX.Element {
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="font-headline text-2xl font-extrabold text-on-surface tracking-tight leading-tight group-hover/card:text-primary transition-colors">
+                  <h4 className="font-body text-2xl font-medium text-on-surface tracking-tight leading-tight group-hover/card:text-primary transition-colors">
                     {course.title}
                   </h4>
                   <div className="flex flex-wrap items-center gap-3">
@@ -168,10 +166,10 @@ function AdminCoursesPage(): JSX.Element {
                 </div>
 
                 {course.coverImageUrl ? (
-                  <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-outline-variant/20 bg-surface-container-low group-hover/card:shadow-lg transition-all duration-500">
+                  <div className="relative aspect-video w-full overflow-hidden border border-outline-variant/20 bg-surface-container-low group-hover/card: transition-all">
                     <ResponsiveImage
                       alt={course.title}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                      className="h-full w-full object-cover group-hover/card:scale-105"
                       sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                       src={course.coverImageUrl}
                     />
@@ -180,7 +178,7 @@ function AdminCoursesPage(): JSX.Element {
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video w-full rounded-2xl bg-surface-container-low border border-outline-variant/10 flex items-center justify-center italic text-xs text-on-surface/30">
+                  <div className="aspect-video w-full bg-surface-container-low border border-outline-variant/10 flex items-center justify-center italic text-xs text-on-surface/30">
                     No visual signifier provided
                   </div>
                 )}
@@ -189,7 +187,7 @@ function AdminCoursesPage(): JSX.Element {
                   &ldquo;{course.description}&rdquo;
                 </p>
 
-                <div className="space-y-4 bg-primary/3 p-5 rounded-3xl border border-primary/5">
+                <div className="space-y-4 bg-primary/3 p-5 border border-primary/5">
                   <div className="space-y-2">
                     <Label 
                       htmlFor={`feedback-${course.id}`}
@@ -201,7 +199,7 @@ function AdminCoursesPage(): JSX.Element {
                       <Textarea
                         id={`feedback-${course.id}`}
                         placeholder="Detail the necessary refinements for publication..."
-                        className="min-h-25 text-sm rounded-2xl bg-surface-container-low/80 border-outline-variant/30 font-body pl-10 focus:ring-primary/20 transition-all resize-none"
+                        className="min-h-25 text-sm bg-surface-container-low/80 border-outline-variant/30 font-body pl-10 focus:ring-primary/20 transition-all resize-none"
                         value={feedbackByCourseId[course.id] ?? ""}
                         onChange={(event) =>
                           setFeedbackByCourseId((currentValues) => ({
@@ -216,7 +214,7 @@ function AdminCoursesPage(): JSX.Element {
 
                   <div className="flex gap-3 pt-2">
                     <Button 
-                      className="h-11 flex-1 rounded-xl font-bold text-xs uppercase tracking-widest bg-primary hover:bg-primary-hover shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest bg-primary hover:bg-primary-hover transition-all ] ] disabled:opacity-50"
                       onClick={() => void handleApprove(course.id)}
                       disabled={actioningId === course.id}
                     >
@@ -231,7 +229,7 @@ function AdminCoursesPage(): JSX.Element {
                     </Button>
                     <Button 
                       variant="outline"
-                      className="h-11 flex-1 rounded-xl font-bold text-xs uppercase tracking-widest border-outline-variant/30 hover:bg-surface-container-high transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest border-outline-variant/30 hover:bg-surface-container-high transition-all ] ] disabled:opacity-50"
                       onClick={() => void handleReject(course.id)}
                       disabled={actioningId === course.id}
                     >

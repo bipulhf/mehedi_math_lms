@@ -404,7 +404,7 @@ export function CourseContentBuilder({
                   <GripVertical className="size-5" />
                 </button>
                 <div>
-                  <h6 className="font-headline text-lg font-extrabold leading-tight tracking-tight text-on-surface transition-colors group-hover/chapter:text-primary">
+                  <h6 className="font-body text-lg font-medium leading-tight tracking-tight text-on-surface transition-colors group-hover/chapter:text-primary">
                     {chapter.title}
                   </h6>
                   <div className="mt-1.5 flex items-center gap-3 text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/45">
@@ -422,7 +422,7 @@ export function CourseContentBuilder({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-9 rounded-xl border-outline-variant/25 px-3 text-[0.64rem] font-bold uppercase tracking-widest"
+                  className="h-9 border-outline-variant/25 px-3 text-[0.64rem] font-bold uppercase tracking-widest"
                   onClick={() => {
                     setEditingChapterId(chapter.id);
                     setChapterEditDraft((currentValue) => ({
@@ -439,7 +439,7 @@ export function CourseContentBuilder({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 rounded-xl p-0 text-on-surface/35 transition-all hover:bg-red-500/5 hover:text-red-500"
+                  className="h-9 w-9 p-0 text-on-surface/35 transition-all hover:bg-red-500/5 hover:text-red-500"
                   onClick={() => void handleDeleteChapter(chapter.id)}
                 >
                   <Trash2 className="size-4" />
@@ -449,14 +449,14 @@ export function CourseContentBuilder({
 
             <div className="space-y-6 p-4 sm:p-5">
               {editingChapterId === chapter.id ? (
-                <FadeIn className="space-y-4 rounded-2xl border border-primary/20 bg-surface-container-low/50 p-5">
+                <FadeIn className="space-y-4 border border-primary/20 bg-surface-container-low/50 p-5">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="ml-1 text-[0.62rem] font-bold uppercase tracking-widest opacity-55">
                         Chapter title
                       </Label>
                       <Input
-                        className="h-11 rounded-xl bg-white border-outline-variant/25"
+                        className="h-11 bg-white border-outline-variant/25"
                         value={chapterEditDraft[chapter.id]?.title ?? ""}
                         onChange={(event) =>
                           setChapterEditDraft((currentValue) => ({
@@ -474,7 +474,7 @@ export function CourseContentBuilder({
                         Chapter description
                       </Label>
                       <Input
-                        className="h-11 rounded-xl bg-white border-outline-variant/25"
+                        className="h-11 bg-white border-outline-variant/25"
                         value={chapterEditDraft[chapter.id]?.description ?? ""}
                         onChange={(event) =>
                           setChapterEditDraft((currentValue) => ({
@@ -491,13 +491,13 @@ export function CourseContentBuilder({
                   <div className="flex justify-end gap-2 pt-1">
                     <Button
                       variant="outline"
-                      className="h-10 rounded-xl px-4 font-bold"
+                      className="h-10 px-4 font-bold"
                       onClick={() => setEditingChapterId(null)}
                     >
                       Cancel
                     </Button>
                     <Button
-                      className="h-10 rounded-xl bg-primary px-5 font-extrabold shadow-sm"
+                      className="h-10 bg-primary px-5 font-medium"
                       onClick={() => void handleSaveChapter(chapter.id)}
                     >
                       Save chapter
@@ -529,7 +529,7 @@ export function CourseContentBuilder({
                     <div className="flex size-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600">
                       <VideoIcon className="size-4" />
                     </div>
-                    <h6 className="text-[0.68rem] font-black uppercase tracking-widest text-on-surface">
+                    <h6 className="text-[0.68rem] font-medium uppercase tracking-widest text-on-surface">
                       Lessons
                     </h6>
                   </div>
@@ -565,7 +565,7 @@ export function CourseContentBuilder({
                           </button>
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-headline font-bold text-on-surface">
+                              <p className="font-body font-bold text-on-surface">
                                 {lecture.title}
                               </p>
                               <Badge className="border-none bg-on-surface/5 px-2 text-[0.58rem] font-bold text-on-surface/45">
@@ -574,7 +574,7 @@ export function CourseContentBuilder({
                               {lecture.isPreview ? (
                                 <Badge
                                   tone="blue"
-                                  className="border-none px-2.5 text-[0.55rem] font-black uppercase tracking-[0.15em]"
+                                  className="border-none px-2.5 text-[0.55rem] font-medium uppercase tracking-[0.15em]"
                                 >
                                   Preview
                                 </Badge>
@@ -645,7 +645,7 @@ export function CourseContentBuilder({
                   <div className="pt-1">
                     <Button
                       variant="outline"
-                      className="h-11 w-full rounded-2xl border-dashed border-outline-variant/35 font-headline font-bold transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                      className="h-11 w-full border-dashed border-outline-variant/35 font-body font-bold transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
                       onClick={() =>
                         setLectureDrafts((currentValue) => ({
                           ...currentValue,
@@ -658,9 +658,9 @@ export function CourseContentBuilder({
                     </Button>
 
                     {lectureDrafts[chapter.id] ? (
-                      <div className="mt-4 space-y-5 rounded-2xl border border-primary/20 bg-primary/5 p-5">
+                      <div className="mt-4 space-y-5 border border-primary/20 bg-primary/5 p-5">
                         <div className="flex items-center justify-between">
-                          <h6 className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-primary">
+                          <h6 className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-primary">
                             New lesson
                           </h6>
                           <Button
@@ -703,13 +703,13 @@ export function CourseContentBuilder({
 
 export function CourseContentBuilderSkeleton(): JSX.Element {
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <Skeleton className="h-24 w-full rounded-3xl border border-outline-variant/30 bg-surface-container-lowest" />
-      <Skeleton className="h-52 w-full rounded-3xl border border-outline-variant/30 bg-surface-container-lowest" />
+    <div className="space-y-8">
+      <Skeleton className="h-24 w-full border border-outline-variant/30 bg-surface-container-lowest" />
+      <Skeleton className="h-52 w-full border border-outline-variant/30 bg-surface-container-lowest" />
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton
           key={index}
-          className="h-80 w-full rounded-3xl border border-outline-variant/30 bg-surface-container-lowest"
+          className="h-80 w-full border border-outline-variant/30 bg-surface-container-lowest"
         />
       ))}
     </div>

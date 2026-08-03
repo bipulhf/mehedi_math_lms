@@ -120,7 +120,7 @@ function StepRail({
               Step {index + 1}
             </p>
           </div>
-          <p className="mt-4 font-headline text-lg font-semibold text-on-surface">{step.label}</p>
+          <p className="mt-4 font-body text-lg font-semibold text-on-surface">{step.label}</p>
           <p className="mt-1 text-sm leading-6 text-on-surface-variant font-light">{step.description}</p>
         </div>
       ))}
@@ -368,10 +368,9 @@ export function StudentProfileForm({
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
+    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
         <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <div className="space-y-6">
@@ -385,7 +384,7 @@ export function StudentProfileForm({
             step={step}
           />
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
-            <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
+            <Button className="h-12 font-body font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
             {/* The keys are load-bearing. Without them React reuses one DOM
@@ -395,11 +394,11 @@ export function StudentProfileForm({
                 itself. Distinct keys make it a different node. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < studentSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
                   {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
@@ -484,10 +483,9 @@ export function TeacherProfileForm({
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-secondary/10 duration-1000"></div>
+    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
         <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <div className="space-y-6">
@@ -501,7 +499,7 @@ export function TeacherProfileForm({
             step={step}
           />
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
-            <Button className="h-12 font-headline font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
+            <Button className="h-12 font-body font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
               Previous
             </Button>
             {/* See the note in StudentProfileForm: the keys stop React reusing
@@ -509,11 +507,11 @@ export function TeacherProfileForm({
                 reached the last step into a submit. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < teacherSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
                   {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
@@ -549,10 +547,9 @@ export function BasicProfileForm({
   const profilePhotoValue = watch("profilePhoto");
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[-1] transition-all group-hover:bg-primary/10 duration-1000"></div>
+    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">{title}</h2>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
         <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
@@ -574,7 +571,7 @@ export function BasicProfileForm({
           </div>
         </div>
         <div className="pt-8 mt-8 border-t border-outline-variant/20 flex justify-end">
-          <Button className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md" type="submit" disabled={isSubmitting}>
+          <Button className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Saving profile..." : "Save profile"}
           </Button>
         </div>
@@ -631,33 +628,33 @@ export function RoleProfileForm({
 export function ProfilePageSkeleton(): JSX.Element {
   return (
     <div className="space-y-6">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-2xl relative w-full overflow-hidden">
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden">
         <div className="space-y-4 mb-10">
           <Skeleton className="h-8 w-64 bg-surface-container-high" />
           <Skeleton className="h-5 w-full max-w-xl bg-surface-container-high" />
         </div>
         <div className="space-y-8">
           <div className="grid gap-3 sm:grid-cols-3">
-            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
-            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
-            <Skeleton className="h-32 rounded-3xl bg-surface-container-high" />
+            <Skeleton className="h-32 bg-surface-container-high" />
+            <Skeleton className="h-32 bg-surface-container-high" />
+            <Skeleton className="h-32 bg-surface-container-high" />
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high md:col-span-2" />
-            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high" />
-            <Skeleton className="h-20 w-full rounded-2xl bg-surface-container-high" />
-            <Skeleton className="h-36 w-full rounded-2xl bg-surface-container-high md:col-span-2" />
+            <Skeleton className="h-20 w-full bg-surface-container-high md:col-span-2" />
+            <Skeleton className="h-20 w-full bg-surface-container-high" />
+            <Skeleton className="h-20 w-full bg-surface-container-high" />
+            <Skeleton className="h-36 w-full bg-surface-container-high md:col-span-2" />
           </div>
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden opacity-50">
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden opacity-50">
         <Skeleton className="h-8 w-48 bg-surface-container-high mb-4" />
         <Skeleton className="h-5 w-full max-w-lg bg-surface-container-high mb-8" />
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-20 rounded-2xl bg-surface-container-high md:col-span-2" />
-          <Skeleton className="h-20 rounded-2xl bg-surface-container-high md:col-span-2" />
-          <Skeleton className="h-12 w-full sm:w-48 rounded-2xl bg-surface-container-high" />
+          <Skeleton className="h-20 bg-surface-container-high md:col-span-2" />
+          <Skeleton className="h-20 bg-surface-container-high md:col-span-2" />
+          <Skeleton className="h-12 w-full sm:w-48 bg-surface-container-high" />
         </div>
       </div>
     </div>

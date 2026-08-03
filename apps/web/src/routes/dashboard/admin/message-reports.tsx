@@ -46,13 +46,13 @@ function formatTimestamp(value: string): string {
 
 function ReportQueueSkeleton(): JSX.Element {
   return (
-    <div className="space-y-8 animate-pulse">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+    <div className="space-y-8">
+      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
         <Skeleton className="h-8 w-56 mb-4 bg-surface-container-highest" />
         <Skeleton className="h-4 w-full max-w-lg bg-surface-container-highest mb-8" />
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-28 w-full rounded-3xl bg-surface-container-highest" />
+            <Skeleton key={index} className="h-28 w-full bg-surface-container-highest" />
           ))}
         </div>
       </div>
@@ -145,9 +145,9 @@ function AdminMessageReportsPage(): JSX.Element {
 
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[26rem_minmax(0,1fr)]">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
         <div className="border-b border-outline-variant/20 p-6 sm:p-8">
-          <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
             Reported conversations
           </h3>
           <p className="mt-2 text-xs font-light leading-relaxed text-on-surface-variant">
@@ -158,7 +158,7 @@ function AdminMessageReportsPage(): JSX.Element {
 
         <div className="space-y-3 p-4">
           {reports.length === 0 ? (
-            <div className="rounded-3xl border border-outline-variant/20 bg-surface-container-low/50 p-6 text-center text-sm font-light leading-7 text-on-surface-variant">
+            <div className="border border-outline-variant/20 bg-surface-container-low/50 p-6 text-center text-sm font-light leading-7 text-on-surface-variant">
               Nothing to review. No conversation has an open report.
             </div>
           ) : (
@@ -177,7 +177,7 @@ function AdminMessageReportsPage(): JSX.Element {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="size-4 shrink-0 text-error" />
-                    <span className="font-headline text-sm font-bold text-on-surface">
+                    <span className="font-body text-sm font-bold text-on-surface">
                       {report.reporter.name}
                     </span>
                     <Badge tone={roleTone(report.reporter.role)}>{report.reporter.role}</Badge>
@@ -198,12 +198,12 @@ function AdminMessageReportsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
         {selectedReport ? (
           <>
             <div className="flex flex-col gap-4 border-b border-outline-variant/20 p-6 sm:p-8 md:flex-row md:items-start md:justify-between">
               <div>
-                <h3 className="font-headline text-xl font-extrabold text-on-surface">
+                <h3 className="font-body text-xl font-medium text-on-surface">
                   {selectedReport.participants.map((participant) => participant.name).join(" and ")}
                 </h3>
                 <p className="mt-2 max-w-2xl text-sm font-light leading-relaxed text-on-surface-variant">
@@ -229,7 +229,7 @@ function AdminMessageReportsPage(): JSX.Element {
                   {Array.from({ length: 5 }).map((_, index) => (
                     <Skeleton
                       key={index}
-                      className="h-20 w-2/3 rounded-3xl bg-surface-container-highest"
+                      className="h-20 w-2/3 bg-surface-container-highest"
                     />
                   ))}
                 </div>
@@ -246,7 +246,7 @@ function AdminMessageReportsPage(): JSX.Element {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-headline text-sm font-bold text-on-surface">
+                        <span className="font-body text-sm font-bold text-on-surface">
                           {message.sender.name}
                         </span>
                         <Badge tone={roleTone(message.sender.role)}>{message.sender.role}</Badge>
@@ -280,7 +280,7 @@ function AdminMessageReportsPage(): JSX.Element {
                   </div>
                 ))
               ) : (
-                <div className="rounded-3xl border border-outline-variant/20 bg-surface-container-low/50 p-6 text-center text-sm font-light leading-7 text-on-surface-variant">
+                <div className="border border-outline-variant/20 bg-surface-container-low/50 p-6 text-center text-sm font-light leading-7 text-on-surface-variant">
                   This conversation has no messages.
                 </div>
               )}
@@ -288,10 +288,10 @@ function AdminMessageReportsPage(): JSX.Element {
           </>
         ) : (
           <div className="flex h-full flex-col items-center justify-center p-12 text-center">
-            <div className="mb-6 flex size-20 items-center justify-center rounded-full border border-outline-variant/20 bg-surface-container-highest text-on-surface/60 shadow-md">
+            <div className="mb-6 flex size-20 items-center justify-center rounded-full border border-outline-variant/20 bg-surface-container-highest text-on-surface/60">
               <ShieldAlert className="size-8" />
             </div>
-            <h4 className="font-headline text-xl font-bold text-on-surface">No report selected</h4>
+            <h4 className="font-body text-xl font-bold text-on-surface">No report selected</h4>
             <p className="mt-3 max-w-md text-sm font-light leading-relaxed text-on-surface-variant">
               Choose a report to read the conversation it concerns. Opening it is logged.
             </p>

@@ -103,23 +103,23 @@ function AdminSmsPage() {
 
   if (isPending || !session) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+      <div className="space-y-8">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
           <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="size-12 rounded-2xl bg-surface-container-highest" />
+            <Skeleton className="size-12 bg-surface-container-highest" />
             <div className="space-y-2">
               <Skeleton className="h-6 w-48 bg-surface-container-highest" />
               <Skeleton className="h-4 w-96 bg-surface-container-highest" />
             </div>
           </div>
           <div className="space-y-6 max-w-xl">
-            <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
+            <Skeleton className="h-32 w-full bg-surface-container-highest" />
             <div className="flex gap-4">
               <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
               <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
               <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
             </div>
-            <Skeleton className="h-12 w-48 bg-surface-container-highest rounded-2xl" />
+            <Skeleton className="h-12 w-48 bg-surface-container-highest" />
           </div>
         </div>
       </div>
@@ -132,18 +132,17 @@ function AdminSmsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
 
         <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
-          <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-surface-container-high border border-outline-variant/30 shadow-sm relative overflow-hidden group/logo">
+          <div className="flex w-16 h-16 items-center justify-center bg-surface-container-high border border-outline-variant/30 relative overflow-hidden group/logo">
             <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
             <img
               decoding="async"
               loading="lazy" src={genexMark} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
           </div>
           <div>
-            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
               Bulk SMS Dispatch
             </h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
@@ -155,8 +154,8 @@ function AdminSmsPage() {
 
         <div className="space-y-8">
           {providerOk === false ? (
-            <div className="rounded-3xl border border-amber-500/20 bg-amber-500/5 px-6 py-4 flex items-center gap-4 text-amber-600 animate-in fade-in slide-in-from-top-2">
-              <div className="size-2 rounded-full bg-amber-500 animate-pulse"></div>
+            <div className="border border-amber-500/20 bg-amber-500/5 px-6 py-4 flex items-center gap-4 text-amber-600">
+              <div className="size-2 rounded-full bg-amber-500"></div>
               <p className="text-xs font-bold uppercase tracking-widest leading-none">
                 Provider Configuration Missing:{" "}
                 <span className="text-on-surface/60 normal-case font-medium ml-2 italic underline underline-offset-4 decoration-amber-500/30">
@@ -165,7 +164,7 @@ function AdminSmsPage() {
               </p>
             </div>
           ) : providerOk === true ? (
-            <div className="rounded-3xl border border-green-500/20 bg-green-500/5 px-6 py-4 flex items-center gap-4 text-green-600 animate-in fade-in slide-in-from-top-2">
+            <div className="border border-green-500/20 bg-green-500/5 px-6 py-4 flex items-center gap-4 text-green-600">
               <div className="size-2 rounded-full bg-green-500"></div>
               <p className="text-xs font-bold uppercase tracking-widest leading-none">
                 System Active:{" "}
@@ -192,7 +191,7 @@ function AdminSmsPage() {
                 required
                 maxLength={1000}
                 rows={5}
-                className="w-full rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 px-6 py-4 text-base text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all font-body resize-none shadow-inner placeholder:text-on-surface/20"
+                className="w-full bg-surface-container-low/50 border border-outline-variant/30 px-6 py-4 text-base text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all font-body resize-none placeholder:text-on-surface/20"
               />
             </div>
 
@@ -247,7 +246,7 @@ function AdminSmsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end animate-in fade-in slide-in-from-left-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
               {targetMode === "role" && (
                 <div className="space-y-3">
                   <Label
@@ -260,7 +259,7 @@ function AdminSmsPage() {
                     id="sms-role"
                     value={targetRole}
                     onChange={(e) => setTargetRole(e.target.value as UserRole)}
-                    className="h-12 w-full rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-12 w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {userRoleValues.map((value) => (
                       <option key={value} value={value}>
@@ -280,7 +279,7 @@ function AdminSmsPage() {
                   </Label>
                   <Input
                     id="sms-course"
-                    className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
+                    className="h-12 bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
                     value={courseId}
                     onChange={(e) => setCourseId(e.target.value)}
                     placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
@@ -291,7 +290,7 @@ function AdminSmsPage() {
               <Button
                 type="submit"
                 disabled={submitting || providerOk === false}
-                className="h-14 rounded-3xl px-10 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 disabled:grayscale"
+                className="h-14 px-10 font-body font-medium transition-all ] ] disabled:opacity-40 disabled: disabled:grayscale"
               >
                 {submitting ? (
                   <Skeleton className="h-4 w-20 bg-white/20" />
@@ -304,10 +303,10 @@ function AdminSmsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
         <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center justify-between">
           <div>
-            <h4 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none">
+            <h4 className="font-body text-2xl font-medium tracking-tight text-on-surface leading-none">
               Dispatch History
             </h4>
             <p className="mt-2 text-sm text-on-surface-variant font-light">
@@ -330,13 +329,13 @@ function AdminSmsPage() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton
                   key={i}
-                  className="h-14 w-full rounded-2xl bg-surface-container-high/50"
+                  className="h-14 w-full bg-surface-container-high/50"
                 />
               ))}
             </div>
           ) : history.length === 0 ? (
             <div className="p-20 text-center">
-              <p className="text-sm font-light text-on-surface/40 italic font-headline">
+              <p className="text-sm font-light text-on-surface/40 italic font-body">
                 The dispatch log is empty.
               </p>
             </div>

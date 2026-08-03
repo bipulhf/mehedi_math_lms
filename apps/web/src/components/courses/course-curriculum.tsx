@@ -59,14 +59,14 @@ export function CourseCurriculum({
         </p>
         <div className="flex gap-4">
           <button
-            className="border-b border-line-strong pb-0.5 text-sm text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+            className="border-b border-line-strong pb-0.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
             onClick={() => setOpenIds(new Set(chapters.map((chapter) => chapter.id)))}
             type="button"
           >
             {t("detail.expandAll")}
           </button>
           <button
-            className="border-b border-line-strong pb-0.5 text-sm text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+            className="border-b border-line-strong pb-0.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
             onClick={() => setOpenIds(new Set())}
             type="button"
           >

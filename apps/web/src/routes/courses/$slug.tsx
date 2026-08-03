@@ -237,7 +237,7 @@ function CourseDetailPage(): JSX.Element {
                   <p className="text-xl font-medium text-ink">{teacher.name}</p>
                   {teacher.slug === null ? null : (
                     <Link
-                      className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+                      className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
                       params={{ slug: teacher.slug }}
                       to="/teachers/$slug"
                     >

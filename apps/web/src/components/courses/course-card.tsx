@@ -38,7 +38,7 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
   const meta = courseMetaParts(course.stats, t, format);
 
   return (
-    <div className="group flex h-full flex-col border border-hairline bg-card transition-colors duration-150 hover:border-line-strong">
+    <div className="group flex h-full flex-col border border-hairline bg-card transition-colors hover:border-line-strong">
       <Link className="block" params={{ slug: course.slug }} to="/courses/$slug">
         <div className="relative flex h-[150px] items-center justify-center overflow-hidden bg-placeholder-fill">
           {course.coverImageUrl ? (
@@ -118,7 +118,7 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
             </Button>
           ) : (
             <Link
-              className="text-base text-accent transition-colors duration-150 hover:brightness-90"
+              className="text-base text-accent transition-colors hover:brightness-90"
               params={{ slug: course.slug }}
               to="/courses/$slug"
             >

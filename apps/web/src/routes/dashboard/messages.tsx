@@ -340,10 +340,9 @@ function DashboardMessagesPage(): JSX.Element {
 
   if (!session || !canUseMessaging) {
     return (
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="mb-4">
-          <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
             Messaging unavailable
           </h3>
           <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">

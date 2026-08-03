@@ -49,13 +49,13 @@ export function ReportConversationDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-lg overflow-hidden rounded-4xl border border-outline-variant/40 bg-surface-container-lowest shadow-xl">
+      <div className="w-full max-w-lg overflow-hidden border border-outline-variant/40 bg-surface-container-lowest">
         <div className="flex items-start gap-4 border-b border-outline-variant/20 px-6 py-5">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-error/10 text-error">
             <ShieldAlert className="size-5" />
           </div>
           <div>
-            <h3 className="font-headline text-xl font-extrabold text-on-surface">
+            <h3 className="font-body text-xl font-medium text-on-surface">
               Report this conversation
             </h3>
             <p className="mt-1 text-sm font-light leading-relaxed text-on-surface-variant">

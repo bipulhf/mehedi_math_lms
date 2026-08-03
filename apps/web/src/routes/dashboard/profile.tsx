@@ -178,10 +178,9 @@ function DashboardProfilePage(): JSX.Element {
       />
 
       {profile?.user.role === "TEACHER" ? (
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+        <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
           <div className="mb-8 text-center sm:text-left">
-            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
               Public teacher card
             </h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
@@ -194,7 +193,7 @@ function DashboardProfilePage(): JSX.Element {
               teacher who has never saved one has no page to preview yet. */}
           {teacherPageSlug ? (
             <button
-              className="inline-flex h-12 items-center justify-center rounded-2xl bg-surface-container-highest px-8 font-headline font-semibold text-sm text-on-surface transition-all duration-300 hover:bg-surface-container-high hover:shadow-sm"
+              className="inline-flex h-12 items-center justify-center bg-surface-container-highest px-8 font-body font-semibold text-sm text-on-surface transition-all hover:bg-surface-container-high"
               type="button"
               onClick={() =>
                 void router.navigate({
@@ -213,10 +212,9 @@ function DashboardProfilePage(): JSX.Element {
         </div>
       ) : null}
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-12 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -left-12 w-48 h-48 bg-secondary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-secondary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="mb-8 text-center sm:text-left">
-          <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
             Change password
           </h3>
           <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
@@ -260,7 +258,7 @@ function DashboardProfilePage(): JSX.Element {
               This updates your credential login password. Other sessions will be signed out.
             </p>
             <Button
-              className="h-12 w-full sm:w-auto font-headline font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all shadow-md"
+              className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all"
               type="submit"
               disabled={isPasswordSubmitting}
             >

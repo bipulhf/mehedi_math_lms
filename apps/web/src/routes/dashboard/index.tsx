@@ -31,7 +31,7 @@ function DashboardCard({
   children,
   title,
   description,
-  className = "p-8 sm:p-10 rounded-4xl bg-surface-container-lowest/80"
+  className = "p-6 sm:p-8 bg-card"
 }: {
   children: React.ReactNode;
   title: string;
@@ -40,11 +40,10 @@ function DashboardCard({
 }): JSX.Element {
   return (
     <div
-      className={`backdrop-blur-3xl border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group ${className}`}
+      className={`border border-hairline relative w-full overflow-hidden ${className}`}
     >
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
       <div className="mb-8">
-        <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+        <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
           {title}
         </h3>
         {description && (
@@ -71,10 +70,9 @@ function DashboardMetric({
 }): JSX.Element {
   return (
     <FadeIn delayClassName={index > 0 ? "delay-75" : undefined}>
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-3xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden group h-full">
-        <div className="absolute -top-8 -right-8 w-32 h-32 bg-secondary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-secondary/10 transition-colors z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-6 border border-outline-variant/30 relative overflow-hidden group h-full">
         <div className="space-y-4">
-          <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 text-primary shadow-inner border border-primary/10 relative overflow-hidden">
+          <div className="inline-flex size-12 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5 text-primary border border-primary/10 relative overflow-hidden">
             <div className="absolute inset-0 bg-linear-to-tr from-white/10 to-transparent pointer-events-none"></div>
             <Icon className="size-5 relative z-10" />
           </div>
@@ -82,7 +80,7 @@ function DashboardMetric({
             <p className="text-[0.75rem] font-bold uppercase tracking-widest text-on-surface/54">
               {label}
             </p>
-            <h4 className="mt-2 text-3xl font-headline font-extrabold">{value}</h4>
+            <h4 className="mt-2 text-3xl font-body font-medium">{value}</h4>
           </div>
         </div>
       </div>
@@ -127,13 +125,13 @@ function DashboardHomePage(): JSX.Element {
         <div className="space-y-6">
           <StatsGridSkeleton />
           <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+            <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden">
               <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
               <Skeleton className="h-4 w-full max-w-sm mb-8 bg-surface-container-highest" />
               <div className="grid gap-4 md:grid-cols-2">
-                <Skeleton className="h-36 rounded-4xl bg-surface-container-highest" />
-                <Skeleton className="h-36 rounded-4xl bg-surface-container-highest" />
-                <Skeleton className="h-36 rounded-4xl bg-surface-container-highest" />
+                <Skeleton className="h-36 bg-surface-container-highest" />
+                <Skeleton className="h-36 bg-surface-container-highest" />
+                <Skeleton className="h-36 bg-surface-container-highest" />
               </div>
             </div>
             <RecentActivitySkeleton rows={2} />
@@ -158,9 +156,9 @@ function DashboardHomePage(): JSX.Element {
             <div className="grid gap-4 md:grid-cols-2">
               <Link
                 to="/dashboard/admin/users"
-                className="group/link rounded-4xl bg-surface-container-lowest/50 p-6 transition-all duration-300 ease-out hover:bg-surface-container-high border border-outline-variant/20 hover:shadow-md"
+                className="group/link bg-surface-container-lowest/50 p-6 transition-all ease-out hover:bg-surface-container-high border border-outline-variant/20"
               >
-                <p className="font-headline font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
+                <p className="font-body font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
                   User management
                 </p>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant font-light">
@@ -169,9 +167,9 @@ function DashboardHomePage(): JSX.Element {
               </Link>
               <Link
                 to="/dashboard/admin/bugs"
-                className="group/link rounded-4xl bg-surface-container-lowest/50 p-6 transition-all duration-300 ease-out hover:bg-surface-container-high border border-outline-variant/20 hover:shadow-md"
+                className="group/link bg-surface-container-lowest/50 p-6 transition-all ease-out hover:bg-surface-container-high border border-outline-variant/20"
               >
-                <p className="font-headline font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
+                <p className="font-body font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
                   Bug triage
                 </p>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant font-light">
@@ -180,9 +178,9 @@ function DashboardHomePage(): JSX.Element {
               </Link>
               <Link
                 to="/dashboard/admin/analytics"
-                className="group/link rounded-4xl bg-surface-container-lowest/50 p-6 transition-all duration-300 ease-out hover:bg-surface-container-high border border-outline-variant/20 hover:shadow-md"
+                className="group/link bg-surface-container-lowest/50 p-6 transition-all ease-out hover:bg-surface-container-high border border-outline-variant/20"
               >
-                <p className="font-headline font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
+                <p className="font-body font-semibold text-lg text-on-surface group-hover/link:text-primary transition-colors">
                   Platform analytics
                 </p>
                 <p className="mt-2 text-sm leading-6 text-on-surface-variant font-light">
@@ -198,7 +196,7 @@ function DashboardHomePage(): JSX.Element {
             description="High-level queue pressure before deeper analytics and reporting land."
           >
             <div className="space-y-4">
-              <div className="rounded-3xl bg-surface-container-lowest/50 p-5 border border-outline-variant/20">
+              <div className="bg-surface-container-lowest/50 p-5 border border-outline-variant/20">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-on-surface">
                     Pending course approvals
@@ -208,7 +206,7 @@ function DashboardHomePage(): JSX.Element {
                   </Badge>
                 </div>
               </div>
-              <div className="rounded-3xl bg-surface-container-lowest/50 p-5 border border-outline-variant/20">
+              <div className="bg-surface-container-lowest/50 p-5 border border-outline-variant/20">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-on-surface">Total enrollments</span>
                   <Badge tone="blue" className="px-3 py-1 font-bold">
@@ -232,18 +230,18 @@ function DashboardHomePage(): JSX.Element {
             description="Payment operations are now centralized for transaction review, refund handling, and revenue monitoring."
           >
             <div className="space-y-6">
-              <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+              <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
                 Review every enrollment payment, filter by gateway status, and issue refunds from
                 the same surface.
               </div>
               <div className="flex flex-wrap gap-4">
-                <Button asChild className="h-12 rounded-2xl px-6 font-headline font-semibold">
+                <Button asChild className="h-12 px-6 font-body font-semibold">
                   <Link to="/dashboard/payments">Open payment operations</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="h-12 rounded-2xl px-6 font-headline font-semibold"
+                  className="h-12 px-6 font-body font-semibold"
                 >
                   <Link to="/dashboard/accountant/analytics">Financial analytics</Link>
                 </Button>
@@ -256,7 +254,7 @@ function DashboardHomePage(): JSX.Element {
             description="Enrollment and payment flows are now ready for accountant oversight."
           >
             <div className="space-y-4">
-              <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+              <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
                 Paid courses can initialize SSLCommerz sessions, while local development uses a
                 built-in mock gateway.
               </div>
@@ -277,13 +275,13 @@ function DashboardHomePage(): JSX.Element {
           >
             <div className="space-y-6">
               <div className="flex flex-wrap gap-4">
-                <Button asChild className="h-12 rounded-2xl px-6 font-headline font-semibold">
+                <Button asChild className="h-12 px-6 font-body font-semibold">
                   <Link to="/dashboard/my-courses">My courses</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="h-12 rounded-2xl px-6 font-headline font-semibold"
+                  className="h-12 px-6 font-body font-semibold"
                 >
                   <Link to="/dashboard/payments">Payment history</Link>
                 </Button>
@@ -296,14 +294,14 @@ function DashboardHomePage(): JSX.Element {
             description="Payment trouble, broken content, or access issues can be reported directly."
           >
             <div className="space-y-6">
-              <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+              <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
                 If an enrollment or payment does not settle correctly, submit a bug report with the
                 transaction context.
               </div>
               <Button
                 asChild
                 variant="outline"
-                className="h-12 rounded-2xl px-6 font-headline font-semibold"
+                className="h-12 px-6 font-body font-semibold"
               >
                 <Link to="/dashboard/bugs/report">Report an issue</Link>
               </Button>
@@ -322,26 +320,26 @@ function DashboardHomePage(): JSX.Element {
           description="Bug reporting is now part of the dashboard workflow for students and teachers."
         >
           <div className="space-y-6">
-            <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+            <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
               Report broken lectures, upload failures, playback issues, missing content, or
               unexpected grading behavior directly from the workspace.
             </div>
             {(session?.session.role === "STUDENT" || session?.session.role === "TEACHER") &&
             !isSessionPending ? (
               <div className="flex flex-wrap gap-4">
-                <Button asChild className="h-12 rounded-2xl px-6 font-headline font-semibold">
+                <Button asChild className="h-12 px-6 font-body font-semibold">
                   <Link to="/dashboard/bugs/report">Report a bug</Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="h-12 rounded-2xl px-6 font-headline font-semibold"
+                  className="h-12 px-6 font-body font-semibold"
                 >
                   <Link to="/dashboard/bugs">My bug reports</Link>
                 </Button>
               </div>
             ) : (
-              <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+              <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
                 Bug submission is enabled for student and teacher roles.
               </div>
             )}
@@ -353,11 +351,11 @@ function DashboardHomePage(): JSX.Element {
           description="Current dashboard priorities before course, messaging, and analytics phases expand."
         >
           <div className="space-y-4">
-            <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+            <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
               Profile completion, admin account governance, and bug intake are now first-class
               dashboard flows.
             </div>
-            <div className="rounded-4xl bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
+            <div className="bg-surface-container-lowest/50 p-6 border border-outline-variant/20 text-sm leading-7 text-on-surface-variant font-light">
               The platform can now lock deactivated accounts and expose admin-safe controls for
               operational triage.
             </div>

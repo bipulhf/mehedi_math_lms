@@ -78,7 +78,7 @@ export function SignInPage(): JSX.Element {
           <PasswordInput id="password" error={errors.password?.message} {...register("password")} />
         </div>
         <Button
-          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all"
+          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-body font-semibold text-sm transition-all"
           type="submit"
           disabled={isSubmitting}
         >
@@ -90,7 +90,7 @@ export function SignInPage(): JSX.Element {
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 font-headline font-semibold text-on-surface hover:bg-surface-container-high transition-all"
+          className="w-full h-12 font-body font-semibold text-on-surface hover:bg-surface-container-high transition-all"
           onClick={async () => {
             await authClient.signIn.social({
               provider: "google",

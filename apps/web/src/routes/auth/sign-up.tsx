@@ -139,7 +139,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
           />
         </div>
         <Button
-          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-headline font-semibold text-sm transition-all"
+          className="w-full h-12 bg-primary text-white hover:bg-on-surface font-body font-semibold text-sm transition-all"
           disabled={isSubmitting}
           type="submit"
         >
@@ -151,7 +151,7 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
         <Button
           type="button"
           variant="outline"
-          className="w-full h-12 font-headline font-semibold text-on-surface hover:bg-surface-container-high transition-all"
+          className="w-full h-12 font-body font-semibold text-on-surface hover:bg-surface-container-high transition-all"
           onClick={async () => {
             const callbackURL = courseSlug
               ? `/dashboard/profile-complete?courseSlug=${encodeURIComponent(courseSlug)}`

@@ -42,18 +42,18 @@ export function BuilderSummaryBar({
   totalLectures: number;
 }): JSX.Element {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-outline-variant/10 bg-surface-container-low p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 border border-outline-variant/10 bg-surface-container-low p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-2.5">
         <CourseStatusBadge status={status} />
         <Badge
           tone="gray"
-          className="rounded-full border-outline-variant/20 bg-on-surface/5 px-2.5 py-1 text-[0.6rem] font-black"
+          className="rounded-full border-outline-variant/20 bg-on-surface/5 px-2.5 py-1 text-[0.6rem] font-medium"
         >
           {chapterCount} chapters
         </Badge>
         <Badge
           tone="gray"
-          className="rounded-full border-outline-variant/20 bg-on-surface/5 px-2.5 py-1 text-[0.6rem] font-black"
+          className="rounded-full border-outline-variant/20 bg-on-surface/5 px-2.5 py-1 text-[0.6rem] font-medium"
         >
           {totalLectures} lessons
         </Badge>
@@ -61,7 +61,7 @@ export function BuilderSummaryBar({
       <Button
         asChild
         variant="outline"
-        className="h-10 rounded-xl border-outline-variant/25 px-4 text-[0.65rem] font-bold uppercase tracking-widest"
+        className="h-10 border-outline-variant/25 px-4 text-[0.65rem] font-bold uppercase tracking-widest"
       >
         <Link to="/dashboard/courses/$id/edit" params={{ id: courseId }}>
           Course settings
@@ -83,17 +83,17 @@ export function AddChapterSection({
   onCreateChapter: () => void;
 }): JSX.Element {
   return (
-    <div className="overflow-hidden rounded-3xl border border-outline-variant/30 bg-surface-container-lowest/85 shadow-sm">
+    <div className="overflow-hidden border border-outline-variant/30 bg-surface-container-lowest/85">
       <div className="flex items-center justify-between border-b border-outline-variant/10 p-4 sm:p-5">
         <div className="flex items-center gap-2.5">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Plus className="size-4.5" />
           </div>
-          <h5 className="font-headline text-lg font-extrabold tracking-tight text-on-surface">
+          <h5 className="font-body text-lg font-medium tracking-tight text-on-surface">
             Add chapter
           </h5>
         </div>
-        <p className="text-[0.58rem] font-black uppercase tracking-widest text-on-surface/35">
+        <p className="text-[0.58rem] font-medium uppercase tracking-widest text-on-surface/35">
           Quick create
         </p>
       </div>
@@ -109,7 +109,7 @@ export function AddChapterSection({
             </Label>
             <Input
               id="new-chapter-title"
-              className="h-11 rounded-xl border-outline-variant/25 bg-surface-container-low/50"
+              className="h-11 border-outline-variant/25 bg-surface-container-low/50"
               placeholder="Example: Unit 4 - Vectors"
               value={chapterDraft.title}
               onChange={(event) =>
@@ -129,7 +129,7 @@ export function AddChapterSection({
             </Label>
             <Input
               id="new-chapter-description"
-              className="h-11 rounded-xl border-outline-variant/25 bg-surface-container-low/50"
+              className="h-11 border-outline-variant/25 bg-surface-container-low/50"
               placeholder="Optional summary"
               value={chapterDraft.description}
               onChange={(event) =>
@@ -144,7 +144,7 @@ export function AddChapterSection({
 
         <div className="flex justify-end">
           <Button
-            className="h-10 rounded-xl bg-primary px-6 font-headline font-extrabold shadow-sm transition-all disabled:opacity-50"
+            className="h-10 bg-primary px-6 font-body font-medium transition-all disabled:opacity-50"
             disabled={isWorking || !chapterDraft.title.trim()}
             onClick={onCreateChapter}
           >
@@ -171,12 +171,12 @@ export function ChapterMaterialsSection({
   onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
 }): JSX.Element {
   return (
-    <div className="rounded-2xl border border-outline-variant/10 bg-surface-container-low/30 p-4">
+    <div className="border border-outline-variant/10 bg-surface-container-low/30 p-4">
       <div className="mb-4 flex items-center gap-2.5">
         <div className="flex size-8 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600">
           <FileText className="size-4" />
         </div>
-        <h6 className="text-[0.68rem] font-black uppercase tracking-widest text-on-surface">
+        <h6 className="text-[0.68rem] font-medium uppercase tracking-widest text-on-surface">
           Chapter files
         </h6>
       </div>
@@ -188,7 +188,7 @@ export function ChapterMaterialsSection({
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
         />
-        <label className="flex h-10 cursor-pointer items-center justify-center rounded-lg border border-outline-variant/20 bg-surface-container-highest/45 px-4 text-[0.62rem] font-black uppercase tracking-widest text-on-surface/60 transition-all hover:bg-surface-container-highest">
+        <label className="flex h-10 cursor-pointer items-center justify-center rounded-lg border border-outline-variant/20 bg-surface-container-highest/45 px-4 text-[0.62rem] font-medium uppercase tracking-widest text-on-surface/60 transition-all hover:bg-surface-container-highest">
           Choose file
           <input className="hidden" type="file" onChange={onUpload} />
         </label>
@@ -198,7 +198,7 @@ export function ChapterMaterialsSection({
         {chapter.materials.map((material) => (
           <div
             key={material.id}
-            className="group/mat relative inline-flex items-center gap-2 rounded-full border border-outline-variant/20 bg-white py-1.5 pl-3 pr-8 text-xs shadow-sm"
+            className="group/mat relative inline-flex items-center gap-2 rounded-full border border-outline-variant/20 bg-white py-1.5 pl-3 pr-8 text-xs"
           >
             <FileText className="size-3.5 text-orange-500" />
             <a
@@ -224,9 +224,9 @@ export function ChapterMaterialsSection({
 
 export function EmptyContentState(): JSX.Element {
   return (
-    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-outline-variant/40 bg-surface-container-lowest/60 py-20 text-center">
+    <div className="flex flex-col items-center justify-center border border-dashed border-outline-variant/40 bg-surface-container-lowest/60 py-20 text-center">
       <AlertCircle className="mb-3 size-10 text-on-surface/50" />
-      <p className="font-headline text-lg font-bold text-on-surface">No chapters yet</p>
+      <p className="font-body text-lg font-bold text-on-surface">No chapters yet</p>
       <p className="mt-1 text-xs font-bold uppercase tracking-widest text-on-surface/45">
         Add your first chapter to start building content
       </p>
@@ -289,17 +289,17 @@ export function LectureForm({
           Description (optional)
         </Label>
         <Textarea
-          className="min-h-24 rounded-2xl bg-surface-container-low/20 p-4"
+          className="min-h-24 bg-surface-container-low/20 p-4"
           placeholder="Short note for students"
           value={values.description}
           onChange={(event) => onChange({ ...values, description: event.target.value })}
         />
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-outline-variant/10 bg-surface-container-low/30 p-4">
+      <div className="space-y-4 border border-outline-variant/10 bg-surface-container-low/30 p-4">
         {values.type === "VIDEO_UPLOAD" ? (
           <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-widest text-primary">
+            <Label className="flex items-center gap-2 text-[0.62rem] font-medium uppercase tracking-widest text-primary">
               <Video className="size-3.5" /> Upload video
             </Label>
             <VideoUploader
@@ -312,7 +312,7 @@ export function LectureForm({
 
         {values.type === "VIDEO_LINK" ? (
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-widest text-secondary">
+            <Label className="flex items-center gap-2 text-[0.62rem] font-medium uppercase tracking-widest text-secondary">
               <LinkIcon className="size-3.5" /> Video URL
             </Label>
             <Input
@@ -326,11 +326,11 @@ export function LectureForm({
 
         {values.type === "TEXT" ? (
           <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-widest text-amber-600">
+            <Label className="flex items-center gap-2 text-[0.62rem] font-medium uppercase tracking-widest text-amber-600">
               <FileCode className="size-3.5" /> Lesson text
             </Label>
             <Textarea
-              className="min-h-28 rounded-2xl bg-white p-4"
+              className="min-h-28 bg-white p-4"
               placeholder="Write the lesson content"
               value={values.content}
               onChange={(event) => onChange({ ...values, content: event.target.value })}
@@ -358,14 +358,14 @@ export function LectureForm({
         <div className="flex items-center gap-2 self-end">
           <Button
             variant="outline"
-            className="h-10 rounded-xl px-4 font-bold"
+            className="h-10 px-4 font-bold"
             disabled={isWorking}
             onClick={onCancel}
           >
             Cancel
           </Button>
           <Button
-            className="h-10 rounded-xl bg-primary px-5 font-headline font-extrabold shadow-sm"
+            className="h-10 bg-primary px-5 font-body font-medium"
             disabled={isWorking || !values.title.trim()}
             onClick={onSave}
           >

@@ -37,7 +37,7 @@ export function CtaSection(): JSX.Element {
               </Link>
             </Button>
             <Link
-              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
               to="/contact"
             >
               {t("footer.support")}

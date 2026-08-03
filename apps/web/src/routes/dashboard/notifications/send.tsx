@@ -114,20 +114,20 @@ function SendNotificationPage() {
 
   if (isPending || !session || (role !== "ADMIN" && role !== "TEACHER")) {
     return (
-      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-6 animate-pulse">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full max-w-lg overflow-hidden">
+      <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-6">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full max-w-lg overflow-hidden">
           <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="size-14 rounded-2xl bg-surface-container-highest" />
+            <Skeleton className="size-14 bg-surface-container-highest" />
             <div className="space-y-2">
               <Skeleton className="h-6 w-48 bg-surface-container-highest" />
               <Skeleton className="h-4 w-64 bg-surface-container-highest" />
             </div>
           </div>
           <div className="space-y-6">
-            <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
-            <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
-            <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
-            <Skeleton className="h-10 w-full bg-surface-container-highest rounded-xl" />
+            <Skeleton className="h-12 w-full bg-surface-container-highest" />
+            <Skeleton className="h-32 w-full bg-surface-container-highest" />
+            <Skeleton className="h-12 w-full bg-surface-container-highest" />
+            <Skeleton className="h-10 w-full bg-surface-container-highest" />
           </div>
         </div>
       </div>
@@ -137,18 +137,17 @@ function SendNotificationPage() {
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-16 relative overflow-hidden">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]"></div>
         <div
-          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[120px] animate-pulse"
+          className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[120px]"
           style={{ animationDelay: "2s" }}
         ></div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-2xl relative w-full max-w-lg overflow-hidden group animate-in fade-in zoom-in-95 duration-700">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative w-full max-w-lg overflow-hidden group">
 
         <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center gap-6">
-          <div className="flex w-16 h-16 items-center justify-center rounded-3xl bg-surface-container-high border border-outline-variant/30 shadow-sm relative overflow-hidden group/logo">
+          <div className="flex w-16 h-16 items-center justify-center bg-surface-container-high border border-outline-variant/30 relative overflow-hidden group/logo">
             <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
             <img
               decoding="async"
@@ -159,7 +158,7 @@ function SendNotificationPage() {
             />
           </div>
           <div>
-            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none">
+            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface leading-none">
               Global Messenger
             </h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light leading-relaxed">
@@ -181,7 +180,7 @@ function SendNotificationPage() {
               </Label>
               <Input
                 id="n-title"
-                className="h-12 rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 text-on-surface transition-all focus:ring-4 focus:ring-primary/10 font-body"
+                className="h-12 bg-surface-container-low/50 border border-outline-variant/30 text-on-surface transition-all focus:ring-4 focus:ring-primary/10 font-body"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Schedule Update or Result Published"
@@ -205,7 +204,7 @@ function SendNotificationPage() {
                 required
                 maxLength={4000}
                 rows={4}
-                className="w-full rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 px-5 py-4 text-sm text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-body resize-none shadow-inner placeholder:text-on-surface/20"
+                className="w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 py-4 text-sm text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all font-body resize-none placeholder:text-on-surface/20"
               />
             </div>
 
@@ -224,7 +223,7 @@ function SendNotificationPage() {
                     onChange={(e) =>
                       setNotificationType(notificationTypeSchema.parse(e.target.value))
                     }
-                    className="h-12 w-full rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-12 w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {notificationTypeValues.map((value) => (
                       <option key={value} value={value}>
@@ -240,7 +239,7 @@ function SendNotificationPage() {
                 <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">
                   Intent
                 </Label>
-                <div className="flex h-12 rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 p-1">
+                <div className="flex h-12 bg-surface-container-low/50 border border-outline-variant/30 p-1">
                   {["course", "users"].map((mode) => (
                     <button
                       key={mode}
@@ -302,7 +301,7 @@ function SendNotificationPage() {
               </div>
             )}
 
-            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="">
               {isAdmin && targetMode === "role" && (
                 <div className="space-y-3">
                   <Label
@@ -315,7 +314,7 @@ function SendNotificationPage() {
                     id="n-role"
                     value={targetRole}
                     onChange={(e) => setTargetRole(userRoleSchema.parse(e.target.value))}
-                    className="h-12 w-full rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 appearance-none"
+                    className="h-12 w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/20 appearance-none"
                   >
                     {userRoleValues.map((value) => (
                       <option key={value} value={value}>
@@ -337,7 +336,7 @@ function SendNotificationPage() {
                   <div className="relative">
                     <Input
                       id="n-course"
-                      className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
+                      className="h-12 bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
                       value={courseId}
                       onChange={(e) => setCourseId(e.target.value)}
                       placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
@@ -363,7 +362,7 @@ function SendNotificationPage() {
                     required
                     rows={3}
                     placeholder="user_123, user_456..."
-                    className="w-full rounded-2xl bg-surface-container-low/50 border border-outline-variant/30 px-5 py-4 font-mono text-[0.65rem] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                    className="w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 py-4 font-mono text-[0.65rem] text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                   />
                 </div>
               )}
@@ -372,7 +371,7 @@ function SendNotificationPage() {
             <div className="pt-2">
               <Button
                 type="submit"
-                className="w-full h-14 rounded-3xl font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40"
+                className="w-full h-14 font-body font-medium transition-all ] ] disabled:opacity-40"
                 disabled={submitting}
               >
                 {submitting ? (
@@ -384,7 +383,7 @@ function SendNotificationPage() {
             </div>
 
             {error && (
-              <div className="rounded-2xl bg-red-500/5 border border-red-500/10 p-4 text-center animate-shake">
+              <div className="bg-red-500/5 border border-red-500/10 p-4 text-center animate-shake">
                 <p className="text-xs font-bold text-red-500 uppercase tracking-widest leading-none">
                   {error}
                 </p>
@@ -392,7 +391,7 @@ function SendNotificationPage() {
             )}
 
             {success && (
-              <div className="rounded-2xl bg-green-500/5 border border-green-500/10 p-4 text-center animate-in fade-in slide-in-from-top-4">
+              <div className="bg-green-500/5 border border-green-500/10 p-4 text-center">
                 <p className="text-xs font-bold text-green-600 uppercase tracking-widest leading-none">
                   Delivered to {success.delivered} scholar{success.delivered === 1 ? "" : "s"}.
                 </p>

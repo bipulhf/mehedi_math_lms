@@ -52,7 +52,7 @@ export function CertificatePreviewDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest shadow-lg">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest">
         <div className="flex items-center justify-between gap-3 border-b border-outline-variant/15 px-4 py-3">
           <p className="font-semibold text-on-surface">{title}</p>
           <div className="flex flex-wrap gap-2">

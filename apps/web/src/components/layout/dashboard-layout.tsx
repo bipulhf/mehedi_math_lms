@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
   BookCopy,
@@ -6,7 +7,6 @@ import {
   LayoutDashboard,
   Megaphone,
   MessageSquareText,
-  Settings,
   ShieldAlert,
   Smartphone,
   UserRound,
@@ -16,11 +16,15 @@ import { useQuery } from "@tanstack/react-query";
 import type { JSX, PropsWithChildren } from "react";
 import { useEffect, useMemo } from "react";
 
+import { Link } from "@tanstack/react-router";
+
 import { AppShell } from "@/components/layout/app-shell";
+import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/locale-context";
 import { listMessageConversations } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
 import { useUiStore } from "@/stores/ui-store";
+import type { MessageKey } from "@genex/i18n";
 import type { UserRole } from "@genex/shared";
 
 interface DashboardLayoutProps extends PropsWithChildren {
@@ -28,45 +32,49 @@ interface DashboardLayoutProps extends PropsWithChildren {
   role?: UserRole;
 }
 
+/**
+ * Labels are message keys, not strings: the sidebar is chrome, and chrome is
+ * bilingual. The accountant row exists because ACCOUNTANT is a real fourth role
+ * here — the handoff's fourth role is an institution admin, which is cut.
+ */
 const dashboardNavigation = {
   ACCOUNTANT: [
-    { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
-    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: ChartColumn, label: "Financial analytics", to: "/dashboard/accountant/analytics" },
-    { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
-    { icon: Settings, label: "Operations", to: "/dashboard/payments" }
+    { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
+    { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
+    { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/accountant/analytics" },
+    { icon: ChartColumn, labelKey: "nav.payments", to: "/dashboard/payments" }
   ],
   ADMIN: [
-    { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
-    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
-    { icon: Smartphone, label: "SMS", to: "/dashboard/admin/sms" },
-    { icon: Users, label: "Users", to: "/dashboard/admin/users" },
-    { icon: Layers3, label: "Categories", to: "/dashboard/admin/categories" },
-    { icon: AlertTriangle, label: "Bugs", to: "/dashboard/admin/bugs" },
-    { icon: ShieldAlert, label: "Reports", to: "/dashboard/admin/message-reports" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard/admin/courses" },
-    { icon: ChartColumn, label: "Analytics", to: "/dashboard/admin/analytics" }
+    { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
+    { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
+    { icon: BookCopy, labelKey: "nav.courseApproval", to: "/dashboard/admin/courses" },
+    { icon: Users, labelKey: "nav.users", to: "/dashboard/admin/users" },
+    { icon: Layers3, labelKey: "nav.categoryAdmin", to: "/dashboard/admin/categories" },
+    { icon: Megaphone, labelKey: "nav.notify", to: "/dashboard/notifications/send" },
+    { icon: Smartphone, labelKey: "nav.sms", to: "/dashboard/admin/sms" },
+    { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/admin/bugs" },
+    { icon: ShieldAlert, labelKey: "nav.reports", to: "/dashboard/admin/message-reports" },
+    { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/admin/analytics" }
   ],
   STUDENT: [
-    { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
-    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: BookCopy, label: "My Courses", to: "/dashboard/my-courses" },
-    { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
-    { icon: ChartColumn, label: "Payments", to: "/dashboard/payments" },
-    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" }
+    { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
+    { icon: BookCopy, labelKey: "nav.myCourses", to: "/dashboard/my-courses" },
+    { icon: MessageSquareText, labelKey: "nav.messages", to: "/dashboard/messages" },
+    { icon: ChartColumn, labelKey: "nav.payments", to: "/dashboard/payments" },
+    { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
+    { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/bugs" }
   ],
   TEACHER: [
-    { icon: LayoutDashboard, label: "Overview", to: "/dashboard" },
-    { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
-    { icon: BookCopy, label: "Courses", to: "/dashboard/courses" },
-    { icon: Megaphone, label: "Notify", to: "/dashboard/notifications/send" },
-    { icon: MessageSquareText, label: "Messages", to: "/dashboard/messages" },
-    { icon: Users, label: "Students", to: "/dashboard/students" },
-    { icon: ChartColumn, label: "Analytics", to: "/dashboard/analytics" },
-    { icon: AlertTriangle, label: "My Bugs", to: "/dashboard/bugs" }
+    { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
+    { icon: BookCopy, labelKey: "nav.teacherCourses", to: "/dashboard/courses" },
+    { icon: MessageSquareText, labelKey: "nav.messages", to: "/dashboard/messages" },
+    { icon: Users, labelKey: "nav.students", to: "/dashboard/students" },
+    { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/analytics" },
+    { icon: Megaphone, labelKey: "nav.notify", to: "/dashboard/notifications/send" },
+    { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
+    { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/bugs" }
   ]
-} as const;
+} as const satisfies Record<UserRole, readonly { icon: LucideIcon; labelKey: MessageKey; to: string }[]>;
 
 export function DashboardLayout({ children, isLoading, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
   const t = useT();
@@ -97,23 +105,35 @@ export function DashboardLayout({ children, isLoading, role = "ADMIN" }: Dashboa
     );
   }, [canMessage, conversations, setMessageUnreadCount]);
 
-  const navItems = useMemo(() => {
-    if (role !== "STUDENT" && role !== "TEACHER") {
-      return dashboardNavigation[role];
-    }
+  const navItems = useMemo(
+    () =>
+      dashboardNavigation[role].map((item) => ({
+        icon: item.icon,
+        label: t(item.labelKey),
+        to: item.to,
+        ...(item.to === "/dashboard/messages" ? { badge: messageUnreadCount } : {})
+      })),
+    [messageUnreadCount, role, t]
+  );
 
-    return dashboardNavigation[role].map((item) =>
-      item.to === "/dashboard/messages"
-        ? {
-            ...item,
-            badge: messageUnreadCount
-          }
-        : item
-    );
-  }, [messageUnreadCount, role]);
+  // DESIGN.md §1 allows exactly one accent action in an app shell. For a
+  // teacher the design makes it "+ নতুন কোর্স"; no other role has an action
+  // that earns it, so they get none rather than a different one.
+  const primaryAction =
+    role === "TEACHER" ? (
+      <Button asChild size="sm" variant="accent">
+        <Link to="/dashboard/courses/new">{t("nav.newCourse")}</Link>
+      </Button>
+    ) : undefined;
 
   return (
-    <AppShell title={t("nav.dashboard")} description={null} isLoading={isLoading} navItems={navItems}>
+    <AppShell
+      description={null}
+      isLoading={isLoading}
+      navItems={navItems}
+      primaryAction={primaryAction}
+      title={t("nav.dashboard")}
+    >
       {children}
     </AppShell>
   );

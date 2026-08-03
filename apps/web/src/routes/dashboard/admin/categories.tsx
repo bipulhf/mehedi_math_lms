@@ -253,13 +253,13 @@ function AdminCategoriesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
           <div className="grid gap-8 xl:grid-cols-2">
             <CategoryTreeSkeleton rows={6} />
             <div className="space-y-6">
-              <Skeleton className="h-32 w-full bg-surface-container-highest rounded-2xl" />
+              <Skeleton className="h-32 w-full bg-surface-container-highest" />
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex gap-4">
                   <Skeleton className="size-10 rounded-full bg-surface-container-highest" />
@@ -278,10 +278,9 @@ function AdminCategoriesPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-5 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-5 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="mb-8">
-          <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+          <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
             Category atelier
           </h3>
           <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
@@ -303,7 +302,7 @@ function AdminCategoriesPage(): JSX.Element {
                   </Label>
                   <Input
                     id="category-name"
-                    className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    className="h-12 bg-surface-container-low/50 border-outline-variant/30 font-body"
                     error={errors.name?.message}
                     {...register("name")}
                   />
@@ -337,7 +336,7 @@ function AdminCategoriesPage(): JSX.Element {
                   </Label>
                   <Textarea
                     id="category-description"
-                    className="min-h-24 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    className="min-h-24 bg-surface-container-low/50 border-outline-variant/30 font-body"
                     error={errors.description?.message}
                     {...register("description")}
                   />
@@ -353,12 +352,12 @@ function AdminCategoriesPage(): JSX.Element {
                     <Input
                       id="category-sort-order"
                       type="number"
-                      className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body"
+                      className="h-12 bg-surface-container-low/50 border-outline-variant/30 font-body"
                       error={errors.sortOrder?.message}
                       {...register("sortOrder", { valueAsNumber: true })}
                     />
                   </div>
-                  <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/30 p-5 shadow-inner">
+                  <div className="bg-surface-container-low/50 border border-outline-variant/30 p-5">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/80">
@@ -382,7 +381,7 @@ function AdminCategoriesPage(): JSX.Element {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="h-12 px-8 font-body font-medium transition-all ] ]"
                   >
                     {isSubmitting ? (
                       <Skeleton className="h-4 w-20 bg-white/20" />
@@ -397,7 +396,7 @@ function AdminCategoriesPage(): JSX.Element {
                       type="button"
                       variant="outline"
                       onClick={() => syncEditingForm(null)}
-                      className="h-12 rounded-2xl px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high active:scale-95"
+                      className="h-12 px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high"
                     >
                       Cancel edit
                     </Button>
@@ -408,14 +407,13 @@ function AdminCategoriesPage(): JSX.Element {
           </div>
 
           <div className="space-y-6">
-            <div className="rounded-4xl bg-primary/5 border border-primary/10 p-6 sm:p-8 shadow-inner relative overflow-hidden group/tree-header">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none transition-colors group-hover/tree-header:bg-primary/20"></div>
+            <div className="bg-primary/5 border border-primary/10 p-6 sm:p-8 relative overflow-hidden group/tree-header">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
-                <div className="rounded-2xl bg-primary/10 p-4 text-primary shadow-sm border border-primary/10 w-fit">
+                <div className="bg-primary/10 p-4 text-primary border border-primary/10 w-fit">
                   <Layers3 className="size-6" />
                 </div>
                 <div>
-                  <h5 className="font-headline text-xl font-extrabold text-on-surface tracking-tight leading-none">
+                  <h5 className="font-body text-xl font-medium text-on-surface tracking-tight leading-none">
                     Tree view
                   </h5>
                   <p className="mt-2 text-sm text-on-surface-variant font-light leading-relaxed">
@@ -426,7 +424,7 @@ function AdminCategoriesPage(): JSX.Element {
                   <Button
                     size="sm"
                     onClick={() => syncEditingForm(null)}
-                    className="h-10 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-bold transition-all ml-auto"
+                    className="h-10 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-bold transition-all ml-auto"
                   >
                     Add new domain
                   </Button>
@@ -435,20 +433,20 @@ function AdminCategoriesPage(): JSX.Element {
               <div className="mt-8 flex flex-wrap gap-3 relative z-10">
                 <Badge
                   tone="green"
-                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-green-500/20 shadow-sm"
+                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-green-500/20"
                 >
                   {categories.length} root domains
                 </Badge>
                 <Badge
                   tone="blue"
-                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-blue-500/20 shadow-sm"
+                  className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-blue-500/20"
                 >
                   {flattenCategoryIds(categories).length} total nodes
                 </Badge>
               </div>
             </div>
 
-            <div className="bg-surface-container-low/30 rounded-4xl p-2 border border-outline-variant/10 shadow-inner min-h-125">
+            <div className="bg-surface-container-low/30 p-2 border border-outline-variant/10 min-h-125">
               <CategoryTree
                 categories={categories}
                 draggedCategoryId={draggedCategoryId}

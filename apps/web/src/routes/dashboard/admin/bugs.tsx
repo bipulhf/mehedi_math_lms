@@ -65,17 +65,17 @@ function AdminBugsPage(): JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+      <div className="space-y-8">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
            <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
            <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
            <div className="grid gap-6 md:grid-cols-2 mb-8">
-              <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
-              <Skeleton className="h-12 w-full bg-surface-container-highest rounded-2xl" />
+              <Skeleton className="h-12 w-full bg-surface-container-highest" />
+              <Skeleton className="h-12 w-full bg-surface-container-highest" />
            </div>
            <div className="space-y-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full bg-surface-container-highest rounded-2xl" />
+                <Skeleton key={i} className="h-16 w-full bg-surface-container-highest" />
               ))}
            </div>
         </div>
@@ -85,12 +85,11 @@ function AdminBugsPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative w-full overflow-hidden group">
         
         <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Bug Triage Center</h3>
+            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Bug Triage Center</h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light max-w-lg leading-relaxed">
               Review incoming reports, filter by urgency, and open the detail workspace for tactical resolution.
             </p>
@@ -100,7 +99,7 @@ function AdminBugsPage(): JSX.Element {
               <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 pl-1">Status Filter</Label>
               <Select
                 id="bug-status-filter"
-                className="h-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body"
+                className="h-11 bg-surface-container-low/30 border-outline-variant/20 font-body"
                 value={status}
                 onChange={(event) => {
                   setStatus(event.target.value);
@@ -118,7 +117,7 @@ function AdminBugsPage(): JSX.Element {
               <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 pl-1">Priority Level</Label>
               <Select
                 id="bug-priority-filter"
-                className="h-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body"
+                className="h-11 bg-surface-container-low/30 border-outline-variant/20 font-body"
                 value={priority}
                 onChange={(event) => {
                   setPriority(event.target.value);
@@ -148,10 +147,10 @@ function AdminBugsPage(): JSX.Element {
             </thead>
             <tbody>
               {bugs.map((bug) => (
-                <tr key={bug.id} className="group border-t border-outline-variant/10 transition-all duration-300 hover:bg-primary/2">
+                <tr key={bug.id} className="group border-t border-outline-variant/10 transition-all hover:bg-primary/2">
                   <td className="px-10 py-6 min-w-75">
                     <div className="flex flex-col max-w-sm">
-                      <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">{bug.title}</span>
+                      <span className="font-body text-base font-medium text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">{bug.title}</span>
                       <span className="text-xs text-on-surface-variant font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>
                     </div>
                   </td>
@@ -173,7 +172,7 @@ function AdminBugsPage(): JSX.Element {
                     </span>
                   </td>
                   <td className="px-10 py-6 text-right">
-                    <Button asChild size="sm" variant="outline" className="h-9 rounded-xl border-outline-variant/30 hover:bg-surface-container-high transition-all font-bold text-[0.65rem] uppercase tracking-widest">
+                    <Button asChild size="sm" variant="outline" className="h-9 border-outline-variant/30 hover:bg-surface-container-high transition-all font-bold text-[0.65rem] uppercase tracking-widest">
                       <Link to="/dashboard/admin/bugs/$id" params={{ id: bug.id }}>
                         Inspect
                       </Link>
@@ -188,7 +187,7 @@ function AdminBugsPage(): JSX.Element {
         <div className="p-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40">Query Result Page <span className="text-on-surface">{page}</span> of <span className="text-on-surface">{totalPages}</span></p>
           <div className="flex gap-3">
-            <Button size="sm" type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="h-10 px-6 rounded-xl border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100">
+            <Button size="sm" type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="h-10 px-6 border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:">
               Previous
             </Button>
             <Button
@@ -197,7 +196,7 @@ function AdminBugsPage(): JSX.Element {
               variant="outline"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="h-10 px-6 rounded-xl border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+              className="h-10 px-6 border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:"
             >
               Next
             </Button>

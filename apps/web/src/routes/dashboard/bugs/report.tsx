@@ -45,10 +45,9 @@ function ReportBugPage(): JSX.Element {
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+    <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
       <div className="mb-8">
-        <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Report a bug</h3>
+        <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Report a bug</h3>
         <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
           Share the issue clearly, add a screenshot when helpful, and send it straight into the admin review queue.
         </p>
@@ -57,11 +56,11 @@ function ReportBugPage(): JSX.Element {
         <div className="grid gap-6">
           <div className="space-y-3">
              <Label htmlFor="bug-title" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Title</Label>
-             <Input id="bug-title" className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30" error={errors.title?.message} {...register("title")} />
+             <Input id="bug-title" className="h-12 bg-surface-container-low/50 border-outline-variant/30" error={errors.title?.message} {...register("title")} />
           </div>
           <div className="space-y-3">
              <Label htmlFor="bug-description" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Description</Label>
-             <Textarea id="bug-description" className="min-h-32 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 text-base" error={errors.description?.message} {...register("description")} />
+             <Textarea id="bug-description" className="min-h-32 bg-surface-container-low/50 border-outline-variant/30 text-base" error={errors.description?.message} {...register("description")} />
           </div>
           <div className="space-y-3">
              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Screenshot (Optional)</Label>
@@ -74,12 +73,12 @@ function ReportBugPage(): JSX.Element {
           </div>
         </div>
         <div className="pt-4">
-          <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-2xl font-headline font-extrabold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] group/btn overflow-hidden relative">
-            <div className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 transition-transform group-hover/btn:scale-105"></div>
+          <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-body font-medium text-lg transition-all ] ] group/btn overflow-hidden relative">
+            <div className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 group-hover/btn:scale-105"></div>
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isSubmitting ? (
                 <>
-                  <Skeleton className="h-4 w-4 rounded-full bg-white/20 animate-pulse" />
+                  <Skeleton className="h-4 w-4 rounded-full bg-white/20" />
                   Submitting report...
                 </>
               ) : (

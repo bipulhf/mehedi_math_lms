@@ -40,13 +40,13 @@ function MyBugReportsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
            <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
            <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest" />
         </div>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative overflow-hidden">
+            <div key={i} className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative overflow-hidden">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-3 flex-1">
                   <Skeleton className="h-6 w-1/3 bg-surface-container-highest" />
@@ -67,16 +67,15 @@ function MyBugReportsPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between relative z-10">
           <div>
-            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">My bug reports</h3>
+            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">My bug reports</h3>
             <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
               Track what you submitted, what is being investigated, and what has already been resolved.
             </p>
           </div>
-          <Button asChild className="h-12 rounded-2xl px-6 font-headline font-semibold shadow-md transition-all hover:scale-105 active:scale-95">
+          <Button asChild className="h-12 px-6 font-body font-semibold transition-all">
             <Link to="/dashboard/bugs/report">Report a bug</Link>
           </Button>
         </div>
@@ -85,14 +84,14 @@ function MyBugReportsPage(): JSX.Element {
       <div className="space-y-4">
         {bugs.length > 0 ? (
           bugs.map((bug) => (
-            <div key={bug.id} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 p-8 shadow-xl relative overflow-hidden group transition-all duration-300 hover:border-primary/20">
+            <div key={bug.id} className="bg-surface-container-lowest/80 border border-outline-variant/40 p-8 relative overflow-hidden group transition-all hover:border-primary/20">
                <div className="absolute -top-8 -right-8 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none group-hover:bg-primary/10 transition-colors z-[-1]"></div>
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between relative z-10">
                 <div className="space-y-3 flex-1">
-                  <p className="font-headline text-xl font-extrabold text-on-surface group-hover:text-primary transition-colors">{bug.title}</p>
+                  <p className="font-body text-xl font-medium text-on-surface group-hover:text-primary transition-colors">{bug.title}</p>
                   <p className="text-sm leading-7 text-on-surface-variant font-light">{bug.description}</p>
                   {bug.adminNotes ? (
-                    <div className="mt-4 rounded-2xl bg-surface-container-low/50 border border-outline-variant/10 p-4 shadow-inner">
+                    <div className="mt-4 bg-surface-container-low/50 border border-outline-variant/10 p-4">
                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-primary mb-1">Admin Response</p>
                        <p className="text-sm text-on-surface-variant font-light leading-relaxed italic">{bug.adminNotes}</p>
                     </div>
@@ -113,7 +112,7 @@ function MyBugReportsPage(): JSX.Element {
             </div>
           ))
         ) : (
-          <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-12 border border-outline-variant/40 shadow-xl text-center italic text-on-surface-variant font-light">
+          <div className="bg-surface-container-lowest/80 p-12 border border-outline-variant/40 text-center italic text-on-surface-variant font-light">
             No bug reports submitted yet.
           </div>
         )}

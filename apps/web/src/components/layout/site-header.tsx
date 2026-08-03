@@ -29,7 +29,7 @@ export function SiteHeader(): JSX.Element {
   }, [router.state.location.pathname]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hairline bg-paper/78 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-hairline bg-paper/78">
       <div className="mx-auto flex h-20 w-full max-w-[90rem] items-center justify-between gap-6 px-4 sm:px-8 lg:h-[82px] lg:px-14">
         <div className="flex items-center gap-10">
           <Link aria-label={siteConfig.name} className="flex items-center gap-2.5" to="/">
@@ -45,7 +45,7 @@ export function SiteHeader(): JSX.Element {
             {siteNavItems.map((item) => (
               <Link
                 activeProps={{ className: "text-ink" }}
-                className="text-base text-muted transition-colors duration-150 hover:text-ink"
+                className="text-base text-muted transition-colors hover:text-ink"
                 key={item.labelKey}
                 search={item.search}
                 to={item.to}
@@ -73,7 +73,7 @@ export function SiteHeader(): JSX.Element {
           ) : (
             <>
               <Link
-                className="hidden text-base text-muted transition-colors duration-150 hover:text-ink sm:block"
+                className="hidden text-base text-muted transition-colors hover:text-ink sm:block"
                 to="/auth/sign-in"
               >
                 {t("nav.login")}

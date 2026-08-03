@@ -293,7 +293,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
   const totalLoaded = useMemo(() => comments.length, [comments.length]);
 
   return (
-    <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+    <Card className="border-outline-variant/60 bg-surface-container-low/70">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="size-4" />

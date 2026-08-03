@@ -198,7 +198,7 @@ function TeacherCourseCard({ course }: { course: TeacherCourseSummary }): JSX.El
 
   return (
     <Link
-      className="flex h-full flex-col gap-3 border border-hairline bg-card p-5 transition-colors duration-150 hover:border-line-strong"
+      className="flex h-full flex-col gap-3 border border-hairline bg-card p-5 transition-colors hover:border-line-strong"
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >

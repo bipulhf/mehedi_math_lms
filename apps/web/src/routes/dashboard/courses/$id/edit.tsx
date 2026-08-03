@@ -9,6 +9,7 @@ import {
   CourseEditorSkeleton,
   type CourseEditorValues
 } from "@/components/courses/course-editor";
+import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -102,7 +103,8 @@ function EditCoursePage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+      <CourseBuilderSteps courseId={id} current="info" />
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
           <div>

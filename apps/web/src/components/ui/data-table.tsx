@@ -67,7 +67,7 @@ export function DataTable<TRow>({
           <tbody>
             {rows.map((row) => (
               <tr
-                className="border-b border-hairline-fainter transition-colors duration-150 last:border-b-0 hover:bg-row-hover"
+                className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover"
                 key={rowKey(row)}
               >
                 {columns.map((column) => (

@@ -117,18 +117,18 @@ function AdminUsersPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8 p-4 sm:p-0">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-8 bg-surface-container-highest" />
           <div className="grid gap-6 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full bg-surface-container-highest rounded-2xl" />
+              <Skeleton key={i} className="h-12 w-full bg-surface-container-highest" />
             ))}
           </div>
         </div>
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-4 border border-outline-variant/40 shadow-xl overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-4 border border-outline-variant/40 overflow-hidden">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full bg-surface-container-highest rounded-2xl" />
+              <Skeleton key={i} className="h-20 w-full bg-surface-container-highest" />
             ))}
           </div>
         </div>
@@ -137,10 +137,9 @@ function AdminUsersPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 p-4 sm:p-0">
+    <div className="space-y-8 p-4 sm:p-0">
       {/* Creation Surface */}
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-all duration-1000 z-[-1]" />
+      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden group">
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -148,7 +147,7 @@ function AdminUsersPage(): JSX.Element {
               <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <UserPlus className="size-5" />
               </div>
-              <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+              <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
                 Staff Access Control
               </h3>
             </div>
@@ -173,7 +172,7 @@ function AdminUsersPage(): JSX.Element {
             <Input
               id="create-name"
               placeholder="e.g. John Doe"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-4"
+              className="h-12 bg-surface-container-low/50 border-outline-variant/30 px-4"
               error={errors.name?.message}
               {...register("name")}
             />
@@ -189,7 +188,7 @@ function AdminUsersPage(): JSX.Element {
               id="create-email"
               type="email"
               placeholder="john@example.com"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 px-4"
+              className="h-12 bg-surface-container-low/50 border-outline-variant/30 px-4"
               error={errors.email?.message}
               {...register("email")}
             />
@@ -203,7 +202,7 @@ function AdminUsersPage(): JSX.Element {
             </Label>
             <Select
               id="create-role"
-              className="h-12 rounded-2xl bg-surface-container-low/50 border-outline-variant/30"
+              className="h-12 bg-surface-container-low/50 border-outline-variant/30"
               error={errors.role?.message}
               {...register("role")}
             >
@@ -213,7 +212,7 @@ function AdminUsersPage(): JSX.Element {
           </div>
           <div className="lg:pt-[1.7rem]">
             <Button
-              className="h-12 rounded-2xl px-8 font-headline font-extrabold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] w-full lg:w-fit"
+              className="h-12 px-8 font-body font-medium transition-all ] ] w-full lg:w-fit"
               type="submit"
               disabled={isSubmitting}
             >
@@ -223,7 +222,7 @@ function AdminUsersPage(): JSX.Element {
         </form>
 
         {createdPassword && (
-          <div className="mt-8 rounded-3xl bg-secondary/5 border border-secondary/20 p-6 animate-in slide-in-from-top-4 duration-500 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="mt-8 bg-secondary/5 border border-secondary/20 p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="space-y-1 text-center sm:text-left">
               <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-secondary">
                 Sensitive Credential Generated
@@ -232,7 +231,7 @@ function AdminUsersPage(): JSX.Element {
                 {createdPassword}
               </p>
             </div>
-            <div className="px-5 py-3 rounded-2xl bg-secondary/10 text-secondary text-xs italic font-medium max-w-xs text-center">
+            <div className="px-5 py-3 bg-secondary/10 text-secondary text-xs italic font-medium max-w-xs text-center">
               Copy now. This key is transient and encrypted for security.
             </div>
           </div>
@@ -240,11 +239,11 @@ function AdminUsersPage(): JSX.Element {
       </div>
 
       {/* List Surface */}
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
         <div className="p-8 border-b border-outline-variant/30">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-8">
             <div>
-              <h4 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface leading-none mb-2">
+              <h4 className="font-body text-2xl font-medium tracking-tight text-on-surface leading-none mb-2">
                 User Registry
               </h4>
               <p className="text-sm text-on-surface-variant font-light">
@@ -257,14 +256,14 @@ function AdminUsersPage(): JSX.Element {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-on-surface/30 group-focus-within:text-primary transition-colors" />
                 <Input
                   placeholder="Search identity..."
-                  className="h-12 pl-11 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 font-body transition-all focus:bg-surface-container-low"
+                  className="h-12 pl-11 bg-surface-container-low/30 border-outline-variant/20 font-body transition-all focus:bg-surface-container-low"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
                 <Select
-                  className="h-12 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
+                  className="h-12 bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
                   value={role}
                   onChange={(e) => {
                     setRole(e.target.value);
@@ -278,7 +277,7 @@ function AdminUsersPage(): JSX.Element {
                   <option value="ADMIN">Administrator</option>
                 </Select>
                 <Select
-                  className="h-12 rounded-2xl bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
+                  className="h-12 bg-surface-container-low/30 border-outline-variant/20 min-w-32 sm:min-w-40"
                   value={status}
                   onChange={(e) => {
                     setStatus(e.target.value as "all" | "active" | "inactive");
@@ -307,14 +306,14 @@ function AdminUsersPage(): JSX.Element {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col">
-                    <span className="font-headline text-lg font-extrabold text-on-surface leading-tight">
+                    <span className="font-body text-lg font-medium text-on-surface leading-tight">
                       {user.name}
                     </span>
                     <span className="text-xs text-on-surface-variant/70 font-medium flex items-center gap-1.5 mt-1">
                       <Mail className="size-3" /> {user.email}
                     </span>
                   </div>
-                  <Badge tone={roleTone(user.role)} className="rounded-xl px-2.5 py-1">
+                  <Badge tone={roleTone(user.role)} className="px-2.5 py-1">
                     {user.role}
                   </Badge>
                 </div>
@@ -350,7 +349,7 @@ function AdminUsersPage(): JSX.Element {
                     asChild
                     size="sm"
                     variant="outline"
-                    className="flex-1 h-10 rounded-xl font-bold uppercase tracking-widest text-[0.65rem] border-outline-variant/40"
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[0.65rem] border-outline-variant/40"
                   >
                     <Link to="/dashboard/admin/users/$id" params={{ id: user.id }}>
                       Manage Profile
@@ -417,11 +416,11 @@ function AdminUsersPage(): JSX.Element {
                     >
                       <td className="px-10 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="size-10 rounded-full bg-surface-container-low border border-outline-variant/20 flex items-center justify-center font-headline font-bold text-primary group-hover:scale-110 transition-transform">
+                          <div className="size-10 rounded-full bg-surface-container-low border border-outline-variant/20 flex items-center justify-center font-body font-bold text-primary">
                             {user.name.charAt(0)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+                            <span className="font-body text-base font-medium text-on-surface tracking-tight group-hover:text-primary transition-colors">
                               {user.name}
                             </span>
                             <div className="flex items-center gap-1.5 text-xs text-on-surface/40 font-medium">
@@ -508,7 +507,7 @@ function AdminUsersPage(): JSX.Element {
                             asChild
                             size="sm"
                             variant="ghost"
-                            className="size-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                            className="size-9 hover:bg-primary/10 hover:text-primary transition-all"
                           >
                             <Link
                               to="/dashboard/admin/users/$id"
@@ -563,7 +562,7 @@ function AdminUsersPage(): JSX.Element {
               variant="outline"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
-              className="h-11 px-8 rounded-2xl border-outline-variant/30 font-extrabold text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[-2px] active:scale-95 disabled:opacity-30 disabled:hover:translate-x-0"
+              className="h-11 px-8 border-outline-variant/30 font-medium text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[-2px] disabled:opacity-30 disabled:hover:translate-x-0"
             >
               Back
             </Button>
@@ -572,7 +571,7 @@ function AdminUsersPage(): JSX.Element {
               variant="outline"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="h-11 px-8 rounded-2xl border-outline-variant/30 font-extrabold text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[2px] active:scale-95 disabled:opacity-30 disabled:hover:translate-x-0"
+              className="h-11 px-8 border-outline-variant/30 font-medium text-[0.6rem] uppercase tracking-widest bg-surface-container-lowest transition-all hover:translate-x-[2px] disabled:opacity-30 disabled:hover:translate-x-0"
             >
               Next
             </Button>

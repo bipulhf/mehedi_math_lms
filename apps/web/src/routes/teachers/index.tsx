@@ -58,7 +58,7 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Eleme
 
   return (
     <Link
-      className="flex flex-col gap-4 border border-hairline bg-card p-6 transition-colors duration-150 hover:border-line-strong"
+      className="flex flex-col gap-4 border border-hairline bg-card p-6 transition-colors hover:border-line-strong"
       params={{ slug: teacher.slug }}
       to="/teachers/$slug"
     >

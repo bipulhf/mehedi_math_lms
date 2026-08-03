@@ -33,7 +33,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
           <img alt={siteConfig.name} className="block h-4 w-auto" src="/brand/genex-wordmark.png" />
         </Link>
         <Link
-          className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+          className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
           to="/"
         >
           {t("auth.backHome")}

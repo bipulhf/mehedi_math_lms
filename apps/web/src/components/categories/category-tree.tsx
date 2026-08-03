@@ -54,7 +54,7 @@ function CategoryTreeItem({
       <div
         draggable
         className={cn(
-          "rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 backdrop-blur-3xl p-5 sm:p-6 transition-all duration-300 ease-out group/tree-item shadow-sm hover:shadow-md hover:border-primary/20",
+          "border border-hairline bg-card p-5 sm:p-6 transition-colors group/tree-item hover:border-line-strong",
           draggedCategoryId === category.id && "opacity-50 scale-[0.98]",
           editingCategoryId === category.id && "ring-2 ring-primary border-primary/40 bg-primary/5"
         )}
@@ -68,15 +68,15 @@ function CategoryTreeItem({
       >
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-5">
-            <div className="mt-1 size-10 flex items-center justify-center rounded-2xl bg-surface-container-high border border-outline-variant/20 text-on-surface/40 group-hover/tree-item:text-primary transition-colors cursor-grab active:cursor-grabbing shadow-inner">
+            <div className="mt-1 size-10 flex items-center justify-center bg-surface-container-high border border-outline-variant/20 text-on-surface/40 group-hover/tree-item:text-primary transition-colors cursor-grab active:cursor-grabbing">
               <GripVertical className="size-5" />
             </div>
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
                 {IconComp && (
-                  <IconComp className="size-5 text-primary animate-in fade-in zoom-in duration-500" />
+                  <IconComp className="size-5 text-primary" />
                 )}
-                <p className="font-headline font-extrabold text-on-surface text-lg tracking-tight">
+                <p className="font-body font-medium text-on-surface text-lg tracking-tight">
                   {category.name}
                 </p>
                 <Badge
@@ -107,7 +107,7 @@ function CategoryTreeItem({
               type="button"
               variant="outline"
               onClick={() => onEdit(category)}
-              className="h-10 rounded-xl px-4 font-bold text-xs border-outline-variant/30 hover:bg-primary/5 hover:text-primary transition-all active:scale-95 flex-1 sm:flex-initial"
+              className="h-10 px-4 font-bold text-xs border-outline-variant/30 hover:bg-primary/5 hover:text-primary transition-all flex-1 sm:flex-initial"
             >
               <Pencil className="size-3.5 mr-2" />
               Modify
@@ -117,7 +117,7 @@ function CategoryTreeItem({
               type="button"
               variant="ghost"
               onClick={() => onDelete(category)}
-              className="h-10 rounded-xl px-4 font-bold text-xs text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all active:scale-95 flex-1 sm:flex-initial"
+              className="h-10 px-4 font-bold text-xs text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all flex-1 sm:flex-initial"
             >
               <Trash2 className="size-3.5 mr-2" />
               Discard
@@ -154,7 +154,7 @@ export function CategoryTree({
 }: CategoryTreeProps): JSX.Element {
   return (
     <div
-      className="space-y-6 rounded-4xl bg-surface-container-low/30 p-4 sm:p-6 border border-outline-variant/10 shadow-inner min-h-125 [--depth-gap:0.5rem] sm:[--depth-gap:1.5rem] lg:[--depth-gap:2.5rem]"
+      className="space-y-6 bg-surface-container-low/30 p-4 sm:p-6 border border-outline-variant/10 min-h-125 [--depth-gap:0.5rem] sm:[--depth-gap:1.5rem] lg:[--depth-gap:2.5rem]"
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault();
@@ -178,7 +178,7 @@ export function CategoryTree({
           ))}
         </div>
       ) : (
-        <div className="rounded-4xl bg-surface-container-lowest/40 border border-outline-variant/20 p-12 text-center animate-in fade-in zoom-in duration-500">
+        <div className="bg-surface-container-lowest/40 border border-outline-variant/20 p-12 text-center">
           <Layers3 className="size-12 mx-auto mb-4 opacity-10" />
           <p className="text-sm font-light italic text-on-surface/40">
             The academic tree is currently dormant.

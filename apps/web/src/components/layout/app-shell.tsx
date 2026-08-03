@@ -74,7 +74,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-hairline bg-paper/82 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-paper/82">
         <div className="flex h-[74px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <button
             aria-expanded={isDrawerOpen}
@@ -106,7 +106,7 @@ export function AppShell({
             <LanguageSwitcher className="hidden md:inline-flex" />
             <NotificationBell />
             <button
-              className="min-h-11 cursor-pointer px-2 text-base text-muted transition-colors duration-150 hover:text-ink disabled:opacity-55"
+              className="min-h-11 cursor-pointer px-2 text-base text-muted transition-colors hover:text-ink disabled:opacity-55"
               disabled={isSigningOut}
               onClick={() => void handleSignOut()}
               type="button"
@@ -147,7 +147,7 @@ export function AppShell({
                     <Link
                       activeOptions={{ exact: item.to === "/dashboard" }}
                       activeProps={{ className: "bg-chip-active text-ink [&_[data-dot]]:bg-accent" }}
-                      className="flex min-h-11 items-center gap-3 px-3 text-base text-muted transition-colors duration-150 hover:bg-panel-warm hover:text-ink"
+                      className="flex min-h-11 items-center gap-3 px-3 text-base text-muted transition-colors hover:bg-panel-warm hover:text-ink"
                       key={item.to}
                       to={item.to}
                     >

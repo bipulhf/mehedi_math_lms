@@ -75,7 +75,7 @@ function AdminAnalyticsPage(): JSX.Element {
 
   if (isPending || session?.session.role !== "ADMIN" || (isLoading && !data)) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="space-y-8">
         <StatsGridSkeleton />
         <div className="grid gap-6 xl:grid-cols-2">
           <ChartSkeleton />
@@ -92,15 +92,14 @@ function AdminAnalyticsPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-3xl bg-primary/10 border border-primary/20 text-primary shadow-inner relative overflow-hidden group/icon">
-             <div className="absolute inset-0 bg-primary/5 animate-pulse" />
+          <div className="flex size-16 shrink-0 items-center justify-center bg-primary/10 border border-primary/20 text-primary relative overflow-hidden group/icon">
+             <div className="absolute inset-0 bg-primary/5" />
              <Activity className="size-8 relative z-10" />
           </div>
           <div className="space-y-2">
-            <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">Platform Intelligence</h3>
+            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Platform Intelligence</h3>
             <p className="text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed italic">
               Macroscopic insights into the academic ecosystem — monitoring enrollment velocity, fiscal trends, and demographic cohorts.
             </p>
@@ -109,13 +108,13 @@ function AdminAnalyticsPage(): JSX.Element {
       </div>
 
       <div className="grid gap-8 xl:grid-cols-2">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl group/card">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 group/card">
           <div className="flex items-center gap-4 mb-8">
-            <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
+            <div className="size-10 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
               <TrendingUp className="size-5" />
             </div>
             <div>
-              <h4 className="font-headline font-extrabold text-on-surface text-lg">Enrollment velocity</h4>
+              <h4 className="font-body font-medium text-on-surface text-lg">Enrollment velocity</h4>
               <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly Trend</p>
             </div>
           </div>
@@ -140,13 +139,13 @@ function AdminAnalyticsPage(): JSX.Element {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl group/card">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 group/card">
           <div className="flex items-center gap-4 mb-8">
-            <div className="size-10 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-600 border border-green-500/10">
+            <div className="size-10 bg-green-500/10 flex items-center justify-center text-green-600 border border-green-500/10">
               <DollarSign className="size-5" />
             </div>
             <div>
-              <h4 className="font-headline font-extrabold text-on-surface text-lg">Revenue stream</h4>
+              <h4 className="font-body font-medium text-on-surface text-lg">Revenue stream</h4>
               <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly totals</p>
             </div>
           </div>
@@ -167,27 +166,27 @@ function AdminAnalyticsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
         <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center gap-4">
-          <div className="size-10 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/10">
+          <div className="size-10 bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/10">
             <Target className="size-5" />
           </div>
           <div>
-            <h4 className="font-headline font-extrabold text-on-surface text-xl">Scholarly completion</h4>
+            <h4 className="font-body font-medium text-on-surface text-xl">Scholarly completion</h4>
             <p className="text-sm text-on-surface-variant font-light opacity-60">Success signals from most engaging academic modules.</p>
           </div>
         </div>
         <div className="p-8 sm:p-10 grid gap-6 md:grid-cols-2">
           {data.completions.length === 0 ? (
-            <div className="col-span-full py-12 text-center opacity-40 font-light italic font-headline">No completion signals detected yet.</div>
+            <div className="col-span-full py-12 text-center opacity-40 font-light italic font-body">No completion signals detected yet.</div>
           ) : (
             data.completions.map((row) => (
               <div
                 key={row.courseId}
-                className="group p-6 rounded-3xl bg-surface-container-low/30 border border-outline-variant/20 hover:border-primary/30 transition-all hover:bg-primary/2"
+                className="group p-6 bg-surface-container-low/30 border border-outline-variant/20 hover:border-primary/30 transition-all hover:bg-primary/2"
               >
                 <div className="flex items-center justify-between gap-4 mb-4">
-                  <span className="font-headline text-base font-extrabold text-on-surface tracking-tight group-hover:text-primary transition-colors">{row.courseTitle}</span>
+                  <span className="font-body text-base font-medium text-on-surface tracking-tight group-hover:text-primary transition-colors">{row.courseTitle}</span>
                   <span className="text-[0.65rem] font-bold text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
                     {row.completionRate}% Done
                   </span>
@@ -207,19 +206,19 @@ function AdminAnalyticsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
         <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center gap-4">
-          <div className="size-10 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/10">
+          <div className="size-10 bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/10">
             <PieChart className="size-5" />
           </div>
           <div>
-            <h4 className="font-headline font-extrabold text-on-surface text-xl">Student distribution</h4>
+            <h4 className="font-body font-medium text-on-surface text-xl">Student distribution</h4>
             <p className="text-sm text-on-surface-variant font-light opacity-60">Demographic cohorts organized by academic grade.</p>
           </div>
         </div>
         <div className="p-8 sm:p-10 h-100">
           {data.demographics.length === 0 ? (
-            <div className="h-full flex items-center justify-center opacity-40 font-light italic font-headline">No demographic data in the repository.</div>
+            <div className="h-full flex items-center justify-center opacity-40 font-light italic font-body">No demographic data in the repository.</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

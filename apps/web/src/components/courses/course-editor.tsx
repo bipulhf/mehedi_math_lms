@@ -101,7 +101,7 @@ function validate(values: CourseEditorValues): CourseEditorErrors {
 }
 
 function Required() {
-  return <span className="text-red-500 ml-1 font-black">*</span>;
+  return <span className="text-red-500 ml-1 font-medium">*</span>;
 }
 
 export function CourseEditor({
@@ -166,7 +166,7 @@ export function CourseEditor({
   };
 
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-1000 min-h-160 flex flex-col">
+    <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden min-h-160 flex flex-col">
       {/* Horizontal Top Stepper */}
       <nav className="bg-surface-container-low/30 border-b border-outline-variant/10 p-6 sm:p-8">
         <div className="max-w-4xl mx-auto">
@@ -237,7 +237,7 @@ export function CourseEditor({
             <div>
               <Badge
                 tone="violet"
-                className="rounded-full px-4 py-1.5 text-[0.6rem] bg-violet-500/10 font-black border-violet-500/20 uppercase tracking-widest"
+                className="rounded-full px-4 py-1.5 text-[0.6rem] bg-violet-500/10 font-medium border-violet-500/20 uppercase tracking-widest"
               >
                 LAYER 0{currentStep + 1}
               </Badge>
@@ -245,7 +245,7 @@ export function CourseEditor({
             <div className="flex items-center gap-3">
               <div className="w-32 sm:w-48 h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-700"
+                  className="h-full bg-primary transition-all"
                   style={{ width: `${((currentStep + 1) / editorSteps.length) * 100}%` }}
                 />
               </div>
@@ -261,7 +261,7 @@ export function CourseEditor({
       <div className="flex-1 flex flex-col">
         <div className="p-6 sm:p-12 flex-1 max-w-5xl mx-auto w-full">
           <div className="mb-10 text-center sm:text-left">
-            <h4 className="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-2 leading-tight">
+            <h4 className="text-2xl sm:text-3xl font-body font-medium text-on-surface tracking-tight mb-2 leading-tight">
               {editorSteps[currentStep]!.description}
             </h4>
             <p className="text-sm text-on-surface/40 font-medium italic">
@@ -283,7 +283,7 @@ export function CourseEditor({
                     id="course-title"
                     error={errors.title}
                     placeholder="e.g. Higher Math: The Final Sprint 2024"
-                    className="h-14 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body text-base"
+                    className="h-14 bg-surface-container-low/50 border-outline-variant/30 font-body text-base"
                     value={values.title}
                     onChange={(e) => setValues((cv) => ({ ...cv, title: e.target.value }))}
                   />
@@ -318,7 +318,7 @@ export function CourseEditor({
                     step="100"
                     type="number"
                     placeholder="0 for curated free courses"
-                    className="h-14 rounded-2xl bg-surface-container-low/50 border-outline-variant/30 font-body text-base"
+                    className="h-14 bg-surface-container-low/50 border-outline-variant/30 font-body text-base"
                     value={values.price}
                     onChange={(e) => setValues((cv) => ({ ...cv, price: Number(e.target.value) }))}
                   />
@@ -334,14 +334,14 @@ export function CourseEditor({
                     id="course-description"
                     error={errors.description}
                     placeholder="Detail the syllabus, outcomes, and prerequisites for the approval committee... (min 24 chars)"
-                    className="min-h-40 rounded-3xl bg-surface-container-low/50 border-outline-variant/30 font-body text-base leading-relaxed p-6"
+                    className="min-h-40 bg-surface-container-low/50 border-outline-variant/30 font-body text-base leading-relaxed p-6"
                     value={values.description}
                     onChange={(e) => setValues((cv) => ({ ...cv, description: e.target.value }))}
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="flex items-start gap-4 p-6 rounded-3xl border border-outline-variant/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group">
+                  <label className="flex items-start gap-4 p-6 border border-outline-variant/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={values.isExamOnly}
@@ -363,9 +363,9 @@ export function CourseEditor({
             {currentStep === 1 && (
               <FadeIn className="flex flex-col-reverse gap-5">
                 <div className="space-y-6">
-                  <div className="bg-surface-container-low/40 rounded-4xl p-8 border border-outline-variant/20 relative overflow-hidden flex flex-col items-center text-center">
+                  <div className="bg-surface-container-low/40 p-8 border border-outline-variant/20 relative overflow-hidden flex flex-col items-center text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl z-[-1]" />
-                    <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                    <div className="size-16 bg-primary/10 flex items-center justify-center text-primary mb-4">
                       <ImageIcon className="size-8" />
                     </div>
 
@@ -399,7 +399,7 @@ export function CourseEditor({
                 <div className="relative group">
                   <div
                     className={cn(
-                      "aspect-video w-full rounded-4xl border overflow-hidden bg-surface-container-low transition-all duration-500",
+                      "aspect-video w-full border overflow-hidden bg-placeholder-fill transition-colors",
                       values.coverImageUrl
                         ? "border-outline-variant/40 "
                         : "border-outline-variant/10 border-dashed"
@@ -409,12 +409,12 @@ export function CourseEditor({
                       <ResponsiveImage
                         sizes="(min-width: 1024px) 50vw, 100vw"
                         src={values.coverImageUrl}
-                        className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        className="h-full w-full object-cover"
                         alt="Preview"
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center bg-linear-to-br from-primary/5 to-secondary/5 opacity-40">
-                        <span className="font-display font-black text-4xl sm:text-6xl tracking-tighter text-on-surface/10">
+                        <span className="font-display font-medium text-4xl sm:text-6xl tracking-tighter text-on-surface/10">
                           PREVIEW
                         </span>
                       </div>
@@ -431,13 +431,13 @@ export function CourseEditor({
                     <p className="text-[0.65rem] font-bold uppercase tracking-widest text-primary mb-2">
                       Lead Instructors <Required />
                     </p>
-                    <h5 className="text-xl font-headline font-extrabold text-on-surface leading-tight">
+                    <h5 className="text-xl font-body font-medium text-on-surface leading-tight">
                       Assign Academic Instructor
                     </h5>
                   </div>
                   <Badge
                     tone="gray"
-                    className="rounded-xl px-4 py-2 font-bold text-[0.65rem] border border-outline-variant/20"
+                    className="px-4 py-2 font-bold text-[0.65rem] border border-outline-variant/20"
                   >
                     {values.teacherIds.length} Selected
                   </Badge>
@@ -451,23 +451,23 @@ export function CourseEditor({
                         key={teacher.id}
                         onClick={() => handleToggleTeacher(teacher.id)}
                         className={cn(
-                          "group p-6 rounded-4xl border text-left transition-all duration-300 relative overflow-hidden",
+                          "group p-6 border text-left transition-colors relative overflow-hidden",
                           isSelected
-                            ? "bg-primary/5 border-primary/40 shadow-xl"
+                            ? "bg-chip-active border-line-strong"
                             : "bg-surface-container-low/20 border-outline-variant/10 hover:border-primary/20 hover:bg-surface-container-low/30"
                         )}
                       >
                         {isSelected && (
                           <div className="absolute top-4 right-4 text-primary">
-                            <CheckCircle2 className="size-5 shadow-sm" />
+                            <CheckCircle2 className="size-5" />
                           </div>
                         )}
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="size-12 rounded-2xl bg-surface-container-low border border-outline-variant/20 flex items-center justify-center font-headline font-bold text-primary group-hover:scale-110 transition-transform shrink-0">
+                          <div className="size-12 bg-surface-container-low border border-outline-variant/20 flex items-center justify-center font-body font-bold text-primary shrink-0">
                             {teacher.name.charAt(0)}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="font-headline font-bold text-on-surface leading-none mb-1 truncate">
+                            <span className="font-body font-bold text-on-surface leading-none mb-1 truncate">
                               {teacher.name}
                             </span>
                             <span className="text-xs text-on-surface/40 italic truncate">
@@ -490,8 +490,7 @@ export function CourseEditor({
             {currentStep === 3 && (
               <FadeIn className="grid gap-8 lg:grid-cols-2 items-start">
                 <div className="space-y-6">
-                  <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-4xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/2 rounded-full blur-2xl z-[-1]" />
+                  <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 sm:p-8 relative overflow-hidden">
                     <p className="text-[0.6rem] font-bold uppercase tracking-widest text-primary mb-6">
                       Proposed Curriculum Snapshot
                     </p>
@@ -501,7 +500,7 @@ export function CourseEditor({
                         <h6 className="text-[0.6rem] uppercase font-bold tracking-[0.2em] text-on-surface/40 mb-3">
                           Academic Nomenclature
                         </h6>
-                        <p className="font-headline text-xl sm:text-2xl font-extrabold text-on-surface leading-tight">
+                        <p className="font-body text-xl sm:text-2xl font-medium text-on-surface leading-tight">
                           {values.title || "Untitled curriculum"}
                         </p>
                       </section>
@@ -526,7 +525,7 @@ export function CourseEditor({
                           <div className="flex items-center gap-2">
                             <Badge
                               tone="blue"
-                              className="rounded-full text-[0.65rem] px-3 font-black"
+                              className="rounded-full text-[0.65rem] px-3 font-medium"
                             >
                               {values.price > 0
                                 ? `BDT ${values.price.toLocaleString()}`
@@ -536,7 +535,7 @@ export function CourseEditor({
                         </section>
                       </div>
 
-                      <section className="bg-surface-container-low/30 p-5 rounded-3xl border border-outline-variant/10">
+                      <section className="bg-surface-container-low/30 p-5 border border-outline-variant/10">
                         <h6 className="text-[0.6rem] uppercase font-bold tracking-[0.2em] text-on-surface/40 mb-3">
                           Instructional Instructor
                         </h6>
@@ -546,7 +545,7 @@ export function CourseEditor({
                               <Badge
                                 key={t.id}
                                 tone="gray"
-                                className="rounded-xl px-2.5 py-1 text-[0.65rem] bg-white border border-outline-variant/30"
+                                className="px-2.5 py-1 text-[0.65rem] bg-white border border-outline-variant/30"
                               >
                                 {t.name}
                               </Badge>
@@ -563,10 +562,9 @@ export function CourseEditor({
                 </div>
 
                 <div className="space-y-6">
-                  <div className="bg-primary shadow-2xl rounded-4xl p-6 sm:p-8 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+                  <div className="bg-primary p-6 sm:p-8 text-white relative overflow-hidden group">
                     <div className="relative z-10">
-                      <h5 className="font-headline text-xl sm:text-2xl font-extrabold mb-3 leading-tight">
+                      <h5 className="font-body text-xl sm:text-2xl font-medium mb-3 leading-tight">
                         Curatorial Authorization
                       </h5>
                       <p className="text-sm text-white/70 font-light leading-relaxed mb-8">
@@ -576,7 +574,7 @@ export function CourseEditor({
 
                       <div className="flex flex-col gap-3">
                         <Button
-                          className="h-14 rounded-2xl bg-white text-primary hover:bg-white/90 font-headline font-extrabold shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                          className="h-14 bg-white text-primary hover:bg-white/90 font-body font-medium transition-all ] ] disabled:opacity-50"
                           onClick={() => handleCommit("submit")}
                           disabled={isSaving}
                         >
@@ -585,7 +583,7 @@ export function CourseEditor({
                         </Button>
                         <Button
                           variant="ghost"
-                          className="h-14 rounded-2xl text-white/80 hover:bg-white/10 hover:text-white font-bold transition-all border border-white/10"
+                          className="h-14 text-white/80 hover:bg-white/10 hover:text-white font-bold transition-all border border-white/10"
                           onClick={() => handleCommit("save")}
                           disabled={isSaving}
                         >
@@ -595,7 +593,7 @@ export function CourseEditor({
                     </div>
                   </div>
 
-                  <div className="bg-surface-container-lowest border border-dashed border-outline-variant/40 rounded-3xl p-6">
+                  <div className="bg-surface-container-lowest border border-dashed border-outline-variant/40 p-6">
                     <div className="flex items-center gap-3 text-on-surface/40 mb-2">
                       <Info className="size-4" />
                       <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em]">
@@ -614,12 +612,12 @@ export function CourseEditor({
         </div>
 
         {/* Navigation Bar */}
-        <footer className="p-6 sm:p-8 sm:px-12 bg-surface-container-low/30 border-t border-outline-variant/10 flex items-center justify-between sticky bottom-0 z-50 backdrop-blur-md">
+        <footer className="p-6 sm:p-8 sm:px-12 bg-surface-container-low/30 border-t border-outline-variant/10 flex items-center justify-between sticky bottom-0 z-50">
           <Button
             variant="outline"
             disabled={currentStep === 0}
             onClick={() => setCurrentStep((s) => Math.max(s - 1, 0))}
-            className="h-12 rounded-2xl px-6 sm:px-8 font-bold text-on-surface/60 border-outline-variant/30 hover:bg-surface-container-low transition-all"
+            className="h-12 px-6 sm:px-8 font-bold text-on-surface/60 border-outline-variant/30 hover:bg-surface-container-low transition-all"
           >
             <ChevronLeft className="size-5 mr-0 sm:mr-2" />
             <span className="hidden sm:inline">Previous Layer</span>
@@ -640,7 +638,7 @@ export function CourseEditor({
               <ChevronRight className="size-5 ml-2" />
             </Button>
           ) : (
-            <div className="flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-widest text-primary animate-pulse py-2">
+            <div className="flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-widest text-primary py-2">
               Audit in Progress <ArrowRight className="size-4" />
             </div>
           )}
@@ -652,26 +650,26 @@ export function CourseEditor({
 
 export function CourseEditorSkeleton(): JSX.Element {
   return (
-    <div className="bg-surface-container-lowest rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden min-h-160 flex flex-col">
+    <div className="bg-surface-container-lowest border border-outline-variant/40 overflow-hidden min-h-160 flex flex-col">
       <div className="p-8 border-b border-outline-variant/10 flex justify-between">
-        <Skeleton className="h-12 w-48 bg-surface-container-high rounded-2xl" />
-        <Skeleton className="h-12 w-48 bg-surface-container-high rounded-2xl" />
+        <Skeleton className="h-12 w-48 bg-surface-container-high" />
+        <Skeleton className="h-12 w-48 bg-surface-container-high" />
       </div>
       <div className="p-12 space-y-10 flex-1">
         <div className="space-y-4 max-w-sm mx-auto sm:mx-0">
           <Skeleton className="h-5 w-32 bg-surface-container-high rounded-full" />
-          <Skeleton className="h-10 w-full bg-surface-container-high rounded-xl" />
+          <Skeleton className="h-10 w-full bg-surface-container-high" />
         </div>
         <div className="grid gap-8 md:grid-cols-2">
-          <Skeleton className="h-14 w-full bg-surface-container-high rounded-2xl md:col-span-2" />
-          <Skeleton className="h-14 w-full bg-surface-container-high rounded-2xl" />
-          <Skeleton className="h-14 w-full bg-surface-container-high rounded-2xl" />
-          <Skeleton className="h-40 w-full bg-surface-container-high rounded-3xl md:col-span-2" />
+          <Skeleton className="h-14 w-full bg-surface-container-high md:col-span-2" />
+          <Skeleton className="h-14 w-full bg-surface-container-high" />
+          <Skeleton className="h-14 w-full bg-surface-container-high" />
+          <Skeleton className="h-40 w-full bg-surface-container-high md:col-span-2" />
         </div>
       </div>
       <div className="p-8 border-t border-outline-variant/10 flex justify-between">
-        <Skeleton className="h-12 w-32 bg-surface-container-high rounded-2xl" />
-        <Skeleton className="h-12 w-32 bg-surface-container-high rounded-2xl" />
+        <Skeleton className="h-12 w-32 bg-surface-container-high" />
+        <Skeleton className="h-12 w-32 bg-surface-container-high" />
       </div>
     </div>
   );

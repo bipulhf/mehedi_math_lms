@@ -141,7 +141,7 @@ function MaterialLinks({
         {materials.map((material) => (
           <a
             key={material.id}
-            className="flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low px-4 py-3 transition-all duration-150 ease-out hover:bg-surface-container"
+            className="flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low px-4 py-3 transition-all ease-out hover:bg-surface-container"
             href={material.fileUrl}
             rel="noreferrer"
             target="_blank"
@@ -296,7 +296,7 @@ export function CoursePlayer({
   return (
     <div className="space-y-4">
       <FadeIn>
-        <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/80 backdrop-blur-xl">
+        <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/80">
           <CardContent className="space-y-5 p-5 md:p-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="space-y-2">
@@ -381,7 +381,7 @@ export function CoursePlayer({
       {playerMode === "learn" ? (
         <div className="grid gap-4 xl:grid-cols-[0.34fr_0.66fr]">
           <FadeIn>
-            <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+            <Card className="border-outline-variant/60 bg-surface-container-low/70">
               <CardHeader>
                 <CardTitle>Course navigator</CardTitle>
                 <CardDescription>
@@ -472,7 +472,7 @@ export function CoursePlayer({
           <FadeIn delayClassName="animation-delay-100">
             {selectedLecture && selectedChapter ? (
               <div className="space-y-4">
-                <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+                <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/70">
                   <CardHeader>
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone={selectedLectureProgress?.isCompleted ? "green" : "blue"}>
@@ -600,7 +600,7 @@ export function CoursePlayer({
               </div>
             ) : selectedItem?.kind === "test" ? (
               <div className="space-y-4">
-                <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+                <Card className="border-outline-variant/60 bg-surface-container-low/70">
                   <CardHeader>
                     <div className="flex flex-wrap gap-2">
                       <Badge tone="violet">Assessment</Badge>

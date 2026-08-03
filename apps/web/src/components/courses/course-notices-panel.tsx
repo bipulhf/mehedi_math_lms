@@ -18,7 +18,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
 
   if (notices === null) {
     return (
-      <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+      <Card className="border-outline-variant/60 bg-surface-container-low/70">
         <CardHeader>
           <Skeleton className="h-7 w-48" />
           <Skeleton className="h-4 w-72" />
@@ -33,7 +33,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
 
   if (notices.length === 0) {
     return (
-      <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+      <Card className="border-outline-variant/60 bg-surface-container-low/70">
         <CardHeader>
           <CardTitle className="font-display">Course notices</CardTitle>
           <CardDescription>
@@ -49,7 +49,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
 
   return (
     <div className="space-y-4">
-      <Card className="border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl">
+      <Card className="border-outline-variant/60 bg-surface-container-low/70">
         <CardHeader>
           <CardTitle className="font-display">Course notices</CardTitle>
           <CardDescription>
@@ -61,7 +61,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
         {notices.map((notice) => (
           <Card
             key={notice.id}
-            className={`border-outline-variant/60 bg-surface-container-low/70 backdrop-blur-xl ${
+            className={`border-hairline bg-card ${
               notice.isPinned ? "ring-1 ring-secondary-container/35" : ""
             }`}
           >

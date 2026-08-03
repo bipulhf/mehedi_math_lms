@@ -227,7 +227,7 @@ export function ImageCropUploader({
           <div className="mt-4 space-y-2">
             <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
               <div
-                className="h-full rounded-full bg-secondary-container transition-[width] duration-200 ease-out"
+                className="h-full rounded-full bg-secondary-container transition-[width] ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>

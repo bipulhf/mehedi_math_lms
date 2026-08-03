@@ -34,19 +34,18 @@ export function ConversationList({
   selectedConversationId: string | null;
 }): JSX.Element {
   return (
-    <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative flex flex-col overflow-hidden group">
-      <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors z-[-1]"></div>
+    <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative flex flex-col overflow-hidden group">
       <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-outline-variant/20">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-headline text-2xl font-extrabold tracking-tight text-on-surface">
+            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
               Inbox
             </h3>
             <p className="mt-2 text-xs text-on-surface-variant font-light leading-relaxed">
               Quiet, direct conversations with live delivery and read states.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-low/50 border border-outline-variant/20 px-3 py-2 text-xs text-on-surface/68 shadow-inner">
+          <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-low/50 border border-outline-variant/20 px-3 py-2 text-xs text-on-surface/68">
             {isSocketConnected ? (
               <Wifi className="size-3.5 text-emerald-600" />
             ) : (
@@ -59,9 +58,9 @@ export function ConversationList({
           placeholder="Search conversations"
           value={conversationSearch}
           onChange={(event) => onConversationSearchChange(event.target.value)}
-          className="rounded-2xl h-12 bg-surface-container-low/50 border-outline-variant/30"
+          className="h-12 bg-surface-container-low/50 border-outline-variant/30"
         />
-        <div className="space-y-3 rounded-3xl bg-surface-container-low/40 border border-outline-variant/20 p-4 shadow-inner">
+        <div className="space-y-3 bg-surface-container-low/40 border border-outline-variant/20 p-4">
           <p className="text-xs font-bold uppercase tracking-widest text-on-surface/54">
             Start new
           </p>
@@ -69,7 +68,7 @@ export function ConversationList({
             placeholder={currentUserRole === "STUDENT" ? "Find a teacher" : "Find a student"}
             value={participantSearch}
             onChange={(event) => onParticipantSearchChange(event.target.value)}
-            className="rounded-xl h-10 bg-surface border-outline-variant/30"
+            className="h-10 bg-surface border-outline-variant/30"
           />
           {participantResults.length > 0 ? (
             <div className="space-y-2">
@@ -77,7 +76,7 @@ export function ConversationList({
                 <button
                   key={participant.id}
                   type="button"
-                  className="flex w-full items-center justify-between rounded-2xl bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-container-highest shadow-sm border border-outline-variant/10"
+                  className="flex w-full items-center justify-between bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-container-highest border border-outline-variant/10"
                   onClick={() => onStartConversation(participant.id)}
                 >
                   <div className="flex items-center gap-3">
@@ -143,7 +142,7 @@ export function ConversationList({
             </button>
           ))
         ) : (
-          <div className="rounded-3xl bg-surface-container-low/50 border border-outline-variant/20 p-6 text-sm leading-7 text-on-surface-variant font-light text-center">
+          <div className="bg-surface-container-low/50 border border-outline-variant/20 p-6 text-sm leading-7 text-on-surface-variant font-light text-center">
             No conversations yet. Start a teacher-student chat from the search panel above.
           </div>
         )}

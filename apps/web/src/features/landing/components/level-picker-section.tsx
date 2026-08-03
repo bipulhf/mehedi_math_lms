@@ -74,7 +74,7 @@ export function LevelPickerSection({
           </div>
 
           <Link
-            className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+            className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
             to="/courses"
           >
             {t("home.seeAllCourses", { count: format.number(publishedCourses) })}
@@ -91,7 +91,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
 
   return (
     <Link
-      className="flex items-center gap-4 border-b border-hairline-faint py-4 transition-colors duration-150 hover:bg-panel-warm"
+      className="flex items-center gap-4 border-b border-hairline-faint py-4 transition-colors hover:bg-panel-warm"
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >

@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { TestBuilderSkeleton } from "@/components/common/skeletons";
+import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { RouteErrorView } from "@/components/common/route-error";
 import { AssessmentBuilder } from "@/components/tests/assessment-builder";
 import type { CourseDetail } from "@/lib/api/courses";
@@ -39,5 +40,10 @@ function CourseAssessmentsPage(): JSX.Element {
     );
   }
 
-  return <AssessmentBuilder assessments={assessments} course={course} onRefresh={loadData} />;
+  return (
+    <div className="space-y-8">
+      <CourseBuilderSteps courseId={id} current="tests" />
+      <AssessmentBuilder assessments={assessments} course={course} onRefresh={loadData} />
+    </div>
+  );
 }

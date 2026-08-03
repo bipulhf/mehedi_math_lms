@@ -29,7 +29,7 @@ export function InstructorsSection({
         <SectionHeading
           action={
             <Link
-              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
               to="/teachers"
             >
               {t("action.showAll")}
@@ -69,7 +69,7 @@ export function InstructorsSection({
               </div>
             ) : (
               <Link
-                className="flex items-center gap-4 border border-hairline bg-card p-5 transition-colors duration-150 hover:border-line-strong"
+                className="flex items-center gap-4 border border-hairline bg-card p-5 transition-colors hover:border-line-strong"
                 key={teacher.id}
                 params={{ slug: teacher.slug }}
                 to="/teachers/$slug"

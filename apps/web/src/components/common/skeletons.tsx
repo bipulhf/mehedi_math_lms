@@ -20,7 +20,7 @@ export function StatsGridSkeleton({ cards = 4 }: { cards?: number }): JSX.Elemen
       {Array.from({ length: cards }).map((_, index) => (
         <div
           key={index}
-          className="rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-6"
+          className="border border-outline-variant/40 bg-surface-container-lowest/80 p-6"
         >
           <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-4 h-9 w-20" />
@@ -35,7 +35,7 @@ export function ChartSkeleton({ className }: { className?: string }): JSX.Elemen
     <div
       className={
         className ??
-        "rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-6"
+        "border border-hairline bg-card p-6"
       }
     >
       <Skeleton className="h-4 w-40" />
@@ -52,7 +52,7 @@ export function ChartSkeleton({ className }: { className?: string }): JSX.Elemen
 
 export function RecentActivitySkeleton({ rows = 5 }: { rows?: number }): JSX.Element {
   return (
-    <div className="rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+    <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
       <Skeleton className="h-5 w-40" />
       <div className="mt-6 space-y-4">
         {Array.from({ length: rows }).map((_, index) => (
@@ -75,7 +75,7 @@ export function CourseDetailSkeleton(): JSX.Element {
     <div className="mx-auto grid max-w-7xl gap-8 px-8 py-12 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="space-y-6">
         {/* 16:9, matching the real cover, so nothing jumps when it arrives. */}
-        <Skeleton className="aspect-video w-full rounded-4xl" />
+        <Skeleton className="aspect-video w-full" />
         <Skeleton className="h-10 w-3/4" />
         <div className="space-y-3">
           <Skeleton className="h-4 w-full" />
@@ -84,12 +84,12 @@ export function CourseDetailSkeleton(): JSX.Element {
         </div>
         <div className="space-y-3 pt-6">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-16 w-full rounded-3xl" />
+            <Skeleton key={index} className="h-16 w-full" />
           ))}
         </div>
       </div>
       <aside className="space-y-4">
-        <div className="rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-6">
+        <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-6">
           <Skeleton className="h-9 w-28" />
           <Skeleton className="mt-6 h-12 w-full rounded-full" />
           <div className="mt-6 space-y-3">
@@ -109,7 +109,7 @@ export function ConversationListSkeleton({ rows = 6 }: { rows?: number }): JSX.E
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="rounded-3xl border border-outline-variant/20 bg-surface-container-low/40 p-5"
+          className="border border-outline-variant/20 bg-surface-container-low/40 p-5"
         >
           <div className="flex items-center gap-3">
             <Skeleton className="size-11 shrink-0 rounded-full" />
@@ -175,7 +175,7 @@ export function NotificationListSkeleton({ rows = 5 }: { rows?: number }): JSX.E
   return (
     <div className="space-y-2 p-3">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="rounded-2xl bg-surface-container-low/50 p-4">
+        <div key={index} className="bg-surface-container-low/50 p-4">
           <Skeleton className="h-3 w-2/5" />
           <Skeleton className="mt-2 h-3 w-full" />
           <Skeleton className="mt-2 h-3 w-1/4" />
@@ -194,7 +194,7 @@ export function CategoryTreeSkeleton({ rows = 6 }: { rows?: number }): JSX.Eleme
           // Every third row is indented, standing in for a child category.
           className={index % 3 === 2 ? "pl-8" : undefined}
         >
-          <Skeleton className="h-12 w-full rounded-2xl" />
+          <Skeleton className="h-12 w-full" />
         </div>
       ))}
     </div>
@@ -206,15 +206,15 @@ export function TestBuilderSkeleton(): JSX.Element {
     <div className="grid gap-6 lg:grid-cols-[20rem_minmax(0,1fr)]">
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="h-20 w-full rounded-3xl" />
+          <Skeleton key={index} className="h-20 w-full" />
         ))}
       </div>
-      <div className="space-y-4 rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+      <div className="space-y-4 border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-4 w-80 max-w-full" />
         <div className="space-y-3 pt-4">
           {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-24 w-full rounded-3xl" />
+            <Skeleton key={index} className="h-24 w-full" />
           ))}
         </div>
       </div>
@@ -229,13 +229,13 @@ export function TestTakingSkeleton(): JSX.Element {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-10 w-28 rounded-full" />
       </div>
-      <div className="rounded-4xl border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+      <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-4 h-6 w-full" />
         <Skeleton className="mt-2 h-6 w-4/5" />
         <div className="mt-8 space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-14 w-full rounded-2xl" />
+            <Skeleton key={index} className="h-14 w-full" />
           ))}
         </div>
       </div>

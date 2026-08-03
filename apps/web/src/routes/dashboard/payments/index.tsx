@@ -87,26 +87,26 @@ function PaymentsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
            <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
            <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest" />
         </div>
         {canManagePayments && (
           <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden">
+              <div key={i} className="bg-surface-container-lowest/80 p-6 border border-outline-variant/30 relative overflow-hidden">
                 <Skeleton className="h-4 w-24 mb-3 bg-surface-container-highest" />
                 <Skeleton className="h-9 w-32 bg-surface-container-highest" />
               </div>
             ))}
           </section>
         )}
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl overflow-hidden">
+        <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
            <div className="p-0">
              <div className="bg-surface-container-low h-12 w-full" />
              <div className="p-4 space-y-4">
                {Array.from({ length: 6 }).map((_, i) => (
-                 <Skeleton key={i} className="h-16 w-full rounded-2xl bg-surface-container-high" />
+                 <Skeleton key={i} className="h-16 w-full bg-surface-container-high" />
                ))}
              </div>
            </div>
@@ -117,10 +117,9 @@ function PaymentsPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-8 sm:p-10 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden group">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none transition-all duration-1000 group-hover:bg-primary/10 z-[-1]"></div>
+      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
         <div className="mb-0">
-          <h3 className="font-headline text-3xl font-extrabold tracking-tight text-on-surface">
+          <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
             {canManagePayments ? "Payment operations" : "Payment history"}
           </h3>
           <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
@@ -139,17 +138,16 @@ function PaymentsPage(): JSX.Element {
             { label: "Pending payments", value: stats.pendingPayments },
             { label: "Refunded value", value: `BDT ${stats.refundedRevenue.toFixed(2)}` }
           ].map((stat, i) => (
-            <div key={i} className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/30 shadow-lg relative overflow-hidden group">
-              <div className="absolute -top-8 -right-8 w-32 h-32 bg-secondary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-secondary/10 transition-colors z-[-1]"></div>
+            <div key={i} className="bg-surface-container-lowest/80 p-6 border border-outline-variant/30 relative overflow-hidden group">
               <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/54">{stat.label}</p>
-              <p className="mt-2 text-2xl font-headline font-extrabold text-on-surface">{stat.value}</p>
+              <p className="mt-2 text-2xl font-body font-medium text-on-surface">{stat.value}</p>
             </div>
           ))}
         </section>
       ) : null}
 
       {canManagePayments ? (
-        <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl p-6 border border-outline-variant/40 shadow-xl relative w-full overflow-hidden">
+        <div className="bg-surface-container-lowest/80 p-6 border border-outline-variant/40 relative w-full overflow-hidden">
           <div className="grid gap-4 md:grid-cols-[0.4fr]">
             <div className="space-y-2">
               <Label htmlFor="payment-status-filter" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Filter by Status</Label>
@@ -157,7 +155,7 @@ function PaymentsPage(): JSX.Element {
                 id="payment-status-filter"
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
-                className="bg-surface-container-low/50 rounded-2xl border-outline-variant/30"
+                className="bg-surface-container-low/50 border-outline-variant/30"
               >
                 <option value="">All statuses</option>
                 <option value="PENDING">Pending</option>
@@ -170,7 +168,7 @@ function PaymentsPage(): JSX.Element {
         </div>
       ) : null}
 
-      <div className="bg-surface-container-lowest/80 backdrop-blur-3xl rounded-4xl border border-outline-variant/40 shadow-xl relative overflow-hidden">
+      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
         <div className="p-0">
           {items.length === 0 ? (
             <div className="p-10 text-center text-sm leading-7 text-on-surface-variant font-light italic">
@@ -195,7 +193,7 @@ function PaymentsPage(): JSX.Element {
                     <tr key={item.id} className="align-top group/row hover:bg-surface-container-low/30 transition-colors">
                       <td className="px-6 py-5">
                         <div className="space-y-1">
-                          <p className="font-headline font-bold text-on-surface group-hover/row:text-primary transition-colors">{item.course.title}</p>
+                          <p className="font-body font-bold text-on-surface group-hover/row:text-primary transition-colors">{item.course.title}</p>
                           <p className="text-[0.65rem] font-mono text-on-surface-variant bg-surface-container-low/50 px-2 py-0.5 rounded-md inline-block">{item.course.id}</p>
                         </div>
                       </td>
@@ -207,7 +205,7 @@ function PaymentsPage(): JSX.Element {
                           </div>
                         </td>
                       ) : null}
-                      <td className="px-6 py-5 font-headline font-extrabold text-on-surface">
+                      <td className="px-6 py-5 font-body font-medium text-on-surface">
                          <span className="text-[0.7rem] text-on-surface-variant mr-1">BDT</span>
                          {Number(item.amount).toFixed(2)}
                       </td>
@@ -221,7 +219,7 @@ function PaymentsPage(): JSX.Element {
                       {canManagePayments ? (
                         <td className="px-6 py-5">
                           {item.status === "SUCCESS" ? (
-                            <Button size="sm" variant="outline" className="rounded-xl font-headline font-semibold px-4 h-9 border-outline-variant/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>
+                            <Button size="sm" variant="outline" className="font-body font-semibold px-4 h-9 border-outline-variant/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>
                               Refund
                             </Button>
                           ) : (

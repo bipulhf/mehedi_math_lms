@@ -290,7 +290,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☑ |
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding. `/teachers` index and demo seed data, pulled forward | ☑ |
 | 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☑ |
-| 7 | Teacher dashboard + the 5-step course builder | ☐ |
+| 7 | Teacher dashboard + the stepped course builder | ☑ |
 | 8 | Student dashboard | ☐ |
 | 9 | Admin dashboard + accountant analytics | ☐ |
 | 10 | System-only surfaces restyled (§3): messages, notifications, SMS, bugs, tests, certificates, analytics, category admin, user admin, auth | ☐ |
@@ -501,6 +501,39 @@ third folded into the hero. The hero's illustration slot is the design's
 placeholder fill rather than the old indigo SVG.
 
 Typecheck 9/9, lint 9/9, tests 8/8. Verified on a running stack.
+
+**Phase 7** — the dashboard shell and the builder.
+
+Most of this was a sweep. Fifty-six files carried decorative markup the design
+forbids outright — `backdrop-blur-3xl`, `shadow-xl`, `rounded-4xl`, blurred
+gradient orbs, `animate-in`, `hover:-translate-y`, `font-black` — so those class
+names came out mechanically rather than page by page. One regex went too far on
+the first pass: it matched an *opening* `<div>` that had children and orphaned
+its closing tag, breaking five files. Restored and re-run with the pattern
+narrowed to self-closing and empty divs.
+
+**The builder is four steps, not the design's five.** Its "কোর্সের তথ্য" and
+"দাম ও ব্যাচ" are separate screens because the second holds a discount, a seat
+count and a batch date — none of which exist here. What is left of the pricing
+step is one price field, which belongs on the details form. So: তথ্য ও দাম ·
+ক্লাস · পরীক্ষা · প্রকাশ.
+
+The steps are **routes**, not local state. Each already existed as its own page
+with its own saving; folding four working forms into one component's state would
+have risked the whole authoring flow to gain nothing a teacher can see. What was
+missing was the strip that makes them read as one flow, and a প্রকাশ step — a
+new route with the design's checklist (title length, description length,
+modules, lessons, a free lesson, a price) and the submit-for-review action. The
+checklist is advisory, as the design says: the API decides what is actually
+required, this tells a teacher what a reviewer will look at.
+
+The shell gained its one accent action — "+ নতুন কোর্স" for a teacher, and
+nothing for the other roles, because DESIGN.md §1 allows exactly one and no
+other role has an action that earns it. The sidebar nav now carries message keys
+rather than English strings, so it is bilingual like the rest of the chrome, and
+the accountant's rows are in it.
+
+Typecheck 9/9, lint 9/9, tests 8/8. Verified signed in as a teacher.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

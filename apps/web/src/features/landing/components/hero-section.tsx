@@ -48,7 +48,7 @@ export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
               <Link to="/courses">{t("action.viewAllCourses")}</Link>
             </Button>
             <Link
-              className="border-b border-line-strong pb-0.5 text-lg text-ink transition-colors duration-150 hover:border-accent hover:text-accent"
+              className="border-b border-line-strong pb-0.5 text-lg text-ink transition-colors hover:border-accent hover:text-accent"
               search={{ free: true }}
               to="/courses"
             >

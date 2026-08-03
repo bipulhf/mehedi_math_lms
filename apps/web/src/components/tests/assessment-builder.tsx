@@ -267,10 +267,10 @@ export function AssessmentBuilder({
 
   return (
     <div className="space-y-3">
-      <Card className="border-outline-variant/30 bg-surface-container-lowest/85 shadow-sm">
+      <Card className="border-outline-variant/30 bg-surface-container-lowest/85">
         <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p className="font-headline text-base font-bold text-on-surface">Assessment Builder</p>
+            <p className="font-body text-base font-bold text-on-surface">Assessment Builder</p>
             <p className="text-xs text-on-surface/65">
               Create tests chapter by chapter, then edit questions on the right.
             </p>
@@ -278,13 +278,13 @@ export function AssessmentBuilder({
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               tone="gray"
-              className="rounded-full px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-widest"
+              className="rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-widest"
             >
               {assessments.length} chapters
             </Badge>
             <Badge
               tone="gray"
-              className="rounded-full px-2.5 py-1 text-[0.62rem] font-black uppercase tracking-widest"
+              className="rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-widest"
             >
               {totalTests} tests
             </Badge>
@@ -299,7 +299,7 @@ export function AssessmentBuilder({
               key={chapter.chapterId}
               delayClassName={chapterIndex > 0 ? "delay-75" : undefined}
             >
-              <Card className="border-outline-variant/30 shadow-sm">
+              <Card className="border-outline-variant/30">
                 <CardHeader className="space-y-1 pb-3">
                   <CardTitle className="text-lg">{chapter.chapterTitle}</CardTitle>
                   <CardDescription>Tests inside this chapter.</CardDescription>
@@ -461,14 +461,14 @@ export function AssessmentBuilder({
 
         <div className="space-y-3">
           {!selectedTest || !selectedTestSummary ? (
-            <Card className="border-outline-variant/30 shadow-sm">
+            <Card className="border-outline-variant/30">
               <CardContent className="p-5 text-sm leading-6 text-on-surface/70">
                 Choose a test from the left to edit settings and manage questions.
               </CardContent>
             </Card>
           ) : (
             <>
-              <Card className="border-outline-variant/30 shadow-sm">
+              <Card className="border-outline-variant/30">
                 <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-lg">{selectedTest.title}</CardTitle>
@@ -617,7 +617,7 @@ export function AssessmentBuilder({
                 </CardContent>
               </Card>
 
-              <Card className="border-outline-variant/30 shadow-sm">
+              <Card className="border-outline-variant/30">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">Questions</CardTitle>
                   <CardDescription>
