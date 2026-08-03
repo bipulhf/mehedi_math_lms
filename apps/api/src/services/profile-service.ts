@@ -70,6 +70,20 @@ interface TeacherCourseResponse {
   title: string;
 }
 
+/** A directory card: a face, a line of bio, two counts. */
+export interface TeacherDirectoryResponse {
+  bio: string | null;
+  courseCount: number;
+  id: string;
+  name: string;
+  profilePhoto: string | null;
+  slug: string;
+  specializations: string | null;
+  studentCount: number;
+}
+
+const TEACHER_DIRECTORY_LIMIT = 200;
+
 export interface PublicTeacherProfileResponse {
   courses: readonly TeacherCourseResponse[];
   metrics: {
@@ -288,6 +302,21 @@ export class ProfileService {
     }
 
     return mapUserProfile(updatedProfile);
+  }
+
+  /**
+   * The public teacher directory. Capped rather than paginated: the ceiling is
+   * an order of magnitude above the real teacher count, and a directory that
+   * pages is a directory nobody scrolls to the end of.
+   */
+  public async listPublicTeachers(): Promise<readonly TeacherDirectoryResponse[]> {
+    const teachers = await this.profileRepository.listPublicTeachers(TEACHER_DIRECTORY_LIMIT);
+
+    // `listPublicTeachers` already excludes a null slug, but the record type
+    // still admits one and the slug is what addresses the public page.
+    return teachers.flatMap((teacher) =>
+      teacher.slug === null ? [] : [{ ...teacher, slug: teacher.slug }]
+    );
   }
 
   public async getPublicTeacherProfileBySlug(slug: string): Promise<PublicTeacherProfileResponse> {

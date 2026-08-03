@@ -18,7 +18,8 @@
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:seed": "turbo run db:seed",
-    "db:backfill-user-slugs": "turbo run db:backfill-user-slugs"
+    "db:backfill-user-slugs": "turbo run db:backfill-user-slugs",
+    "db:seed-demo": "turbo run db:seed-demo"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

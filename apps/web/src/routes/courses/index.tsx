@@ -15,7 +15,7 @@ import { listCourses } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
 import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { ssrApiGetCourses } from "@/lib/ssr-api";
-import { LandingLayout } from "@/features/landing/components/landing-layout";
+import { PublicLayout } from "@/components/layout/public-layout";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/courses/")({
@@ -44,11 +44,11 @@ export const Route = createFileRoute("/courses/")({
   component: CoursesCatalogPage,
   errorComponent: RouteErrorView,
   pendingComponent: () => (
-    <LandingLayout showGrid={false}>
+    <PublicLayout>
       <div className="mx-auto max-w-7xl px-8 py-12">
         <CourseGridSkeleton />
       </div>
-    </LandingLayout>
+    </PublicLayout>
   )
 });
 
@@ -80,7 +80,7 @@ function CoursesCatalogPage(): JSX.Element {
   const flatCategories = useMemo(() => flattenCategories(categories), [categories]);
 
   return (
-    <LandingLayout showGrid={false}>
+    <PublicLayout>
       <div className="bg-surface min-h-screen">
         {/* Search and Filters Bar */}
         <section className="sticky top-20 z-40 bg-surface/80 backdrop-blur-2xl border-b border-outline-variant/10 shadow-sm">
@@ -192,6 +192,6 @@ function CoursesCatalogPage(): JSX.Element {
           </div>
         </section>
       </div>
-    </LandingLayout>
+    </PublicLayout>
   );
 }

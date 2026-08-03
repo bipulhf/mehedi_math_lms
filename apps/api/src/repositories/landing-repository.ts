@@ -174,7 +174,10 @@ export class LandingRepository {
   public async listFeaturedTeachers(limit: number): Promise<readonly LandingTeacherRow[]> {
     const taught = db
       .select({
-        courseCount: count(courseTeachers.courseId).as("course_count"),
+        // `count distinct` because the enrolments join below fans each course
+        // out into one row per enrolled student — a plain count would report a
+        // teacher's enrolment total as their course count.
+        courseCount: sql<string>`count(distinct ${courses.id})`.as("course_count"),
         studentCount: sql<string>`count(distinct ${enrollments.userId})`.as("student_count"),
         teacherId: courseTeachers.teacherId
       })

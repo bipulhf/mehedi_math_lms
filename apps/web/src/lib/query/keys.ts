@@ -79,7 +79,8 @@ export const queryKeys = {
   profiles: {
     all: () => ["profiles"] as const,
     me: () => ["profiles", "me"] as const,
-    student: (studentId: string) => ["profiles", "student", studentId] as const
+    student: (studentId: string) => ["profiles", "student", studentId] as const,
+    teachers: () => ["profiles", "teachers"] as const
   },
   progress: {
     all: () => ["progress"] as const,

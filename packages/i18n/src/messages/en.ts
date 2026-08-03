@@ -26,6 +26,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "action.viewAllCourses": "See all courses",
   "action.watchFreeClass": "Watch a free class",
 
+  "auth.backHome": "Back to home",
+
   "brand.name": "Genex",
 
   "common.courses": "courses",
@@ -39,6 +41,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "common.teachers": "teachers",
   "common.tests": "tests",
 
+  "common.close": "Close",
   "courses.resultCount": "Showing {shown} of {total} courses",
 
   "empty.courses": "No course matches that search",
@@ -56,15 +59,26 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "footer.legal": "Legal",
   "footer.rights": "All rights reserved",
 
+  "footer.privacy": "Privacy",
+  "footer.support": "Support",
+  "footer.terms": "Terms",
+
   "locale.label": "Language",
 
+  "nav.dashboard": "Dashboard",
   "nav.categories": "Categories",
   "nav.courses": "Courses",
   "nav.enroll": "Enrol now",
   "nav.freeClasses": "Free classes",
   "nav.helpline": "HELPLINE",
+  "nav.menu": "Menu",
   "nav.login": "Log in",
+  "nav.signOut": "Sign out",
   "nav.teachers": "Teachers",
+
+  "teachers.empty": "No teacher has a published course yet",
+  "teachers.lead": "Who you will study with — their courses, subjects and student numbers in one place.",
+  "teachers.title": "Our teachers",
 
   "role.accountant": "Accountant",
   "role.admin": "Admin",

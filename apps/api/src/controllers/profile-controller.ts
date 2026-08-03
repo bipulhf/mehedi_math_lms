@@ -62,6 +62,12 @@ export class ProfileController {
     return this.updateProfileResponse(context, profile, "Profile updated successfully");
   }
 
+  public async listPublicTeachers(context: Context<AppBindings>): Promise<Response> {
+    const teachers = await this.profileService.listPublicTeachers();
+
+    return success(context, teachers);
+  }
+
   public async getPublicTeacherProfile(context: Context<AppBindings>, userId: string): Promise<Response> {
     const profile = await this.profileService.getPublicTeacherProfile(userId);
 

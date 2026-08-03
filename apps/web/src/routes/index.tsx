@@ -14,7 +14,7 @@ import { CoursesSection } from "@/features/landing/components/courses-section";
 import { CtaSection } from "@/features/landing/components/cta-section";
 import { HeroSection } from "@/features/landing/components/hero-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
-import { LandingLayout } from "@/features/landing/components/landing-layout";
+import { PublicLayout } from "@/components/layout/public-layout";
 import { StatsSection } from "@/features/landing/components/stats-section";
 
 const EMPTY_SNAPSHOT: LandingSnapshot = {
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/")({
 
 function HomePageSkeleton(): JSX.Element {
   return (
-    <LandingLayout>
+    <PublicLayout>
       <section className="max-w-7xl mx-auto px-8 pt-20 pb-32 grid lg:grid-cols-2 gap-16 items-center">
         <div className="space-y-8">
           <Skeleton className="h-6 w-56 rounded-full" />
@@ -78,7 +78,7 @@ function HomePageSkeleton(): JSX.Element {
           <Skeleton key={index} className="h-[26rem] w-full rounded-4xl" />
         ))}
       </section>
-    </LandingLayout>
+    </PublicLayout>
   );
 }
 
@@ -86,7 +86,7 @@ function HomePage(): JSX.Element {
   const snapshot = Route.useLoaderData() ?? EMPTY_SNAPSHOT;
 
   return (
-    <LandingLayout>
+    <PublicLayout>
       <HeroSection stats={snapshot.stats} />
       <StatsSection stats={snapshot.stats} />
       <CategoriesSection categories={snapshot.categories} />
@@ -96,6 +96,6 @@ function HomePage(): JSX.Element {
       />
       <InstructorsSection teachers={snapshot.teachers} />
       <CtaSection />
-    </LandingLayout>
+    </PublicLayout>
   );
 }

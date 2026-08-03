@@ -17,6 +17,7 @@ import type { JSX, PropsWithChildren } from "react";
 import { useEffect, useMemo } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { useT } from "@/lib/i18n/locale-context";
 import { listMessageConversations } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
 import { useUiStore } from "@/stores/ui-store";
@@ -68,6 +69,7 @@ const dashboardNavigation = {
 } as const;
 
 export function DashboardLayout({ children, isLoading, role = "ADMIN" }: DashboardLayoutProps): JSX.Element {
+  const t = useT();
   const canMessage = role === "STUDENT" || role === "TEACHER";
   const messageUnreadCount = useUiStore((state) => state.messageUnreadCount);
   const setMessageUnreadCount = useUiStore((state) => state.setMessageUnreadCount);
@@ -111,7 +113,7 @@ export function DashboardLayout({ children, isLoading, role = "ADMIN" }: Dashboa
   }, [messageUnreadCount, role]);
 
   return (
-    <AppShell title="Dashboard Atelier" description={null} isLoading={isLoading} navItems={navItems}>
+    <AppShell title={t("nav.dashboard")} description={null} isLoading={isLoading} navItems={navItems}>
       {children}
     </AppShell>
   );

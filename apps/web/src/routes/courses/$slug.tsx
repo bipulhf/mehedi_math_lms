@@ -21,7 +21,7 @@ import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
 import { getCourseReviewSummary, listCourseReviews } from "@/lib/api/reviews";
 import { siteConfig } from "@/lib/site";
-import { LandingLayout } from "@/features/landing/components/landing-layout";
+import { PublicLayout } from "@/components/layout/public-layout";
 import type { ContentChapter } from "@/lib/api/content";
 import { cn } from "@/lib/utils";
 
@@ -98,9 +98,9 @@ export const Route = createFileRoute("/courses/$slug")({
   errorComponent: RouteErrorView,
   // Slow navigations show the page's own shape; fast ones skip it (defaultPendingMs).
   pendingComponent: () => (
-    <LandingLayout showGrid={false}>
+    <PublicLayout>
       <CourseDetailSkeleton />
-    </LandingLayout>
+    </PublicLayout>
   )
 });
 
@@ -176,7 +176,7 @@ function CourseDetailPage(): JSX.Element {
   );
 
   return (
-    <LandingLayout showGrid={false}>
+    <PublicLayout>
       {/* Hero Section */}
       <section className="relative bg-surface overflow-hidden border-b border-outline-variant/15">
         <div className="max-w-7xl mx-auto px-8 py-20 lg:py-32 grid lg:grid-cols-12 gap-12 items-center">
@@ -557,6 +557,6 @@ function CourseDetailPage(): JSX.Element {
           </div>
         </section>
       )}
-    </LandingLayout>
+    </PublicLayout>
   );
 }

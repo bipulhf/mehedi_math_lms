@@ -3,9 +3,13 @@ import {
   courseTeachers,
   courses,
   db,
+  desc,
   eq,
   isNotNull,
+  isNull,
+  enrollments,
   reviews,
+  sql,
   studentProfiles,
   teacherProfiles,
   users
@@ -63,6 +67,20 @@ export interface TeacherCourseRecord {
 
 export interface PublicTeacherProfileRecord extends ProfileUserRecord {
   courses: readonly TeacherCourseRecord[];
+}
+
+/** One row of the public teacher directory. Deliberately thinner than
+    `PublicTeacherProfileRecord` — a directory card needs a face, a line of
+    bio and two counts, not every course the teacher owns. */
+export interface TeacherDirectoryRecord {
+  bio: string | null;
+  courseCount: number;
+  id: string;
+  name: string;
+  profilePhoto: string | null;
+  slug: string | null;
+  specializations: string | null;
+  studentCount: number;
 }
 
 export interface StudentProfileInputRecord {
@@ -189,6 +207,69 @@ export class ProfileRepository {
       .limit(1);
 
     return rows[0] ?? null;
+  }
+
+  /**
+   * Every teacher who owns at least one published course, in name order.
+   *
+   * The inner aggregate is joined rather than correlated so the course and
+   * student counts come back in the same pass; a directory of a few hundred
+   * teacher cards should not be a few hundred count queries. Teachers with no
+   * published course are absent by construction — the join is what filters
+   * them, so an empty directory means an empty catalogue.
+   */
+  public async listPublicTeachers(limit: number): Promise<readonly TeacherDirectoryRecord[]> {
+    const taught = db
+      .select({
+        // `count distinct` because the enrolments join below fans each course
+        // out into one row per enrolled student — a plain count would report a
+        // teacher's enrolment total as their course count.
+        courseCount: sql<string>`count(distinct ${courses.id})`.as("course_count"),
+        studentCount: sql<string>`count(distinct ${enrollments.userId})`.as("student_count"),
+        teacherId: courseTeachers.teacherId
+      })
+      .from(courseTeachers)
+      .innerJoin(
+        courses,
+        and(eq(courses.id, courseTeachers.courseId), eq(courses.status, "PUBLISHED"))
+      )
+      .leftJoin(
+        enrollments,
+        and(eq(enrollments.courseId, courses.id), isNull(enrollments.cancelledAt))
+      )
+      .groupBy(courseTeachers.teacherId)
+      .as("taught");
+
+    const rows = await db
+      .select({
+        bio: teacherProfiles.bio,
+        courseCount: taught.courseCount,
+        id: users.id,
+        name: users.name,
+        profilePhoto: teacherProfiles.profilePhoto,
+        slug: users.slug,
+        specializations: teacherProfiles.specializations,
+        studentCount: taught.studentCount
+      })
+      .from(taught)
+      .innerJoin(
+        users,
+        and(
+          eq(users.id, taught.teacherId),
+          eq(users.isActive, true),
+          eq(users.banned, false),
+          isNotNull(users.slug)
+        )
+      )
+      .leftJoin(teacherProfiles, eq(teacherProfiles.userId, users.id))
+      .orderBy(users.name, desc(taught.studentCount))
+      .limit(limit);
+
+    return rows.map((row) => ({
+      ...row,
+      courseCount: Number(row.courseCount ?? 0),
+      studentCount: Number(row.studentCount ?? 0)
+    }));
   }
 
   public async findPublicTeacherBySlug(slug: string): Promise<PublicTeacherProfileRecord | null> {

@@ -1,15 +1,27 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles } from "lucide-react";
-import type { JSX, PropsWithChildren } from "react";
-import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/lib/site";
+import type { JSX, PropsWithChildren, ReactNode } from "react";
+
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { DiamondTrio, DotPatch, QuarterArc } from "@/components/ui/doodles";
+import { cn } from "@/lib/utils";
 
 interface PublicLayoutProps extends PropsWithChildren {
-  eyebrow: string;
-  subtitle: string;
-  title: string;
+  /** A breadcrumb line above the title. */
+  eyebrow?: string | undefined;
+  /** Renders the page-head block. Omit on pages that open with their own hero. */
+  subtitle?: ReactNode;
+  title?: ReactNode;
 }
 
+/**
+ * The one chrome every public page wears: 82px header, content, footer.
+ *
+ * This replaced two layouts that disagreed with each other — a `LandingLayout`
+ * with its own nav and footer, and a `PublicLayout` that wrapped its children
+ * in a marketing hero. The design has a single header and a single footer, so
+ * there is one of each here, and the optional page-head block below is what
+ * the second layout's callers used.
+ */
 export function PublicLayout({
   children,
   eyebrow,
@@ -17,55 +29,45 @@ export function PublicLayout({
   title
 }: PublicLayoutProps): JSX.Element {
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
-      <header className="px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex w-full max-w-[88rem] items-center justify-between rounded-full bg-surface/80 px-4 py-3 shadow-[0_12px_30px_-20px_rgba(19,27,46,0.16)] backdrop-blur-[24px]">
-          <Link to="/" className="font-display text-lg font-semibold tracking-[-0.03em]">
-            {siteConfig.name}
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost">
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link to="/auth/sign-up">Student signup</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen flex-col">
+      <SiteHeader />
 
-      <main className="px-4 pb-12 sm:px-6 lg:px-8">
-        <div className="mx-auto grid w-full max-w-[88rem] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(24rem,0.85fr)] lg:items-start">
-          <section className="space-y-6 rounded-[calc(var(--radius)+0.5rem)] bg-surface-container-low p-6 shadow-[0_20px_48px_-24px_rgba(19,27,46,0.14)] sm:p-8 lg:p-10">
-            <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-lowest px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.05em] text-on-surface/70">
-              <Sparkles className="size-3.5 text-secondary-container" />
-              {eyebrow}
-            </div>
-            <div className="space-y-4">
-              <h1 className="font-display text-[clamp(2.75rem,8vw,5.25rem)] font-semibold leading-[0.95] tracking-[-0.05em]">
-                {title}
-              </h1>
-              <p className="max-w-[62ch] text-base leading-8 text-on-surface/68 sm:text-lg">
+      {title === undefined ? null : (
+        <div className="relative overflow-hidden border-b border-hairline">
+          <DotPatch className="-right-6 top-6 hidden lg:block" />
+          <QuarterArc className="right-32 top-16 hidden lg:block" />
+          <DiamondTrio className="bottom-10 right-14 hidden lg:flex" />
+          <div className="mx-auto w-full max-w-[90rem] space-y-4 px-4 py-12 sm:px-8 lg:px-14 lg:py-16">
+            {eyebrow === undefined ? null : (
+              <p className="label-mono text-xs uppercase text-muted-faint">{eyebrow}</p>
+            )}
+            <h1 className="max-w-[20ch] text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
+              {title}
+            </h1>
+            {subtitle === undefined ? null : (
+              <p className="max-w-[48ch] text-lg font-light leading-relaxed text-muted">
                 {subtitle}
               </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
-                <Link to="/auth/sign-up">
-                  Create your student account
-                  <ArrowRight className="size-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/login">Already have an account? Log in</Link>
-              </Button>
-            </div>
-          </section>
-          <section className="rounded-[calc(var(--radius)+0.5rem)] bg-surface-container-low p-4 shadow-[0_20px_48px_-24px_rgba(19,27,46,0.12)] sm:p-6">
-            {children}
-          </section>
+            )}
+          </div>
         </div>
-      </main>
+      )}
+
+      <main className="flex-1">{children}</main>
+
+      <SiteFooter />
+    </div>
+  );
+}
+
+/** Standard horizontal gutters — 56px at the design width, less on a phone. */
+export function PublicSection({
+  children,
+  className
+}: PropsWithChildren<{ className?: string }>): JSX.Element {
+  return (
+    <div className={cn("mx-auto w-full max-w-[90rem] px-4 py-12 sm:px-8 lg:px-14", className)}>
+      {children}
     </div>
   );
 }

@@ -28,6 +28,8 @@ export const bn = {
   "action.viewAllCourses": "সব কোর্স দেখ",
   "action.watchFreeClass": "একটা ফ্রি ক্লাস দেখ",
 
+  "auth.backHome": "হোমে ফিরে যাও",
+
   "brand.name": "জেনেক্স",
 
   "common.courses": "কোর্স",
@@ -41,6 +43,7 @@ export const bn = {
   "common.teachers": "শিক্ষক",
   "common.tests": "পরীক্ষা",
 
+  "common.close": "বন্ধ কর",
   "courses.resultCount": "{shown}টি কোর্স দেখানো হচ্ছে · মোট {total}টি",
 
   "empty.courses": "এই নামে কোনো কোর্স পাওয়া যায়নি",
@@ -58,8 +61,13 @@ export const bn = {
   "footer.legal": "নিয়ম",
   "footer.rights": "সর্বস্বত্ব সংরক্ষিত",
 
+  "footer.privacy": "গোপনীয়তা",
+  "footer.support": "সাহায্য",
+  "footer.terms": "শর্তাবলি",
+
   "locale.label": "ভাষা",
 
+  "nav.dashboard": "ড্যাশবোর্ড",
   "nav.categories": "ক্যাটাগরি",
   "nav.courses": "কোর্স",
   "nav.enroll": "ভর্তি হও",
@@ -67,8 +75,14 @@ export const bn = {
   // Archivo, all-caps, Latin — the design keeps this label in English in both
   // locales because it reads as a typographic mark rather than as a word.
   "nav.helpline": "HELPLINE",
+  "nav.menu": "মেনু",
   "nav.login": "লগ ইন",
+  "nav.signOut": "লগ আউট",
   "nav.teachers": "শিক্ষক",
+
+  "teachers.empty": "এখনো কোনো শিক্ষকের কোর্স প্রকাশিত হয়নি",
+  "teachers.lead": "যাদের কাছে পড়বে — তাদের কোর্স, বিষয় আর শিক্ষার্থীর সংখ্যা এক জায়গায়।",
+  "teachers.title": "আমাদের শিক্ষক",
 
   "role.accountant": "হিসাবরক্ষক",
   "role.admin": "অ্যাডমিন",

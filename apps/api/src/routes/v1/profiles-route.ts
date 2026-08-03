@@ -40,6 +40,10 @@ profilesRoutes.put("/me", requireAuth(), async (context) => {
   return profileController.updateBasicProfile(context, authUser!.id, payload);
 });
 
+// Registered before "/teachers/:id", which would otherwise match "teachers"
+// as an id and fail its uuid parse.
+profilesRoutes.get("/teachers", (context) => profileController.listPublicTeachers(context));
+
 profilesRoutes.get("/teachers/by-slug/:slug", (context) => {
   const params = slugParamsSchema.parse(context.req.param());
 

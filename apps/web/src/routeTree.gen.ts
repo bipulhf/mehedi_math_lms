@@ -33,6 +33,7 @@ import { Route as DashboardMyCoursesRouteImport } from './routes/dashboard/my-co
 import { Route as DashboardProfileRouteImport } from './routes/dashboard/profile'
 import { Route as DashboardProfileCompleteRouteImport } from './routes/dashboard/profile-complete'
 import { Route as DevSeoPreviewRouteImport } from './routes/dev/seo-preview'
+import { Route as TeachersIndexRouteImport } from './routes/teachers/index'
 import { Route as TeachersSlugRouteImport } from './routes/teachers/$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardAccountantAnalyticsRouteImport } from './routes/dashboard/accountant/analytics'
@@ -183,6 +184,11 @@ const DashboardProfileCompleteRoute =
 const DevSeoPreviewRoute = DevSeoPreviewRouteImport.update({
   id: '/dev/seo-preview',
   path: '/dev/seo-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeachersIndexRoute = TeachersIndexRouteImport.update({
+  id: '/teachers/',
+  path: '/teachers/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeachersSlugRoute = TeachersSlugRouteImport.update({
@@ -371,6 +377,7 @@ export interface FileRoutesByFullPath {
   '/teachers/$slug': typeof TeachersSlugRoute
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/teachers/': typeof TeachersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
@@ -426,6 +433,7 @@ export interface FileRoutesByTo {
   '/teachers/$slug': typeof TeachersSlugRoute
   '/courses': typeof CoursesIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/teachers': typeof TeachersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
@@ -483,6 +491,7 @@ export interface FileRoutesById {
   '/teachers/$slug': typeof TeachersSlugRoute
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/teachers/': typeof TeachersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/teachers/$slug'
     | '/courses/'
     | '/dashboard/'
+    | '/teachers/'
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
@@ -596,6 +606,7 @@ export interface FileRouteTypes {
     | '/teachers/$slug'
     | '/courses'
     | '/dashboard'
+    | '/teachers'
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
@@ -652,6 +663,7 @@ export interface FileRouteTypes {
     | '/teachers/$slug'
     | '/courses/'
     | '/dashboard/'
+    | '/teachers/'
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
@@ -700,6 +712,7 @@ export interface RootRouteChildren {
   DevSeoPreviewRoute: typeof DevSeoPreviewRoute
   TeachersSlugRoute: typeof TeachersSlugRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
+  TeachersIndexRoute: typeof TeachersIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -871,6 +884,13 @@ declare module '@tanstack/react-router' {
       path: '/dev/seo-preview'
       fullPath: '/dev/seo-preview'
       preLoaderRoute: typeof DevSeoPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teachers/': {
+      id: '/teachers/'
+      path: '/teachers'
+      fullPath: '/teachers/'
+      preLoaderRoute: typeof TeachersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teachers/$slug': {
@@ -1247,6 +1267,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevSeoPreviewRoute: DevSeoPreviewRoute,
   TeachersSlugRoute: TeachersSlugRoute,
   CoursesIndexRoute: CoursesIndexRoute,
+  TeachersIndexRoute: TeachersIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

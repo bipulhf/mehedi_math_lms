@@ -288,14 +288,14 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 2 | `packages/i18n`: catalogue, locale provider, switcher, `bn()` numerals, currency and date formatters | ☑ |
 | 3 | Design tokens: `app.css`, fonts, page background, brand assets | ☑ |
 | 4 | Shared primitives — rewrites, new primitives, doodle set (§6) | ☑ |
-| 5 | Layouts: public, app shell, auth. Responsive scaffolding | ☐ |
-| 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile, plus the new `/teachers` index | ☐ |
+| 5 | Layouts: public, app shell, auth. Responsive scaffolding. `/teachers` index and demo seed data, pulled forward | ☑ |
+| 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☐ |
 | 7 | Teacher dashboard + the 5-step course builder | ☐ |
 | 8 | Student dashboard | ☐ |
 | 9 | Admin dashboard + accountant analytics | ☐ |
 | 10 | System-only surfaces restyled (§3): messages, notifications, SMS, bugs, tests, certificates, analytics, category admin, user admin, auth | ☐ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☐ |
-| 12 | Cleanup: seed data, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
+| 12 | Cleanup: compatibility aliases, `FadeIn`, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
 
 Phases 0–5 are foundation and must land in order. 6–10 can be reordered or
 parallelised once 5 is in.
@@ -417,6 +417,50 @@ Verified on a running stack at 1440 and 390 wide: no page errors, fields render
 hairlined, and the password toggle reads দেখাও under the Bangla locale.
 
 Typecheck 9/9, lint 9/9, tests 8/8.
+
+**Phase 5** — one public chrome, one dashboard shell, one auth page.
+
+There were **two** public layouts disagreeing with each other: a `LandingLayout`
+with its own nav and footer, and a `PublicLayout` that wrapped its children in a
+marketing hero. The design has one header and one footer, so `LandingLayout` is
+deleted and its three routes moved over. The optional page-head block on
+`PublicLayout` is what the other five callers were using, so none of them
+changed.
+
+`AppShell` lost every `backdrop-blur` panel. That styling had already cost one
+real bug — blur creates a stacking context, which trapped the notification panel
+inside the header and let the content card paint over it. With no blur and no
+shadow, z-index means what it says.
+
+Two items were **pulled forward** because Phase 5 could not honestly finish
+without them:
+
+- **`/teachers`**, with a new public `GET /profiles/teachers`. The header needs
+  somewhere to point, and TanStack Router typechecks `to` — a nav item cannot
+  wait for its route.
+- **Demo seed data.** `seed.ts` creates one administrator and nothing else, so
+  the catalogue was empty and every public page rendered its empty state. There
+  was nothing to look at and no way to verify Phases 6–10. `seed-demo-data.ts`
+  is a separate script that refuses to run outside `NODE_ENV=development` —
+  `seed.ts` is production-safe, this one invents people and takes their money.
+  It seeds 4 levels, 8 subjects, 4 teachers, 6 students, 8 courses (6 published,
+  1 draft, 1 pending), 48 lessons, 26 enrolments, 26 payments and 14 reviews,
+  mixed Bangla and English.
+
+Writing the directory query surfaced a **live bug**: `listFeaturedTeachers`
+counts a teacher's courses with `count(course_id)` while left-joining
+enrolments, so each course fans out into one row per enrolled student. A teacher
+with 2 courses and 7 enrolments was reported as having 7 courses — on the
+homepage, in production. Both that query and the new one now use
+`count(distinct courses.id)`.
+
+**ফ্রি ক্লাস is not in the nav yet.** It needs the catalogue to filter to courses
+with a preview lesson, which is Phase 6 work; a nav item that lands on an
+unfiltered list is a link that lies. Three items ship now, four after Phase 6.
+
+Typecheck 9/9, lint 9/9, tests 8/8. Verified on a running stack at 1440 and 390
+wide: header lockup, Bangla nav, the HELPLINE label with Bangla digits, doodles,
+the hatched rule above the footer, and course counts reading ২ কোর্স · ৪ শিক্ষার্থী.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

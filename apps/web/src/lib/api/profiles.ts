@@ -96,6 +96,23 @@ export async function updateBasicProfile(values: BasicProfileInput): Promise<Own
   return response.data;
 }
 
+export interface TeacherDirectoryEntry {
+  bio: string | null;
+  courseCount: number;
+  id: string;
+  name: string;
+  profilePhoto: string | null;
+  slug: string;
+  specializations: string | null;
+  studentCount: number;
+}
+
+export async function listPublicTeachers(): Promise<readonly TeacherDirectoryEntry[]> {
+  const response = await apiGet<readonly TeacherDirectoryEntry[]>("profiles/teachers");
+
+  return response.data;
+}
+
 export async function getPublicTeacherProfile(id: string): Promise<PublicTeacherProfileData> {
   const response = await apiGet<PublicTeacherProfileData>(`profiles/teachers/${id}`);
 
