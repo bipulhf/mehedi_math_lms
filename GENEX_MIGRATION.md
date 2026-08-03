@@ -70,9 +70,11 @@ of the rebuilt screens rather than being faked with hardcoded values.
   split lines removed.
 - **Refund KPI** → real, derived from `payments.status = 'REFUNDED'`.
 - **ফ্রি lesson pill** → real, `lectures.isPreview`.
-- **কোর্স অনুমোদন queue** → real, `courses.status = 'PENDING'`. "ফেরত পাঠাও"
-  gains a reason field, because `courses.reviewFeedback` exists and the design's
-  one-click reject would throw the reason away.
+- **কোর্স অনুমোদন queue** → real, `courses.status = 'PENDING'`. The design's
+  "ফেরত পাঠাও" is one click; this already required a written reason of at least
+  eight characters before rejecting, and keeps doing so — `courses.reviewFeedback`
+  exists and throwing the reason away would be a regression. *(Corrected in
+  Phase 9: the plan originally said this field had to be added.)*
 
 ---
 
@@ -292,7 +294,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☑ |
 | 7 | Teacher dashboard + the stepped course builder | ☑ |
 | 8 | Dashboard overviews — student, teacher, admin, accountant | ☑ |
-| 9 | Admin dashboard + accountant analytics | ☐ |
+| 9 | Admin dashboard + accountant analytics | ☑ |
 | 10 | System-only surfaces restyled (§3): messages, notifications, SMS, bugs, tests, certificates, analytics, category admin, user admin, auth | ☐ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☐ |
 | 12 | Cleanup: compatibility aliases, `FadeIn`, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
@@ -566,6 +568,19 @@ would need its colours mirrored as literals to boot.
 Typecheck 9/9, lint 9/9, tests 8/8. Verified signed in as a student and a
 teacher — Bangla greeting, chunked accent progress, percentages in Bangla
 numerals.
+
+**Phase 9** — admin and accountant. The overviews landed with Phase 8, so what
+was left here was verification and one correction to this document.
+
+§2 claimed the approval queue's "ফেরত পাঠাও" needed a reason field added.
+It did not: `/dashboard/admin/courses` already refused to reject without a
+written note of at least eight characters, and stored it on
+`courses.reviewFeedback`. The design's one-click reject is the regression, not
+the other way round. §2 is corrected above.
+
+Verified signed in as the administrator: KPI cards in Bangla numerals, the
+derived watch list with its accent count, revenue bars, and the most-enrolled
+list.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

@@ -57,7 +57,7 @@ export function AdminOverview(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <SectionHeading title={t("dash.statRevenue")} />
+      <SectionHeading title={t("nav.overview")} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label={t("dash.statRevenue")} value={format.currency(stats.revenue)} />
