@@ -4,6 +4,7 @@ import { useEffect, useState, type JSX } from "react";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { siteNavItems } from "@/components/layout/site-nav";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { siteConfig } from "@/lib/site";
@@ -66,7 +67,12 @@ export function SiteHeader(): JSX.Element {
 
           <LanguageSwitcher className="hidden md:inline-flex" />
 
-          {isPending ? null : session ? (
+          {isPending ? (
+            <div className="hidden items-center gap-4 sm:flex">
+              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          ) : session ? (
             <Button asChild size="sm">
               <Link to="/dashboard">{t("nav.dashboard")}</Link>
             </Button>
@@ -117,14 +123,21 @@ export function SiteHeader(): JSX.Element {
               {t(item.labelKey)}
             </Link>
           ))}
-          <div className="flex flex-wrap items-center gap-4 py-4 sm:hidden">
-            <Link className="text-base text-muted" to="/auth/sign-in">
-              {t("nav.login")}
-            </Link>
-            <Button asChild size="sm">
-              <Link to="/auth/sign-up">{t("nav.enroll")}</Link>
-            </Button>
-          </div>
+          {isPending ? (
+            <div className="flex items-center gap-4 py-4 sm:hidden">
+              <Skeleton className="h-6 w-12" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          ) : session ? null : (
+            <div className="flex flex-wrap items-center gap-4 py-4 sm:hidden">
+              <Link className="text-base text-muted" to="/auth/sign-in">
+                {t("nav.login")}
+              </Link>
+              <Button asChild size="sm">
+                <Link to="/auth/sign-up">{t("nav.enroll")}</Link>
+              </Button>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-4 py-3 md:hidden">
             <a className="text-base text-ink" href={`tel:${siteConfig.contact.helpline}`}>
               {format.digits(siteConfig.contact.helpline)}
