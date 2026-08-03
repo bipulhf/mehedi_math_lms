@@ -269,11 +269,11 @@ export function AssessmentBuilder({
 
   return (
     <div className="space-y-3">
-      <Card className="border-outline-variant/30 bg-surface-container-lowest/85">
+      <Card className="border-hairline/30 bg-card/85">
         <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p className="font-body text-base font-bold text-on-surface">{t("ab.title")}</p>
-            <p className="text-xs text-on-surface/65">{t("ab.lead")}</p>
+            <p className="font-body text-base font-bold text-ink">{t("ab.title")}</p>
+            <p className="text-xs text-ink/65">{t("ab.lead")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge
@@ -299,7 +299,7 @@ export function AssessmentBuilder({
               key={chapter.chapterId}
              
             >
-              <Card className="border-outline-variant/30">
+              <Card className="border-hairline/30">
                 <CardHeader className="space-y-1 pb-3">
                   <CardTitle className="text-lg">{chapter.chapterTitle}</CardTitle>
                   <CardDescription>{t("ab.inChapter")}</CardDescription>
@@ -307,35 +307,35 @@ export function AssessmentBuilder({
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     {chapter.tests.length === 0 ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm leading-6 text-on-surface/70">{t("ab.noTests")}</div>
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-3 text-sm leading-6 text-ink/70">{t("ab.noTests")}</div>
                     ) : null}
                     {chapter.tests.map((test) => (
                       <button
                         key={test.id}
                         className={`w-full rounded-[calc(var(--radius)-0.125rem)] border p-3 text-left transition-all ${
                           selectedTestId === test.id
-                            ? "border-secondary-container bg-secondary-container/10"
-                            : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                            ? "border-accent bg-accent/10"
+                            : "border-hairline bg-panel-warm hover:bg-panel-warm"
                         }`}
                         type="button"
                         onClick={() => setSelectedTestId(test.id)}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-on-surface">{test.title}</p>
-                            <p className="text-xs text-on-surface/62">
+                            <p className="font-semibold text-ink">{test.title}</p>
+                            <p className="text-xs text-ink/62">
                               {test.type} · {test.questionCount} questions · {test.totalMarks} marks
                             </p>
                           </div>
-                          <span className="rounded-full bg-surface-container-high px-2.5 py-1 text-[0.62rem] uppercase tracking-[0.16em] text-on-surface/62">
+                          <span className="rounded-full bg-chip-active px-2.5 py-1 text-[0.62rem] uppercase tracking-[0.16em] text-ink/62">
                             {test.isPublished ? "Published" : "Draft"}
                           </span>
                         </div>
                       </button>
                     ))}
                   </div>
-                  <div className="grid gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-outline-variant bg-surface-container-low p-3">
-                    <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("ab.newTitle")}</Label>
+                  <div className="grid gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-hairline bg-panel-warm p-3">
+                    <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("ab.newTitle")}</Label>
                     <Input
                       className="h-10"
                       placeholder="e.g. Chapter Quiz 1"
@@ -423,7 +423,7 @@ export function AssessmentBuilder({
                         }))
                       }
                     />
-                    <label className="flex items-center gap-2 text-xs text-on-surface/75">
+                    <label className="flex items-center gap-2 text-xs text-ink/75">
                       <input
                         checked={testDrafts[chapter.chapterId]?.isPublished ?? false}
                         className="h-4 w-4 accent-(--secondary-container)"
@@ -455,12 +455,12 @@ export function AssessmentBuilder({
 
         <div className="space-y-3">
           {!selectedTest || !selectedTestSummary ? (
-            <Card className="border-outline-variant/30">
-              <CardContent className="p-5 text-sm leading-6 text-on-surface/70">{t("ab.pickTest")}</CardContent>
+            <Card className="border-hairline/30">
+              <CardContent className="p-5 text-sm leading-6 text-ink/70">{t("ab.pickTest")}</CardContent>
             </Card>
           ) : (
             <>
-              <Card className="border-outline-variant/30">
+              <Card className="border-hairline/30">
                 <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-lg">{selectedTest.title}</CardTitle>
@@ -488,7 +488,7 @@ export function AssessmentBuilder({
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-3">
-                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("ab.testTitle")}</Label>
+                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("ab.testTitle")}</Label>
                   <Input
                     className="h-10"
                     value={selectedTest.title}
@@ -554,7 +554,7 @@ export function AssessmentBuilder({
                         )
                       }
                     />
-                    <label className="flex h-10 items-center gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant px-3 text-xs text-on-surface">
+                    <label className="flex h-10 items-center gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3 text-xs text-ink">
                       <input
                         checked={selectedTest.isPublished}
                         className="h-4 w-4 accent-(--secondary-container)"
@@ -571,7 +571,7 @@ export function AssessmentBuilder({
                         }
                       />{t("ab.published")}</label>
                   </div>
-                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("common.description")}</Label>
+                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("common.description")}</Label>
                   <Textarea
                     className="min-h-20"
                     value={selectedTest.description ?? ""}
@@ -595,20 +595,20 @@ export function AssessmentBuilder({
                 </CardContent>
               </Card>
 
-              <Card className="border-outline-variant/30">
+              <Card className="border-hairline/30">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{t("ab.questions")}</CardTitle>
                   <CardDescription>{t("ab.questionsLead")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {selectedTest.questions.length === 0 ? (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm text-on-surface/70">{t("ab.noQuestions")}</div>
+                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-3 text-sm text-ink/70">{t("ab.noQuestions")}</div>
                   ) : null}
 
                   {selectedTest.questions.map((question, questionIndex) => (
                     <div
                       key={question.id}
-                      className="rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-3"
+                      className="rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm p-3"
                     >
                       {editingQuestionId === question.id ? (
                         <QuestionEditor
@@ -627,10 +627,10 @@ export function AssessmentBuilder({
                         <div className="space-y-2.5">
                           <div className="flex flex-wrap items-start justify-between gap-2.5">
                             <div>
-                              <p className="font-semibold text-on-surface">
+                              <p className="font-semibold text-ink">
                                 Q{questionIndex + 1}. {question.questionText}
                               </p>
-                              <p className="text-xs text-on-surface/62">
+                              <p className="text-xs text-ink/62">
                                 {question.type} · {question.marks} marks
                               </p>
                             </div>
@@ -686,8 +686,8 @@ export function AssessmentBuilder({
                                   key={option.id}
                                   className={`rounded-[calc(var(--radius)-0.125rem)] px-3 py-2 text-xs ${
                                     option.isCorrect
-                                      ? "bg-secondary-container/12 text-on-surface"
-                                      : "bg-surface-container text-on-surface/70"
+                                      ? "bg-accent/12 text-ink"
+                                      : "bg-panel-warm text-ink/70"
                                   }`}
                                 >
                                   {option.optionText}
@@ -700,7 +700,7 @@ export function AssessmentBuilder({
                     </div>
                   ))}
 
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-outline-variant bg-surface-container-low p-3">
+                  <div className="rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-hairline bg-panel-warm p-3">
                     <QuestionEditor
                       draft={questionDraft}
                       isWorking={isWorking}

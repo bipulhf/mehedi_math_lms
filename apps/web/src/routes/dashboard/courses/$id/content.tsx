@@ -91,7 +91,7 @@ function CourseContentPage(): JSX.Element {
                 <Link to="/dashboard/courses/$id/tests" params={{ id: course.id }} className="flex items-center gap-2">
                    <Settings2 className="size-4" />{t("cbuild.assessments")}</Link>
              </Button>
-             <Button asChild className="h-12 px-8 font-body font-medium bg-ink hover:bg-primary-hover transition-all ] ]">
+             <Button asChild className="h-12 px-8 font-body font-medium bg-ink hover:bg-ink-muted transition-all">
                 <Link to="/courses/$slug" params={{ slug: course.slug }} className="flex items-center gap-2">
                    <LayoutGrid className="size-4" />{t("cbuild.preview")}</Link>
              </Button>

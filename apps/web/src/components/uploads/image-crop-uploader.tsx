@@ -200,7 +200,7 @@ export function ImageCropUploader({
           isDragging
             ? "border-accent bg-accent/10"
             : "border-hairline bg-panel-warm hover:bg-panel-warm"
-        } ${disabled || isUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+        } ${disabled || isUploading ? "cursor-not-allowed opacity-70" : ""}`}
         disabled={disabled || isUploading}
         type="button"
         onClick={() => fileInputRef.current?.click()}

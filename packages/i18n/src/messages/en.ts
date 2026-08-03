@@ -739,5 +739,12 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "test.submitted": "Test submitted",
   "site.tagline": "Mathematics and science, made plain.",
   "cbuild.assessments": "Tests",
-
+  "about.title": "About Genex",
+  "about.lead": "Courses, notes and tests from teachers around the country, in one place and in plain language.",
+  "about.body1": "Genex exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
+  "about.body2": "Behind every course there is a teacher, and behind them the messaging, notices and assessment tools that keep a batch running.",
+  "contact.title": "Contact us",
+  "contact.address": "Address:",
+  "contact.helpline": "Helpline:",
+  "contact.bugNote": "Found a problem in the app? Report it from the dashboard and it reaches the team directly.",
 };

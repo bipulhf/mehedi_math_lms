@@ -2,11 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { PublicLayout } from "@/components/layout/public-layout";
-import { Card, CardContent } from "@/components/ui/card";
+import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/contact")({
   head: () =>
@@ -22,23 +21,38 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage(): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   return (
-    <PublicLayout
-      eyebrow="Reach the team"
-      title={t("contact.lead")}
-      subtitle="Use the dashboard bug reporter for product issues, or email hello@genex.com.bd for general inquiries while dedicated in-app messaging rolls out."
-    >
-      <Card className="bg-panel-warm">
-        <CardContent className="space-y-3 p-6 text-sm leading-7 text-ink/80">
-          <p>
-            <span className="font-semibold text-ink">{t("contact.email")}</span> hello@genex.com.bd
-          </p>
-          <p>
-            <span className="font-semibold text-ink">{t("contact.site")}</span> {siteConfig.url}
-          </p>
-        </CardContent>
-      </Card>
+    <PublicLayout subtitle={t("contact.lead")} title={t("contact.title")}>
+      <PublicSection className="space-y-8">
+        {/* Straight from siteConfig — the page used to carry its own address
+            and a different mailbox from the footer's. */}
+        <dl className="max-w-[62ch] space-y-4 text-lg font-light text-muted">
+          <div className="flex flex-wrap gap-2">
+            <dt className="text-muted-light">{t("contact.helpline")}</dt>
+            <dd className="text-ink">
+              <a href={`tel:${siteConfig.contact.helpline}`}>
+                {format.digits(siteConfig.contact.helpline)}
+              </a>
+            </dd>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <dt className="text-muted-light">{t("contact.email")}</dt>
+            <dd className="text-ink">
+              <a href={`mailto:${siteConfig.contact.email}`}>{siteConfig.contact.email}</a>
+            </dd>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <dt className="text-muted-light">{t("contact.address")}</dt>
+            <dd className="text-ink">{siteConfig.contact.address}</dd>
+          </div>
+        </dl>
+
+        <p className="max-w-[62ch] border border-dashed border-dot-idle p-5 text-base font-light leading-relaxed text-muted">
+          {t("contact.bugNote")}
+        </p>
+      </PublicSection>
     </PublicLayout>
   );
 }

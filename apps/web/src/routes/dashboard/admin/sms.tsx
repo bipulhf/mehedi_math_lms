@@ -201,7 +201,7 @@ function AdminSmsPage() {
                   <label
                     key={mode.id}
                     className={cn(
-                      "flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/mode",
+                      "flex items-center gap-3 p-4 rounded-2xl border transition-all group/mode",
                       targetMode === mode.id
                         ? "bg-ink/5 border-ink/30 shadow-sm"
                         : "bg-panel-warm/30 border-hairline/20 hover:border-hairline/40"
@@ -279,7 +279,7 @@ function AdminSmsPage() {
               <Button
                 type="submit"
                 disabled={submitting || providerOk === false}
-                className="h-14 px-10 font-body font-medium transition-all ] ] disabled:opacity-40 disabled: disabled:grayscale"
+                className="h-14 px-10 font-body font-medium transition-all disabled:opacity-40 disabled: disabled:grayscale"
               >
                 {submitting ? (
                   <Skeleton className="h-4 w-20 bg-white/20" />

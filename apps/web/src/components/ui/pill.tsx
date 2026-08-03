@@ -47,7 +47,7 @@ export function FilterPill({
       aria-pressed={isSelected}
       className={cn(
         pillBase,
-        "min-h-11 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong",
+        "min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong",
         isSelected
           ? "bg-chip-active text-ink"
           : "border border-hairline text-muted hover:border-line-strong hover:text-ink",

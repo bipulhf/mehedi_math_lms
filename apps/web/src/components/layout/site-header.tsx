@@ -87,7 +87,7 @@ export function SiteHeader(): JSX.Element {
           <button
             aria-expanded={isDrawerOpen}
             aria-label={t("nav.menu")}
-            className="inline-flex size-11 cursor-pointer items-center justify-center border border-hairline text-ink lg:hidden"
+            className="inline-flex size-11 items-center justify-center border border-hairline text-ink lg:hidden"
             onClick={() => setIsDrawerOpen((open) => !open)}
             type="button"
           >

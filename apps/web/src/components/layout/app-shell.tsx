@@ -79,7 +79,7 @@ export function AppShell({
           <button
             aria-expanded={isDrawerOpen}
             aria-label={t("nav.menu")}
-            className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center border border-hairline text-ink lg:hidden"
+            className="inline-flex size-11 shrink-0 items-center justify-center border border-hairline text-ink lg:hidden"
             onClick={() => setIsDrawerOpen((open) => !open)}
             type="button"
           >
@@ -106,7 +106,7 @@ export function AppShell({
             <LanguageSwitcher className="hidden md:inline-flex" />
             <NotificationBell />
             <button
-              className="min-h-11 cursor-pointer px-2 text-base text-muted transition-colors hover:text-ink disabled:opacity-55"
+              className="min-h-11 px-2 text-base text-muted transition-colors hover:text-ink disabled:opacity-55"
               disabled={isSigningOut}
               onClick={() => void handleSignOut()}
               type="button"

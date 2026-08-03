@@ -338,7 +338,7 @@ export function CourseEditor({
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="flex items-start gap-4 p-6 border border-hairline/20 bg-ink/5 hover:bg-ink/10 transition-all cursor-pointer group">
+                  <label className="flex items-start gap-4 p-6 border border-hairline/20 bg-ink/5 hover:bg-ink/10 transition-all group">
                     <input
                       type="checkbox"
                       checked={values.isExamOnly}
@@ -552,7 +552,7 @@ export function CourseEditor({
 
                       <div className="flex flex-col gap-3">
                         <Button
-                          className="h-14 bg-white text-ink hover:bg-white/90 font-body font-medium transition-all ] ] disabled:opacity-50"
+                          className="h-14 bg-white text-ink hover:bg-white/90 font-body font-medium transition-all disabled:opacity-50"
                           onClick={() => handleCommit("submit")}
                           disabled={isSaving}
                         >
@@ -602,7 +602,7 @@ export function CourseEditor({
               className={cn(
                 "h-12 rounded-2xl px-8 sm:px-10 font-body font-extrabold shadow-lg transition-all",
                 canContinue
-                  ? "bg-ink hover:bg-primary-hover hover:scale-[1.05] active:scale-[0.95]"
+                  ? "bg-ink hover:bg-ink-muted "
                   : "bg-chip-active text-ink/30 cursor-not-allowed border border-hairline/10"
               )}
             >{t("common.next")}<ChevronRight className="size-5 ml-2" />

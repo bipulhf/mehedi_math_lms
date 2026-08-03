@@ -207,7 +207,7 @@ function AdminCoursesPage(): JSX.Element {
 
                   <div className="flex gap-3 pt-2">
                     <Button 
-                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest bg-ink hover:bg-primary-hover transition-all ] ] disabled:opacity-50"
+                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest bg-ink hover:bg-ink-muted transition-all disabled:opacity-50"
                       onClick={() => void handleApprove(course.id)}
                       disabled={actioningId === course.id}
                     >
@@ -220,7 +220,7 @@ function AdminCoursesPage(): JSX.Element {
                     </Button>
                     <Button 
                       variant="outline"
-                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest border-hairline/30 hover:bg-chip-active transition-all ] ] disabled:opacity-50"
+                      className="h-11 flex-1 font-bold text-xs uppercase tracking-widest border-hairline/30 hover:bg-chip-active transition-all disabled:opacity-50"
                       onClick={() => void handleReject(course.id)}
                       disabled={actioningId === course.id}
                     >

@@ -198,14 +198,14 @@ function MyCoursesPage(): JSX.Element {
 
                 <div className="flex flex-wrap gap-3 pt-2">
                   {enrollment.accessGranted ? (
-                    <Button asChild className="h-11 px-5 font-body font-semibold transition-all ] ]">
+                    <Button asChild className="h-11 px-5 font-body font-semibold transition-all">
                       <Link
                         to="/dashboard/learn/$courseId"
                         params={{ courseId: enrollment.course.id }}
                       >{t("mine.resume")}</Link>
                     </Button>
                   ) : (
-                    <Button asChild className="h-11 px-5 font-body font-semibold transition-all ] ]">
+                    <Button asChild className="h-11 px-5 font-body font-semibold transition-all">
                       <Link to="/courses/$slug" params={{ slug: enrollment.course.slug }}>{t("mine.finishPayment")}</Link>
                     </Button>
                   )}

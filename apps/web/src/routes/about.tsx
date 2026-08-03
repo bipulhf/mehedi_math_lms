@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { PublicLayout } from "@/components/layout/public-layout";
-import { Card, CardContent } from "@/components/ui/card";
+import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import { useT } from "@/lib/i18n/locale-context";
@@ -24,23 +23,13 @@ function AboutPage(): JSX.Element {
   const t = useT();
 
   return (
-    <PublicLayout
-      eyebrow="Our story"
-      title={t("site.tagline")}
-      subtitle="We combine the Digital Atelier design language with structured programs, assessments, and human instructors who stay close to every cohort."
-    >
-      <Card className="bg-panel-warm">
-        <CardContent className="space-y-4 p-6 text-sm leading-7 text-ink/80">
-          <p>
-            {siteConfig.name} exists to remove friction between curiosity and disciplined practice. Courses are authored with
-            editorial rigor—layered surfaces, calm motion, and typography that keeps attention on the problem at hand.
-          </p>
-          <p>
-            Behind every published course sits a teaching team, an accountant-ready commerce layer, and tooling for bug reports,
-            messaging, and SMS notices so operations stay as thoughtful as the curriculum.
-          </p>
-        </CardContent>
-      </Card>
+    <PublicLayout subtitle={t("about.lead")} title={t("about.title")}>
+      <PublicSection>
+        <div className="max-w-[62ch] space-y-5 text-lg font-light leading-relaxed text-muted">
+          <p>{t("about.body1")}</p>
+          <p>{t("about.body2")}</p>
+        </div>
+      </PublicSection>
     </PublicLayout>
   );
 }

@@ -161,7 +161,7 @@ function DashboardCoursesPage(): JSX.Element {
                       <Button
                         size="sm"
                         onClick={() => void handleSubmit(course.id)}
-                        className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest bg-ink hover:bg-primary-hover transition-all ]"
+                        className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest bg-ink hover:bg-ink-muted transition-all"
                       >
                         <Send className="size-3.5 mr-2" />{t("tcourses.submit")}</Button>
                     )}

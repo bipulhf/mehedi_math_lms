@@ -29,15 +29,18 @@ export function CtaSection(): JSX.Element {
           </p>
         </div>
 
+        {/* `shrink-0` and no wrap on the link: the group is sized to its
+            content, and at 1440 the button plus the link came out a pixel over,
+            which dropped the link onto a second line beneath the button. */}
         {isPending ? null : (
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex shrink-0 flex-wrap items-center gap-6">
             <Button asChild size="lg">
               <Link to={session ? "/dashboard" : "/auth/sign-up"}>
                 {session ? t("nav.dashboard") : t("home.openAccount")}
               </Link>
             </Button>
             <Link
-              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+              className="whitespace-nowrap border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
               to="/contact"
             >
               {t("footer.support")}

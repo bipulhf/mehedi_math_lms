@@ -76,7 +76,7 @@ function ReportBugPage(): JSX.Element {
           </div>
         </div>
         <div className="pt-4">
-          <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-body font-medium text-lg transition-all ] ] group/btn overflow-hidden relative">
+          <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-body font-medium text-lg transition-all group/btn overflow-hidden relative">
             <div className="absolute inset-0 bg-linear-to-r from-ink to-ink/80 group-hover/btn:scale-105"></div>
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isSubmitting ? (

@@ -207,7 +207,7 @@ function AdminUsersPage(): JSX.Element {
           </div>
           <div className="lg:pt-[1.7rem]">
             <Button
-              className="h-12 px-8 font-body font-medium transition-all ] ] w-full lg:w-fit"
+              className="h-12 px-8 font-body font-medium transition-all w-full lg:w-fit"
               type="submit"
               disabled={isSubmitting}
             >

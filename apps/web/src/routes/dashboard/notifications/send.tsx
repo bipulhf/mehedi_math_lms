@@ -262,7 +262,7 @@ function SendNotificationPage() {
                 <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("notify.target")}</Label>
                 <label
                   className={cn(
-                    "flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer",
+                    "flex items-center gap-3 p-4 rounded-2xl border transition-all ",
                     targetMode === "role"
                       ? "bg-accent/5 border-accent/30"
                       : "bg-panel-warm/30 border-hairline/20"
@@ -354,7 +354,7 @@ function SendNotificationPage() {
             <div className="pt-2">
               <Button
                 type="submit"
-                className="w-full h-14 font-body font-medium transition-all ] ] disabled:opacity-40"
+                className="w-full h-14 font-body font-medium transition-all disabled:opacity-40"
                 disabled={submitting}
               >
                 {submitting ? (

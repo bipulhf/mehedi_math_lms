@@ -30,7 +30,7 @@ export function AccordionRow({
     <div className={cn("border-b border-hairline", className)}>
       <button
         aria-expanded={isOpen}
-        className="flex min-h-11 w-full cursor-pointer items-center gap-4 py-5 text-left transition-colors hover:bg-panel-warm focus-visible:outline-none"
+        className="flex min-h-11 w-full items-center gap-4 py-5 text-left transition-colors hover:bg-panel-warm focus-visible:outline-none"
         onClick={onToggle}
         type="button"
       >

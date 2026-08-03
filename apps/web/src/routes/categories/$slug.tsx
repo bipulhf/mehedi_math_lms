@@ -3,7 +3,7 @@ import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { CourseGridSkeleton } from "@/components/courses/course-card";
-import { PublicLayout } from "@/components/layout/public-layout";
+import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { CategoryNode } from "@/lib/api/categories";
@@ -84,7 +84,7 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
 
   return (
     <Card className="overflow-hidden">
-      <div className="relative aspect-video overflow-hidden bg-surface-container-low">
+      <div className="relative aspect-video overflow-hidden bg-panel-warm">
         {course.coverImageUrl ? (
           <ResponsiveImage
             alt={course.title}
@@ -101,7 +101,7 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
       <CardContent className="space-y-3 p-4">
         <CardTitle className="text-lg">{course.title}</CardTitle>
         <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-        <Link className="text-sm font-semibold text-secondary-container" to="/courses/$slug" params={{ slug: course.slug }}>{t("cat.viewCourse")}</Link>
+        <Link className="text-sm font-semibold text-accent" to="/courses/$slug" params={{ slug: course.slug }}>{t("cat.viewCourse")}</Link>
       </CardContent>
     </Card>
   );
@@ -114,14 +114,12 @@ function CategoryCoursesPage(): JSX.Element {
 
   return (
     <PublicLayout
-      eyebrow="Category spotlight"
+      eyebrow={t("nav.categories")}
+      subtitle={category.description ?? t("cat.deeperLead")}
       title={category.name}
-      subtitle={
-        category.description ??
-        "Every course listed here shares this academic lane. Open a card to see pricing, teachers, and enrollment details."
-      }
     >
-      <div className="space-y-6">
+      {/* Same gutter as the page head above it. */}
+      <PublicSection className="space-y-6">
         {category.children.length > 0 ? (
           <div>
             <Card>
@@ -133,7 +131,7 @@ function CategoryCoursesPage(): JSX.Element {
                 {category.children.map((child: CategoryNode) => (
                   <Link
                     key={child.id}
-                    className="rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface"
+                    className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
                     to="/categories/$slug"
                     params={{ slug: child.slug }}
                   >
@@ -146,7 +144,7 @@ function CategoryCoursesPage(): JSX.Element {
         ) : null}
 
         {courses.length === 0 ? (
-          <p className="text-sm text-on-surface/68">{t("cat.noCourses")}</p>
+          <p className="text-sm text-ink/68">{t("cat.noCourses")}</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {courses.map((course: CourseSummary) => (
@@ -156,7 +154,7 @@ function CategoryCoursesPage(): JSX.Element {
             ))}
           </div>
         )}
-      </div>
+      </PublicSection>
     </PublicLayout>
   );
 }

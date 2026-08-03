@@ -4,8 +4,7 @@ import { Layers3 } from "lucide-react";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { PublicLayout } from "@/components/layout/public-layout";
-import { Badge } from "@/components/ui/badge";
+import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryTreeSkeleton } from "@/components/common/skeletons";
@@ -64,11 +63,11 @@ function PublicCategoryTree({
     <div className="space-y-4">
       {categories.map((category) => (
         <div key={category.id}>
-          <Card className="bg-surface-container-low p-1">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-lowest">
+          <Card className="bg-panel-warm p-1">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card">
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="rounded-full bg-surface-container-highest p-3 text-secondary-container">
+                  <div className="rounded-full bg-chip-active p-3 text-accent">
                     <Layers3 className="size-4" />
                   </div>
                   <div>
@@ -77,25 +76,17 @@ function PublicCategoryTree({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4" style={{ marginLeft: `${depth * 1.5}rem` }}>
-                <div className="flex flex-wrap gap-2">
-                  <Badge tone="neutral">
-                    <Link className="text-inherit no-underline" to="/categories/$slug" params={{ slug: category.slug }}>
-                      /{category.slug}
-                    </Link>
-                  </Badge>
-                  {category.children.length > 0 ? (
-                    <Badge tone="neutral">{category.children.length} subcategories</Badge>
-                  ) : null}
-                </div>
+              <CardContent className="space-y-4">
                 {category.children.length > 0 ? (
                   <PublicCategoryTree categories={category.children} depth={depth + 1} />
                 ) : (
                   <Link
-                    className="text-sm font-semibold text-secondary-container"
+                    className="text-base text-accent"
                     to="/categories/$slug"
                     params={{ slug: category.slug }}
-                  >{t("cat.viewCourses")}</Link>
+                  >
+                    {t("cat.viewCourses")} →
+                  </Link>
                 )}
               </CardContent>
             </div>
@@ -116,19 +107,22 @@ function CategoriesPage(): JSX.Element {
 
   return (
     <PublicLayout
-      eyebrow="Academic pathways"
-      title={t("cat.exploreLead")}
-      subtitle="Browse the high-level academic map before drilling into course-level detail in the next phases."
+      subtitle={t("cat.exploreLead")}
+      title={t("nav.categories")}
     >
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-        </div>
-      ) : (
-        <PublicCategoryTree categories={categories} />
-      )}
+      {/* PublicSection, not a bare div: the page head sits on the standard
+          56px gutter and the body was running edge to edge under it. */}
+      <PublicSection>
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-40" />
+            <Skeleton className="h-40" />
+            <Skeleton className="h-40" />
+          </div>
+        ) : (
+          <PublicCategoryTree categories={categories} />
+        )}
+      </PublicSection>
     </PublicLayout>
   );
 }

@@ -356,7 +356,7 @@ function AdminCategoriesPage(): JSX.Element {
                         <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/80">{t("admin.cat.visibility")}</p>
                         <p className="text-[0.65rem] text-ink/50 font-light mt-1">{t("admin.cat.hiddenNote")}</p>
                       </div>
-                      <label className="inline-flex items-center gap-3 cursor-pointer group/toggle">
+                      <label className="inline-flex items-center gap-3 group/toggle">
                         <input type="checkbox" className="sr-only peer" {...register("isActive")} />
                         <div className="relative w-11 h-6 bg-chip-active peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
                         <span className="text-xs font-bold uppercase tracking-tighter text-ink/70 peer-checked:text-accent group-hover/toggle:text-ink transition-colors">{t("admin.users.active")}</span>
@@ -368,7 +368,7 @@ function AdminCategoriesPage(): JSX.Element {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="h-12 px-8 font-body font-medium transition-all ] ]"
+                    className="h-12 px-8 font-body font-medium transition-all"
                   >
                     {isSubmitting ? (
                       <Skeleton className="h-4 w-20 bg-white/20" />

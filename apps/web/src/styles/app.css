@@ -122,6 +122,35 @@
     font: inherit;
   }
 
+  /* Tailwind v4 stopped shipping `cursor: pointer` on interactive elements, so
+   * every button in the app reverted to an arrow. Declared once here rather
+   * than as a class on each control: a control added later would otherwise
+   * have to remember, and the ones that forgot are exactly the ones nobody
+   * notices. */
+  button,
+  summary,
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  a[href],
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="range"],
+  input[type="submit"] {
+    cursor: pointer;
+  }
+
+  /* A disabled control should not invite the click it is going to ignore. */
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   /* Long paragraphs are weight 300 and headings 500 — never 700+, the calm
    * register depends on it. DESIGN.md §4. */
   h1,

@@ -29,7 +29,11 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        // `self-start` because a grid cell stretches its child, and a stretched
+        // flex row with `items-end` drops a lone heading to the bottom of the
+        // cell — which put the FAQ title level with the last question rather
+        // than the first.
+        "flex flex-col gap-4 self-start sm:flex-row sm:items-end sm:justify-between",
         className
       )}
     >

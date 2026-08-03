@@ -29,7 +29,7 @@ export function DotRow({
     <button
       aria-pressed={isSelected}
       className={cn(
-        "flex min-h-11 w-full cursor-pointer items-center gap-3 py-3 text-left",
+        "flex min-h-11 w-full items-center gap-3 py-3 text-left",
         "transition-colors duration-150 hover:bg-panel-warm focus-visible:outline-none",
         className
       )}

@@ -249,7 +249,7 @@ function StudentTestPage(): JSX.Element {
               {currentQuestion.options.map((option) => (
                 <label
                   key={option.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm px-4 py-3"
+                  className="flex items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm px-4 py-3"
                 >
                   <input
                     checked={draftAnswers[currentQuestion.id]?.selectedOptionId === option.id}

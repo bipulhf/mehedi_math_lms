@@ -16,9 +16,9 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
  */
 export function Checkbox({ className, label, ...props }: CheckboxProps): JSX.Element {
   return (
-    <label className={cn("flex min-h-11 cursor-pointer items-center gap-3", className)}>
+    <label className={cn("flex min-h-11 items-center gap-3", className)}>
       <span className="relative inline-flex size-[18px] shrink-0 items-center justify-center">
-        <input className="peer absolute inset-0 cursor-pointer opacity-0" type="checkbox" {...props} />
+        <input className="peer absolute inset-0 opacity-0" type="checkbox" {...props} />
         <span
           aria-hidden="true"
           className={cn(

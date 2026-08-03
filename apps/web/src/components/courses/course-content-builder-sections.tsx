@@ -181,7 +181,7 @@ export function ChapterMaterialsSection({
           value={title}
           onChange={(event) => onTitleChange(event.target.value)}
         />
-        <label className="flex h-10 cursor-pointer items-center justify-center rounded-lg border border-hairline/20 bg-chip-active/45 px-4 text-[0.62rem] font-medium uppercase tracking-widest text-ink/60 transition-all hover:bg-chip-active">{t("cb.chooseFile")}<input className="hidden" type="file" onChange={onUpload} />
+        <label className="flex h-10 items-center justify-center rounded-lg border border-hairline/20 bg-chip-active/45 px-4 text-[0.62rem] font-medium uppercase tracking-widest text-ink/60 transition-all hover:bg-chip-active">{t("cb.chooseFile")}<input className="hidden" type="file" onChange={onUpload} />
         </label>
       </div>
 
@@ -324,7 +324,7 @@ export function LectureForm({
       </div>
 
       <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
-        <label className="flex cursor-pointer items-center gap-2.5">
+        <label className="flex items-center gap-2.5">
           <input
             type="checkbox"
             checked={values.isPreview}

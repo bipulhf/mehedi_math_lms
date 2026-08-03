@@ -46,7 +46,7 @@ export function Tabs<TValue extends string>({
           <button
             aria-selected={isActive}
             className={cn(
-              "min-h-11 shrink-0 cursor-pointer border-b-2 px-1 pb-3 text-base transition-colors duration-150",
+              "min-h-11 shrink-0 border-b-2 px-1 pb-3 text-base transition-colors duration-150",
               "focus-visible:outline-none focus-visible:text-ink",
               isActive
                 ? "border-accent text-ink"
