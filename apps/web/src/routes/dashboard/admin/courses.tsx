@@ -19,8 +19,6 @@ import { toast } from "sonner";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -137,13 +135,15 @@ function AdminCoursesPage(): JSX.Element {
         <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
           <Skeleton className="h-4 w-full max-w-sm bg-chip-active mb-8" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="space-y-4 bg-panel-warm/50 p-6 border border-hairline/10">
-                <Skeleton className="h-6 w-24 rounded-full bg-chip-active" />
-                <Skeleton className="h-8 w-3/4 bg-chip-active" />
-                <Skeleton className="aspect-video w-full bg-chip-active" />
-                <Skeleton className="h-10 w-full bg-chip-active" />
+          <div className="space-y-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 border border-hairline/10 bg-panel-warm/30">
+                <Skeleton className="h-14 w-24 shrink-0 bg-chip-active" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-2/3 bg-chip-active" />
+                  <Skeleton className="h-3 w-1/3 bg-chip-active" />
+                </div>
+                <Skeleton className="h-8 w-20 bg-chip-active" />
               </div>
             ))}
           </div>
@@ -217,141 +217,170 @@ function AdminCoursesPage(): JSX.Element {
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {courses.map((course) => {
-            const isPending = course.status === "PENDING";
-            const isArchived = course.status === "ARCHIVED";
-            const isBusy = busyId === course.id;
+        <div className="border border-hairline bg-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="bg-panel-warm/10 border-b border-hairline/20">
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">{t("courses.title")}</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Creator</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Status</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Price</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30">Date</th>
+                  <th className="px-6 py-4 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/30 text-right">{t("admin.users.actions")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-hairline/10">
+                {courses.map((course) => {
+                  const isPending = course.status === "PENDING";
+                  const isArchived = course.status === "ARCHIVED";
+                  const isBusy = busyId === course.id;
 
-            return (
-              <div key={course.id} className="flex flex-col border border-hairline bg-card p-5">
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <CourseStatusBadge status={course.status} />
-                    <span className="text-xs text-muted-faint">
-                      {course.status === "PUBLISHED" && course.publishedAt
-                        ? `Published ${new Date(course.publishedAt).toLocaleDateString()}`
-                        : course.status === "PENDING" && course.submittedAt
-                          ? `Submitted ${new Date(course.submittedAt).toLocaleDateString()}`
-                          : `Updated ${new Date(course.updatedAt).toLocaleDateString()}`}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <h2 className="text-lg font-medium text-ink">{course.title}</h2>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone="quiet">
-                        <Layers3 className="mr-1 size-3 opacity-50" />
-                        {course.category.name}
-                      </Badge>
-                      <Badge tone="quiet">
-                        <GraduationCap className="mr-1 size-3 opacity-50" />
-                        {course.isExamOnly ? "Assessment only" : "Comprehensive Course"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {course.coverImageUrl ? (
-                    <div className="relative aspect-video w-full overflow-hidden border border-hairline bg-panel-warm">
-                      <ResponsiveImage
-                        alt={course.title}
-                        className="h-full w-full object-cover"
-                        sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-                        src={course.coverImageUrl}
-                      />
-                      <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-3">
-                        <p className="text-xs font-semibold text-white">
-                          Creator: {course.creator.name}
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex aspect-video w-full items-center justify-center border border-hairline bg-panel-warm text-xs italic text-muted-faint">
-                      {t("admin.approve.noCover")}
-                    </div>
-                  )}
-
-                  <p className="line-clamp-2 border-l-2 border-hairline pl-3 text-sm font-light italic text-muted">
-                    &ldquo;{course.description}&rdquo;
-                  </p>
-
-                  {isPending && (
-                    <div className="space-y-3 border border-hairline bg-panel-warm/40 p-4">
-                      <div className="space-y-1">
-                        <Label htmlFor={`feedback-${course.id}`}>{t("admin.approve.feedback")}</Label>
-                        <div className="relative">
-                          <Textarea
-                            className="pl-9 text-sm"
-                            id={`feedback-${course.id}`}
-                            onChange={(event) =>
-                              setFeedbackByCourseId((currentValues) => ({
-                                ...currentValues,
-                                [course.id]: event.target.value
-                              }))
-                            }
-                            placeholder={t("admin.approve.feedbackPlaceholder")}
-                            rows={2}
-                            value={feedbackByCourseId[course.id] ?? ""}
-                          />
-                          <MessageSquareText className="absolute left-3 top-3 size-4 text-muted-faint" />
+                  return (
+                    <tr key={course.id} className="group hover:bg-ink/[0.03] transition-colors">
+                      {/* Course: thumbnail + title + meta */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="size-24 shrink-0 overflow-hidden border border-hairline bg-panel-warm">
+                            {course.coverImageUrl ? (
+                              <ResponsiveImage
+                                alt={course.title}
+                                className="h-full w-full object-cover"
+                                sizes="96px"
+                                src={course.coverImageUrl}
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-faint">
+                                <GraduationCap className="size-5" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <Link
+                              className="line-clamp-1 font-body text-base font-medium text-ink tracking-tight hover:text-accent transition-colors"
+                              to="/dashboard/courses/$id/edit"
+                              params={{ id: course.id }}
+                            >
+                              {course.title}
+                            </Link>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <Badge tone="quiet">
+                                <Layers3 className="mr-1 size-3 opacity-50" />
+                                {course.category.name}
+                              </Badge>
+                              {course.isExamOnly && (
+                                <Badge tone="quiet">
+                                  <GraduationCap className="mr-1 size-3 opacity-50" />
+                                  Exam only
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      </td>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <Button asChild size="sm" variant="outline">
-                      <Link to="/dashboard/courses/$id/edit" params={{ id: course.id }}>
-                        <Eye className="mr-1.5 size-4" /> View / Edit
-                      </Link>
-                    </Button>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-muted">{course.creator.name}</span>
+                      </td>
 
-                    {isPending && (
-                      <>
-                        <Button
-                          size="sm"
-                          disabled={isBusy}
-                          onClick={() => handleApprove(course.id)}
-                        >
-                          <CheckCircle2 className="mr-1.5 size-4" />{t("admin.approve.approve")}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={isBusy}
-                          onClick={() => handleReject(course)}
-                        >
-                          <XCircle className="mr-1.5 size-4 text-error" />{t("admin.approve.reject")}
-                        </Button>
-                      </>
-                    )}
+                      <td className="px-6 py-4">
+                        <CourseStatusBadge status={course.status} />
+                      </td>
 
-                    {isArchived ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isBusy}
-                        onClick={() => handleRestore(course)}
-                      >
-                        <ArchiveRestore className="mr-1.5 size-4" /> Restore
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={isBusy}
-                        onClick={() => handleArchive(course)}
-                        className="text-error"
-                      >
-                        <Archive className="mr-1.5 size-4" />
-                        Archive
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-sm text-ink">
+                          ৳{Number(course.price).toLocaleString()}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="text-xs font-semibold uppercase tracking-tighter text-ink/40">
+                          {course.status === "PUBLISHED" && course.publishedAt
+                            ? `Published ${new Date(course.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                            : course.status === "PENDING" && course.submittedAt
+                              ? `Submitted ${new Date(course.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                              : `Updated ${new Date(course.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button asChild size="sm" variant="ghost" title="Edit course">
+                              <Link to="/dashboard/courses/$id/edit" params={{ id: course.id }}>
+                                <Eye className="size-4" />
+                              </Link>
+                            </Button>
+
+                            {isArchived ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={isBusy}
+                                onClick={() => handleRestore(course)}
+                              >
+                                <ArchiveRestore className="mr-1.5 size-4" /> Restore
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={isBusy}
+                                onClick={() => handleArchive(course)}
+                                className="text-error"
+                              >
+                                <Archive className="mr-1.5 size-4" />
+                                Archive
+                              </Button>
+                            )}
+
+                            {isPending && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  disabled={isBusy}
+                                  onClick={() => handleApprove(course.id)}
+                                >
+                                  <CheckCircle2 className="mr-1.5 size-4" />{t("admin.approve.approve")}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={isBusy}
+                                  onClick={() => handleReject(course)}
+                                >
+                                  <XCircle className="mr-1.5 size-4 text-error" />{t("admin.approve.reject")}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+
+                          {isPending && (
+                            <div className="flex w-full items-center gap-2">
+                              <div className="relative flex-1">
+                                <MessageSquareText className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-faint" />
+                                <Input
+                                  className="h-8 pl-8 text-sm"
+                                  onChange={(event) =>
+                                    setFeedbackByCourseId((currentValues) => ({
+                                      ...currentValues,
+                                      [course.id]: event.target.value
+                                    }))
+                                  }
+                                  placeholder={t("admin.approve.feedbackPlaceholder")}
+                                  value={feedbackByCourseId[course.id] ?? ""}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
