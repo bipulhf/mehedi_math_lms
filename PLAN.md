@@ -1,7 +1,7 @@
 ---
 name: LMS Platform Build Plan
 overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
-lastAudited: 2026-08-02
+lastAudited: 2026-08-03
 lastImplemented: 2026-08-03
 todos:
   - id: phase-01
@@ -71,7 +71,7 @@ todos:
     content: "Cross-cutting: TanStack Query owns server state on web and mobile; Zustand holds the unread badge"
     status: completed
   - id: xc-testing
-    content: "Cross-cutting: 120 unit and integration tests over the API, plus 12 Playwright E2E specs (bun run test:e2e)"
+    content: "Cross-cutting: 321 tests under `bun run test` (126 API, 135 shared, 60 mobile) plus 42 Playwright E2E assertions in 5 specs (bun run test:e2e)"
     status: completed
   - id: xc-caching
     content: "Cross-cutting: read-through Redis cache over the catalogue, category tree, analytics and comment threads, with index-based invalidation"
@@ -124,7 +124,7 @@ polish list. **All of it is now built.** Nothing in the 21-phase plan is outstan
 | Read-through Redis cache over the public catalogue, the category tree, analytics aggregates and lecture comment threads, invalidated through a key index       | Phase 15, `xc-caching` | `cc83fc0`                       |
 | Message moderation UI: report dialog, admin queue at `/dashboard/admin/message-reports`, per-message hide, tombstones for participants                         | Phase 16               | `c904d47`                       |
 | TanStack Query owns every server read on the web; Zustand holds the unread badge; the `window` CustomEvent bus is gone                                         | `xc-state-management`  | `0ed4a1f`, `cdbfd7d`, `2d23dc7` |
-| 15 API integration tests over the real Hono app and 12 Playwright E2E specs                                                                                    | `xc-testing`           | `86d384a`                       |
+| API integration tests over the real Hono app, and a Playwright suite in `apps/web/e2e` (4 specs then, 5 now)                                                   | `xc-testing`           | `86d384a`                       |
 | `/sitemap.xml` and `/robots.txt` on the public origin, a real 404 component, the missing §12 skeletons, `pendingComponent`, image CLS, and the dead-code sweep | Polish backlog         | `7cfe99a`                       |
 | The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@mma/shared`, TanStack Query, FlashList and expo-image            | Phase 21               | `e0e8b34`                       |
 
@@ -160,42 +160,91 @@ closed.
 | Route files renamed `courses-route.ts` so all four backend layers agree; the `pendingComponent`, feature-structure, mobile default-export and env-tier rules decided and written down rather than left as drift                                                        | B1, B5, B6, B8, C1 |
 | `z.coerce.boolean()` replaced by a shared `booleanQueryParamSchema` on `flat`, `includeInactive` and `mine`. `Boolean("false")` is `true`, so `?flat=false` meant flat and every other value did too                                                                   | found on the way   |
 
-Current state: **lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 134 shared tests, 34 Playwright tests,
-all passing.**
+Current state at the end of that sweep: lint 8/8, typecheck 8/8, build 7/7, 122 API tests, 134 shared
+tests, 34 Playwright tests, all passing.
+
+---
+
+## Implementation Record -- mobile stages, 3 August 2026
+
+`docs/mobile-plan.md` staged the work the mobile app still needed. **Seven of its ten stages are done and
+the remaining three are done as far as they go without hardware** — what is left in each is a handset, a
+Google account, and an EAS build.
+
+| Change                                                                                                                                                                                                    | Stage      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| A mobile checkout returns to the app: `callbackPath` added to `createEnrollmentSchema`, stored on the payment and read back at settlement; `apps/web/src/routes/api/payment-return.ts` 302s into `mma://` | 1          |
+| `jest-expo` + `@testing-library/react-native` harness — 60 tests over the pure logic and a smoke render of every screen                                                                                   | 2          |
+| Lectures play in the app: `expo-video`, progress driven from `timeUpdate`, `resolveLectureVideo` deciding stream-vs-embed                                                                                 | 4          |
+| Profile completion is native. A browser opened from the app arrives signed out — the session cookie lives in this app's keychain — so the web form was never reachable                                    | 5          |
+| An `AppState`-driven messaging socket, with the 10s poll as the fallback when it is down                                                                                                                  | 6          |
+| Parity with the web client: lecture comments, course reviews, certificate download and share, notices, bug reports, catalogue price filters                                                               | 7          |
+| Route error boundaries, offline detection (`ApiError.isOffline`), and a 401 clearing the stored session                                                                                                   | 8          |
+| `eas.json` (development/preview/production), `expo-system-ui` so `userInterfaceStyle: light` is honoured on Android, and one application id — `com.mehedismathacademy.app` — on both platforms            | 9          |
+| Executing all 15 routes through the react-native-web static export found two unhandled rejections no test caught, each of which blanked a screen through its own error boundary                           | 0 (partly) |
+| 8 Playwright assertions over the two hops into the app: the `mma://` allow-list on both routes, a missing payment status defaulting to `pending`, and one-time tokens not mintable over HTTP              | 3 (partly) |
+
+**The application id is a default, not a decision.** `com.mehedismathacademy.app` replaced the
+`com.anonymous.*` placeholder `expo prebuild` writes. It is the one field that cannot change once an app is
+listed — confirm it before the first submission.
+
+---
+
+## Verification -- 3 August 2026
+
+Every claim in the sections below was re-read against the working tree, and the stale ones were rewritten
+rather than annotated. What the gates say today:
+
+| Gate                | Result                                                              |
+| ------------------- | ------------------------------------------------------------------- |
+| `bun run lint`      | 8/8                                                                 |
+| `bun run typecheck` | 8/8                                                                 |
+| `bun run build`     | 7/7                                                                 |
+| `bun run test`      | **321 pass** — 126 `@mma/api`, 135 `@mma/shared`, 60 `@mma/mobile`  |
+| `bun run test:e2e`  | 42 assertions across 5 specs — 40 pass, 2 skip with a stated reason |
+
+Counts that the tree disagreed with the plan on, now corrected throughout: 5 migrations over 34 tables (not
+1 over 32); 46 services and 25 repositories (not 37 and 22); 22 route modules under `routes/v1`, all named
+`*-route.ts`; 55 route files in `apps/web/src/routes`, of which 50 are UI routes and all 50 carry an
+`errorComponent`; 6 loader routes, each with a `pendingComponent`; 3 BullMQ queues with 3 workers.
+
+What is genuinely not built is now listed in one place — the Remaining Work Backlog at the end of this
+file. Every per-phase **Remaining** block agrees with it.
 
 ---
 
 ## Implementation Status Audit -- 2 August 2026
 
-Every phase below was re-verified against the working tree at commit `684289e`. Each phase now carries a
-**Delivered** block (what exists, with file paths) and a **Remaining** block (what the phase promised but the
-code does not do). Anything not listed under Remaining is built and wired end to end.
+Every phase below was re-verified against the working tree — first at commit `684289e`, then again on
+3 August 2026. Each phase carries a **Delivered** block (what exists, with file paths) and a **Remaining**
+block (what the phase promised but the code does not do). Anything not listed under Remaining is built and
+wired end to end.
 
 ### Phase status at a glance
 
-| Phase | Title                                 | Status      | Outstanding work                                                                       |
-| ----- | ------------------------------------- | ----------- | -------------------------------------------------------------------------------------- |
-| 1     | Monorepo Setup                        | ✅ Complete | --                                                                                     |
-| 2     | Database Schema + Drizzle             | ✅ Complete | --                                                                                     |
-| 3     | Backend Core (Hono)                   | ✅ Complete | The `/api/v1/users/*` 501 stub was deleted, not built out                              |
-| 4     | Authentication (Better Auth)          | ✅ Complete | --                                                                                     |
-| 5     | Frontend Foundation + Design System   | ✅ Complete | `pendingComponent` now on every route with a loader                                    |
-| 6     | User and Profile Management           | ✅ Complete | --                                                                                     |
-| 7     | Admin Dashboard + Bug Reports         | ✅ Complete | Admin creation (ADR-0002), deletion removed (ADR-0003)                                 |
-| 8     | Category Management                   | ✅ Complete | --                                                                                     |
-| 9     | Course CRUD + Approval                | ✅ Complete | Ownership (ADR-0006), withdraw/restore, exam-only enforced                             |
-| 10    | Chapters, Lectures, Materials         | ✅ Complete | --                                                                                     |
-| 11    | File Upload + Media (S3)              | ✅ Complete | Worker written; thumbnail variants still not generated                                 |
-| 12    | Tests and Assessments                 | ✅ Complete | `passingScore` is now evaluated (ADR-0005)                                             |
-| 13    | Enrollment + Payment (SSLCommerz)     | ✅ Complete | Reworked per ADR-0001; env flag fixed; still never run against a live gateway          |
-| 14    | Course Player                         | ✅ Complete | Completion rule reworked (ADR-0005); the chunked tracker is in place on web and mobile |
-| 15    | Community and Discussion              | ✅ Complete | Threads are Redis-cached as records and invalidated on write                           |
-| 16    | Real-time Messaging (WebSocket)       | ✅ Complete | Moderation is end to end (ADR-0004); blocking remains out of scope                     |
-| 17    | Notification System (FCM + in-app)    | ✅ Complete | Domain events now raise notifications                                                  |
-| 18    | SMS, Noticeboard, Bulk Comms          | ✅ Complete | Onecodesoft never exercised against the live gateway                                   |
-| 19    | Analytics, Reviews, PDF, Certificates | ✅ Complete | --                                                                                     |
-| 20    | SEO Optimization                      | ✅ Complete | Crawler files now served from the public origin too                                    |
-| 21    | React Native Mobile App               | ✅ Complete | Built on `@mma/shared`; playback and profile completion stay on web                    |
+| Phase | Title                                 | Status      | Outstanding work                                                              |
+| ----- | ------------------------------------- | ----------- | ----------------------------------------------------------------------------- |
+| 1     | Monorepo Setup                        | ✅ Complete | No CI pipeline; the gates are run by hand                                     |
+| 2     | Database Schema + Drizzle             | ✅ Complete | --                                                                            |
+| 3     | Backend Core (Hono)                   | ✅ Complete | The `/api/v1/users/*` 501 stub was deleted, not built out                     |
+| 4     | Authentication (Better Auth)          | ✅ Complete | Staff invites have no transport; the password is handed over out of band      |
+| 5     | Frontend Foundation + Design System   | ✅ Complete | --                                                                            |
+| 6     | User and Profile Management           | ✅ Complete | --                                                                            |
+| 7     | Admin Dashboard + Bug Reports         | ✅ Complete | Admin creation (ADR-0002), deletion removed (ADR-0003)                        |
+| 8     | Category Management                   | ✅ Complete | Category delete is a hard delete despite `isActive` existing                  |
+| 9     | Course CRUD + Approval                | ✅ Complete | Ownership (ADR-0006), withdraw/restore, exam-only enforced                    |
+| 10    | Chapters, Lectures, Materials         | ✅ Complete | --                                                                            |
+| 11    | File Upload + Media (S3)              | ✅ Complete | Worker written; thumbnail variants still not generated                        |
+| 12    | Tests and Assessments                 | ✅ Complete | `passingScore` is now evaluated (ADR-0005)                                    |
+| 13    | Enrollment + Payment (SSLCommerz)     | ✅ Complete | Reworked per ADR-0001; env flag fixed; still never run against a live gateway |
+| 14    | Course Player                         | ✅ Complete | Completion rule reworked (ADR-0005); the tracker is a plain bar, not chunked  |
+| 15    | Community and Discussion              | ✅ Complete | Threads are Redis-cached as records and invalidated on write                  |
+| 16    | Real-time Messaging (WebSocket)       | ✅ Complete | Moderation is end to end (ADR-0004); blocking remains out of scope            |
+| 17    | Notification System (FCM + in-app)    | ✅ Complete | The service worker's `importScripts` version is hand-synced                   |
+| 18    | SMS, Noticeboard, Bulk Comms          | ✅ Complete | Onecodesoft never exercised against the live gateway                          |
+| 19    | Analytics, Reviews, PDF, Certificates | ✅ Complete | --                                                                            |
+| 20    | SEO Optimization                      | ✅ Complete | OG tags never run through the platform validators                             |
+| 21    | React Native Mobile App               | ✅ Complete | Complete and tested; **never run on a phone** — `docs/mobile-plan.md` Stage 0 |
 
 ### Cross-cutting gaps (not owned by any single phase)
 
@@ -273,8 +322,9 @@ These differ from the written plan but are deliberate and should not be "fixed" 
 - **Server-side PDFs use `pdf-lib`, not `@react-pdf/renderer`.** The API generates certificates and receipts
   with `pdf-lib`; `@react-pdf/renderer` is a web dependency used for the in-browser certificate preview
   (`components/certificates/certificate-pdf-document.tsx`).
-- **`turbo.json` declares a `db:repair-course-review-feedback` task that no workspace implements.** Harmless,
-  but dead.
+- ~~**`turbo.json` declares a `db:repair-course-review-feedback` task that no workspace implements.**~~
+  Removed. `turbo.json` now declares nine tasks, all of them implemented somewhere: `build`, `dev`, `lint`,
+  `typecheck`, `test`, `db:generate`, `db:migrate`, `db:seed`, `db:backfill-user-slugs`.
 - ~~**Six `animate-spin` submit-button indicators exist.**~~ Removed on 3 August 2026. There is no
   `animate-spin` left in `apps/web/src`, and no `ActivityIndicator` left in `apps/mobile`.
 
@@ -333,66 +383,78 @@ graph TB
 
 ## Monorepo Structure
 
-Actual tree as of the 2 August 2026 audit. Differences from the original plan are called out inline.
+Actual tree as of the 3 August 2026 verification. Differences from the original plan are called out inline.
 
 ```
 mehedi_math_academy/
 ├── apps/
 │   ├── web/                        # TanStack Start frontend (port 3000)
+│   │   ├── e2e/                    # 5 Playwright specs, outside the Turbo test task
 │   │   └── src/
-│   │       ├── routes/             # 49 route files, flat (no (public)/(auth)/(dashboard) groups)
+│   │       ├── routes/             # 55 files: 50 UI routes (all with errorComponent) + 5 server
+│   │       │                       #   routes (auth catch-all, 2 mobile hops, robots, sitemap).
+│   │       │                       #   Flat -- no (public)/(auth)/(dashboard) groups.
 │   │       ├── features/           # ONLY landing/ -- everything else lives in components/
 │   │       ├── components/
 │   │       │   ├── ui/             # 9 shadcn primitives + skeleton.tsx
 │   │       │   ├── layout/         # app-shell, dashboard-layout, public-layout, auth-layout
-│   │       │   ├── common/         # fade-in, route-error, data-table-skeleton
+│   │       │   ├── common/         # fade-in, route-error, skeletons.tsx, data-table-skeleton
 │   │       │   ├── courses/ tests/ uploads/ categories/
-│   │       │   └── notifications/ profile/ certificates/ bugs/
-│   │       ├── hooks/              # only use-auth-session.ts
+│   │       │   └── notifications/ profile/ certificates/ bugs/ messages/
+│   │       ├── hooks/              # use-auth-session, use-messaging-socket
+│   │       ├── stores/             # ui-store.ts (Zustand) -- the unread badge, nothing else
 │   │       ├── lib/
-│   │       │   ├── api/            # 17 typed ky modules + client.ts
+│   │       │   ├── api/            # typed ky modules + client.ts
+│   │       │   ├── query/          # query-client.ts, keys.ts (the single key factory)
 │   │       │   ├── firebase/       # web-push.ts
 │   │       │   ├── forms/          # use-zod-form.ts
-│   │       │   └── seo.ts site.ts ssr-api.ts auth.ts auth-server.ts ws-url.ts
-│   │       ├── providers/          # EMPTY
+│   │       │   └── seo.ts site.ts ssr-api.ts auth.ts auth-server.ts ws-url.ts app-link.ts
 │   │       └── styles/app.css      # Tailwind v4 @theme tokens
 │   ├── api/                        # Hono backend API (port 3001, dev PORT=3010)
 │   │   └── src/
 │   │       ├── routes/v1/          # 21 route modules + index.ts (`*-route.ts`)
 │   │       ├── routes/             # health, site-seo, public-config
 │   │       ├── controllers/        # 23 controllers
-│   │       ├── services/           # 37 services
+│   │       ├── services/           # 46 service modules (co-located *.test.ts included)
 │   │       ├── repositories/       # 25 repositories
 │   │       ├── middleware/         # auth, error-handler, rate-limit, request-id,
 │   │       │                       #   request-logger, session-context, validate
 │   │       ├── workers/            # notification-worker, sms-worker, file-processing-worker
 │   │       ├── websocket/          # messages-ws-app.ts, notifications-ws-app.ts
-│   │       ├── lib/                # container, env, logger, queues, redis, s3
+│   │       ├── lib/                # container, env, logger, queues, redis, s3, cache
 │   │       └── utils/              # errors, response, phone-bd
-│   └── mobile/                     # Expo SDK 57 app, built in e0e8b34
-│       ├── app/                    # (tabs)/ shell + course, learn, tests, messages, auth routes
-│       ├── src/lib/                # env, api-client, api, auth, session-store, query, hooks
-│       ├── src/components/         # ui.tsx primitives + google-sign-in-button.tsx
-│       └── src/theme/tokens.ts     # Digital Atelier palette, radii, spacing, type scale
+│   └── mobile/                     # Expo SDK 57 app (e0e8b34, extended through docs/mobile-plan.md)
+│       ├── app/                    # 15 routes: (tabs)/ shell + course, learn, tests, messages,
+│       │                           #   auth, profile-complete, bug-report, and the two deep-link
+│       │                           #   landing pads (auth-callback, payment-callback)
+│       ├── src/lib/                # env, api-client, api, auth, session-store, query, payment,
+│       │                           #   lecture-video, profile-form, documents, hooks (+ tests)
+│       ├── src/components/         # ui.tsx primitives, lecture-player, lecture-comments,
+│       │                           #   course-reviews, route-error, google-sign-in-button
+│       ├── src/theme/tokens.ts     # Digital Atelier palette, radii, spacing, type scale
+│       ├── eas.json                # development / preview / production build profiles
+│       └── jest.config.mjs jest.setup.ts
 ├── packages/
 │   ├── db/src/
 │   │   ├── schema/                 # 15 entity files + enums.ts, relations.ts, index.ts
-│   │   ├── migrations/             # 0000_charming_thunderbolt.sql (32 CREATE TABLE) + meta/
+│   │   ├── migrations/             # 0000-0004, 34 tables + meta/
 │   │   └── client.ts
 │   ├── shared/src/
 │   │   ├── types/roles.ts
-│   │   ├── validators/             # 17 Zod modules + index.ts
+│   │   ├── validators/             # Zod modules + index.ts, each with a co-located test
 │   │   ├── constants/app.ts
 │   │   └── slug.ts
-│   ├── auth/src/                   # client, server, tanstack-server, factory (dead), index
+│   ├── auth/src/                   # client, server, tanstack-server, index
 │   └── config/                     # eslint.config.mjs, tsconfig.base.json, prettier
 ├── tooling/
 │   └── scripts/                    # seed.ts, backfill-user-slugs.ts, slug.ts (stale copy)
-├── turbo.json
+├── docs/                           # adr/ (6 ADRs), implementation-plan.md, mobile-plan.md
+├── turbo.json                      # build, dev, lint, typecheck, test, db:*
 ├── package.json
+├── bunfig.toml                     # linker = "hoisted" -- removing it breaks the mobile build
 ├── AGENTS.md / CLAUDE.md           # per-workspace agent docs
 ├── DESIGN.md
-├── PLAN.md
+├── PLAN.md / DRIFT.md / BLOCKERS.md / SUMMARY.md / CONTEXT.md
 └── .env / .env.example             # single root env file, no per-tier files
 ```
 
@@ -401,37 +463,39 @@ mehedi_math_academy/
 Every dependency was bumped to its latest stable release on 2 August 2026. This table reflects what is in
 the lockfile, not what the March 2026 plan proposed. Rows where reality diverged from the plan are flagged.
 
-| Layer           | Technology                                | Installed Range       | Notes                                                                   |
-| --------------- | ----------------------------------------- | --------------------- | ----------------------------------------------------------------------- |
-| Runtime         | Bun                                       | 1.3.11                | `packageManager` pin in root `package.json`                             |
-| Monorepo        | Turborepo + Bun workspaces                | ^2.10.8               | `apps/*`, `packages/*`, `tooling/*`                                     |
-| Language        | TypeScript                                | ^6.0.3                | TS 7 was trialled and reverted -- typescript-eslint has no TS 7 support |
-| Lint            | ESLint + typescript-eslint                | ^10.8.0 / ^8.65.0     | Flat config in `packages/config/eslint.config.mjs`                      |
-| Frontend        | TanStack Router / Start                   | ^1.170.18 / ^1.168.34 | React 19.2.8                                                            |
-| Bundler         | Vite                                      | ^8.2.0                | `@vitejs/plugin-react` ^6.0.5                                           |
-| UI Library      | shadcn/ui                                 | `components.json`     | 9 primitives vendored so far                                            |
-| Styling         | Tailwind CSS v4                           | ^4.3.3                | `@theme` in `styles/app.css`, no config file                            |
-| Forms           | React Hook Form + Zod                     | ^7.84.0 / ^4.4.3      | via `lib/forms/use-zod-form.ts`                                         |
-| HTTP Client     | ky                                        | ^2                    | **v2**, not the planned v1 -- hook signatures are the state-object form |
-| Server state    | _(none)_                                  | --                    | ⚠️ TanStack Query was planned but never installed                       |
-| Global UI state | _(none)_                                  | --                    | ⚠️ Zustand was planned but never installed                              |
-| Backend         | Hono                                      | ^4.12.33              | Bun runtime                                                             |
-| Database        | PostgreSQL                                | 18.x                  | via `pg` ^8.22.0 Pool                                                   |
-| ORM             | Drizzle ORM / drizzle-kit                 | ^0.45.2 / ^0.31.10    | `drizzle-orm/node-postgres`                                             |
-| Auth            | Better Auth + Drizzle adapter             | ^1.6.25               | `admin()` and `customSession()` plugins                                 |
-| Cache           | ioredis                                   | ^6                    | **v6** (RESP3 default); fall back to `protocol: 2` if queues misbehave  |
-| Queue           | BullMQ                                    | ^6                    | 4 queues declared, 2 workers written                                    |
-| Storage         | AWS S3 SDK v3                             | ^3.1101.0             | `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`                   |
-| Payments        | _hand-rolled SSLCommerz_                  | --                    | ⚠️ `sslcommerz-lts` not used; direct REST calls + mock mode             |
-| Notifications   | firebase-admin / firebase                 | ^14 / ^12             | Web SW `importScripts` pinned to 12.17.0 -- update by hand on each bump |
-| PDF             | pdf-lib (API) / @react-pdf/renderer (web) | ^1.17.1 / ^4.5.1      | ⚠️ Server-side generation uses pdf-lib                                  |
-| Mobile          | React Native 0.86.2 + Expo SDK 57         | SDK 57                | ⚠️ Plan said SDK 54; React 19.2.3, Reanimated 4.5.1                     |
-| WebSocket       | Hono WebSocket                            | built-in (`hono/ws`)  | Two separate WS apps, outside the main middleware chain                 |
-| Validation      | Zod                                       | ^4.4.3                | Shared via `@mma/shared`                                                |
-| Logging         | pino                                      | ^10.3.1               | Structured JSON logs                                                    |
-| Charts          | Recharts                                  | ^3.10.1               | Bar, Line, Pie in admin analytics                                       |
-| Icons           | lucide-react                              | ^1.28.0               |                                                                         |
-| Toasts          | sonner                                    | ^2.0.7                | Driven by the ky `afterResponse` hook                                   |
+| Layer           | Technology                                                         | Installed Range       | Notes                                                                   |
+| --------------- | ------------------------------------------------------------------ | --------------------- | ----------------------------------------------------------------------- |
+| Runtime         | Bun                                                                | 1.3.11                | `packageManager` pin in root `package.json`                             |
+| Monorepo        | Turborepo + Bun workspaces                                         | ^2.10.8               | `apps/*`, `packages/*`, `tooling/*`                                     |
+| Language        | TypeScript                                                         | ^6.0.3                | TS 7 was trialled and reverted -- typescript-eslint has no TS 7 support |
+| Lint            | ESLint + typescript-eslint                                         | ^10.8.0 / ^8.65.0     | Flat config in `packages/config/eslint.config.mjs`                      |
+| Frontend        | TanStack Router / Start                                            | ^1.170.18 / ^1.168.34 | React 19.2.8                                                            |
+| Bundler         | Vite                                                               | ^8.2.0                | `@vitejs/plugin-react` ^6.0.5                                           |
+| UI Library      | shadcn/ui                                                          | `components.json`     | 9 primitives vendored so far                                            |
+| Styling         | Tailwind CSS v4                                                    | ^4.3.3                | `@theme` in `styles/app.css`, no config file                            |
+| Forms           | React Hook Form + Zod                                              | ^7.84.0 / ^4.4.3      | via `lib/forms/use-zod-form.ts`                                         |
+| HTTP Client     | ky                                                                 | ^2                    | **v2**, not the planned v1 -- hook signatures are the state-object form |
+| Server state    | TanStack Query                                                     | ^5.101.4              | Web and mobile; mobile adds `@tanstack/react-query-persist-client`      |
+| Global UI state | Zustand                                                            | ^5.0.14               | `apps/web/src/stores/ui-store.ts` -- the unread badge, nothing else     |
+| Backend         | Hono                                                               | ^4.12.33              | Bun runtime                                                             |
+| Database        | PostgreSQL                                                         | 18.x                  | via `pg` ^8.22.0 Pool                                                   |
+| ORM             | Drizzle ORM / drizzle-kit                                          | ^0.45.2 / ^0.31.10    | `drizzle-orm/node-postgres`                                             |
+| Auth            | Better Auth + Drizzle adapter                                      | ^1.6.25               | `admin()` and `customSession()` plugins                                 |
+| Cache           | ioredis                                                            | ^6                    | **v6** (RESP3 default); fall back to `protocol: 2` if queues misbehave  |
+| Queue           | BullMQ                                                             | ^6                    | 3 queues, 3 workers -- the producerless `email` queue was deleted       |
+| Storage         | AWS S3 SDK v3                                                      | ^3.1101.0             | `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`                   |
+| Payments        | _hand-rolled SSLCommerz_                                           | --                    | ⚠️ `sslcommerz-lts` not used; direct REST calls + mock mode             |
+| Notifications   | firebase-admin / firebase                                          | ^14 / ^12             | Web SW `importScripts` pinned to 12.17.0 -- update by hand on each bump |
+| PDF             | pdf-lib (API) / @react-pdf/renderer (web)                          | ^1.17.1 / ^4.5.1      | ⚠️ Server-side generation uses pdf-lib                                  |
+| Mobile          | React Native 0.86.2 + Expo SDK 57                                  | SDK 57                | ⚠️ Plan said SDK 54; React 19.2.8, Reanimated 4.5.1                     |
+| Mobile media    | expo-video / expo-file-system / expo-sharing                       | ~57.0.x               | Lecture playback, certificate download, the share sheet                 |
+| Test runners    | bun test (API, shared) / jest-expo (mobile) / Playwright (web E2E) | --                    | Three runners behind one Turbo `test` task, plus `test:e2e`             |
+| WebSocket       | Hono WebSocket                                                     | built-in (`hono/ws`)  | Two separate WS apps, outside the main middleware chain                 |
+| Validation      | Zod                                                                | ^4.4.3                | Shared via `@mma/shared`                                                |
+| Logging         | pino                                                               | ^10.3.1               | Structured JSON logs                                                    |
+| Charts          | Recharts                                                           | ^3.10.1               | Bar, Line, Pie in admin analytics                                       |
+| Icons           | lucide-react                                                       | ^1.28.0               |                                                                         |
+| Toasts          | sonner                                                             | ^2.0.7                | Driven by the ky `afterResponse` hook                                   |
 
 ---
 
@@ -545,8 +609,10 @@ erDiagram
 - 16 entity files in `packages/db/src/schema/`: `users`, `courses`, `chapters`, `lectures`, `tests`,
   `enrollments`, `payments`, `messages`, `comments`, `notifications`, `categories`, `reviews`,
   `bug-reports`, `sms`, `uploads`, plus `enums.ts`, `relations.ts`, `index.ts`.
-- One applied migration, `0000_charming_thunderbolt.sql`, creating 32 tables (the extra tables over the ERD
-  are the Better Auth tables, join tables, materials, submissions, FCM tokens, and SMS batches).
+- Five applied migrations over 34 tables: `0000_charming_thunderbolt` (the initial 32 -- the extra tables
+  over the ERD are the Better Auth tables, join tables, materials, submissions, FCM tokens, and SMS
+  batches), `0001` the enrolment/payment split, `0002` the course-teacher role, `0003` the owner backfill,
+  `0004` the moderation tables.
 - Indexes are dense: `users` 12, `tests` 11, `courses` 8, `enrollments` 6, `messages` 6, `sms` 5,
   `uploads` 4, and 3 each on the rest. Unique slug indexes on `courses`, `categories`, `users`.
 - `packages/db/src/client.ts` exports a `pg` Pool-backed Drizzle singleton; `drizzle.config.ts` targets pg.
@@ -605,22 +671,23 @@ erDiagram
 - `apps/api/src/app.ts` wires the full middleware chain in order: request ID, pino request logger, CORS
   (with `X-Request-Id` and rate-limit headers exposed), `bodyLimit`, `compress`, Redis-backed rate limiting,
   then `sessionContextMiddleware` on `/api/v1/*`.
-- Layering is enforced across 21 route modules, 23 controllers, 32 services, 22 repositories. Manual DI
-  singletons live in `lib/container.ts`.
+- Layering is enforced across 21 route modules, 23 controllers, 46 service modules (tests included),
+  25 repositories. Manual DI singletons live in `lib/container.ts`.
 - `utils/errors.ts` defines the `AppError` hierarchy (`ValidationError`, `NotFoundError`,
   `UnauthorizedError`, `ForbiddenError`, `ConflictError`); `middleware/error-handler.ts` is the global
   `app.onError`. `utils/response.ts` exports `success()`, `error()`, `paginated()`.
 - `middleware/validate.ts` provides the Zod body/params/query validator.
-- `lib/redis.ts` is the shared ioredis singleton; `lib/queues.ts` declares all four BullMQ queues.
+- `lib/redis.ts` is the shared ioredis singleton; `lib/queues.ts` declares three BullMQ queues --
+  `notification`, `sms`, `file-processing` -- each with a worker. `lib/cache.ts` is the read-through cache.
 - Health check at `GET /api/health` with a DB-and-Redis probe (`health-repository.ts`).
 - 22 namespaces mounted under `/api/v1` -- the planned list plus `public`, `chapters`, `lectures`,
   `comments`, `questions`, `tests`, `notices`, `og-image`, `progress`.
 
 **Remaining:**
 
-- `/api/v1/users/*` returns HTTP 501 for every method
-  (`routes/v1/users.route.ts` -> `createNotImplementedRoute("users")`). All user management is served from
-  `/api/v1/admin/users/*` instead, so decide whether to build the namespace out or delete the stub.
+- **The `/api/v1/users/*` namespace does not exist.** The 501 stub was deleted rather than built out; all
+  user management is served from `/api/v1/admin/users/*`. Nothing calls the missing namespace, but the
+  original route plan above still lists it.
 - Rate limiting is skipped entirely when `NODE_ENV === "development"` (`app.ts:33`). Intentional, but it
   means the limiter path is never exercised locally.
 
@@ -674,14 +741,16 @@ erDiagram
 
 **Remaining:**
 
-- Admin-created staff accounts never receive an invite. `staff-account-service.ts:61` enqueues a
-  `staff-account-invite` job onto the `email` queue and returns the temporary password to the admin UI, but
-  no worker consumes that queue and no mail transport is installed. The password sits in Redis in
-  plaintext. Either write the email worker or drop the enqueue and treat the admin response as the only
-  delivery channel.
+- Admin-created staff accounts still receive no invite, but nothing is left half-done about it: the enqueue
+  was removed and the `email` queue deleted, so no temporary password sits in Redis in plaintext. The
+  creation response is the only delivery channel — the admin reads it off and passes it along out of band.
+  Reinstate the queue together with a transport, not before. (ADR-0002)
 - `packages/auth/src/server.ts` and `tanstack-server.ts` are hand-synced duplicates that differ only by
   `tanstackStartCookies()` and the slug `databaseHooks`. Edits must be applied to both.
-- `packages/auth/src/factory.ts` is dead code.
+- ~~`packages/auth/src/factory.ts` is dead code.~~ Deleted.
+- The `oneTimeToken` plugin (`disableClientRequest: true`) mints the handoff token the Expo app trades for
+  a session. That path has only been exercised anonymously — see Phase 21 and `docs/mobile-plan.md`
+  Stage 3.
 
 ---
 
@@ -740,17 +809,19 @@ erDiagram
 - `lib/forms/use-zod-form.ts` wraps React Hook Form + `@hookform/resolvers` Zod.
 - Skeleton primitive with a shimmer keyframe, plus `components/common/fade-in.tsx`; `FadeIn` is used in
   13 files.
-- `errorComponent` is set on all 50 route files, backed by `components/common/route-error.tsx`.
+- `errorComponent` is set on all 50 UI route files, backed by `components/common/route-error.tsx`.
+- `pendingComponent` is set on all 6 routes that have a `loader` — `/`, `/courses`, `/courses/$slug`,
+  `/categories`, `/categories/$slug`, `/teachers/$slug`. Routes without a loader render their skeleton
+  inline from TanStack Query's `isPending`; that split is the rule, see §12.
+- TanStack Query owns server state (`lib/query/query-client.ts`, `lib/query/keys.ts`), Zustand holds the
+  unread badge (`stores/ui-store.ts`).
 - `__root.tsx` sets the default head, favicon, viewport, theme-color, `og:site_name`, and preloads the
-  Manrope and Inter woff2 subsets.
+  Manrope and Inter woff2 subsets. Providers are composed there; there is no `src/providers/` directory.
 
 **Remaining:**
 
 - No `(public)` / `(auth)` / `(dashboard)` route groups; the tree is flat with `auth.tsx` and
-  `dashboard.tsx` as layout routes.
-- No `pendingComponent` on any route -- page-level skeletons render from component state instead.
-- `src/providers/` is an empty directory; no React context providers were ever created.
-- TanStack Query and Zustand are absent (see the cross-cutting gaps).
+  `dashboard.tsx` as layout routes. Deliberate — see Deviations.
 
 ---
 
@@ -885,8 +956,8 @@ erDiagram
 **Remaining:**
 
 - Category deletion is a hard delete (`category-repository.ts:160`) despite `isActive` existing on the
-  table. Decide whether that is intended.
-- No `CategoryTreeSkeleton` (listed in the §12 inventory).
+  table. Decide whether that is intended. This is the one item from the 2 August audit still open.
+- ~~No `CategoryTreeSkeleton`.~~ Built, in `components/common/skeletons.tsx`.
 
 ---
 
@@ -938,8 +1009,8 @@ erDiagram
 
 **Remaining:**
 
-- No `CourseDetailSkeleton` (the public detail page is server-rendered through a loader, so the gap is
-  cosmetic).
+- Nothing outstanding. `CourseDetailSkeleton` was the last gap and is now both a component and the route's
+  `pendingComponent`.
 
 ---
 
@@ -992,7 +1063,7 @@ erDiagram
 
 **Goal:** Implement a robust file upload system using AWS S3 with presigned URLs for direct client uploads.
 
-**Status:** In progress -- the upload path is complete, the background processing half is not.
+**Status:** Completed -- the upload path and the background processing half both landed.
 
 **Key tasks:**
 
@@ -1029,15 +1100,14 @@ erDiagram
 
 **Remaining:**
 
-- **The `file-processing` worker was never written.** `upload-service.ts:263` fires
-  `queues["file-processing"].add("extract-video-metadata", {...})` for every confirmed video, but
-  `apps/api/src/workers/` contains only `notification-worker.ts` and `sms-worker.ts`. Those jobs sit in
-  Redis forever, and `uploads.durationInSeconds` / `width` / `height` are only ever populated when the
-  client passes them to `POST /upload/confirm`.
-  To close this: add `workers/file-processing-worker.ts` on the `file-processing` queue, register a
-  `worker:file-processing` script in `apps/api/package.json` alongside the two existing worker scripts, and
-  have it write metadata back through `upload-repository`.
-- No thumbnail variants are generated for course covers (§16 Performance Rules asks for them).
+- ~~**The `file-processing` worker was never written.**~~ Written. `workers/file-processing-worker.ts`
+  consumes `extract-video-metadata`, parses duration and dimensions with the ISO base media container
+  reader in `services/video-metadata.ts` (there is no ffmpeg on the API host), and writes back through
+  `upload-repository`. Run it with `bun run --filter @mma/api worker:file-processing`. It skips cleanly when
+  S3 is unconfigured, and `apps/api/src/scripts/backfill-video-metadata.ts` covers videos confirmed before
+  it existed.
+- No thumbnail variants are generated for course covers (§16 Performance Rules asks for them). This is the
+  one item left in this phase.
 
 ---
 
@@ -1090,7 +1160,7 @@ erDiagram
 
 **Remaining:**
 
-- No `TestBuilderSkeleton` or `TestTakingSkeleton` (§12 inventory).
+- Nothing outstanding. `TestBuilderSkeleton` and `TestTakingSkeleton` were the last gap and both exist.
 
 ---
 
@@ -1143,20 +1213,18 @@ erDiagram
 
 **Remaining:**
 
-- **The sandbox/live switch cannot currently be flipped.** Two separate defects compound:
-  1. `.env.example:42` documents `SSLCOMMERZ_IS_LIVE`, but nothing in the repo reads that variable. The
-     API reads `SSLCOMMERZ_SANDBOX_MODE` (`lib/env.ts:18`), which is undocumented.
-  2. That variable is parsed with `z.coerce.boolean().default(true)`. Zod's boolean coercion is
-     `Boolean(input)`, so the string `"false"` coerces to `true`. Setting
-     `SSLCOMMERZ_SANDBOX_MODE="false"` leaves it on. Only an empty value or a genuine `undefined`-plus-
-     changed-default would reach the live gateway.
-
-  Net effect: `sslcommerz-service.ts` will always target `sandbox.sslcommerz.com` no matter what the
-  environment says. Fix by parsing the flag as `z.enum(["true","false"]).transform(v => v === "true")` (or
-  `z.stringbool()`), settling on one variable name, and documenting it in `.env.example`.
-
+- ~~**The sandbox/live switch cannot currently be flipped.**~~ Fixed under ADR-0001. There is now one
+  variable, `SSLCOMMERZ_SANDBOX_MODE`, parsed with `z.stringbool().default(true)` (`lib/env.ts:20`) and
+  documented in `.env.example:42`. The phantom `SSLCOMMERZ_IS_LIVE` is gone. `SSLCOMMERZ_SANDBOX_MODE="false"`
+  now genuinely reaches the live gateway — which is exactly why the item below matters.
 - The live SSLCommerz gateway has never been exercised -- only sandbox and the built-in mock. Validate the
-  IPN callbacks against a real store before launch.
+  IPN callbacks against a real store before launch. Settlement changed materially under ADR-0001: it
+  verifies the gateway's own validation status and the amount actually paid.
+- **A mobile checkout returns through a second hop.** `createEnrollmentSchema` takes an optional
+  `callbackPath`, stored on the payment and read back at settlement — never from the callback body, which
+  is someone else's choice of destination. `apps/web/src/routes/api/payment-return.ts` is where the browser
+  lands before the `mma://` deep link. The origin half (`callbackOrigin`) is still trusted as given; see the
+  backlog.
 
 ---
 
@@ -1202,6 +1270,7 @@ erDiagram
 **Remaining:**
 
 - The progress indicator is a plain bar, not the segmented "chunked" tracker described in DESIGN.md.
+  Verified still true on 3 August: `routes/dashboard/my-courses.tsx:197` sets a single `width` percentage.
 
 ---
 
@@ -1209,7 +1278,7 @@ erDiagram
 
 **Goal:** Build per-lecture comment/discussion sections where students, teachers, and admins can comment and reply.
 
-**Status:** In progress -- feature-complete except for the Redis cache
+**Status:** Completed
 
 **Key tasks:**
 
@@ -1238,9 +1307,11 @@ erDiagram
 
 **Remaining:**
 
-- **No Redis cache for hot comment threads.** `comment-service.ts` and `comment-repository.ts` never import
-  `lib/redis`; every thread read hits Postgres.
-- No `CommentThreadSkeleton` (§12 inventory).
+- ~~**No Redis cache for hot comment threads.**~~ Built. `comment-service.ts` reads through `lib/cache.ts`
+  and invalidates by key index on every write. The thread is cached **as records, not as a view**: `isOwn`
+  and `isEditable` differ per reader, so the projection stays outside the cache.
+- ~~No `CommentThreadSkeleton`.~~ Built.
+- Nothing outstanding.
 
 ---
 
@@ -1275,9 +1346,9 @@ erDiagram
 
 **Delivered:**
 
-- Two standalone WebSocket Hono apps -- `routes/messages-ws-app.ts` and `routes/notifications-ws-app.ts` --
-  mounted outside the main middleware chain, so they do their own session verification. (The
-  `src/websocket/` directory the plan proposed is empty.)
+- Two standalone WebSocket Hono apps -- `websocket/messages-ws-app.ts` and
+  `websocket/notifications-ws-app.ts` -- mounted outside the main middleware chain, so they do their own
+  session verification. They were moved into the `websocket/` directory the plan scaffolded for them.
 - REST: `GET /messages/conversations`, `POST /messages/conversations`,
   `GET /messages/conversations/:id`, `POST /messages/conversations/:id`,
   `POST /messages/conversations/:id/read`, `GET /messages/participants` for starting a new thread.
@@ -1291,8 +1362,12 @@ erDiagram
 
 **Remaining:**
 
-- No `ConversationListSkeleton` or `MessageThreadSkeleton` (§12 inventory).
+- ~~No `ConversationListSkeleton` or `MessageThreadSkeleton`.~~ Both built, plus `MessagesPageSkeleton`.
 - Redis pub/sub fan-out has not been verified against more than one API instance.
+- Moderation is end to end as of ADR-0004: reporting a conversation unlocks audited admin review, and
+  messages can be hidden but never deleted — a hidden message keeps its place as a tombstone.
+- Blocking is still not implemented. A student who reports a teacher stays in a channel with them until an
+  admin acts. Out of scope by decision, and worth revisiting.
 
 ---
 
@@ -1344,7 +1419,10 @@ erDiagram
 - `public/firebase-messaging-sw.js` hardcodes its gstatic `importScripts` URLs (currently 12.17.0). It does
   not track the `firebase` package version -- bump it by hand whenever the dependency moves, or the page
   and the worker will run different SDK majors.
-- No `NotificationListSkeleton` (§12 inventory).
+- ~~No `NotificationListSkeleton`.~~ Built.
+- Mobile push registers a **device** token (`apps/mobile/src/lib/use-push-registration.ts` calls
+  `Notifications.getDevicePushTokenAsync()`), which needs a real build and a real device to test — nothing
+  in the web export exercises it.
 
 ---
 
@@ -1451,9 +1529,11 @@ erDiagram
 
 **Remaining:**
 
-- No `ChartSkeleton` or `StatsGridSkeleton` as distinct components (§12 inventory) --
-  `AnalyticsSkeleton` covers the whole page instead.
-- Analytics aggregates are recomputed per request with no Redis caching.
+- ~~No `ChartSkeleton` or `StatsGridSkeleton` as distinct components.~~ Both built, used by three analytics
+  pages.
+- ~~Analytics aggregates are recomputed per request with no Redis caching.~~ All four overviews read through
+  `lib/cache.ts`. Invalidation is TTL-only here rather than index-based — the reasoning is in BLOCKERS.md.
+- Nothing outstanding.
 
 ---
 
@@ -1552,12 +1632,13 @@ erDiagram
 
 **Remaining:**
 
-- **`/sitemap.xml` and `/robots.txt` are served by the API origin, not the web app.** Nothing under
-  `apps/web/src/routes/` answers those paths, so `https://mehedismathacademy.com/sitemap.xml` will 404
-  unless the production reverse proxy forwards both paths to the API. Either add that proxy rule or add
-  matching TanStack Start server routes.
-- Image CLS work is thin: `loading="lazy"` and explicit `width`/`height` are not applied consistently
-  across every `<img>`.
+- ~~**`/sitemap.xml` and `/robots.txt` are served by the API origin, not the web app.**~~ Both are now
+  served from the public origin as well: `routes/sitemap[.]xml.ts` and `routes/robots[.]txt.ts`. Playwright
+  asserts them.
+- Image CLS was addressed in the polish sweep (`7cfe99a`) but is not uniform: 16 of the 17 `<img>` elements
+  carry `loading="lazy"`, and intrinsic `width`/`height` are set on the images that actually reserve layout
+  (course cards, category heroes, the landing sections). The rest rely on an `aspect-*` class, which holds
+  the box but leaves the intrinsic ratio unstated.
 - The OG tags have not been run through the Facebook, Twitter, or LinkedIn validators. The one failure
   that did not need a validator is fixed: the endpoint served `image/svg+xml`, which every platform
   rejects, and now rasterises to a 1200×630 PNG with `og:image:type` / `:width` / `:height` declared.
@@ -1576,8 +1657,9 @@ erDiagram
   expo-router 57.0.9. Treat every version reference below as SDK 57.
 - `app/` holds the routes: a `(tabs)` shell (catalog, learning, messages, notifications, profile) plus
   course detail, the player, tests, a conversation, and sign-in / sign-up.
-- `src/` holds everything reusable: `lib/` (env, api-client, api, auth, session-store, query, hooks),
-  `components/ui.tsx`, and `theme/tokens.ts`.
+- `src/` holds everything reusable: `lib/` (env, api-client, api, auth, session-store, query, payment,
+  lecture-video, profile-form, documents, hooks), `components/` (ui.tsx, lecture-player, lecture-comments,
+  course-reviews, route-error, google-sign-in-button), and `theme/tokens.ts`.
 - It depends on `@mma/shared` and consumes it unbuilt; `metro.config.js` carries the workspace resolver
   configuration that makes that work.
 - It pins its own TypeScript (`~6.0.3`) rather than inheriting the root one; `expo install --fix` owns that
@@ -1589,62 +1671,65 @@ erDiagram
   `AppState`-driven socket and falls back to the poll when it is down.
 - The parity gaps are closed too: lecture comments, course reviews, certificate download and share, course
   notices, bug reports, and price filters on the catalogue.
-- It has tests: `jest-expo` plus `@testing-library/react-native`, so `bun run test` covers three workspaces.
-- **Nothing in it has been run on a device.** Everything above typechecks, lints, bundles and passes its
-  tests; none of that is evidence that a screen renders. See `docs/mobile-plan.md`, Stage 0.
+- It has tests: `jest-expo` plus `@testing-library/react-native`, 60 of them, so `bun run test` covers three
+  workspaces.
+- `eas.json` exists with development, preview and production profiles, each carrying its own
+  `EXPO_PUBLIC_API_ORIGIN` / `EXPO_PUBLIC_WEB_ORIGIN`. `app.json` names the app on both platforms —
+  `com.mehedismathacademy.app` — and lists `expo-system-ui`, without which `userInterfaceStyle: "light"` is
+  a no-op on Android.
+- **Nothing in it has been run on a phone.** All 15 routes do boot in a real browser through the
+  react-native-web static export, which is how two unhandled rejections were found — but react-native-web is
+  not React Native. Layout on a small screen, gestures, the keyboard, native video, the share sheet and push
+  registration are all unobserved, and `expo prebuild` writes a Gradle project without compiling one. See
+  `docs/mobile-plan.md`, Stage 0.
 
 **Key tasks:**
 
-- ~~Initialize `apps/mobile/` with Expo SDK 54 (React Native 0.81, React 19.1) + TypeScript~~ -- done, but
-  on SDK 57 / RN 0.86.2 / React 19.2.3. Treat every version reference below as SDK 57.
-- ~~Set up Expo Router for file-based navigation~~ -- present from the template; no app routes written yet.
-- Implement authentication flow (Better Auth client for React Native using expo-secure-store)
-- Port key screens from web:
-  - Login / signup / Google OAuth
-  - Profile completion
-  - Course catalog with category filters
-  - Course detail and enrollment
-  - Course player (video + content)
-  - Tests (MCQ and written)
-  - Messaging (WebSocket real-time)
-  - Notifications (FCM for mobile)
-  - My courses with progress
-- Design system adaptation:
-  - Map the "Digital Atelier" color palette to React Native StyleSheet
-  - Manrope + Inter fonts via expo-font
-  - Custom components matching web design
-- Performance optimizations:
-  - FlashList for all lists (memoized items, stable callbacks)
-  - Memoized components with React.memo and useCallback
-  - Reanimated 4 for 60fps native-thread animations
-  - Offline-first with TanStack Query + AsyncStorage persistence
-  - Use Expo Image (`expo-image`) for all image rendering
-- Push notifications:
-  - expo-notifications + FCM integration
-  - Token registration on login
-- Build configuration:
-  - `eas.json` for development, preview, and production builds -- no `eas.json` exists yet
+Every key task is done. What each one turned into:
+
+| Key task                                | Where it landed                                                                                          |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Expo SDK 54 + Expo Router               | SDK 57 / RN 0.86.2 / React 19.2.8; 15 file routes under `app/`                                           |
+| Auth flow on expo-secure-store          | `src/lib/session-store.ts`, `auth.ts`; the Google round trip hops through the web app's handoff route    |
+| Login / signup / Google OAuth           | `app/sign-in.tsx`, `app/sign-up.tsx`, `google-sign-in-button.tsx`, `app/auth-callback.tsx`               |
+| Profile completion                      | `app/profile-complete.tsx` — native, because a browser opened from the app arrives signed out            |
+| Catalogue with filters                  | `app/(tabs)/index.tsx` — search, categories and price bands                                              |
+| Course detail and enrolment             | `app/courses/[courseId].tsx` + `src/lib/payment.ts` + `app/payment-callback.tsx`                         |
+| Course player                           | `app/learn/[courseId].tsx` + `src/components/lecture-player.tsx` (expo-video, `timeUpdate` progress)     |
+| Tests (MCQ and written)                 | `app/tests/[testId].tsx`                                                                                 |
+| Messaging (WebSocket)                   | `app/messages/[conversationId].tsx` + `src/lib/use-messaging-socket.ts`, polling when the socket is down |
+| Notifications                           | `app/(tabs)/notifications.tsx` + `src/lib/use-push-registration.ts`                                      |
+| My courses with progress                | `app/(tabs)/learning.tsx`                                                                                |
+| Design system, fonts, custom components | `src/theme/tokens.ts`, Manrope + Inter through expo-font, `src/components/ui.tsx`                        |
+| FlashList, memoisation, Reanimated 4    | in place; `SkeletonBlock` pulses on the UI thread                                                        |
+| Offline-first                           | TanStack Query persisted to AsyncStorage; `ApiError.isOffline` distinguishes no-signal from a 4xx        |
+| expo-image everywhere                   | in place                                                                                                 |
+| `eas.json`                              | development / preview / production, each with its own public origins                                     |
 
 ---
 
 ## Cross-Cutting Concerns (Applied Across All Phases)
 
-> **Audit note (2 August 2026):** error handling is done; loading states are partly done; security is done;
-> caching is barely started; testing has not been started at all. Details are inline below.
+> **Audit note (2 August 2026, re-verified 3 August):** the 2 August reading was "error handling done,
+> loading states partly done, security done, caching barely started, testing not started". All five are
+> now done and the text below has been rewritten to say so. Only accessibility (§17) remains unverified.
 
 **Error Handling:** ✅ done
 
 - Backend: `middleware/error-handler.ts` is the global `onError`, over the `AppError` hierarchy in
   `utils/errors.ts`, returning the `success`/`error` envelope from `utils/response.ts`.
-- Frontend: `errorComponent` on all 50 route files via `components/common/route-error.tsx`; the ky
+- Frontend: `errorComponent` on all 50 UI route files via `components/common/route-error.tsx`; the ky
   `afterResponse` hook in `lib/api/client.ts` raises the sonner toast. Never add a second toast on top of
-  it. Retry is not configured anywhere (there is no query layer to configure it on).
+  it. Retry is configured on the query client and deliberately off for 4xx and off for every mutation — the
+  hook has already raised a toast, and a retry raises a second one.
+- Mobile: `ScreenErrorBoundary` is exported as `ErrorBoundary` from every route under `apps/mobile/app/`,
+  which is how Expo Router takes it. A screen that throws shows a retry, not a blank frame.
 
 **Loading States (Custom Skeletons Only -- No Spinners/Loaders):** ✅ done -- every skeleton in the §12
 inventory exists, the five "Loading …" strings and six `animate-spin` indicators are gone, and the mobile
 app's boot `ActivityIndicator` is now a skeleton too. `FadeIn` is applied in 13 files.
 
-Route-level skeletons follow the two-pattern rule in §12: the five public loader routes declare a
+Route-level skeletons follow the two-pattern rule in §12: all six loader routes declare a
 `pendingComponent`, and the dashboard routes — which fetch client-side with TanStack Query — render their
 skeleton inline from `isPending`. That is a deliberate amendment, not an accident: see §12.
 
@@ -1678,12 +1763,13 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 - The cache is never load-bearing. Every failure path falls through to Postgres.
 - TanStack Query supplies the client half: `staleTime` 30s on web, 60s on mobile with a persisted cache.
 
-**Testing (Progressive, Per Phase):** ✅ started and load-bearing
+**Testing (Progressive, Per Phase):** ✅ load-bearing — 321 tests under `bun run test`, 42 more under
+`bun run test:e2e`
 
-- **122 tests in `@mma/api`**: unit tests over commerce, progress, assessment, course, staff-account,
-  admin-user, message, cache and video-metadata logic, plus 17 integration tests that drive the real Hono
-  app through `app.request`.
-- **134 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
+- **126 tests in `@mma/api`** across 11 files: unit tests over commerce, progress, assessment, course,
+  staff-account, admin-user, message, cache and video-metadata logic, plus integration tests that drive the
+  real Hono app through `app.request`.
+- **135 tests in `@mma/shared`**, one suite beside every validator that carries a rule. These schemas are
   the contract in both directions — the API validates requests with them and the web app resolves its
   forms against them — so a loosened `.min()` or a dropped `.uuid()` now fails a test instead of silently
   changing both sides at once. Writing them caught a live defect: `.partial()` does not strip a
@@ -1693,17 +1779,22 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 - The integration tests are deliberately anonymous. Their job is to prove that every guarded route still
   refuses a caller with no session — a guard that quietly stopped guarding would pass every unit test in
   the repository.
-- **34 Playwright tests** in `apps/web/e2e`, run by `bun run test:e2e` from `apps/web`: the public pages,
-  the dashboard redirect, the crawler files, and the two flows that move money. The enrolment and payment
-  specs assert what must never regress — every enrolment and payment endpoint refuses an anonymous caller,
-  and a forged gateway callback for an unknown payment is a 404 rather than a redirect that settles it.
+- **42 Playwright assertions** across 5 specs in `apps/web/e2e`, run by `bun run test:e2e` from `apps/web`
+  (40 pass; 2 skip with a stated reason when the environment has no published course): the public pages,
+  the dashboard redirect, the crawler files, the two flows that move money, and the two hops into the Expo
+  app. The enrolment and payment specs assert what must never regress — every enrolment and payment
+  endpoint refuses an anonymous caller, and a forged gateway callback for an unknown payment is a 404
+  rather than a redirect that settles it. `mobile-handoff.spec.ts` asserts `Location` headers, which is why
+  it is E2E and not a unit test, and never follows a redirect — `mma://` is not fetchable.
   They are outside the Turbo `test` task on purpose: that task must run with nothing else on the machine,
   and these need the API, Postgres and Redis.
-- `apps/mobile` is covered by `jest-expo` and `@testing-library/react-native` as of 3 August 2026: the
-  pure logic (`resolveOrigins`, `resolveLectureVideo`, the checkout outcome reader, the profile form) plus
-  screen smoke tests that render each route's skeleton, content and empty state. `bun test` cannot run
-  that workspace — it has no React Native renderer — so it has its own runner behind the same Turbo task.
-- Still uncovered: `apps/web` has no component tests.
+- **60 tests in `@mma/mobile`** across 7 suites, on `jest-expo` and `@testing-library/react-native`: the
+  pure logic (`resolveOrigins`, `resolveLectureVideo`, the checkout outcome reader, the profile form, the
+  cookie parser) plus screen smoke tests that render each route's skeleton, content and empty state.
+  `bun test` cannot run that workspace — it has no React Native renderer — so it has its own runner behind
+  the same Turbo task.
+- Still uncovered: `apps/web` has no component tests, and no mobile screen has been rendered by React
+  Native itself.
 
 ---
 
@@ -1759,7 +1850,7 @@ Route (Hono) -> Controller -> Service -> Repository -> Database (Drizzle)
 > ⚠️ The code uses `kebab-noun-layer.ts`, not the dotted form below. Follow what exists.
 
 ```
-routes/v1/courses.route.ts    -> defines GET/POST/PUT/DELETE for /courses   (matches)
+routes/v1/courses-route.ts    -> defines GET/POST/PUT/DELETE for /courses   (not courses.route.ts)
 controllers/course-controller.ts -> CourseController class                  (not course.controller.ts)
 services/course-service.ts       -> CourseService class                     (not course.service.ts)
 repositories/course-repository.ts -> CourseRepository class                 (not course.repository.ts)
@@ -1843,9 +1934,11 @@ apps/web/src/
 
 ### 7. State Management
 
-> ⚠️ **Not implemented.** Neither TanStack Query nor Zustand is installed. Server data is fetched with
-> `useEffect` + `useState` (112 `useEffect` call sites) or through TanStack Router loaders. Treat this
-> section as the target state, not a description of the code. React Hook Form + Zod (below) _is_ in place.
+> ✅ **Implemented on 3 August 2026.** TanStack Query owns every server read on web and mobile; the
+> `useEffect` + `useState` fetching this section was written against is gone, as is the `window`
+> CustomEvent bus. Zustand holds exactly one thing — the unread-message badge. Two reads deliberately keep
+> local state: the messages thread (driven by socket events, not fetches) and the admin moderation thread
+> (whose read writes an access-log row, so it must never refetch on focus).
 
 - **Server state:** TanStack Query (React Query) for all API data. No `useState` for server-fetched data.
 - **Form state:** React Hook Form with Zod resolver. No manual form state management.
@@ -2010,23 +2103,41 @@ stay beside their component.
 
 ## Remaining Work Backlog
 
-Rewritten 3 August 2026. The 2 August backlog had 21 items; **all of them are done except the four
-below**, and each of those four is blocked on something outside this repository or is a judgement call
-rather than a task.
+Rewritten 3 August 2026 and re-verified against the tree the same day. **Nothing in the 21-phase plan is
+unbuilt.** Everything below is blocked on hardware or credentials outside this repository, is a judgement
+call rather than a task, or is a small deliberate gap recorded so it does not get rediscovered as a bug.
+
+### Needs hardware nobody has plugged in yet
+
+1. **`apps/mobile` has never run on a phone.** All 15 routes boot in a real browser through the
+   react-native-web static export — which is how two unhandled rejections that no test caught were found —
+   but react-native-web is not React Native. Layout on a small screen, gestures, the keyboard, native video,
+   the share sheet and push registration are all unobserved, and `expo prebuild` writes a Gradle project
+   without compiling one. `docs/mobile-plan.md` Stage 0 is the first thing to do with a handset in hand.
+2. **The signed-in half of the mobile auth handoff.** The anonymous path is asserted in Playwright — an
+   error and never a token — but the Google consent round trip, token expiry and replay, and the
+   `disableClientRequest` check with a valid session cookie all need a Google account and a device.
+   (`docs/mobile-plan.md` Stage 3)
+3. **No EAS build has been run.** `eas.json` and the application id exist; nothing has been compiled or
+   submitted. **Confirm `com.mehedismathacademy.app` before the first submission** — it is a reasonable
+   default that replaced a placeholder, not a decision anyone made, and it is the one field that cannot
+   change once an app is listed. (`docs/mobile-plan.md` Stage 9)
 
 ### Needs credentials nobody has yet
 
-1. **SSLCommerz against a live store.** Only the sandbox and the built-in mock have been exercised. The
+4. **SSLCommerz against a live store.** Only the sandbox and the built-in mock have been exercised. The
    settlement path changed materially under ADR-0001 — it now checks the gateway's own validation status
    and the paid amount — so this is the highest-value thing left to verify. (Phase 13)
-2. **Onecodesoft SMS against real credentials.** The provider has never been called. (Phase 18)
+5. **Onecodesoft SMS against real credentials.** The provider has never been called. (Phase 18)
 
 ### Needs judgement, not code
 
-3. **Accessibility.** §17 remains entirely unverified: no screen-reader pass, no keyboard-only run, no
+6. **Accessibility.** §17 remains entirely unverified: no screen-reader pass, no keyboard-only run, no
    contrast audit. Everything else on this list can be checked by a machine; this cannot.
-4. **Open Graph validators.** The tags are generated and correct as far as static inspection goes, but
+7. **Open Graph validators.** The tags are generated and correct as far as static inspection goes, but
    they have never been through the Facebook, Twitter or LinkedIn debuggers.
+8. **Category deletion is a hard delete** despite `isActive` existing on the table
+   (`category-repository.ts:160`). Every other user-facing entity soft-deletes. Decide which one is wrong.
 
 ### Known, deliberate, and recorded elsewhere
 
@@ -2036,13 +2147,12 @@ rather than a task.
   with no backfill. This database was empty and verified so before applying. BLOCKERS.md carries the
   manual three-step sequence for any deployment that has rows.
 - **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
+- **The progress tracker is a plain bar, not the chunked one DESIGN.md describes.** (Phase 14)
+- **Staff invites have no transport.** The temporary password reaches the new user through the creation
+  response, read off by the admin and passed along out of band. The `email` queue was deleted rather than
+  left declared with no consumer — reinstate it together with a transport, not before. (ADR-0002)
 - **`apps/web` has no component tests.** (`packages/shared` validators and `apps/mobile` are covered as of
   3 August 2026.)
-- **`apps/mobile` has never run on a phone.** All 15 routes do boot in a real browser, through the
-  react-native-web export — which found two unhandled rejections that no test caught. But
-  react-native-web is not React Native: layout on a small screen, gestures, the keyboard, native video
-  and the share sheet are all still unobserved, and `expo prebuild` writes a Gradle project without
-  compiling one. `docs/mobile-plan.md` Stage 0 is the first thing to do with a phone in hand.
 - **`callbackOrigin` on enrolment is trusted as given.** An authenticated student can set the post-payment
   redirect to any origin. `callbackPath` is constrained to a path _on_ that origin, so it adds nothing, but
   the origin itself predates this and is still unvalidated.
