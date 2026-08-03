@@ -13,6 +13,7 @@ import { QuestionEditor } from "@/components/tests/question-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -81,6 +82,11 @@ export function AssessmentBuilder({
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionEditDrafts, setQuestionEditDrafts] = useState<Record<string, QuestionDraft>>({});
   const [isWorking, setIsWorking] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { kind: "test"; testId: string }
+    | { kind: "question"; questionId: string }
+    | null
+  >(null);
 
   const selectedTestSummary = useMemo(
     () =>
@@ -146,16 +152,25 @@ export function AssessmentBuilder({
   };
 
   const handleDeleteSelectedTest = async (): Promise<void> => {
-    if (!selectedTest || !window.confirm("Delete this test and all of its submissions?")) {
+    if (!selectedTest) {
+      return;
+    }
+
+    setDeleteTarget({ kind: "test", testId: selectedTest.id });
+  };
+
+  const executeDeleteTest = async (): Promise<void> => {
+    if (!deleteTarget || deleteTarget.kind !== "test") {
       return;
     }
 
     setIsWorking(true);
 
     try {
-      await deleteTest(selectedTest.id);
+      await deleteTest(deleteTarget.testId);
       setSelectedTest(null);
       setSelectedTestId(null);
+      setDeleteTarget(null);
       await onRefresh();
       toast.success(t("ab.deleted"));
     } finally {
@@ -215,16 +230,21 @@ export function AssessmentBuilder({
   };
 
   const handleDeleteQuestion = async (questionId: string): Promise<void> => {
-    if (!window.confirm("Delete this question?")) {
+    setDeleteTarget({ kind: "question", questionId });
+  };
+
+  const executeDeleteQuestion = async (): Promise<void> => {
+    if (!deleteTarget || deleteTarget.kind !== "question") {
       return;
     }
 
     setIsWorking(true);
 
     try {
-      await deleteQuestion(questionId);
+      await deleteQuestion(deleteTarget.questionId);
       const refreshed = await getTestDetail(selectedTestId!);
       setSelectedTest(refreshed);
+      setDeleteTarget(null);
       toast.success(t("ab.qDeleted"));
     } finally {
       setIsWorking(false);
@@ -714,6 +734,26 @@ export function AssessmentBuilder({
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel="Delete"
+        description={
+          deleteTarget?.kind === "test"
+            ? "Delete this test and all of its submissions? This cannot be undone."
+            : deleteTarget?.kind === "question"
+              ? "Delete this question? This cannot be undone."
+              : ""
+        }
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() =>
+          void (deleteTarget?.kind === "question" ? executeDeleteQuestion() : executeDeleteTest())
+        }
+        open={deleteTarget !== null}
+        pending={isWorking}
+        title={deleteTarget?.kind === "test" ? "Delete test" : "Delete question"}
+      />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { CategoryTree } from "@/components/categories/category-tree";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -260,19 +261,28 @@ function AdminCategoriesPage(): JSX.Element {
     }
   });
 
-  const handleDelete = async (category: CategoryNode): Promise<void> => {
-    if (!window.confirm(`Delete ${category.name}?`)) {
+  const [deleteTarget, setDeleteTarget] = useState<CategoryNode | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const executeDelete = async (): Promise<void> => {
+    if (!deleteTarget) {
       return;
     }
 
-    await deleteCategory(category.id);
-    toast.success(t("admin.cat.deleted"));
+    setIsDeleting(true);
+    try {
+      await deleteCategory(deleteTarget.id);
+      toast.success(t("admin.cat.deleted"));
 
-    if (editingCategory?.id === category.id) {
-      closeModal();
+      if (editingCategory?.id === deleteTarget.id) {
+        closeModal();
+      }
+
+      setDeleteTarget(null);
+      await loadCategories();
+    } finally {
+      setIsDeleting(false);
     }
-
-    await loadCategories();
   };
 
   const handleDropOnCategory = async (targetParentId: string | null): Promise<void> => {
@@ -357,7 +367,7 @@ function AdminCategoriesPage(): JSX.Element {
             draggedCategoryId={draggedCategoryId}
             editingCategoryId={editingCategory?.id}
             onAddSubcategory={(parent) => openCreateModal(parent)}
-            onDelete={(category) => void handleDelete(category)}
+            onDelete={(category) => setDeleteTarget(category)}
             onDragCategory={setDraggedCategoryId}
             onDropOnCategory={(targetParentId) => void handleDropOnCategory(targetParentId)}
             onEdit={(category) => openEditModal(category)}
@@ -471,6 +481,22 @@ function AdminCategoriesPage(): JSX.Element {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel="Delete"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.name}"? Courses in this category keep their category, but the category itself is removed.`
+            : ""
+        }
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void executeDelete()}
+        open={deleteTarget !== null}
+        pending={isDeleting}
+        title="Delete category"
+      />
     </div>
   );
 }

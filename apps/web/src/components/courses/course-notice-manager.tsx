@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -73,17 +74,25 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
     }
   }
 
-  async function handleDelete(notice: CourseNotice): Promise<void> {
-    if (!window.confirm("Delete this notice?")) {
+  const [deleteTarget, setDeleteTarget] = useState<CourseNotice | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function executeDelete(): Promise<void> {
+    if (!deleteTarget) {
       return;
     }
 
+    setIsDeleting(true);
     try {
-      await deleteCourseNotice(notice.id);
+      await deleteCourseNotice(deleteTarget.id);
       toast.success(t("notice.removed"));
+      setDeleteTarget(null);
       await load();
     } catch {
       toast.error(t("notice.deleteFailed"));
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -165,7 +174,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
                       variant="outline"
                       size="sm"
                       className="text-error"
-                      onClick={() => void handleDelete(notice)}
+                      onClick={() => setDeleteTarget(notice)}
                     >
                       <Trash2 className="size-4" />{t("disc.delete")}</Button>
                   </div>
@@ -175,6 +184,22 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
           )}
         </div>
       </CardContent>
+
+      <ConfirmDialog
+        cancelLabel="Cancel"
+        dangerous
+        confirmLabel="Delete notice"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.title}"? Enrolled students will no longer see it.`
+            : ""
+        }
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void executeDelete()}
+        open={deleteTarget !== null}
+        pending={isDeleting}
+        title="Delete notice"
+      />
     </Card>
   );
 }

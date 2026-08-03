@@ -9,6 +9,7 @@ import { CommentThreadSkeleton } from "@/components/common/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -231,6 +232,8 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
   const [replyTargetId, setReplyTargetId] = useState<string | null>(null);
   const [submittingReplyId, setSubmittingReplyId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const currentUserId = session?.user.id;
   const canDiscuss =
@@ -291,6 +294,48 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
 
   const totalLoaded = useMemo(() => comments.length, [comments.length]);
 
+  const executeDeleteComment = async (id: string): Promise<void> => {
+    if (!id) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      await deleteComment(id);
+      patchLoadedComments((loaded) =>
+        loaded.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                content: null,
+                isDeleted: true,
+                isEditable: false
+              }
+            : {
+                ...item,
+                replies: item.replies.map((reply) =>
+                  reply.id === id
+                    ? {
+                        ...reply,
+                        content: null,
+                        isDeleted: true,
+                        isEditable: false
+                      }
+                    : reply
+                )
+              }
+        )
+      );
+      setDeleteTarget(null);
+      toast.success(t("disc.deleted"));
+    } catch {
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="border-hairline/60 bg-panel-warm/70">
       <CardHeader>
@@ -334,38 +379,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                 key={comment.id}
                 comment={comment}
                 currentUserId={currentUserId}
-                onDelete={async (id) => {
-                  if (!window.confirm("Delete this comment?")) {
-                    return;
-                  }
-
-                  await deleteComment(id);
-                  patchLoadedComments((loaded) =>
-                    loaded.map((item) =>
-                      item.id === id
-                        ? {
-                            ...item,
-                            content: null,
-                            isDeleted: true,
-                            isEditable: false
-                          }
-                        : {
-                            ...item,
-                            replies: item.replies.map((reply) =>
-                              reply.id === id
-                                ? {
-                                    ...reply,
-                                    content: null,
-                                    isDeleted: true,
-                                    isEditable: false
-                                  }
-                                : reply
-                            )
-                          }
-                    )
-                  );
-                  toast.success(t("disc.deleted"));
-                }}
+                onDelete={(id) => Promise.resolve(setDeleteTarget(id))}
                 onReply={async (parentId, content) => {
                   if (content === "") {
                     setReplyTargetId(parentId || null);
@@ -439,6 +453,18 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
           </div>
         ) : null}
       </CardContent>
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel="Delete comment"
+        description="Delete this comment? Replies keep their own author and stay visible."
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void executeDeleteComment(deleteTarget ?? "")}
+        open={deleteTarget !== null}
+        pending={isDeleting}
+        title="Delete comment"
+      />
     </Card>
   );
 }

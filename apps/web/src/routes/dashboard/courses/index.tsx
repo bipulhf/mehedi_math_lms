@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CourseCard } from "@/components/courses/course-card";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,14 +73,23 @@ function DashboardCoursesPage(): JSX.Element {
     await loadCourses();
   };
 
-  const handleArchive = async (courseId: string): Promise<void> => {
-    if (!window.confirm("Archive this course?")) {
+  const [archiveTarget, setArchiveTarget] = useState<CourseSummary | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
+
+  const executeArchive = async (): Promise<void> => {
+    if (!archiveTarget) {
       return;
     }
 
-    await withdrawCourse(courseId);
-    toast.success(t("tcourses.archivedDone"));
-    await loadCourses();
+    setIsArchiving(true);
+    try {
+      await withdrawCourse(archiveTarget.id);
+      toast.success(t("tcourses.archivedDone"));
+      setArchiveTarget(null);
+      await loadCourses();
+    } finally {
+      setIsArchiving(false);
+    }
   };
 
   if (isLoading) return <CourseListSkeleton />;
@@ -169,7 +179,7 @@ function DashboardCoursesPage(): JSX.Element {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => void handleArchive(course.id)}
+                      onClick={() => setArchiveTarget(course)}
                       className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest border-hairline/40 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all font-body"
                     >
                       <Archive className="size-3.5 mr-2" />{t("tcourses.archive")}</Button>
@@ -180,6 +190,22 @@ function DashboardCoursesPage(): JSX.Element {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel={t("tcourses.archive")}
+        description={
+          archiveTarget
+            ? `Archive "${archiveTarget.title}"? It leaves the catalog and can no longer be enrolled in. You can restore it later.`
+            : ""
+        }
+        onCancel={() => setArchiveTarget(null)}
+        onConfirm={() => void executeArchive()}
+        open={archiveTarget !== null}
+        pending={isArchiving}
+        title={t("tcourses.archive")}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
@@ -79,14 +80,25 @@ function PaymentsPage(): JSX.Element {
     await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all() });
   };
 
-  const handleRefund = async (paymentId: string): Promise<void> => {
-    if (!window.confirm("Refund this payment?")) {
+  const [refundTarget, setRefundTarget] = useState<PaymentHistoryItem | null>(null);
+  const [isRefunding, setIsRefunding] = useState(false);
+
+  const executeRefund = async (): Promise<void> => {
+    if (!refundTarget) {
       return;
     }
 
-    await refundPayment(paymentId, { remarks: "Refund issued from accountant operations dashboard." });
-    toast.success(t("pay.refunded.done"));
-    await loadPayments();
+    setIsRefunding(true);
+    try {
+      await refundPayment(refundTarget.id, {
+        remarks: "Refund issued from accountant operations dashboard."
+      });
+      toast.success(t("pay.refunded.done"));
+      setRefundTarget(null);
+      await loadPayments();
+    } finally {
+      setIsRefunding(false);
+    }
   };
 
   if (isLoading) {
@@ -220,7 +232,7 @@ function PaymentsPage(): JSX.Element {
                       {canManagePayments ? (
                         <td className="px-4 py-3">
                           {item.status === "SUCCESS" ? (
-                            <Button onClick={() => void handleRefund(item.id)} size="xs" variant="outline">{t("pay.refund")}</Button>
+                            <Button onClick={() => setRefundTarget(item)} size="xs" variant="outline">{t("pay.refund")}</Button>
                           ) : (
                             <span className="text-xs text-muted-faint">—</span>
                           )}
@@ -234,6 +246,22 @@ function PaymentsPage(): JSX.Element {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel={t("pay.refund")}
+        description={
+          refundTarget
+            ? `Refund ${Number(refundTarget.amount).toFixed(2)} paid for "${refundTarget.course.title}"? This cancels the enrolment it paid for.`
+            : ""
+        }
+        onCancel={() => setRefundTarget(null)}
+        onConfirm={() => void executeRefund()}
+        open={refundTarget !== null}
+        pending={isRefunding}
+        title="Refund payment"
+      />
     </div>
   );
 }

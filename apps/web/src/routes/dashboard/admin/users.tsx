@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,12 @@ function AdminUsersPage(): JSX.Element {
   const [page, setPage] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<null | {
+    kind: "delete" | "status";
+    nextStatus: boolean;
+    user: AdminUserListItem;
+  }>(null);
+  const [confirmPending, setConfirmPending] = useState(false);
 
   const form = useZodForm<CreateAdminUserInput>({
     defaultValues: { email: "", name: "", role: "TEACHER" },
@@ -107,32 +114,38 @@ function AdminUsersPage(): JSX.Element {
     }
   });
 
-  const handleStatusToggle = async (user: AdminUserListItem): Promise<void> => {
-    const nextStatus = !user.isActive;
-    if (
-      !window.confirm(
-        `Are you sure you want to ${nextStatus ? "activate" : "deactivate"} ${user.name}?`
-      )
-    )
-      return;
-    await updateAdminUserStatus(user.id, { isActive: nextStatus });
-    toast.success(`User ${nextStatus ? "activated" : "deactivated"}`);
-    await loadUsers();
+  const handleStatusToggle = (user: AdminUserListItem): void => {
+    setConfirming({ kind: "status", nextStatus: !user.isActive, user });
   };
 
-  const handleDelete = async (user: AdminUserListItem): Promise<void> => {
-    if (
-      !window.confirm(
-        `Delete ${user.name} permanently? This removes the account and all of its records. Prefer deactivating a user who still has courses or SMS history.`
-      )
-    )
+  const handleDelete = (user: AdminUserListItem): void => {
+    setConfirming({ kind: "delete", nextStatus: false, user });
+  };
+
+  const executeConfirm = async (): Promise<void> => {
+    if (!confirming) {
       return;
+    }
+
+    setConfirmPending(true);
     try {
-      await deleteAdminUser(user.id);
-      toast.success(`User deleted`);
+      if (confirming.kind === "delete") {
+        await deleteAdminUser(confirming.user.id);
+        toast.success("User deleted");
+      } else {
+        await updateAdminUserStatus(confirming.user.id, {
+          isActive: confirming.nextStatus
+        });
+        toast.success(
+          `User ${confirming.nextStatus ? "activated" : "deactivated"}`
+        );
+      }
+      setConfirming(null);
       await loadUsers();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete user");
+      toast.error(error instanceof Error ? error.message : "Action failed");
+    } finally {
+      setConfirmPending(false);
     }
   };
 
@@ -159,7 +172,8 @@ function AdminUsersPage(): JSX.Element {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       {/* Creation Surface */}
       <div className="border border-hairline bg-card p-6">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -301,9 +315,13 @@ function AdminUsersPage(): JSX.Element {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col">
-                    <span className="font-body text-lg font-medium text-ink leading-tight">
+                    <Link
+                      className="text-base font-medium text-ink hover:underline"
+                      params={{ id: user.id }}
+                      to="/dashboard/admin/users/$id"
+                    >
                       {user.name}
-                    </span>
+                    </Link>
                     <span className="text-xs text-muted/70 font-medium flex items-center gap-1.5 mt-1">
                       <Mail className="size-3" /> {user.email}
                     </span>
@@ -366,7 +384,7 @@ function AdminUsersPage(): JSX.Element {
                     size="sm"
                     variant="ghost"
                     disabled={session?.user.id === user.id}
-                    onClick={() => void handleDelete(user)}
+                    onClick={() => handleDelete(user)}
                     className="h-10 w-10 rounded-xl font-bold uppercase tracking-widest text-error hover:bg-red-50 transition-all"
                     title="Delete user"
                   >
@@ -509,7 +527,7 @@ function AdminUsersPage(): JSX.Element {
                             size="sm"
                             variant="ghost"
                             disabled={isOwn}
-                            onClick={() => void handleStatusToggle(user)}
+                            onClick={() => handleStatusToggle(user)}
                             className={cn(
                               "size-9 rounded-xl transition-all shadow-sm",
                               user.isActive
@@ -528,7 +546,7 @@ function AdminUsersPage(): JSX.Element {
                             size="sm"
                             variant="ghost"
                             disabled={isOwn}
-                            onClick={() => void handleDelete(user)}
+                            onClick={() => handleDelete(user)}
                             className="size-9 rounded-xl transition-all hover:bg-red-50 hover:text-error"
                             title="Delete user permanently"
                           >
@@ -573,5 +591,34 @@ function AdminUsersPage(): JSX.Element {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        cancelLabel="Cancel"
+        dangerous={confirming?.kind === "delete" || !confirming?.nextStatus}
+        confirmLabel={
+          confirming?.kind === "delete"
+            ? "Delete user"
+            : confirming?.nextStatus
+              ? "Activate user"
+              : "Deactivate user"
+        }
+        description={
+          confirming?.kind === "delete"
+            ? `Delete ${confirming.user.name} permanently? This removes the account and all of its records. Prefer deactivating a user who still has courses or SMS history.`
+            : `Are you sure you want to ${confirming?.nextStatus ? "activate" : "deactivate"} ${confirming?.user.name ?? ""}?`
+        }
+        onCancel={() => setConfirming(null)}
+        onConfirm={() => void executeConfirm()}
+        open={confirming !== null}
+        pending={confirmPending}
+        title={
+          confirming?.kind === "delete"
+            ? "Delete user"
+            : confirming?.nextStatus
+              ? "Activate user"
+              : "Deactivate user"
+        }
+      />
+    </>
   );
 }

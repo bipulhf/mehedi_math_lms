@@ -22,6 +22,7 @@ import {
 import { initialLectureDraft, type LectureDraft } from "@/components/courses/lecture-draft";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -114,6 +115,12 @@ export function CourseContentBuilder({
     lectureId: string;
   } | null>(null);
   const [isWorking, setIsWorking] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { kind: "chapter"; chapterId: string }
+    | { kind: "lecture"; lectureId: string }
+    | { kind: "material"; materialId: string; materialType: "chapter" | "lecture" }
+    | null
+  >(null);
 
   const totalLectures = useMemo(
     () => content.reduce((total, chapter) => total + chapter.lectures.length, 0),
@@ -156,16 +163,7 @@ export function CourseContentBuilder({
   };
 
   const handleDeleteChapter = async (chapterId: string): Promise<void> => {
-    if (!window.confirm("Delete this chapter and everything inside it?")) return;
-
-    setIsWorking(true);
-    try {
-      await deleteChapter(chapterId);
-      await onRefresh();
-      toast.success(t("cbx.chapterDeleted"));
-    } finally {
-      setIsWorking(false);
-    }
+    setDeleteTarget({ chapterId, kind: "chapter" });
   };
 
   const handleCreateLecture = async (chapterId: string): Promise<void> => {
@@ -221,16 +219,7 @@ export function CourseContentBuilder({
   };
 
   const handleDeleteLecture = async (lectureId: string): Promise<void> => {
-    if (!window.confirm("Delete this lesson?")) return;
-
-    setIsWorking(true);
-    try {
-      await deleteLecture(lectureId);
-      await onRefresh();
-      toast.success(t("cbx.lessonDeleted"));
-    } finally {
-      setIsWorking(false);
-    }
+    setDeleteTarget({ kind: "lecture", lectureId });
   };
 
   const handleChapterMaterialUpload = async (
@@ -267,20 +256,7 @@ export function CourseContentBuilder({
     materialId: string,
     materialType: "chapter" | "lecture"
   ): Promise<void> => {
-    if (!window.confirm("Delete this file?")) return;
-
-    setIsWorking(true);
-    try {
-      if (materialType === "chapter") {
-        await deleteChapterMaterial(materialId);
-      } else {
-        await deleteLectureMaterial(materialId);
-      }
-      await onRefresh();
-      toast.success(t("cbx.fileDeleted"));
-    } finally {
-      setIsWorking(false);
-    }
+    setDeleteTarget({ kind: "material", materialId, materialType });
   };
 
   const handleReorderChapters = async (targetChapterId: string): Promise<void> => {
@@ -366,6 +342,43 @@ export function CourseContentBuilder({
       setIsWorking(false);
     }
   };
+
+  const executeDelete = async (): Promise<void> => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setIsWorking(true);
+    try {
+      if (deleteTarget.kind === "chapter") {
+        await deleteChapter(deleteTarget.chapterId);
+        toast.success(t("cbx.chapterDeleted"));
+      } else if (deleteTarget.kind === "lecture") {
+        await deleteLecture(deleteTarget.lectureId);
+        toast.success(t("cbx.lessonDeleted"));
+      } else if (deleteTarget.materialType === "chapter") {
+        await deleteChapterMaterial(deleteTarget.materialId);
+        toast.success(t("cbx.fileDeleted"));
+      } else {
+        await deleteLectureMaterial(deleteTarget.materialId);
+        toast.success(t("cbx.fileDeleted"));
+      }
+      setDeleteTarget(null);
+      await onRefresh();
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
+  const deleteDialog =
+    deleteTarget?.kind === "chapter"
+      ? {
+          title: "Delete chapter",
+          description: "Delete this chapter and everything inside it? This cannot be undone."
+        }
+      : deleteTarget?.kind === "lecture"
+        ? { title: "Delete lesson", description: "Delete this lesson? This cannot be undone." }
+        : { title: "Delete file", description: "Delete this file? This cannot be undone." };
 
   return (
     <div className="space-y-5">
@@ -679,6 +692,18 @@ export function CourseContentBuilder({
 
         {content.length === 0 ? <EmptyContentState /> : null}
       </div>
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        dangerous
+        confirmLabel="Delete"
+        description={deleteTarget ? deleteDialog.description : ""}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void executeDelete()}
+        open={deleteTarget !== null}
+        pending={isWorking}
+        title={deleteTarget ? deleteDialog.title : ""}
+      />
     </div>
   );
 }

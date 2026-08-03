@@ -21,6 +21,7 @@ import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -64,6 +65,8 @@ function AdminCoursesPage(): JSX.Element {
   const [rejectTarget, setRejectTarget] = useState<CourseSummary | null>(null);
   const [rejectFeedback, setRejectFeedback] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<CourseSummary | null>(null);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const filters = { limit: 12, page, search, status: status === "ALL" ? undefined : status };
   const { data, isPending: isLoading } = useQuery({
@@ -129,19 +132,23 @@ function AdminCoursesPage(): JSX.Element {
   };
 
   const handleArchive = (course: CourseSummary): void => {
-    if (
-      !window.confirm(
-        `Withdraw "${course.title}" from the catalog? Enrolled students keep access. Restorable.`
-      )
-    ) {
+    setArchiveTarget(course);
+  };
+
+  const executeArchive = async (): Promise<void> => {
+    if (!archiveTarget) {
       return;
     }
 
-    void withBusy(course.id, async () => {
-      await withdrawCourse(course.id);
+    setIsArchiving(true);
+    try {
+      await withdrawCourse(archiveTarget.id);
       toast.success("Course withdrawn");
+      setArchiveTarget(null);
       await loadCourses();
-    });
+    } finally {
+      setIsArchiving(false);
+    }
   };
 
   const handleRestore = (course: CourseSummary): void => {
@@ -488,6 +495,22 @@ function AdminCoursesPage(): JSX.Element {
           </div>
         </div>
       )}
+      {/* Archive (soft-delete) confirmation */}
+      <ConfirmDialog
+        cancelLabel="Cancel"
+        dangerous
+        confirmLabel="Archive course"
+        description={
+          archiveTarget
+            ? `Withdraw "${archiveTarget.title}" from the catalog? Enrolled students keep access. Restorable.`
+            : ""
+        }
+        onCancel={() => setArchiveTarget(null)}
+        onConfirm={() => void executeArchive()}
+        open={archiveTarget !== null}
+        pending={isArchiving}
+        title="Archive course"
+      />
     </div>
   );
 }
