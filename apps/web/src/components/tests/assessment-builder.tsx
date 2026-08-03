@@ -4,7 +4,6 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { FadeIn } from "@/components/common/fade-in";
 import {
   createQuestionPayload,
   initialQuestionDraft,
@@ -37,6 +36,7 @@ import {
   updateTest
 } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 const initialTestDraft: CreateTestInput = {
   description: "",
@@ -59,6 +59,8 @@ export function AssessmentBuilder({
   course,
   onRefresh
 }: AssessmentBuilderProps): JSX.Element {
+  const t = useT();
+
   const [selectedTestId, setSelectedTestId] = useState<string | null>(
     assessments[0]?.tests[0]?.id ?? null
   );
@@ -97,7 +99,7 @@ export function AssessmentBuilder({
     const draft = testDrafts[chapterId] ?? initialTestDraft;
 
     if (!draft.title.trim()) {
-      toast.error("Add a test title");
+      toast.error(t("ab.needTitle"));
       return;
     }
 
@@ -111,7 +113,7 @@ export function AssessmentBuilder({
       }));
       await onRefresh();
       setSelectedTestId(createdTest.id);
-      toast.success("Test created");
+      toast.success(t("ab.created"));
     } finally {
       setIsWorking(false);
     }
@@ -137,7 +139,7 @@ export function AssessmentBuilder({
       await onRefresh();
       const refreshed = await getTestDetail(selectedTest.id);
       setSelectedTest(refreshed);
-      toast.success("Test updated");
+      toast.success(t("ab.updated"));
     } finally {
       setIsWorking(false);
     }
@@ -155,7 +157,7 @@ export function AssessmentBuilder({
       setSelectedTest(null);
       setSelectedTestId(null);
       await onRefresh();
-      toast.success("Test deleted");
+      toast.success(t("ab.deleted"));
     } finally {
       setIsWorking(false);
     }
@@ -167,7 +169,7 @@ export function AssessmentBuilder({
     }
 
     if (!questionDraft.questionText.trim()) {
-      toast.error("Add a question prompt");
+      toast.error(t("ab.needPrompt"));
       return;
     }
 
@@ -179,7 +181,7 @@ export function AssessmentBuilder({
       const refreshed = await getTestDetail(selectedTest.id);
       setSelectedTest(refreshed);
       await onRefresh();
-      toast.success("Question created");
+      toast.success(t("ab.qCreated"));
     } finally {
       setIsWorking(false);
     }
@@ -206,7 +208,7 @@ export function AssessmentBuilder({
       const refreshed = await getTestDetail(selectedTestId!);
       setSelectedTest(refreshed);
       setEditingQuestionId(null);
-      toast.success("Question updated");
+      toast.success(t("ab.qUpdated"));
     } finally {
       setIsWorking(false);
     }
@@ -223,7 +225,7 @@ export function AssessmentBuilder({
       await deleteQuestion(questionId);
       const refreshed = await getTestDetail(selectedTestId!);
       setSelectedTest(refreshed);
-      toast.success("Question deleted");
+      toast.success(t("ab.qDeleted"));
     } finally {
       setIsWorking(false);
     }
@@ -259,7 +261,7 @@ export function AssessmentBuilder({
         }))
       });
       setSelectedTest(refreshed);
-      toast.success("Question order updated");
+      toast.success(t("ab.qReordered"));
     } finally {
       setIsWorking(false);
     }
@@ -270,20 +272,18 @@ export function AssessmentBuilder({
       <Card className="border-outline-variant/30 bg-surface-container-lowest/85">
         <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <p className="font-body text-base font-bold text-on-surface">Assessment Builder</p>
-            <p className="text-xs text-on-surface/65">
-              Create tests chapter by chapter, then edit questions on the right.
-            </p>
+            <p className="font-body text-base font-bold text-on-surface">{t("ab.title")}</p>
+            <p className="text-xs text-on-surface/65">{t("ab.lead")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge
-              tone="gray"
+              tone="quiet"
               className="rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-widest"
             >
               {assessments.length} chapters
             </Badge>
             <Badge
-              tone="gray"
+              tone="quiet"
               className="rounded-full px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-widest"
             >
               {totalTests} tests
@@ -294,22 +294,20 @@ export function AssessmentBuilder({
 
       <div className="grid gap-3 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="space-y-3">
-          {assessments.map((chapter, chapterIndex) => (
-            <FadeIn
+          {assessments.map((chapter) => (
+            <div
               key={chapter.chapterId}
-              delayClassName={chapterIndex > 0 ? "delay-75" : undefined}
+             
             >
               <Card className="border-outline-variant/30">
                 <CardHeader className="space-y-1 pb-3">
                   <CardTitle className="text-lg">{chapter.chapterTitle}</CardTitle>
-                  <CardDescription>Tests inside this chapter.</CardDescription>
+                  <CardDescription>{t("ab.inChapter")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-2">
                     {chapter.tests.length === 0 ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm leading-6 text-on-surface/70">
-                        No tests yet in this chapter.
-                      </div>
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm leading-6 text-on-surface/70">{t("ab.noTests")}</div>
                     ) : null}
                     {chapter.tests.map((test) => (
                       <button
@@ -337,9 +335,7 @@ export function AssessmentBuilder({
                     ))}
                   </div>
                   <div className="grid gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-outline-variant bg-surface-container-low p-3">
-                    <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-                      New test title
-                    </Label>
+                    <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("ab.newTitle")}</Label>
                     <Input
                       className="h-10"
                       placeholder="e.g. Chapter Quiz 1"
@@ -368,14 +364,14 @@ export function AssessmentBuilder({
                           }))
                         }
                       >
-                        <option value="MCQ">MCQ</option>
-                        <option value="WRITTEN">Written</option>
-                        <option value="MIXED">Mixed</option>
+                        <option value="MCQ">{t("ab.mcq")}</option>
+                        <option value="WRITTEN">{t("ab.written")}</option>
+                        <option value="MIXED">{t("ab.mixed")}</option>
                       </Select>
                       <Input
                         className="h-10"
                         min={1}
-                        placeholder="Duration (min)"
+                        placeholder={t("ab.duration")}
                         type="number"
                         value={
                           testDrafts[chapter.chapterId]?.durationInMinutes ??
@@ -395,7 +391,7 @@ export function AssessmentBuilder({
                       <Input
                         className="h-10"
                         min={0}
-                        placeholder="Pass score"
+                        placeholder={t("ab.passScore")}
                         type="number"
                         value={
                           testDrafts[chapter.chapterId]?.passingScore ??
@@ -415,7 +411,7 @@ export function AssessmentBuilder({
                     </div>
                     <Textarea
                       className="min-h-20"
-                      placeholder="Optional short instruction for students"
+                      placeholder={t("ab.instruction")}
                       value={testDrafts[chapter.chapterId]?.description ?? ""}
                       onChange={(event) =>
                         setTestDrafts((currentValues) => ({
@@ -442,29 +438,25 @@ export function AssessmentBuilder({
                           }))
                         }
                       />
-                      <span>Publish now</span>
+                      <span>{t("ab.publishNow")}</span>
                     </label>
                     <Button
                       type="button"
                       className="h-10"
                       disabled={isWorking}
                       onClick={() => void handleCreateTest(chapter.chapterId)}
-                    >
-                      Create test
-                    </Button>
+                    >{t("ab.createTest")}</Button>
                   </div>
                 </CardContent>
               </Card>
-            </FadeIn>
+            </div>
           ))}
         </div>
 
         <div className="space-y-3">
           {!selectedTest || !selectedTestSummary ? (
             <Card className="border-outline-variant/30">
-              <CardContent className="p-5 text-sm leading-6 text-on-surface/70">
-                Choose a test from the left to edit settings and manage questions.
-              </CardContent>
+              <CardContent className="p-5 text-sm leading-6 text-on-surface/70">{t("ab.pickTest")}</CardContent>
             </Card>
           ) : (
             <>
@@ -478,17 +470,13 @@ export function AssessmentBuilder({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild variant="outline" size="sm">
-                      <Link to="/dashboard/tests/$testId" params={{ testId: selectedTest.id }}>
-                        Student view
-                      </Link>
+                      <Link to="/dashboard/tests/$testId" params={{ testId: selectedTest.id }}>{t("ab.studentView")}</Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">
                       <Link
                         to="/dashboard/tests/$testId/submissions"
                         params={{ testId: selectedTest.id }}
-                      >
-                        Submissions
-                      </Link>
+                      >{t("ab.submissions")}</Link>
                     </Button>
                     <Button
                       type="button"
@@ -496,15 +484,11 @@ export function AssessmentBuilder({
                       variant="outline"
                       disabled={isWorking}
                       onClick={() => void handleDeleteSelectedTest()}
-                    >
-                      Delete
-                    </Button>
+                    >{t("ab.delete")}</Button>
                   </div>
                 </CardHeader>
                 <CardContent className="grid gap-3">
-                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-                    Test title
-                  </Label>
+                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("ab.testTitle")}</Label>
                   <Input
                     className="h-10"
                     value={selectedTest.title}
@@ -534,9 +518,9 @@ export function AssessmentBuilder({
                         )
                       }
                     >
-                      <option value="MCQ">MCQ</option>
-                      <option value="WRITTEN">Written</option>
-                      <option value="MIXED">Mixed</option>
+                      <option value="MCQ">{t("ab.mcq")}</option>
+                      <option value="WRITTEN">{t("ab.written")}</option>
+                      <option value="MIXED">{t("ab.mixed")}</option>
                     </Select>
                     <Input
                       className="h-10"
@@ -585,13 +569,9 @@ export function AssessmentBuilder({
                               : currentValue
                           )
                         }
-                      />
-                      Published
-                    </label>
+                      />{t("ab.published")}</label>
                   </div>
-                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-                    Description
-                  </Label>
+                  <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">{t("common.description")}</Label>
                   <Textarea
                     className="min-h-20"
                     value={selectedTest.description ?? ""}
@@ -611,24 +591,18 @@ export function AssessmentBuilder({
                     className="h-10"
                     disabled={isWorking}
                     onClick={() => void handleUpdateSelectedTest()}
-                  >
-                    Save test settings
-                  </Button>
+                  >{t("ab.saveSettings")}</Button>
                 </CardContent>
               </Card>
 
               <Card className="border-outline-variant/30">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Questions</CardTitle>
-                  <CardDescription>
-                    Add and order questions in the same flow students will see.
-                  </CardDescription>
+                  <CardTitle className="text-lg">{t("ab.questions")}</CardTitle>
+                  <CardDescription>{t("ab.questionsLead")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {selectedTest.questions.length === 0 ? (
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm text-on-surface/70">
-                      No questions yet. Add your first question below.
-                    </div>
+                    <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3 text-sm text-on-surface/70">{t("ab.noQuestions")}</div>
                   ) : null}
 
                   {selectedTest.questions.map((question, questionIndex) => (
@@ -666,17 +640,13 @@ export function AssessmentBuilder({
                                 type="button"
                                 variant="outline"
                                 onClick={() => void handleMoveQuestion(question.id, -1)}
-                              >
-                                Move up
-                              </Button>
+                              >{t("ab.moveUp")}</Button>
                               <Button
                                 size="sm"
                                 type="button"
                                 variant="outline"
                                 onClick={() => void handleMoveQuestion(question.id, 1)}
-                              >
-                                Move down
-                              </Button>
+                              >{t("ab.moveDown")}</Button>
                               <Button
                                 size="sm"
                                 type="button"
@@ -700,17 +670,13 @@ export function AssessmentBuilder({
                                     }
                                   }));
                                 }}
-                              >
-                                Edit
-                              </Button>
+                              >{t("action.edit")}</Button>
                               <Button
                                 size="sm"
                                 type="button"
                                 variant="outline"
                                 onClick={() => void handleDeleteQuestion(question.id)}
-                              >
-                                Delete
-                              </Button>
+                              >{t("ab.delete")}</Button>
                             </div>
                           </div>
                           {question.type === "MCQ" ? (

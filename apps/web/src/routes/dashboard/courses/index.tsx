@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses, submitCourse, withdrawCourse } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/")({
   component: DashboardCoursesPage,
@@ -22,12 +23,12 @@ export const Route = createFileRoute("/dashboard/courses/")({
 function CourseListSkeleton(): JSX.Element {
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40">
+      <div className="bg-card/80 p-8 border border-hairline/40">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
-          <Skeleton className="h-10 w-48 bg-surface-container-highest" />
+          <Skeleton className="h-10 w-48 bg-chip-active" />
           <div className="flex gap-4 w-full sm:w-auto">
-            <Skeleton className="h-12 w-full sm:w-40 bg-surface-container-highest" />
-            <Skeleton className="h-12 w-full sm:w-40 bg-primary/20" />
+            <Skeleton className="h-12 w-full sm:w-40 bg-chip-active" />
+            <Skeleton className="h-12 w-full sm:w-40 bg-ink/20" />
           </div>
         </div>
       </div>
@@ -35,7 +36,7 @@ function CourseListSkeleton(): JSX.Element {
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="h-96 w-full bg-surface-container-low/50 border border-outline-variant/10"
+            className="h-96 w-full bg-panel-warm/50 border border-hairline/10"
           />
         ))}
       </div>
@@ -44,6 +45,8 @@ function CourseListSkeleton(): JSX.Element {
 }
 
 function DashboardCoursesPage(): JSX.Element {
+  const t = useT();
+
   const queryClient = useQueryClient();
   const [status, setStatus] = useState("");
   const mineFilters = { limit: 12, page: 1, status };
@@ -65,7 +68,7 @@ function DashboardCoursesPage(): JSX.Element {
 
   const handleSubmit = async (courseId: string): Promise<void> => {
     await submitCourse(courseId);
-    toast.success("Course submitted for review");
+    toast.success(t("tcourses.submitted"));
     await loadCourses();
   };
 
@@ -75,7 +78,7 @@ function DashboardCoursesPage(): JSX.Element {
     }
 
     await withdrawCourse(courseId);
-    toast.success("Course archived");
+    toast.success(t("tcourses.archivedDone"));
     await loadCourses();
   };
 
@@ -84,48 +87,42 @@ function DashboardCoursesPage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Premium Header */}
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
 
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="size-10 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
+            <div className="size-10 bg-ink/10 flex items-center justify-center text-ink border border-ink/10">
               <LayoutGrid className="size-5" />
             </div>
-            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
-              Courses
-            </h3>
+            <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("tcourses.title")}</h3>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="min-w-48 space-y-2">
               <Label
                 htmlFor="status-filter"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 ml-1"
-              >
-                Status Filter
-              </Label>
+                className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 ml-1"
+              >{t("tcourses.statusFilter")}</Label>
               <div className="relative group">
-                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-on-surface/30 group-focus-within:text-primary transition-colors" />
+                <Filter className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-ink/30 group-focus-within:text-ink transition-colors" />
                 <Select
                   id="status-filter"
-                  className="h-12 pl-11 bg-surface-container-low/50 border-outline-variant/30 font-body transition-all hover:bg-surface-container-low"
+                  className="h-12 pl-11 bg-panel-warm/50 border-hairline/30 font-body transition-all hover:bg-panel-warm"
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
                 >
-                  <option value="">All Academic States</option>
-                  <option value="DRAFT">Enactive Drafts</option>
-                  <option value="PENDING">Under Review</option>
-                  <option value="PUBLISHED">Publicly Live</option>
-                  <option value="ARCHIVED">Cold Storage</option>
+                  <option value="">{t("tcourses.allStates")}</option>
+                  <option value="DRAFT">{t("tcourses.drafts")}</option>
+                  <option value="PENDING">{t("tcourses.underReview")}</option>
+                  <option value="PUBLISHED">{t("tcourses.live")}</option>
+                  <option value="ARCHIVED">{t("tcourses.archived")}</option>
                 </Select>
               </div>
             </div>
             <div className="sm:pt-6">
               <Button asChild>
                 <Link to="/dashboard/courses/new" className="flex items-center gap-2">
-                  <Plus className="size-4" />
-                  Add Course
-                </Link>
+                  <Plus className="size-4" />{t("tcourses.add")}</Link>
               </Button>
             </div>
           </div>
@@ -133,14 +130,12 @@ function DashboardCoursesPage(): JSX.Element {
       </div>
 
       {courses.length === 0 ? (
-        <div className="bg-surface-container-lowest/40 border border-dashed border-outline-variant/20 py-24 text-center group transition-all hover:bg-surface-container-lowest/60">
-          <div className="size-24 bg-surface-container-low rounded-full flex items-center justify-center mx-auto mb-6 border border-outline-variant/10">
-            <BookOpen className="size-10 text-primary/20 group-hover:text-primary transition-colors" />
+        <div className="bg-card/40 border border-dashed border-hairline/20 py-24 text-center group transition-all hover:bg-card/60">
+          <div className="size-24 bg-panel-warm rounded-full flex items-center justify-center mx-auto mb-6 border border-hairline/10">
+            <BookOpen className="size-10 text-ink/20 group-hover:text-ink transition-colors" />
           </div>
-          <p className="font-body text-2xl font-medium text-on-surface mb-2 tracking-tight">
-            Empty Curriculum
-          </p>
-          <p className="text-sm text-on-surface-variant max-w-xs mx-auto font-light leading-relaxed italic">
+          <p className="font-body text-2xl font-medium text-ink mb-2 tracking-tight">{t("tcourses.empty")}</p>
+          <p className="text-sm text-muted max-w-xs mx-auto font-light leading-relaxed italic">
             No courses in this category. Propose your first draft and start your instructional
             journey.
           </p>
@@ -150,7 +145,7 @@ function DashboardCoursesPage(): JSX.Element {
           {courses.map((course) => (
             <div
               key={course.id}
-              className="group/card flex flex-col border border-outline-variant/40 bg-surface-container-lowest/80 overflow-hidden transition-all hover:border-primary/20 relative"
+              className="group/card flex flex-col border border-hairline/40 bg-card/80 overflow-hidden transition-all hover:border-ink/20 relative"
             >
 
               <CourseCard
@@ -158,7 +153,7 @@ function DashboardCoursesPage(): JSX.Element {
                 managementHref={{ params: { id: course.id }, to: "/dashboard/courses/$id/edit" }}
               />
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-outline-variant/10 bg-primary/2 p-4 relative z-10">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-hairline/10 bg-ink/2 p-4 relative z-10">
                 <div className="flex gap-2">
                   {course.status !== "PENDING" &&
                     course.status !== "PUBLISHED" &&
@@ -166,22 +161,18 @@ function DashboardCoursesPage(): JSX.Element {
                       <Button
                         size="sm"
                         onClick={() => void handleSubmit(course.id)}
-                        className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest bg-primary hover:bg-primary-hover transition-all ]"
+                        className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest bg-ink hover:bg-primary-hover transition-all ]"
                       >
-                        <Send className="size-3.5 mr-2" />
-                        Submit Proposals
-                      </Button>
+                        <Send className="size-3.5 mr-2" />{t("tcourses.submit")}</Button>
                     )}
                   {course.status !== "ARCHIVED" && (
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => void handleArchive(course.id)}
-                      className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest border-outline-variant/40 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all font-body"
+                      className="h-10 px-5 font-bold text-[0.65rem] uppercase tracking-widest border-hairline/40 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all font-body"
                     >
-                      <Archive className="size-3.5 mr-2" />
-                      Archive
-                    </Button>
+                      <Archive className="size-3.5 mr-2" />{t("tcourses.archive")}</Button>
                   )}
                 </div>
               </div>

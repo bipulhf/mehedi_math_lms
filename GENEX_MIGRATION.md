@@ -295,9 +295,9 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 7 | Teacher dashboard + the stepped course builder | ☑ |
 | 8 | Dashboard overviews — student, teacher, admin, accountant | ☑ |
 | 9 | Admin dashboard + accountant analytics | ☑ |
-| 10 | System-only surfaces restyled (§3). Auth localised; the rest carry English copy — see §11 | ◐ |
+| 10 | System-only surfaces restyled and localised (§3) | ☑ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☑ |
-| 12 | Cleanup: E2E, `og-image`, `PLAN.md`. Aliases and `FadeIn` blocked on §11 | ◐ |
+| 12 | Cleanup: aliases and `FadeIn` removed, E2E, `og-image`, `PLAN.md` | ☑ |
 
 Phases 0–5 are foundation and must land in order. 6–10 can be reordered or
 parallelised once 5 is in.
@@ -592,9 +592,22 @@ Auth is rebuilt properly, because the handoff never designed it and everyone
 sees it: `/auth` and both forms are in the catalogue, the marketing column is
 gone, and the layout is derived from the marketing bands rather than invented.
 
-**The rest of the dashboard copy is still English.** Roughly 495 strings across
-64 files — see §11. This is the one part of the migration that is measured
-rather than finished, and it is called out rather than glossed.
+**Then the rest of it.** 495 strings across 64 files, done in eight batches
+with a small extractor and a substitution tool rather than by hand — the tool
+adds the catalogue entries, rewrites the JSX, and reports anything it could not
+match so a miss is loud rather than silent.
+
+Two things it could not do alone. Inserting `const t = useT()` needs to know
+which component a call sits in, and the first attempt matched function
+parameters with `\([^)]*\)` — which quietly gives up on a destructured object
+spanning several lines, which is most of these components. Balancing the
+parentheses instead fixed it. And a regex that "helpfully" restored three files
+from git silently undid their translations; the recount caught it.
+
+What is deliberately **not** translated: `/dev/seo-preview`, a developer harness
+that never faces a user, and the certificate PDF, which is a document rather
+than chrome and needs its own decision about which language a printed
+certificate should be in.
 
 **Phase 11** — mobile. The deep-link scheme moved in Phase 1, so this was the
 palette, the type and the catalogue.
@@ -636,10 +649,22 @@ specs pass.
 
 `PLAN.md` carries a note at the top pointing here.
 
-**Blocked:** the compatibility aliases in `app.css`, the `Button`/`Badge`
-variant aliases and `FadeIn` cannot be removed until the surfaces using them are
-rebuilt — which is the same work as §11. Removing them now would unstyle the
-dashboard.
+**The aliases are gone**, now that nothing depends on them. The Material class
+names were rewritten onto Genex tokens across 63 files, then the alias block
+came out of `app.css`; `Button` lost `default`/`gradient`/`secondary` and
+`Badge` lost its six colour tones; `--font-headline` and `--font-label` went
+with them.
+
+`FadeIn` is deleted and its 41 uses unwrapped. Unwrapping needed a brace-aware
+scan rather than a regex: `<FadeIn className={index > 0 ? …}>` contains a `>`
+that a lazy pattern reads as the end of the tag, which produced valid-looking
+nonsense in three files. With the stagger delay gone, three `map` callbacks no
+longer needed their index at all.
+
+`roleTone` in the messages module gave every role its own colour. DESIGN.md §2
+has no budget for that — the accent is for what needs acting on, and "this
+person is a teacher" is not that, especially when the badge already says so in
+words.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt
@@ -692,14 +717,10 @@ Typecheck 8/8, lint 8/8, tests 6/6 (309 passing).
    feeds `BETTER_AUTH_URL` and the Google OAuth redirect URIs.
 2. **Brand vector** — the logo assets were traced from a white-background JPG.
    Ask the client for the original SVG/AI before shipping.
-3. **The dashboard copy is still English** — roughly 495 strings across 64
-   files. The surfaces are restyled and render correctly in the Genex palette;
-   what remains is moving their text into `packages/i18n`. The heaviest are
-   `course-content-builder-sections` (30), `admin/users` (29),
-   `assessment-builder` (27), `course-editor` (25), `profile-editor` (25) and
-   `dashboard/analytics` (23). Three cleanups wait on this: the compatibility
-   colour aliases in `app.css`, the `Button`/`Badge` variant aliases, and
-   `FadeIn` (41 uses).
+3. **Two surfaces stay English on purpose.** `/dev/seo-preview` is a developer
+   harness no user reaches. The certificate PDF is a document rather than
+   chrome, and which language a printed certificate should carry is a question
+   for the client, not a default.
 4. **Repository directory** — still `mehedi_math_academy` on disk. Renaming it
    mid-session would invalidate every open path, so it is left for you:
 
@@ -708,6 +729,5 @@ Typecheck 8/8, lint 8/8, tests 6/6 (309 passing).
    ```
 
    Nothing in the code depends on the directory name.
-5. **`BETTER_AUTH_URL`** — `.env` has it on `:3001`, the API port. Better Auth is
-   served by the **web** app, so it should be `http://localhost:3000`. Predates
-   this migration; flagged rather than changed.
+5. ~~**`BETTER_AUTH_URL`** on the wrong port.~~ Fixed — `.env` now points at
+   `http://localhost:3000`, the web origin that actually serves Better Auth.

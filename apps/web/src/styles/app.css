@@ -53,78 +53,11 @@
   --color-error: #ba1a1a;
 
   /* ------------------------------------------------------------------
-   * Compatibility aliases.
-   *
-   * The Material-style token names are still used by every screen that has
-   * not been rebuilt yet. Rather than leave those pages unstyled for eight
-   * phases, each old name is pointed at its nearest Genex value, so they
-   * adopt the new palette immediately and are rewritten to the real tokens
-   * as their phase comes up. Delete this block in Phase 12 — by then
-   * nothing should reference it.
-   * ------------------------------------------------------------------ */
-  --color-background: var(--color-paper);
-  --color-on-background: var(--color-ink);
-  --color-surface: var(--color-paper);
-  --color-surface-bright: var(--color-paper);
-  --color-surface-dim: var(--color-panel-warm);
-  --color-surface-variant: var(--color-panel-warm);
-  --color-surface-container-lowest: var(--color-card);
-  --color-surface-container-low: var(--color-panel-warm);
-  --color-surface-container: var(--color-panel-warm);
-  --color-surface-container-high: var(--color-chip-active);
-  --color-surface-container-highest: var(--color-chip-active);
-  --color-on-surface: var(--color-ink);
-  --color-on-surface-variant: var(--color-muted);
-  --color-inverse-surface: var(--color-ink);
-  --color-inverse-on-surface: var(--color-paper);
-
-  --color-outline: var(--color-line-strong);
-  --color-outline-variant: var(--color-hairline);
-
-  --color-primary: var(--color-ink);
-  --color-on-primary: var(--color-paper);
-  --color-primary-container: var(--color-chip-active);
-  --color-on-primary-container: var(--color-ink);
-  --color-primary-fixed: var(--color-chip-active);
-  --color-primary-fixed-dim: var(--color-dot-idle);
-  --color-on-primary-fixed: var(--color-ink);
-  --color-on-primary-fixed-variant: var(--color-ink-muted);
-  --color-inverse-primary: var(--color-paper);
-  --color-surface-tint: var(--color-accent);
-
-  --color-secondary: var(--color-accent);
-  --color-on-secondary: var(--color-paper);
-  --color-secondary-container: var(--color-accent);
-  --color-on-secondary-container: var(--color-paper);
-  --color-secondary-fixed: var(--color-chip-active);
-  --color-secondary-fixed-dim: var(--color-dot-idle);
-  --color-on-secondary-fixed: var(--color-ink);
-  --color-on-secondary-fixed-variant: var(--color-ink-muted);
-
-  --color-tertiary: var(--color-ink);
-  --color-on-tertiary: var(--color-paper);
-  --color-tertiary-container: var(--color-panel-warm);
-  --color-on-tertiary-container: var(--color-ink);
-  --color-tertiary-fixed: var(--color-chip-active);
-  --color-tertiary-fixed-dim: var(--color-dot-idle);
-  --color-on-tertiary-fixed: var(--color-ink);
-  --color-on-tertiary-fixed-variant: var(--color-ink-muted);
-
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
-
-  /* ------------------------------------------------------------------
    * Type
    * ------------------------------------------------------------------ */
   --font-body: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
   /* Latin numerals, ids, and small all-caps labels. DESIGN.md §4. */
   --font-mono-label: "Archivo", ui-sans-serif, system-ui, sans-serif;
-
-  /* Aliases for markup that has not been rebuilt yet. Both resolve to Hind
-   * Siliguri — the design uses one family for everything it sets in words. */
-  --font-headline: var(--font-body);
-  --font-label: var(--font-body);
 
   /* ------------------------------------------------------------------
    * Shape. Cards are square; 4px is for buttons and inputs. DESIGN.md §5.

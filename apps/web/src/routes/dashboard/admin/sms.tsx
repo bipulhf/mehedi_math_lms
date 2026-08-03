@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
 import genexMark from "@/assets/genex-mark.png";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/sms")({
   component: AdminSmsPage,
@@ -27,6 +28,8 @@ export const Route = createFileRoute("/dashboard/admin/sms")({
 });
 
 function AdminSmsPage() {
+  const t = useT();
+
   const router = useRouter();
   const { isPending, session } = useAuthSession();
   const queryClient = useQueryClient();
@@ -95,7 +98,7 @@ function AdminSmsPage() {
       setMessage("");
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.smsHistory(historyFilters) });
     } catch {
-      toast.error("Failed to queue SMS");
+      toast.error(t("sms.queueFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -104,22 +107,22 @@ function AdminSmsPage() {
   if (isPending || !session) {
     return (
       <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
+        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
           <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="size-12 bg-surface-container-highest" />
+            <Skeleton className="size-12 bg-chip-active" />
             <div className="space-y-2">
-              <Skeleton className="h-6 w-48 bg-surface-container-highest" />
-              <Skeleton className="h-4 w-96 bg-surface-container-highest" />
+              <Skeleton className="h-6 w-48 bg-chip-active" />
+              <Skeleton className="h-4 w-96 bg-chip-active" />
             </div>
           </div>
           <div className="space-y-6 max-w-xl">
-            <Skeleton className="h-32 w-full bg-surface-container-highest" />
+            <Skeleton className="h-32 w-full bg-chip-active" />
             <div className="flex gap-4">
-              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
-              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
-              <Skeleton className="h-6 w-24 bg-surface-container-highest rounded-full" />
+              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
+              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
+              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
             </div>
-            <Skeleton className="h-12 w-48 bg-surface-container-highest" />
+            <Skeleton className="h-12 w-48 bg-chip-active" />
           </div>
         </div>
       </div>
@@ -132,20 +135,18 @@ function AdminSmsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
 
         <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
-          <div className="flex w-16 h-16 items-center justify-center bg-surface-container-high border border-outline-variant/30 relative overflow-hidden group/logo">
-            <div className="absolute inset-0 bg-primary/5 group-hover/logo:bg-primary/10 transition-colors"></div>
+          <div className="flex w-16 h-16 items-center justify-center bg-chip-active border border-hairline/30 relative overflow-hidden group/logo">
+            <div className="absolute inset-0 bg-ink/5 group-hover/logo:bg-ink/10 transition-colors"></div>
             <img
               decoding="async"
               loading="lazy" src={genexMark} alt="" className="h-10 w-10 brightness-[0.92] relative z-10" />
           </div>
           <div>
-            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
-              Bulk SMS Dispatch
-            </h3>
-            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+            <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("sms.title")}</h3>
+            <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
               Dispatch synchronized announcements across the academic network. Target specific
               cohorts or broadcast to all active scholars.
             </p>
@@ -158,9 +159,7 @@ function AdminSmsPage() {
               <div className="size-2 rounded-full bg-amber-500"></div>
               <p className="text-xs font-bold uppercase tracking-widest leading-none">
                 Provider Configuration Missing:{" "}
-                <span className="text-on-surface/60 normal-case font-medium ml-2 italic underline underline-offset-4 decoration-amber-500/30">
-                  ONECODESOFT API credentials required.
-                </span>
+                <span className="text-ink/60 normal-case font-medium ml-2 italic underline underline-offset-4 decoration-amber-500/30">{t("sms.needCredentials")}</span>
               </p>
             </div>
           ) : providerOk === true ? (
@@ -168,9 +167,7 @@ function AdminSmsPage() {
               <div className="size-2 rounded-full bg-green-500"></div>
               <p className="text-xs font-bold uppercase tracking-widest leading-none">
                 System Active:{" "}
-                <span className="text-on-surface/60 normal-case font-medium ml-2">
-                  SMS Gateway connected and verified.
-                </span>
+                <span className="text-ink/60 normal-case font-medium ml-2">{t("sms.connected")}</span>
               </p>
             </div>
           ) : null}
@@ -179,26 +176,22 @@ function AdminSmsPage() {
             <div className="space-y-3">
               <Label
                 htmlFor="sms-body"
-                className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-              >
-                Message Content
-              </Label>
+                className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+              >{t("sms.message")}</Label>
               <textarea
                 id="sms-body"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Draft your announcement here..."
+                placeholder={t("sms.placeholder")}
                 required
                 maxLength={1000}
                 rows={5}
-                className="w-full bg-surface-container-low/50 border border-outline-variant/30 px-6 py-4 text-base text-on-surface focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all font-body resize-none placeholder:text-on-surface/20"
+                className="w-full bg-panel-warm/50 border border-hairline/30 px-6 py-4 text-base text-ink focus:outline-none focus:ring-4 focus:ring-ink/10 focus:border-ink/40 transition-all font-body resize-none placeholder:text-ink/20"
               />
             </div>
 
             <div className="space-y-4">
-              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">
-                Recipient Targeting
-              </Label>
+              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("sms.targeting")}</Label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { id: "all_students", label: "All Students" },
@@ -210,16 +203,16 @@ function AdminSmsPage() {
                     className={cn(
                       "flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer group/mode",
                       targetMode === mode.id
-                        ? "bg-primary/5 border-primary/30 shadow-sm"
-                        : "bg-surface-container-low/30 border-outline-variant/20 hover:border-outline-variant/40"
+                        ? "bg-ink/5 border-ink/30 shadow-sm"
+                        : "bg-panel-warm/30 border-hairline/20 hover:border-hairline/40"
                     )}
                   >
                     <div
                       className={cn(
                         "size-4 rounded-full border-2 flex items-center justify-center transition-all",
                         targetMode === mode.id
-                          ? "border-primary bg-primary"
-                          : "border-outline-variant group-hover/mode:border-on-surface/30"
+                          ? "border-ink bg-ink"
+                          : "border-hairline group-hover/mode:border-ink/30"
                       )}
                     >
                       {targetMode === mode.id && (
@@ -236,7 +229,7 @@ function AdminSmsPage() {
                     <span
                       className={cn(
                         "text-sm font-bold tracking-tight transition-colors",
-                        targetMode === mode.id ? "text-primary" : "text-on-surface/60"
+                        targetMode === mode.id ? "text-ink" : "text-ink/60"
                       )}
                     >
                       {mode.label}
@@ -251,15 +244,13 @@ function AdminSmsPage() {
                 <div className="space-y-3">
                   <Label
                     htmlFor="sms-role"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                  >
-                    Staff Role Filter
-                  </Label>
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                  >{t("sms.roleFilter")}</Label>
                   <select
                     id="sms-role"
                     value={targetRole}
                     onChange={(e) => setTargetRole(e.target.value as UserRole)}
-                    className="h-12 w-full bg-surface-container-low/50 border border-outline-variant/30 px-5 text-sm font-bold text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className="h-12 w-full bg-panel-warm/50 border border-hairline/30 px-5 text-sm font-bold text-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
                   >
                     {userRoleValues.map((value) => (
                       <option key={value} value={value}>
@@ -273,13 +264,11 @@ function AdminSmsPage() {
                 <div className="space-y-3">
                   <Label
                     htmlFor="sms-course"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                  >
-                    Target Course UUID
-                  </Label>
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                  >{t("sms.courseId")}</Label>
                   <Input
                     id="sms-course"
-                    className="h-12 bg-surface-container-low/50 border-outline-variant/30 px-5 font-mono text-sm"
+                    className="h-12 bg-panel-warm/50 border-hairline/30 px-5 font-mono text-sm"
                     value={courseId}
                     onChange={(e) => setCourseId(e.target.value)}
                     placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
@@ -303,19 +292,15 @@ function AdminSmsPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
-        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center justify-between">
+      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
+        <div className="p-8 sm:p-10 border-b border-hairline/30 flex items-center justify-between">
           <div>
-            <h4 className="font-body text-2xl font-medium tracking-tight text-on-surface leading-none">
-              Dispatch History
-            </h4>
-            <p className="mt-2 text-sm text-on-surface-variant font-light">
-              Asynchronous delivery logs processed by the academic SMS worker.
-            </p>
+            <h4 className="font-body text-2xl font-medium tracking-tight text-ink leading-none">{t("sms.history")}</h4>
+            <p className="mt-2 text-sm text-muted font-light">{t("sms.historyLead")}</p>
           </div>
           {history.length > 0 && (
             <Badge
-              tone="blue"
+              tone="neutral"
               className="rounded-full px-4 font-bold text-[0.65rem] uppercase tracking-widest"
             >
               {history.length} batches
@@ -329,44 +314,42 @@ function AdminSmsPage() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton
                   key={i}
-                  className="h-14 w-full bg-surface-container-high/50"
+                  className="h-14 w-full bg-chip-active/50"
                 />
               ))}
             </div>
           ) : history.length === 0 ? (
             <div className="p-20 text-center">
-              <p className="text-sm font-light text-on-surface/40 italic font-body">
-                The dispatch log is empty.
-              </p>
+              <p className="text-sm font-light text-ink/40 italic font-body">{t("sms.historyEmpty")}</p>
             </div>
           ) : (
             <table className="w-full text-left whitespace-nowrap">
               <thead>
-                <tr className="bg-surface-container-low/30 border-b border-outline-variant/20 font-bold text-[0.65rem] uppercase tracking-widest text-on-surface/50">
-                  <th className="px-10 py-5">Dispatch Time</th>
-                  <th className="px-10 py-5">Targeting Parameter</th>
-                  <th className="px-10 py-5">State</th>
-                  <th className="px-10 py-5 text-right">Sent</th>
-                  <th className="px-10 py-5 text-right">Failed</th>
-                  <th className="px-10 py-5 text-right font-light opacity-50">Skipped</th>
+                <tr className="bg-panel-warm/30 border-b border-hairline/20 font-bold text-[0.65rem] uppercase tracking-widest text-ink/50">
+                  <th className="px-10 py-5">{t("sms.time")}</th>
+                  <th className="px-10 py-5">{t("sms.target")}</th>
+                  <th className="px-10 py-5">{t("sms.state")}</th>
+                  <th className="px-10 py-5 text-right">{t("sms.sent")}</th>
+                  <th className="px-10 py-5 text-right">{t("sms.failed")}</th>
+                  <th className="px-10 py-5 text-right font-light opacity-50">{t("sms.skipped")}</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((row) => (
                   <tr
                     key={row.id}
-                    className="group border-b border-outline-variant/10 transition-colors hover:bg-primary/2"
+                    className="group border-b border-hairline/10 transition-colors hover:bg-ink/2"
                   >
                     <td className="px-10 py-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-on-surface tracking-tight group-hover:text-primary transition-colors">
+                        <span className="font-bold text-ink tracking-tight group-hover:text-ink transition-colors">
                           {new Date(row.createdAt).toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
                             year: "numeric"
                           })}
                         </span>
-                        <span className="text-[0.6rem] uppercase tracking-widest text-on-surface/40 font-bold mt-1">
+                        <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold mt-1">
                           {new Date(row.createdAt).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit"
@@ -376,11 +359,11 @@ function AdminSmsPage() {
                     </td>
                     <td className="px-10 py-6">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-on-surface/70 uppercase tracking-tighter">
+                        <span className="text-xs font-bold text-ink/70 uppercase tracking-tighter">
                           {row.targetKind.replace("_", " ")}
                         </span>
                         {row.targetRole && (
-                          <Badge tone="gray" className="scale-75 origin-left">
+                          <Badge tone="quiet" className="scale-75 origin-left">
                             {row.targetRole}
                           </Badge>
                         )}
@@ -398,13 +381,13 @@ function AdminSmsPage() {
                         {row.status}
                       </span>
                     </td>
-                    <td className="px-10 py-6 text-right tabular-nums font-bold text-on-surface">
+                    <td className="px-10 py-6 text-right tabular-nums font-bold text-ink">
                       {row.sentCount}
                     </td>
                     <td className="px-10 py-6 text-right tabular-nums font-bold text-red-500/70">
                       {row.failedCount}
                     </td>
-                    <td className="px-10 py-6 text-right tabular-nums text-on-surface/30 font-light">
+                    <td className="px-10 py-6 text-right tabular-nums text-ink/30 font-light">
                       {row.skippedCount}
                     </td>
                   </tr>

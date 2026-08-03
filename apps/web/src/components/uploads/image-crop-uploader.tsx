@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface ImageCropUploaderProps {
   aspect: number;
@@ -95,6 +96,8 @@ export function ImageCropUploader({
   successMessage,
   value
 }: ImageCropUploaderProps): JSX.Element {
+  const t = useT();
+
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -119,7 +122,7 @@ export function ImageCropUploader({
 
   const openCropModal = (file: File): void => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Choose an image file");
+      toast.error(t("upload.chooseImage"));
       return;
     }
 
@@ -156,7 +159,7 @@ export function ImageCropUploader({
 
   const handleConfirmCrop = async (): Promise<void> => {
     if (!cropModal || !cropArea) {
-      toast.error("Adjust the crop area before uploading");
+      toast.error(t("upload.adjustCrop"));
       return;
     }
 
@@ -195,8 +198,8 @@ export function ImageCropUploader({
       <button
         className={`w-full rounded-[calc(var(--radius)-0.125rem)] border border-dashed px-4 py-5 text-left transition-colors ${
           isDragging
-            ? "border-secondary-container bg-secondary-container/10"
-            : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+            ? "border-accent bg-accent/10"
+            : "border-hairline bg-panel-warm hover:bg-panel-warm"
         } ${disabled || isUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
         disabled={disabled || isUploading}
         type="button"
@@ -216,27 +219,27 @@ export function ImageCropUploader({
         onDrop={handleDrop}
       >
         <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex min-h-10 items-center rounded-(--radius) border border-outline-variant px-4 text-sm font-medium text-on-surface">
+          <span className="inline-flex min-h-10 items-center rounded-(--radius) border border-hairline px-4 text-sm font-medium text-ink">
             {isUploading ? "Uploading..." : buttonLabel}
           </span>
-          <p className="text-sm leading-6 text-on-surface/70">
+          <p className="text-sm leading-6 text-ink/70">
             {description ?? "Drag an image here or choose one from your device."}
           </p>
         </div>
         {isUploading ? (
           <div className="mt-4 space-y-2">
-            <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
+            <div className="h-2 overflow-hidden rounded-full bg-chip-active">
               <div
-                className="h-full rounded-full bg-secondary-container transition-[width] ease-out"
+                className="h-full rounded-full bg-accent transition-[width] ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs uppercase tracking-[0.18em] text-on-surface/62">{progress}% uploaded</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-ink/62">{progress}% uploaded</p>
           </div>
         ) : null}
       </button>
       {value ? (
-        <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-3">
+        <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-3">
           <ResponsiveImage
             alt={previewAlt ?? "Upload preview"}
             className="max-h-64 rounded-(--radius) object-contain"
@@ -247,7 +250,7 @@ export function ImageCropUploader({
       ) : null}
       {cropModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-4xl rounded-(--radius) border border-outline-variant bg-surface p-4 shadow-[0_32px_80px_rgba(0,0,0,0.3)]">
+          <div className="w-full max-w-4xl rounded-(--radius) border border-hairline bg-paper p-4 shadow-[0_32px_80px_rgba(0,0,0,0.3)]">
             <div className="space-y-4">
               <div className="relative h-[55vh] overflow-hidden rounded-(--radius) bg-black">
                 <Cropper
@@ -261,7 +264,7 @@ export function ImageCropUploader({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor={`${inputId}-zoom`}>Zoom</Label>
+                <Label htmlFor={`${inputId}-zoom`}>{t("upload.zoom")}</Label>
                 <input
                   id={`${inputId}-zoom`}
                   className="w-full accent-(--secondary-container)"
@@ -274,9 +277,7 @@ export function ImageCropUploader({
                 />
               </div>
               <div className="flex flex-wrap justify-end gap-3">
-                <Button type="button" variant="outline" disabled={isUploading} onClick={clearCropModal}>
-                  Cancel
-                </Button>
+                <Button type="button" variant="outline" disabled={isUploading} onClick={clearCropModal}>{t("common.cancel")}</Button>
                 <Button type="button" disabled={isUploading} onClick={() => void handleConfirmCrop()}>
                   {isUploading ? "Uploading..." : "Crop and upload"}
                 </Button>

@@ -12,7 +12,6 @@ import type { ChangeEvent, JSX } from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { FadeIn } from "@/components/common/fade-in";
 import {
   AddChapterSection,
   BuilderSummaryBar,
@@ -42,6 +41,7 @@ import {
 } from "@/lib/api/content";
 import { uploadCourseMaterial } from "@/lib/api/uploads";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface CourseContentBuilderProps {
   content: readonly ContentChapter[];
@@ -96,6 +96,8 @@ export function CourseContentBuilder({
   course,
   onRefresh
 }: CourseContentBuilderProps): JSX.Element {
+  const t = useT();
+
   const [chapterDraft, setChapterDraft] = useState<CreateChapterInput>({
     description: "",
     title: ""
@@ -120,7 +122,7 @@ export function CourseContentBuilder({
 
   const handleCreateChapter = async (): Promise<void> => {
     if (!chapterDraft.title.trim()) {
-      toast.error("Please add a chapter title");
+      toast.error(t("cbx.needChapterTitle"));
       return;
     }
 
@@ -129,7 +131,7 @@ export function CourseContentBuilder({
       await createChapter(course.id, chapterDraft);
       setChapterDraft({ description: "", title: "" });
       await onRefresh();
-      toast.success("Chapter created");
+      toast.success(t("cbx.chapterCreated"));
     } finally {
       setIsWorking(false);
     }
@@ -138,7 +140,7 @@ export function CourseContentBuilder({
   const handleSaveChapter = async (chapterId: string): Promise<void> => {
     const draft = chapterEditDraft[chapterId];
     if (!draft || !draft.title.trim()) {
-      toast.error("Chapter title is required");
+      toast.error(t("cbx.needChapterTitle"));
       return;
     }
 
@@ -147,7 +149,7 @@ export function CourseContentBuilder({
       // API endpoint for chapter update is not available yet, so this keeps the current behavior.
       setEditingChapterId(null);
       await onRefresh();
-      toast.success("Chapter updated");
+      toast.success(t("cbx.chapterUpdated"));
     } finally {
       setIsWorking(false);
     }
@@ -160,7 +162,7 @@ export function CourseContentBuilder({
     try {
       await deleteChapter(chapterId);
       await onRefresh();
-      toast.success("Chapter deleted");
+      toast.success(t("cbx.chapterDeleted"));
     } finally {
       setIsWorking(false);
     }
@@ -169,7 +171,7 @@ export function CourseContentBuilder({
   const handleCreateLecture = async (chapterId: string): Promise<void> => {
     const draft = lectureDrafts[chapterId] ?? initialLectureDraft;
     if (!draft.title.trim()) {
-      toast.error("Please add a lesson title");
+      toast.error(t("cbx.needLessonTitle"));
       return;
     }
 
@@ -186,7 +188,7 @@ export function CourseContentBuilder({
       });
       setLectureDrafts((currentValue) => ({ ...currentValue, [chapterId]: initialLectureDraft }));
       await onRefresh();
-      toast.success("Lesson created");
+      toast.success(t("cbx.lessonCreated"));
     } finally {
       setIsWorking(false);
     }
@@ -195,7 +197,7 @@ export function CourseContentBuilder({
   const handleSaveLecture = async (lectureId: string): Promise<void> => {
     const draft = lectureEditDrafts[lectureId];
     if (!draft || !draft.title.trim()) {
-      toast.error("Lesson title is required");
+      toast.error(t("cbx.needLessonTitle"));
       return;
     }
 
@@ -212,7 +214,7 @@ export function CourseContentBuilder({
       });
       setEditingLectureId(null);
       await onRefresh();
-      toast.success("Lesson updated");
+      toast.success(t("cbx.lessonUpdated"));
     } finally {
       setIsWorking(false);
     }
@@ -225,7 +227,7 @@ export function CourseContentBuilder({
     try {
       await deleteLecture(lectureId);
       await onRefresh();
-      toast.success("Lesson deleted");
+      toast.success(t("cbx.lessonDeleted"));
     } finally {
       setIsWorking(false);
     }
@@ -238,7 +240,7 @@ export function CourseContentBuilder({
     const file = event.target.files?.[0];
     const title = chapterMaterialTitles[chapterId]?.trim() ?? "";
     if (!file || !title) {
-      toast.error("Add a file title and select a file");
+      toast.error(t("cbx.needFile"));
       return;
     }
 
@@ -255,7 +257,7 @@ export function CourseContentBuilder({
       setChapterMaterialTitles((currentValue) => ({ ...currentValue, [chapterId]: "" }));
       event.target.value = "";
       await onRefresh();
-      toast.success("Chapter file added");
+      toast.success(t("cbx.fileAdded"));
     } finally {
       setIsWorking(false);
     }
@@ -275,7 +277,7 @@ export function CourseContentBuilder({
         await deleteLectureMaterial(materialId);
       }
       await onRefresh();
-      toast.success("File deleted");
+      toast.success(t("cbx.fileDeleted"));
     } finally {
       setIsWorking(false);
     }
@@ -301,7 +303,7 @@ export function CourseContentBuilder({
         items: nextContent.map((chapter, index) => ({ id: chapter.id, sortOrder: index }))
       });
       await onRefresh();
-      toast.success("Chapter order updated");
+      toast.success(t("cbx.chapterReordered"));
     } finally {
       setIsWorking(false);
     }
@@ -359,7 +361,7 @@ export function CourseContentBuilder({
     try {
       await reorderLectures(targetChapterId, { items: reorderedItems });
       await onRefresh();
-      toast.success("Lesson order updated");
+      toast.success(t("cbx.lessonReordered"));
     } finally {
       setIsWorking(false);
     }
@@ -367,14 +369,14 @@ export function CourseContentBuilder({
 
   return (
     <div className="space-y-5">
-      <FadeIn>
+      <div>
         <BuilderSummaryBar
           chapterCount={content.length}
           courseId={course.id}
           status={course.status}
           totalLectures={totalLectures}
         />
-      </FadeIn>
+      </div>
 
       <AddChapterSection
         chapterDraft={chapterDraft}
@@ -389,25 +391,25 @@ export function CourseContentBuilder({
             key={chapter.id}
             draggable
             className={cn(
-              "group/chapter rounded-3xl border bg-surface-container-lowest/70 shadow-sm transition-all duration-300",
+              "group/chapter rounded-3xl border bg-card/70 shadow-sm transition-all duration-300",
               draggedChapterId === chapter.id
-                ? "scale-[0.99] border-dashed border-primary/40 opacity-50"
-                : "border-outline-variant/25 hover:border-primary/25"
+                ? "scale-[0.99] border-dashed border-ink/40 opacity-50"
+                : "border-hairline/25 hover:border-ink/25"
             )}
             onDragStart={() => setDraggedChapterId(chapter.id)}
             onDragOver={(event) => event.preventDefault()}
             onDrop={() => void handleReorderChapters(chapter.id)}
           >
-            <div className="flex flex-col gap-4 border-b border-outline-variant/10 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex flex-col gap-4 border-b border-hairline/10 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div className="flex items-start gap-3">
-                <button className="flex h-9 w-7 shrink-0 items-center justify-center text-on-surface/25 transition-colors hover:text-primary">
+                <button className="flex h-9 w-7 shrink-0 items-center justify-center text-ink/25 transition-colors hover:text-ink">
                   <GripVertical className="size-5" />
                 </button>
                 <div>
-                  <h6 className="font-body text-lg font-medium leading-tight tracking-tight text-on-surface transition-colors group-hover/chapter:text-primary">
+                  <h6 className="font-body text-lg font-medium leading-tight tracking-tight text-ink transition-colors group-hover/chapter:text-ink">
                     {chapter.title}
                   </h6>
-                  <div className="mt-1.5 flex items-center gap-3 text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/45">
+                  <div className="mt-1.5 flex items-center gap-3 text-[0.62rem] font-bold uppercase tracking-widest text-ink/45">
                     <span className="flex items-center gap-1.5">
                       <Shapes className="size-3.5" /> {chapter.lectures.length} lessons
                     </span>
@@ -422,7 +424,7 @@ export function CourseContentBuilder({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-9 border-outline-variant/25 px-3 text-[0.64rem] font-bold uppercase tracking-widest"
+                  className="h-9 border-hairline/25 px-3 text-[0.64rem] font-bold uppercase tracking-widest"
                   onClick={() => {
                     setEditingChapterId(chapter.id);
                     setChapterEditDraft((currentValue) => ({
@@ -434,12 +436,11 @@ export function CourseContentBuilder({
                     }));
                   }}
                 >
-                  <NotebookPen className="mr-2 size-3.5" /> Edit
-                </Button>
+                  <NotebookPen className="mr-2 size-3.5" />{t("action.edit")}</Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 text-on-surface/35 transition-all hover:bg-red-500/5 hover:text-red-500"
+                  className="h-9 w-9 p-0 text-ink/35 transition-all hover:bg-red-500/5 hover:text-red-500"
                   onClick={() => void handleDeleteChapter(chapter.id)}
                 >
                   <Trash2 className="size-4" />
@@ -449,14 +450,12 @@ export function CourseContentBuilder({
 
             <div className="space-y-6 p-4 sm:p-5">
               {editingChapterId === chapter.id ? (
-                <FadeIn className="space-y-4 border border-primary/20 bg-surface-container-low/50 p-5">
+                <div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="ml-1 text-[0.62rem] font-bold uppercase tracking-widest opacity-55">
-                        Chapter title
-                      </Label>
+                      <Label className="ml-1 text-[0.62rem] font-bold uppercase tracking-widest opacity-55">{t("cb.chapterTitle")}</Label>
                       <Input
-                        className="h-11 bg-white border-outline-variant/25"
+                        className="h-11 bg-white border-hairline/25"
                         value={chapterEditDraft[chapter.id]?.title ?? ""}
                         onChange={(event) =>
                           setChapterEditDraft((currentValue) => ({
@@ -470,11 +469,9 @@ export function CourseContentBuilder({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="ml-1 text-[0.62rem] font-bold uppercase tracking-widest opacity-55">
-                        Chapter description
-                      </Label>
+                      <Label className="ml-1 text-[0.62rem] font-bold uppercase tracking-widest opacity-55">{t("cbx.chapterDescription")}</Label>
                       <Input
-                        className="h-11 bg-white border-outline-variant/25"
+                        className="h-11 bg-white border-hairline/25"
                         value={chapterEditDraft[chapter.id]?.description ?? ""}
                         onChange={(event) =>
                           setChapterEditDraft((currentValue) => ({
@@ -493,19 +490,15 @@ export function CourseContentBuilder({
                       variant="outline"
                       className="h-10 px-4 font-bold"
                       onClick={() => setEditingChapterId(null)}
-                    >
-                      Cancel
-                    </Button>
+                    >{t("common.cancel")}</Button>
                     <Button
-                      className="h-10 bg-primary px-5 font-medium"
+                      className="h-10 bg-ink px-5 font-medium"
                       onClick={() => void handleSaveChapter(chapter.id)}
-                    >
-                      Save chapter
-                    </Button>
+                    >{t("cbx.saveChapter")}</Button>
                   </div>
-                </FadeIn>
+                </div>
               ) : chapter.description ? (
-                <p className="pl-10 text-sm italic leading-relaxed text-on-surface/60">
+                <p className="pl-10 text-sm italic leading-relaxed text-ink/60">
                   {chapter.description}
                 </p>
               ) : null}
@@ -524,18 +517,16 @@ export function CourseContentBuilder({
               />
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-outline-variant/10 pb-3">
+                <div className="flex items-center justify-between border-b border-hairline/10 pb-3">
                   <div className="flex items-center gap-2.5">
                     <div className="flex size-8 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600">
                       <VideoIcon className="size-4" />
                     </div>
-                    <h6 className="text-[0.68rem] font-medium uppercase tracking-widest text-on-surface">
-                      Lessons
-                    </h6>
+                    <h6 className="text-[0.68rem] font-medium uppercase tracking-widest text-ink">{t("cbx.lessons")}</h6>
                   </div>
                   <Badge
-                    tone="violet"
-                    className="rounded-full border border-outline-variant/20 bg-surface-container-high px-2.5 py-1 text-[0.6rem] font-bold"
+                    tone="neutral"
+                    className="rounded-full border border-hairline/20 bg-chip-active px-2.5 py-1 text-[0.6rem] font-bold"
                   >
                     {chapter.lectures.length} total
                   </Badge>
@@ -549,8 +540,8 @@ export function CourseContentBuilder({
                       className={cn(
                         "rounded-2xl border p-4 transition-all duration-300",
                         draggedLecture?.lectureId === lecture.id
-                          ? "border-dashed border-primary/30 bg-primary/5 opacity-30"
-                          : "border-outline-variant/15 bg-white hover:border-primary/25"
+                          ? "border-dashed border-ink/30 bg-ink/5 opacity-30"
+                          : "border-hairline/15 bg-white hover:border-ink/25"
                       )}
                       onDragStart={() =>
                         setDraggedLecture({ chapterId: chapter.id, lectureId: lecture.id })
@@ -560,28 +551,26 @@ export function CourseContentBuilder({
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex items-start gap-3">
-                          <button className="flex h-8 w-5 shrink-0 items-center justify-center text-on-surface/15 transition-colors hover:text-primary">
+                          <button className="flex h-8 w-5 shrink-0 items-center justify-center text-ink/15 transition-colors hover:text-ink">
                             <GripVertical className="size-4.5" />
                           </button>
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-body font-bold text-on-surface">
+                              <p className="font-body font-bold text-ink">
                                 {lecture.title}
                               </p>
-                              <Badge className="border-none bg-on-surface/5 px-2 text-[0.58rem] font-bold text-on-surface/45">
+                              <Badge className="border-none bg-ink/5 px-2 text-[0.58rem] font-bold text-ink/45">
                                 {getLectureTypeLabel(lecture.type)}
                               </Badge>
                               {lecture.isPreview ? (
                                 <Badge
-                                  tone="blue"
+                                  tone="neutral"
                                   className="border-none px-2.5 text-[0.55rem] font-medium uppercase tracking-[0.15em]"
-                                >
-                                  Preview
-                                </Badge>
+                                >{t("cbx.preview")}</Badge>
                               ) : null}
                             </div>
                             {lecture.description ? (
-                              <p className="text-xs italic leading-relaxed text-on-surface/45">
+                              <p className="text-xs italic leading-relaxed text-ink/45">
                                 {lecture.description}
                               </p>
                             ) : null}
@@ -592,7 +581,7 @@ export function CourseContentBuilder({
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 rounded-lg border-outline-variant/25 px-3 text-[0.62rem] font-bold uppercase tracking-widest"
+                            className="h-8 rounded-lg border-hairline/25 px-3 text-[0.62rem] font-bold uppercase tracking-widest"
                             onClick={() => {
                               setEditingLectureId(lecture.id);
                               setLectureEditDrafts((currentValue) => ({
@@ -608,13 +597,11 @@ export function CourseContentBuilder({
                                 }
                               }));
                             }}
-                          >
-                            Edit
-                          </Button>
+                          >{t("action.edit")}</Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 rounded-lg p-0 text-on-surface/25 transition-all hover:bg-red-500/5 hover:text-red-500"
+                            className="h-8 w-8 rounded-lg p-0 text-ink/25 transition-all hover:bg-red-500/5 hover:text-red-500"
                             onClick={() => void handleDeleteLecture(lecture.id)}
                           >
                             <Trash2 className="size-3.5" />
@@ -623,7 +610,7 @@ export function CourseContentBuilder({
                       </div>
 
                       {editingLectureId === lecture.id ? (
-                        <FadeIn className="mt-5 space-y-5 border-t border-outline-variant/10 pt-5">
+                        <div>
                           <LectureForm
                             actionLabel="Save lesson"
                             isWorking={isWorking}
@@ -637,7 +624,7 @@ export function CourseContentBuilder({
                             onSave={() => void handleSaveLecture(lecture.id)}
                             values={lectureEditDrafts[lecture.id] ?? initialLectureDraft}
                           />
-                        </FadeIn>
+                        </div>
                       ) : null}
                     </div>
                   ))}
@@ -645,7 +632,7 @@ export function CourseContentBuilder({
                   <div className="pt-1">
                     <Button
                       variant="outline"
-                      className="h-11 w-full border-dashed border-outline-variant/35 font-body font-bold transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                      className="h-11 w-full border-dashed border-hairline/35 font-body font-bold transition-all hover:border-ink/40 hover:bg-ink/5 hover:text-ink"
                       onClick={() =>
                         setLectureDrafts((currentValue) => ({
                           ...currentValue,
@@ -653,20 +640,16 @@ export function CourseContentBuilder({
                         }))
                       }
                     >
-                      <Plus className="mr-2.5 size-4.5" />
-                      Add lesson
-                    </Button>
+                      <Plus className="mr-2.5 size-4.5" />{t("cbx.addLesson")}</Button>
 
                     {lectureDrafts[chapter.id] ? (
-                      <div className="mt-4 space-y-5 border border-primary/20 bg-primary/5 p-5">
+                      <div className="mt-4 space-y-5 border border-ink/20 bg-ink/5 p-5">
                         <div className="flex items-center justify-between">
-                          <h6 className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-primary">
-                            New lesson
-                          </h6>
+                          <h6 className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-ink">{t("cbx.newLesson")}</h6>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="size-8 rounded-full p-0 text-on-surface/35 hover:bg-red-500/10"
+                            className="size-8 rounded-full p-0 text-ink/35 hover:bg-red-500/10"
                             onClick={() => removeLectureDraft(chapter.id, setLectureDrafts)}
                           >
                             <X className="size-4" />
@@ -704,12 +687,12 @@ export function CourseContentBuilder({
 export function CourseContentBuilderSkeleton(): JSX.Element {
   return (
     <div className="space-y-8">
-      <Skeleton className="h-24 w-full border border-outline-variant/30 bg-surface-container-lowest" />
-      <Skeleton className="h-52 w-full border border-outline-variant/30 bg-surface-container-lowest" />
+      <Skeleton className="h-24 w-full border border-hairline/30 bg-card" />
+      <Skeleton className="h-52 w-full border border-hairline/30 bg-card" />
       {Array.from({ length: 2 }).map((_, index) => (
         <Skeleton
           key={index}
-          className="h-80 w-full border border-outline-variant/30 bg-surface-container-lowest"
+          className="h-80 w-full border border-hairline/30 bg-card"
         />
       ))}
     </div>

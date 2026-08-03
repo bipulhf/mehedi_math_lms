@@ -2,6 +2,7 @@ import type { JSX } from "react";
 
 import { uploadBugScreenshot } from "@/lib/api/uploads";
 import { FileUploader } from "@/components/uploads/file-uploader";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface BugScreenshotUploadFieldProps {
   error?: string | undefined;
@@ -16,14 +17,16 @@ export function BugScreenshotUploadField({
   onValueChange,
   value
 }: BugScreenshotUploadFieldProps): JSX.Element {
+  const t = useT();
+
   return (
     <FileUploader
       accept="image/*"
       buttonLabel="Upload screenshot"
-      description="Optional, but helpful when reporting layout issues, runtime errors, or broken interactions."
+      description={t("misc.screenshotHint")}
       error={error}
       id={id}
-      label="Screenshot URL"
+      label={t("misc.screenshotUrl")}
       previewAlt="Bug screenshot preview"
       previewMode="image"
       successMessage="Screenshot uploaded"

@@ -21,6 +21,7 @@ import {
 import { queryKeys } from "@/lib/query/keys";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface NotificationSocketMessage {
   data: {
@@ -50,6 +51,8 @@ function resolveNotificationLink(record: NotificationRecord): string {
 }
 
 export function NotificationBell(): JSX.Element | null {
+  const t = useT();
+
   const router = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -167,8 +170,8 @@ export function NotificationBell(): JSX.Element | null {
     <div className="relative" ref={panelRef}>
       <button
         type="button"
-        aria-label="Notifications"
-        className="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface transition-colors hover:bg-surface-container-highest"
+        aria-label={t("notif.title")}
+        className="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-card text-ink transition-colors hover:bg-chip-active"
         onClick={(event) => {
           event.stopPropagation();
           handleOpen();
@@ -185,20 +188,18 @@ export function NotificationBell(): JSX.Element | null {
         <div
           className={cn(
             "absolute right-0 z-50 mt-3 w-[min(100vw-1.5rem,24rem)] rounded-[calc(var(--radius)+0.25rem)]",
-            "border border-outline-variant/40 bg-surface p-3 shadow-[0_18px_38px_-20px_rgba(19,27,46,0.2)]"
+            "border border-hairline/40 bg-paper p-3 shadow-[0_18px_38px_-20px_rgba(19,27,46,0.2)]"
           )}
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="flex items-center justify-between gap-2 border-b border-outline-variant/15 pb-3">
-            <p className="text-sm font-semibold text-on-surface">Notifications</p>
+          <div className="flex items-center justify-between gap-2 border-b border-hairline/15 pb-3">
+            <p className="text-sm font-semibold text-ink">{t("notif.title")}</p>
             <Button
               type="button"
               variant="outline"
               className="h-8 text-xs"
               onClick={() => void handleMarkAll()}
-            >
-              Mark all read
-            </Button>
+            >{t("notif.markAll")}</Button>
           </div>
           <div className="max-h-80 space-y-2 overflow-y-auto py-3">
             {isLoading ? (
@@ -210,33 +211,29 @@ export function NotificationBell(): JSX.Element | null {
                   type="button"
                   className={cn(
                     "w-full rounded-md px-3 py-2 text-left transition-colors",
-                    record.readAt ? "bg-surface-container-low/60" : "bg-surface-container-low"
+                    record.readAt ? "bg-panel-warm/60" : "bg-panel-warm"
                   )}
                   onClick={() => void handleItemClick(record)}
                 >
-                  <p className="text-sm font-semibold text-on-surface">{record.title}</p>
-                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-on-surface/62">
+                  <p className="text-sm font-semibold text-ink">{record.title}</p>
+                  <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink/62">
                     {record.body}
                   </p>
-                  <p className="mt-2 text-[0.65rem] text-on-surface/45">{record.type}</p>
+                  <p className="mt-2 text-[0.65rem] text-ink/45">{record.type}</p>
                 </button>
               ))
             ) : (
-              <p className="text-sm text-on-surface/58">No notifications yet.</p>
+              <p className="text-sm text-ink/58">{t("notif.empty")}</p>
             )}
           </div>
           {clientEnv.firebaseVapidKey ? (
-            <p className="border-t border-outline-variant/40 pt-2 text-[0.65rem] text-on-surface/50">
-              Browser push is active when permission is granted.
-            </p>
+            <p className="border-t border-hairline/40 pt-2 text-[0.65rem] text-ink/50">{t("notif.pushOn")}</p>
           ) : (
-            <p className="border-t border-outline-variant/40 pt-2 text-[0.65rem] text-on-surface/50">
-              Set VITE_FIREBASE_VAPID_KEY for web push.
-            </p>
+            <p className="border-t border-hairline/40 pt-2 text-[0.65rem] text-ink/50">{t("notif.pushKeyMissing")}</p>
           )}
           <div className="pt-2">
             <Button asChild variant="outline" className="h-9 w-full text-xs">
-              <Link to="/dashboard">Open dashboard</Link>
+              <Link to="/dashboard">{t("notif.openDashboard")}</Link>
             </Button>
           </div>
         </div>

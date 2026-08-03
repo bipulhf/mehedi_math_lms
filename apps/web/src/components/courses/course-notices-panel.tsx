@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CourseNotice, listCourseNotices } from "@/lib/api/course-notices";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Element {
+  const t = useT();
+
   const { data, isPending } = useQuery<readonly CourseNotice[]>({
     queryFn: async () => listCourseNotices(courseId),
     queryKey: queryKeys.notices.course(courseId)
@@ -18,7 +21,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
 
   if (notices === null) {
     return (
-      <Card className="border-outline-variant/60 bg-surface-container-low/70">
+      <Card className="border-hairline/60 bg-panel-warm/70">
         <CardHeader>
           <Skeleton className="h-7 w-48" />
           <Skeleton className="h-4 w-72" />
@@ -33,28 +36,22 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
 
   if (notices.length === 0) {
     return (
-      <Card className="border-outline-variant/60 bg-surface-container-low/70">
+      <Card className="border-hairline/60 bg-panel-warm/70">
         <CardHeader>
-          <CardTitle className="font-display">Course notices</CardTitle>
-          <CardDescription>
-            Announcements from your instructors will appear here when posted.
-          </CardDescription>
+          <CardTitle className="font-display">{t("notices.title")}</CardTitle>
+          <CardDescription>{t("notices.lead")}</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm leading-7 text-on-surface/68">
-          No notices yet for this course.
-        </CardContent>
+        <CardContent className="text-sm leading-7 text-ink/68">{t("notices.empty")}</CardContent>
       </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      <Card className="border-outline-variant/60 bg-surface-container-low/70">
+      <Card className="border-hairline/60 bg-panel-warm/70">
         <CardHeader>
-          <CardTitle className="font-display">Course notices</CardTitle>
-          <CardDescription>
-            Pinned items stay at the top. Latest updates from your teaching team.
-          </CardDescription>
+          <CardTitle className="font-display">{t("notices.title")}</CardTitle>
+          <CardDescription>{t("notices.pinnedLead")}</CardDescription>
         </CardHeader>
       </Card>
       <div className="grid gap-3">
@@ -62,24 +59,22 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
           <Card
             key={notice.id}
             className={`border-hairline bg-card ${
-              notice.isPinned ? "ring-1 ring-secondary-container/35" : ""
+              notice.isPinned ? "ring-1 ring-accent/35" : ""
             }`}
           >
             <CardHeader className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
                 {notice.isPinned ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary-container/15 px-2 py-0.5 text-xs font-medium text-on-surface">
-                    <Pin className="size-3" />
-                    Pinned
-                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-ink">
+                    <Pin className="size-3" />{t("notices.pinned")}</span>
                 ) : null}
-                <span className="text-xs text-on-surface/55">
+                <span className="text-xs text-ink/55">
                   {notice.author.name} · {new Date(notice.createdAt).toLocaleString()}
                 </span>
               </div>
               <CardTitle className="text-lg font-semibold">{notice.title}</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm leading-7 text-on-surface/80 whitespace-pre-wrap">
+            <CardContent className="text-sm leading-7 text-ink/80 whitespace-pre-wrap">
               {notice.content}
             </CardContent>
           </Card>

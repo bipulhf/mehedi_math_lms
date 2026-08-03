@@ -38,13 +38,7 @@ const buttonVariants = cva(
         accentLink: "bg-transparent px-0 text-accent hover:brightness-90 min-h-0",
         /** An underlined text link. `#C9C3BB` rule, ink text. */
         underline:
-          "bg-transparent px-0 text-ink border-b border-line-strong rounded-none hover:text-accent hover:border-accent min-h-0",
-
-        // Names kept only so the screens that have not been rebuilt keep
-        // compiling. Each resolves to its Genex equivalent. Remove in Phase 12.
-        default: "bg-ink text-paper hover:bg-ink-muted",
-        gradient: "bg-ink text-paper hover:bg-ink-muted",
-        secondary: "bg-accent text-paper hover:brightness-95"
+          "bg-transparent px-0 text-ink border-b border-line-strong rounded-none hover:text-accent hover:border-accent min-h-0"
       }
     },
     defaultVariants: {

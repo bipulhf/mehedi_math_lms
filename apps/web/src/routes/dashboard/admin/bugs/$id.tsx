@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { getAdminBug, updateAdminBug } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
   component: AdminBugDetailPage,
@@ -23,6 +24,8 @@ export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
 } as never);
 
 function AdminBugDetailPage(): JSX.Element {
+  const t = useT();
+
   const { id } = Route.useParams();
   const { data: fetchedBug, isPending: isLoading } = useQuery<AdminBugRecord>({
     queryFn: async () => getAdminBug(id),
@@ -57,7 +60,7 @@ function AdminBugDetailPage(): JSX.Element {
       });
 
       setBug(updatedBug);
-      toast.success("Bug report updated");
+      toast.success(t("abug.updated"));
     } finally {
       setIsSaving(false);
     }
@@ -78,11 +81,11 @@ function AdminBugDetailPage(): JSX.Element {
         </CardHeader>
         <CardContent className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/70">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70">
               {bug.description}
             </div>
             {bug.screenshotUrl ? (
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
                 <ResponsiveImage
                   alt="Bug screenshot"
                   className="max-h-128 rounded-(--radius) object-contain"
@@ -91,47 +94,45 @@ function AdminBugDetailPage(): JSX.Element {
                 />
               </div>
             ) : (
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                No screenshot attached to this report.
-              </div>
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">{t("abug.noScreenshot")}</div>
             )}
           </div>
 
           <div className="space-y-4">
             <div className="flex gap-2">
-              <Badge tone={status === "OPEN" ? "amber" : status === "IN_PROGRESS" ? "blue" : status === "RESOLVED" ? "green" : "gray"}>
+              <Badge tone={status === "OPEN" ? "attention" : status === "IN_PROGRESS" ? "neutral" : status === "RESOLVED" ? "neutral" : "quiet"}>
                 {status}
               </Badge>
-              <Badge tone={priority === "HIGH" ? "red" : priority === "MEDIUM" ? "amber" : "blue"}>
+              <Badge tone={priority === "HIGH" ? "attention" : priority === "MEDIUM" ? "attention" : "neutral"}>
                 {priority}
               </Badge>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bug-status">Status</Label>
+              <Label htmlFor="bug-status">{t("admin.bugs.statusFilter")}</Label>
               <Select id="bug-status" value={status} onChange={(event) => setStatus(event.target.value as AdminBugRecord["status"])}>
-                <option value="OPEN">Open</option>
-                <option value="IN_PROGRESS">In progress</option>
-                <option value="RESOLVED">Resolved</option>
-                <option value="CLOSED">Closed</option>
+                <option value="OPEN">{t("admin.bugs.open")}</option>
+                <option value="IN_PROGRESS">{t("admin.bugs.inProgress")}</option>
+                <option value="RESOLVED">{t("admin.bugs.resolved")}</option>
+                <option value="CLOSED">{t("admin.bugs.closed")}</option>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bug-priority">Priority</Label>
+              <Label htmlFor="bug-priority">{t("abug.priority")}</Label>
               <Select
                 id="bug-priority"
                 value={priority}
                 onChange={(event) => setPriority(event.target.value as AdminBugRecord["priority"])}
               >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
+                <option value="LOW">{t("admin.bugs.low")}</option>
+                <option value="MEDIUM">{t("admin.bugs.medium")}</option>
+                <option value="HIGH">{t("admin.bugs.high")}</option>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bug-admin-notes">Admin notes</Label>
+              <Label htmlFor="bug-admin-notes">{t("abug.notes")}</Label>
               <Textarea id="bug-admin-notes" value={adminNotes} onChange={(event) => setAdminNotes(event.target.value)} />
             </div>
 

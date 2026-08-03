@@ -3,7 +3,6 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Layers3 } from "lucide-react";
 import type { JSX } from "react";
 
-import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,7 @@ import { listCategories } from "@/lib/api/categories";
 import { queryKeys } from "@/lib/query/keys";
 import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { ssrApiGet } from "@/lib/ssr-api";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/categories")({
   head: ({ loaderData }) => {
@@ -58,10 +58,12 @@ function PublicCategoryTree({
   categories: readonly CategoryNode[];
   depth?: number;
 }): JSX.Element {
+  const t = useT();
+
   return (
     <div className="space-y-4">
-      {categories.map((category, index) => (
-        <FadeIn key={category.id} delayClassName={index > 0 ? "delay-75" : undefined}>
+      {categories.map((category) => (
+        <div key={category.id}>
           <Card className="bg-surface-container-low p-1">
             <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-lowest">
               <CardHeader>
@@ -77,13 +79,13 @@ function PublicCategoryTree({
               </CardHeader>
               <CardContent className="space-y-4" style={{ marginLeft: `${depth * 1.5}rem` }}>
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="blue">
+                  <Badge tone="neutral">
                     <Link className="text-inherit no-underline" to="/categories/$slug" params={{ slug: category.slug }}>
                       /{category.slug}
                     </Link>
                   </Badge>
                   {category.children.length > 0 ? (
-                    <Badge tone="violet">{category.children.length} subcategories</Badge>
+                    <Badge tone="neutral">{category.children.length} subcategories</Badge>
                   ) : null}
                 </div>
                 {category.children.length > 0 ? (
@@ -93,20 +95,20 @@ function PublicCategoryTree({
                     className="text-sm font-semibold text-secondary-container"
                     to="/categories/$slug"
                     params={{ slug: category.slug }}
-                  >
-                    View published courses in this category.
-                  </Link>
+                  >{t("cat.viewCourses")}</Link>
                 )}
               </CardContent>
             </div>
           </Card>
-        </FadeIn>
+        </div>
       ))}
     </div>
   );
 }
 
 function CategoriesPage(): JSX.Element {
+  const t = useT();
+
   const { data: categories = [], isPending: isLoading } = useQuery<readonly CategoryNode[]>({
     queryFn: async () => listCategories(),
     queryKey: queryKeys.categories.list()
@@ -115,7 +117,7 @@ function CategoriesPage(): JSX.Element {
   return (
     <PublicLayout
       eyebrow="Academic pathways"
-      title="Explore the academy by structured category."
+      title={t("cat.exploreLead")}
       subtitle="Browse the high-level academic map before drilling into course-level detail in the next phases."
     >
       {isLoading ? (

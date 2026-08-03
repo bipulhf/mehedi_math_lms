@@ -15,6 +15,7 @@ import { Select } from "@/components/ui/select";
 import type { AdminUserDetail } from "@/lib/api/admin";
 import { getAdminUser, updateAdminUser } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/users/$id")({
   component: AdminUserDetailPage,
@@ -22,6 +23,8 @@ export const Route = createFileRoute("/dashboard/admin/users/$id")({
 } as never);
 
 function AdminUserDetailPage(): JSX.Element {
+  const t = useT();
+
   const { id } = Route.useParams();
   const { data: fetchedUser, isPending: isLoading } = useQuery<AdminUserDetail>({
     queryFn: async () => getAdminUser(id),
@@ -68,7 +71,7 @@ function AdminUserDetailPage(): JSX.Element {
             }
           : currentUser
       );
-      toast.success("User updated");
+      toast.success(t("auser.updated"));
     } finally {
       setIsSaving(false);
     }
@@ -83,36 +86,36 @@ function AdminUserDetailPage(): JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>{user.name}</CardTitle>
-          <CardDescription>Account detail, editable profile fields, and recent activity history.</CardDescription>
+          <CardDescription>{t("auser.lead")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="detail-name">Name</Label>
+                <Label htmlFor="detail-name">{t("common.name")}</Label>
                 <Input id="detail-name" value={name} onChange={(event) => setName(event.target.value)} />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="detail-email">Email</Label>
+                <Label htmlFor="detail-email">{t("auser.email")}</Label>
                 <Input id="detail-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="detail-role">Role</Label>
+                <Label htmlFor="detail-role">{t("admin.users.role")}</Label>
                 <Select
                   id="detail-role"
                   disabled={user.role === "ADMIN"}
                   value={user.role === "ADMIN" ? "STUDENT" : role}
                   onChange={(event) => setRole(event.target.value as "STUDENT" | "TEACHER" | "ACCOUNTANT")}
                 >
-                  <option value="STUDENT">Student</option>
-                  <option value="TEACHER">Teacher</option>
-                  <option value="ACCOUNTANT">Accountant</option>
+                  <option value="STUDENT">{t("role.student")}</option>
+                  <option value="TEACHER">{t("role.teacherOption")}</option>
+                  <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Status</Label>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 py-3">
-                  <Badge tone={user.isActive ? "green" : "red"}>{user.isActive ? "Active" : "Inactive"}</Badge>
+                <Label>{t("admin.users.statusColumn")}</Label>
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
+                  <Badge tone={user.isActive ? "neutral" : "attention"}>{user.isActive ? "Active" : "Inactive"}</Badge>
                 </div>
               </div>
             </div>
@@ -124,17 +127,15 @@ function AdminUserDetailPage(): JSX.Element {
               </Button>
               {user.role === "STUDENT" ? (
                 <Button asChild type="button" variant="outline">
-                  <Link to="/dashboard/students/$id" params={{ id: user.id }}>
-                    View student profile
-                  </Link>
+                  <Link to="/dashboard/students/$id" params={{ id: user.id }}>{t("auser.viewStudent")}</Link>
                 </Button>
               ) : null}
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/70">
-              <p className="font-semibold text-on-surface">Profile signals</p>
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70">
+              <p className="font-semibold text-ink">{t("auser.signals")}</p>
               <p>Slug: {user.slug ?? "Not assigned"}</p>
               <p>Image: {user.image ?? "Not assigned"}</p>
               <p>Profile completed: {user.profileCompleted ? "Yes" : "No"}</p>
@@ -148,50 +149,46 @@ function AdminUserDetailPage(): JSX.Element {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent sessions</CardTitle>
-            <CardDescription>Session creation history available to administrators.</CardDescription>
+            <CardTitle>{t("auser.sessions")}</CardTitle>
+            <CardDescription>{t("auser.sessionsLead")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {user.sessionHistory.length > 0 ? (
               user.sessionHistory.map((session) => (
-                <div key={session.id} className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-                  <p className="font-semibold text-on-surface">{new Date(session.createdAt).toLocaleString()}</p>
-                  <p className="mt-1 text-sm leading-6 text-on-surface/68">
+                <div key={session.id} className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
+                  <p className="font-semibold text-ink">{new Date(session.createdAt).toLocaleString()}</p>
+                  <p className="mt-1 text-sm leading-6 text-ink/68">
                     {session.userAgent ?? "Unknown agent"}
                   </p>
-                  <p className="text-sm text-on-surface/58">IP: {session.ipAddress ?? "Unavailable"}</p>
+                  <p className="text-sm text-ink/58">IP: {session.ipAddress ?? "Unavailable"}</p>
                 </div>
               ))
             ) : (
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                No recent sessions recorded for this user.
-              </div>
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">{t("auser.noSessions")}</div>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent bug reports</CardTitle>
-            <CardDescription>Support signals tied to this user account.</CardDescription>
+            <CardTitle>{t("auser.bugs")}</CardTitle>
+            <CardDescription>{t("auser.bugsLead")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {user.bugReports.length > 0 ? (
               user.bugReports.map((bug) => (
-                <div key={bug.id} className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
+                <div key={bug.id} className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-on-surface">{bug.title}</p>
-                    <Badge tone={bug.status === "OPEN" ? "amber" : bug.status === "IN_PROGRESS" ? "blue" : bug.status === "RESOLVED" ? "green" : "gray"}>
+                    <p className="font-semibold text-ink">{bug.title}</p>
+                    <Badge tone={bug.status === "OPEN" ? "attention" : bug.status === "IN_PROGRESS" ? "neutral" : bug.status === "RESOLVED" ? "neutral" : "quiet"}>
                       {bug.status}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-sm text-on-surface/58">{new Date(bug.createdAt).toLocaleString()}</p>
+                  <p className="mt-2 text-sm text-ink/58">{new Date(bug.createdAt).toLocaleString()}</p>
                 </div>
               ))
             ) : (
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
-                No bug reports are associated with this user.
-              </div>
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">{t("auser.noBugs")}</div>
             )}
           </CardContent>
         </Card>

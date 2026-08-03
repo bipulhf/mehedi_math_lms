@@ -24,6 +24,7 @@ import {
   updateCourse
 } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/$id/edit")({
   component: EditCoursePage,
@@ -43,6 +44,8 @@ function mapInitialValues(course: CourseDetail): CourseEditorValues {
 }
 
 function EditCoursePage(): JSX.Element {
+  const t = useT();
+
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
@@ -87,9 +90,9 @@ function EditCoursePage(): JSX.Element {
 
       if (action === "submit") {
         await submitCourse(id);
-        toast.success("Course updated and submitted");
+        toast.success(t("cbuild.updatedSubmitted"));
       } else {
-        toast.success("Course updated");
+        toast.success(t("cbuild.updated"));
       }
 
       await loadData();
@@ -108,15 +111,11 @@ function EditCoursePage(): JSX.Element {
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
           <div>
-            <p className="font-semibold text-on-surface">Course content builder</p>
-            <p className="text-sm leading-6 text-on-surface/70">
-              Move into chapters, lectures, and materials once the course shell is ready.
-            </p>
+            <p className="font-semibold text-ink">{t("cbuild.contentTitle")}</p>
+            <p className="text-sm leading-6 text-ink/70">{t("cbuild.contentLead")}</p>
           </div>
           <Button asChild variant="outline">
-            <Link to="/dashboard/courses/$id/content" params={{ id: course.id }}>
-              Open content builder
-            </Link>
+            <Link to="/dashboard/courses/$id/content" params={{ id: course.id }}>{t("cbuild.openContent")}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -124,22 +123,18 @@ function EditCoursePage(): JSX.Element {
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-6">
           <div>
-            <p className="font-semibold text-on-surface">Assessment builder</p>
-            <p className="text-sm leading-6 text-on-surface/70">
-              Create MCQ and written tests, manage questions, and open grading queues.
-            </p>
+            <p className="font-semibold text-ink">{t("cbuild.testsTitle")}</p>
+            <p className="text-sm leading-6 text-ink/70">{t("cbuild.testsLead")}</p>
           </div>
           <Button asChild variant="outline">
-            <Link to="/dashboard/courses/$id/tests" params={{ id: course.id }}>
-              Open assessment builder
-            </Link>
+            <Link to="/dashboard/courses/$id/tests" params={{ id: course.id }}>{t("cbuild.openTests")}</Link>
           </Button>
         </CardContent>
       </Card>
 
       <CourseEditor
         categories={categories}
-        description="Refine the offer, revise rejection feedback, and resubmit the draft when it is ready."
+        description={t("cbuild.editLead")}
         initialValues={mapInitialValues(course)}
         isSaving={isSaving}
         teachers={teachers}

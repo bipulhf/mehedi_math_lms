@@ -11,6 +11,7 @@ import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
 import { getCourseAnalytics } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 import {
   Bar,
   BarChart,
@@ -31,6 +32,8 @@ export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
 const chartStroke = chartTheme.accent;
 
 function CourseAnalyticsPage(): JSX.Element {
+  const t = useT();
+
   const { id } = Route.useParams();
   const router = useRouter();
   const { isPending, session } = useAuthSession();
@@ -72,14 +75,14 @@ function CourseAnalyticsPage(): JSX.Element {
   }
 
   if (!data) {
-    return <p className="text-sm text-on-surface/68">Unable to load course analytics.</p>;
+    return <p className="text-sm text-ink/68">{t("an.courseLoadFailed")}</p>;
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Course analytics</CardTitle>
+          <CardTitle>{t("an.courseTitle")}</CardTitle>
           <CardDescription>
             {data.totalEnrollments} enrollments · {data.completedEnrollments} completed ·{" "}
             {data.completionRate}% completion · {data.reviewCount} reviews · average rating{" "}
@@ -91,7 +94,7 @@ function CourseAnalyticsPage(): JSX.Element {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Enrollment trend</CardTitle>
+            <CardTitle className="text-lg">{t("an.enrollmentTrend")}</CardTitle>
           </CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -108,8 +111,8 @@ function CourseAnalyticsPage(): JSX.Element {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Completion</CardTitle>
-            <CardDescription>Share of learners who reached the completion milestone.</CardDescription>
+            <CardTitle className="text-lg">{t("an.completion")}</CardTitle>
+            <CardDescription>{t("an.completionShare")}</CardDescription>
           </CardHeader>
           <CardContent className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">

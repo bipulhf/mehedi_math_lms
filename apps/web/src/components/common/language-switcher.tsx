@@ -20,8 +20,8 @@ export function LanguageSwitcher({ className }: { className?: string }): JSX.Ele
           className={cn(
             "min-h-11 rounded-full px-3 text-sm transition-colors",
             option === locale
-              ? "bg-surface-container-highest text-on-surface"
-              : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+              ? "bg-chip-active text-ink"
+              : "text-muted hover:bg-chip-active hover:text-ink"
           )}
           onClick={() => setLocale(option)}
           type="button"

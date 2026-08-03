@@ -2,6 +2,7 @@ import type { JSX } from "react";
 
 import type { CategoryNode } from "@/lib/api/categories";
 import { Select } from "@/components/ui/select";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface CategorySelectorProps {
   categories: readonly CategoryNode[];
@@ -33,16 +34,16 @@ export function CategorySelector({
   onChange,
   value
 }: CategorySelectorProps): JSX.Element {
+  const t = useT();
+
   const options = flattenCategories(categories);
 
   return (
     <Select id={id} value={value} error={error} onChange={(event) => onChange(event.target.value)}>
       {includeRootOption ? (
-        <option value="">No parent</option>
+        <option value="">{t("cat.noParent")}</option>
       ) : (
-        <option value="" disabled>
-          Select a category
-        </option>
+        <option value="" disabled>{t("cat.select")}</option>
       )}
       {options.map((option) => (
         <option key={option.id} value={option.id}>

@@ -51,11 +51,11 @@ function SubmissionResultPage(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <Badge tone="violet">{submission.status}</Badge>
-          <Badge tone="blue">
+          <Badge tone="neutral">{submission.status}</Badge>
+          <Badge tone="neutral">
             Score {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
           </Badge>
-          {test.passingScore !== null ? <Badge tone="green">Passing score {test.passingScore}</Badge> : null}
+          {test.passingScore !== null ? <Badge tone="neutral">Passing score {test.passingScore}</Badge> : null}
         </CardContent>
       </Card>
 
@@ -73,15 +73,15 @@ function SubmissionResultPage(): JSX.Element {
             </CardHeader>
             <CardContent className="space-y-3">
               {question.type === "MCQ" ? (
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                   {selectedOption?.optionText ?? "No option selected"}
                 </div>
               ) : (
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                   {answer?.writtenAnswer || "No written answer submitted"}
                 </div>
               )}
-              <div className="flex flex-wrap gap-3 text-sm text-on-surface/70">
+              <div className="flex flex-wrap gap-3 text-sm text-ink/70">
                 <span>Awarded marks: {answer?.awardedMarks ?? 0}</span>
                 {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (
                   <span>{answer.isCorrect ? "Marked correct" : "Marked incorrect"}</span>

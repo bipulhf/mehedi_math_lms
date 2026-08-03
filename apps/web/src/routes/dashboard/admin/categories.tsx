@@ -29,6 +29,7 @@ import {
 } from "@/lib/api/categories";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/categories")({
   component: AdminCategoriesPage,
@@ -117,6 +118,8 @@ function serializeCategoryTree(
 }
 
 function AdminCategoriesPage(): JSX.Element {
+  const t = useT();
+
   const queryClient = useQueryClient();
   const { data: categories = [], isPending: isLoading } = useQuery({
     queryFn: async () => listCategories({ includeInactive: true }),
@@ -196,10 +199,10 @@ function AdminCategoriesPage(): JSX.Element {
     try {
       if (editingCategory) {
         await updateCategory(editingCategory.id, values);
-        toast.success("Category updated");
+        toast.success(t("admin.cat.updated"));
       } else {
         await createCategory(values);
-        toast.success("Category created");
+        toast.success(t("admin.cat.created"));
       }
 
       syncEditingForm(null);
@@ -215,7 +218,7 @@ function AdminCategoriesPage(): JSX.Element {
     }
 
     await deleteCategory(category.id);
-    toast.success("Category deleted");
+    toast.success(t("admin.cat.deleted"));
 
     if (editingCategory?.id === category.id) {
       syncEditingForm(null);
@@ -246,26 +249,26 @@ function AdminCategoriesPage(): JSX.Element {
     await reorderCategories({
       items: serializeCategoryTree(nextTree, null)
     });
-    toast.success("Category order updated");
+    toast.success(t("admin.cat.reordered"));
     await loadCategories();
   };
 
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
-          <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-          <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
+        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+          <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
+          <Skeleton className="h-4 w-full max-w-sm bg-chip-active mb-8" />
           <div className="grid gap-8 xl:grid-cols-2">
             <CategoryTreeSkeleton rows={6} />
             <div className="space-y-6">
-              <Skeleton className="h-32 w-full bg-surface-container-highest" />
+              <Skeleton className="h-32 w-full bg-chip-active" />
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex gap-4">
-                  <Skeleton className="size-10 rounded-full bg-surface-container-highest" />
+                  <Skeleton className="size-10 rounded-full bg-chip-active" />
                   <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-1/3 bg-surface-container-highest" />
-                    <Skeleton className="h-3 w-2/3 bg-surface-container-highest" />
+                    <Skeleton className="h-4 w-1/3 bg-chip-active" />
+                    <Skeleton className="h-3 w-2/3 bg-chip-active" />
                   </div>
                 </div>
               ))}
@@ -278,12 +281,10 @@ function AdminCategoriesPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 p-5 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-5 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="mb-8">
-          <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
-            Category atelier
-          </h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+          <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("admin.cat.title")}</h3>
+          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
             Build the academic taxonomy, shape parent-child relationships, and keep course browsing
             organized.
           </p>
@@ -296,13 +297,11 @@ function AdminCategoriesPage(): JSX.Element {
                 <div className="space-y-3">
                   <Label
                     htmlFor="category-name"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                  >
-                    Name
-                  </Label>
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                  >{t("common.name")}</Label>
                   <Input
                     id="category-name"
-                    className="h-12 bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    className="h-12 bg-panel-warm/50 border-hairline/30 font-body"
                     error={errors.name?.message}
                     {...register("name")}
                   />
@@ -313,10 +312,8 @@ function AdminCategoriesPage(): JSX.Element {
                 <div className="space-y-3">
                   <Label
                     htmlFor="category-parent"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                  >
-                    Parent category
-                  </Label>
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                  >{t("admin.cat.parent")}</Label>
                   <CategorySelector
                     id="category-parent"
                     categories={availableParentCategories}
@@ -330,13 +327,11 @@ function AdminCategoriesPage(): JSX.Element {
                 <div className="space-y-3">
                   <Label
                     htmlFor="category-description"
-                    className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                  >
-                    Description
-                  </Label>
+                    className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                  >{t("common.description")}</Label>
                   <Textarea
                     id="category-description"
-                    className="min-h-24 bg-surface-container-low/50 border-outline-variant/30 font-body"
+                    className="min-h-24 bg-panel-warm/50 border-hairline/30 font-body"
                     error={errors.description?.message}
                     {...register("description")}
                   />
@@ -345,34 +340,26 @@ function AdminCategoriesPage(): JSX.Element {
                   <div className="space-y-3">
                     <Label
                       htmlFor="category-sort-order"
-                      className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-                    >
-                      Sort order
-                    </Label>
+                      className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+                    >{t("admin.cat.sortOrder")}</Label>
                     <Input
                       id="category-sort-order"
                       type="number"
-                      className="h-12 bg-surface-container-low/50 border-outline-variant/30 font-body"
+                      className="h-12 bg-panel-warm/50 border-hairline/30 font-body"
                       error={errors.sortOrder?.message}
                       {...register("sortOrder", { valueAsNumber: true })}
                     />
                   </div>
-                  <div className="bg-surface-container-low/50 border border-outline-variant/30 p-5">
+                  <div className="bg-panel-warm/50 border border-hairline/30 p-5">
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/80">
-                          Visibility
-                        </p>
-                        <p className="text-[0.65rem] text-on-surface/50 font-light mt-1">
-                          Hidden from public if inactive.
-                        </p>
+                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/80">{t("admin.cat.visibility")}</p>
+                        <p className="text-[0.65rem] text-ink/50 font-light mt-1">{t("admin.cat.hiddenNote")}</p>
                       </div>
                       <label className="inline-flex items-center gap-3 cursor-pointer group/toggle">
                         <input type="checkbox" className="sr-only peer" {...register("isActive")} />
-                        <div className="relative w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
-                        <span className="text-xs font-bold uppercase tracking-tighter text-on-surface/70 peer-checked:text-secondary group-hover/toggle:text-on-surface transition-colors">
-                          Active
-                        </span>
+                        <div className="relative w-11 h-6 bg-chip-active peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:inset-s-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                        <span className="text-xs font-bold uppercase tracking-tighter text-ink/70 peer-checked:text-accent group-hover/toggle:text-ink transition-colors">{t("admin.users.active")}</span>
                       </label>
                     </div>
                   </div>
@@ -396,10 +383,8 @@ function AdminCategoriesPage(): JSX.Element {
                       type="button"
                       variant="outline"
                       onClick={() => syncEditingForm(null)}
-                      className="h-12 px-6 border-outline-variant/30 transition-all hover:bg-surface-container-high"
-                    >
-                      Cancel edit
-                    </Button>
+                      className="h-12 px-6 border-hairline/30 transition-all hover:bg-chip-active"
+                    >{t("common.cancel")}</Button>
                   ) : null}
                 </div>
               </form>
@@ -407,38 +392,32 @@ function AdminCategoriesPage(): JSX.Element {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-primary/5 border border-primary/10 p-6 sm:p-8 relative overflow-hidden group/tree-header">
+            <div className="bg-ink/5 border border-ink/10 p-6 sm:p-8 relative overflow-hidden group/tree-header">
               <div className="flex flex-col sm:flex-row sm:items-center gap-5 relative z-10">
-                <div className="bg-primary/10 p-4 text-primary border border-primary/10 w-fit">
+                <div className="bg-ink/10 p-4 text-ink border border-ink/10 w-fit">
                   <Layers3 className="size-6" />
                 </div>
                 <div>
-                  <h5 className="font-body text-xl font-medium text-on-surface tracking-tight leading-none">
-                    Tree view
-                  </h5>
-                  <p className="mt-2 text-sm text-on-surface-variant font-light leading-relaxed">
-                    Drag cards to reorganize the academic hierarchy.
-                  </p>
+                  <h5 className="font-body text-xl font-medium text-ink tracking-tight leading-none">{t("admin.cat.treeTitle")}</h5>
+                  <p className="mt-2 text-sm text-muted font-light leading-relaxed">{t("admin.cat.treeLead")}</p>
                 </div>
                 {editingCategory && (
                   <Button
                     size="sm"
                     onClick={() => syncEditingForm(null)}
-                    className="h-10 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-bold transition-all ml-auto"
-                  >
-                    Add new domain
-                  </Button>
+                    className="h-10 bg-ink/10 text-ink border border-ink/20 hover:bg-ink/20 font-bold transition-all ml-auto"
+                  >{t("admin.cat.add")}</Button>
                 )}
               </div>
               <div className="mt-8 flex flex-wrap gap-3 relative z-10">
                 <Badge
-                  tone="green"
+                  tone="neutral"
                   className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-green-500/20"
                 >
                   {categories.length} root domains
                 </Badge>
                 <Badge
-                  tone="blue"
+                  tone="neutral"
                   className="rounded-full px-4 py-1.5 font-bold text-[0.65rem] border border-blue-500/20"
                 >
                   {flattenCategoryIds(categories).length} total nodes
@@ -446,7 +425,7 @@ function AdminCategoriesPage(): JSX.Element {
               </div>
             </div>
 
-            <div className="bg-surface-container-low/30 p-2 border border-outline-variant/10 min-h-125">
+            <div className="bg-panel-warm/30 p-2 border border-hairline/10 min-h-125">
               <CategoryTree
                 categories={categories}
                 draggedCategoryId={draggedCategoryId}

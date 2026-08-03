@@ -5,6 +5,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { seo } from "@/lib/seo";
 import { SignUpPage, signUpSearchSchema } from "@/routes/auth/sign-up";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/signup")({
   head: () =>
@@ -22,11 +23,13 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignupAlias(): JSX.Element {
+  const t = useT();
+
   const search = Route.useSearch();
 
   return (
     <AuthLayout
-      title="Create your student account"
+      title={t("auth.signUp")}
       description="Sign up with your email and password to unlock course enrollment, profile setup, and your learning dashboard."
     >
       <SignUpPage courseSlug={search.courseSlug} />

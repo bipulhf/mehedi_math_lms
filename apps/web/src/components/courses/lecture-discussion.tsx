@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { queryKeys } from "@/lib/query/keys";
 import type { LectureComment } from "@/lib/api/comments";
+import { useT } from "@/lib/i18n/locale-context";
 import {
   createLectureComment,
   deleteComment,
@@ -25,20 +26,20 @@ interface LectureDiscussionProps {
   lectureId: string;
 }
 
-function roleTone(role: LectureComment["user"]["role"]): "blue" | "gray" | "green" | "violet" {
+function roleTone(role: LectureComment["user"]["role"]): "neutral" | "quiet" | "neutral" | "neutral" {
   if (role === "ADMIN") {
-    return "violet";
+    return "neutral";
   }
 
   if (role === "TEACHER") {
-    return "blue";
+    return "neutral";
   }
 
   if (role === "STUDENT") {
-    return "green";
+    return "neutral";
   }
 
-  return "gray";
+  return "quiet";
 }
 
 function Avatar({ comment }: { comment: LectureComment }): JSX.Element {
@@ -54,7 +55,7 @@ function Avatar({ comment }: { comment: LectureComment }): JSX.Element {
   }
 
   return (
-    <div className="flex size-10 items-center justify-center rounded-full bg-surface-container-highest text-sm font-semibold text-on-surface">
+    <div className="flex size-10 items-center justify-center rounded-full bg-chip-active text-sm font-semibold text-ink">
       {comment.user.name.charAt(0).toUpperCase()}
     </div>
   );
@@ -75,6 +76,8 @@ function CommentComposer({
   submitLabel: string;
   value?: string | undefined;
 }): JSX.Element {
+  const t = useT();
+
   const [content, setContent] = useState(value ?? "");
 
   useEffect(() => {
@@ -97,9 +100,7 @@ function CommentComposer({
           {isPending ? "Saving" : submitLabel}
         </Button>
         {onCancel ? (
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={onCancel}>{t("common.cancel")}</Button>
         ) : null}
       </div>
     </div>
@@ -125,18 +126,20 @@ function CommentItem({
   submittingReplyId: string | null;
   updatingId: string | null;
 }): JSX.Element {
+  const t = useT();
+
   const [isEditing, setIsEditing] = useState(false);
 
   return (
-    <div className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4">
+    <div className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm p-4">
       <div className="flex items-start gap-3">
         <Avatar comment={comment} />
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-semibold text-on-surface">{comment.user.name}</p>
+            <p className="font-semibold text-ink">{comment.user.name}</p>
             <Badge tone={roleTone(comment.user.role)}>{comment.user.role}</Badge>
-            {comment.isOwn ? <Badge tone="gray">You</Badge> : null}
-            <span className="text-xs text-on-surface/54">
+            {comment.isOwn ? <Badge tone="quiet">{t("disc.you")}</Badge> : null}
+            <span className="text-xs text-ink/54">
               {new Date(comment.createdAt).toLocaleString()}
             </span>
           </div>
@@ -144,7 +147,7 @@ function CommentItem({
           {isEditing ? (
             <CommentComposer
               isPending={updatingId === comment.id}
-              placeholder="Refine your comment"
+              placeholder={t("disc.editPlaceholder")}
               submitLabel="Save changes"
               value={comment.content ?? ""}
               onCancel={() => setIsEditing(false)}
@@ -154,7 +157,7 @@ function CommentItem({
               }}
             />
           ) : (
-            <p className="text-sm leading-7 text-on-surface/72">
+            <p className="text-sm leading-7 text-ink/72">
               {comment.isDeleted ? "This comment has been deleted." : comment.content}
             </p>
           )}
@@ -166,21 +169,15 @@ function CommentItem({
                   variant="ghost"
                   onClick={() => onReply(comment.id, "")}
                 >
-                  <Reply className="size-4" />
-                  Reply
-                </Button>
+                  <Reply className="size-4" />{t("disc.reply")}</Button>
               ) : null}
               {comment.isEditable ? (
                 <Button variant="ghost" onClick={() => setIsEditing(true)}>
-                  <Pencil className="size-4" />
-                  Edit
-                </Button>
+                  <Pencil className="size-4" />{t("action.edit")}</Button>
               ) : null}
               {comment.isEditable ? (
                 <Button variant="ghost" onClick={() => void onDelete(comment.id)}>
-                  <Trash2 className="size-4" />
-                  Delete
-                </Button>
+                  <Trash2 className="size-4" />{t("disc.delete")}</Button>
               ) : null}
             </div>
           ) : null}
@@ -191,7 +188,7 @@ function CommentItem({
         <div className="pl-13">
           <CommentComposer
             isPending={submittingReplyId === comment.id}
-            placeholder="Write a reply"
+            placeholder={t("disc.replyPlaceholder")}
             submitLabel="Post reply"
             onCancel={() => onReply("", "")}
             onSubmit={(value) => onReply(comment.id, value)}
@@ -200,7 +197,7 @@ function CommentItem({
       ) : null}
 
       {comment.replies.length > 0 ? (
-        <div className="space-y-3 border-l border-outline-variant/15 pl-4 md:pl-6">
+        <div className="space-y-3 border-l border-hairline/15 pl-4 md:pl-6">
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
@@ -226,6 +223,8 @@ interface CommentPage {
 }
 
 export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.Element {
+  const t = useT();
+
   const { session } = useAuthSession();
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
@@ -293,12 +292,10 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
   const totalLoaded = useMemo(() => comments.length, [comments.length]);
 
   return (
-    <Card className="border-outline-variant/60 bg-surface-container-low/70">
+    <Card className="border-hairline/60 bg-panel-warm/70">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="size-4" />
-          Discussion
-        </CardTitle>
+          <MessageSquare className="size-4" />{t("disc.title")}</CardTitle>
         <CardDescription>
           Ask questions, leave context for future learners, and keep the lecture conversation attached to the material.
         </CardDescription>
@@ -307,7 +304,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
         {canDiscuss ? (
           <CommentComposer
             isPending={isCreating}
-            placeholder="Add a question, idea, or clarification for this lecture"
+            placeholder={t("disc.placeholder")}
             submitLabel="Post comment"
             onSubmit={async (value) => {
               setIsCreating(true);
@@ -318,7 +315,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                   lectureId
                 });
                 patchLoadedComments((loaded) => [createdComment, ...loaded]);
-                toast.success("Comment posted");
+                toast.success(t("disc.posted"));
               } finally {
                 setIsCreating(false);
               }
@@ -329,9 +326,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
         {isLoading && comments.length === 0 ? (
           <CommentThreadSkeleton />
         ) : comments.length === 0 ? (
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface p-4 text-sm leading-7 text-on-surface/68">
-            No comments yet. Start the lecture conversation here.
-          </div>
+          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper p-4 text-sm leading-7 text-ink/68">{t("disc.empty")}</div>
         ) : (
           <div className="space-y-3">
             {comments.map((comment) => (
@@ -369,7 +364,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                           }
                     )
                   );
-                  toast.success("Comment deleted");
+                  toast.success(t("disc.deleted"));
                 }}
                 onReply={async (parentId, content) => {
                   if (content === "") {
@@ -396,7 +391,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                       )
                     );
                     setReplyTargetId(null);
-                    toast.success("Reply posted");
+                    toast.success(t("disc.replied"));
                   } finally {
                     setSubmittingReplyId(null);
                   }
@@ -420,7 +415,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
                             }
                       )
                     );
-                    toast.success("Comment updated");
+                    toast.success(t("disc.updated"));
                   } finally {
                     setUpdatingId(null);
                   }

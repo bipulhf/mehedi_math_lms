@@ -17,8 +17,11 @@ import {
   updateCourseNotice
 } from "@/lib/api/course-notices";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Element {
+  const t = useT();
+
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -51,7 +54,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
     setSubmitting(true);
     try {
       await createCourseNotice(courseId, parsed.data);
-      toast.success("Notice published");
+      toast.success(t("notice.posted"));
       setTitle("");
       setContent("");
       setIsPinned(false);
@@ -66,7 +69,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
       await updateCourseNotice(notice.id, { isPinned: !notice.isPinned });
       await load();
     } catch {
-      toast.error("Could not update notice");
+      toast.error(t("notice.updateFailed"));
     }
   }
 
@@ -77,25 +80,25 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
 
     try {
       await deleteCourseNotice(notice.id);
-      toast.success("Notice removed");
+      toast.success(t("notice.removed"));
       await load();
     } catch {
-      toast.error("Could not delete notice");
+      toast.error(t("notice.deleteFailed"));
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Course noticeboard</CardTitle>
+        <CardTitle>{t("notice.title")}</CardTitle>
         <CardDescription>
           Post updates for enrolled students. They see these inside the learning player under Course notices.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form onSubmit={(e) => void handleCreate(e)} className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant/60 bg-surface-container-low/60 p-4">
+        <form onSubmit={(e) => void handleCreate(e)} className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline/60 bg-panel-warm/60 p-4">
           <div className="space-y-2">
-            <Label htmlFor="notice-title">Title</Label>
+            <Label htmlFor="notice-title">{t("bugs.fieldTitle")}</Label>
             <Input
               id="notice-title"
               value={title}
@@ -105,7 +108,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notice-body">Message</Label>
+            <Label htmlFor="notice-body">{t("notice.message")}</Label>
             <textarea
               id="notice-body"
               value={content}
@@ -113,38 +116,36 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
               required
               rows={4}
               maxLength={8000}
-              className="w-full rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 py-3 text-sm text-on-surface shadow-[inset_0_0_0_1px_rgba(118,119,125,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary-container/20 resize-y min-h-[100px]"
+              className="w-full rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3 text-sm text-ink shadow-[inset_0_0_0_1px_rgba(118,119,125,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/20 resize-y min-h-[100px]"
             />
           </div>
-          <label className="flex items-center gap-2 text-sm text-on-surface">
+          <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
               checked={isPinned}
               onChange={(e) => setIsPinned(e.target.checked)}
-            />
-            Pin to top (max 10 per course)
-          </label>
+            />{t("notice.pin")}</label>
           <Button type="submit" disabled={submitting}>
             {submitting ? "Publishing…" : "Publish notice"}
           </Button>
         </form>
 
         <div className="space-y-3">
-          <p className="text-sm font-medium text-on-surface">Published notices</p>
+          <p className="text-sm font-medium text-ink">{t("notice.published")}</p>
           {loading ? (
-            <p className="text-sm text-on-surface/60">Loading…</p>
+            <p className="text-sm text-ink/60">{t("common.loading")}</p>
           ) : notices.length === 0 ? (
-            <p className="text-sm text-on-surface/60">No notices yet.</p>
+            <p className="text-sm text-ink/60">{t("notice.empty")}</p>
           ) : (
             <ul className="space-y-2">
               {notices.map((notice) => (
                 <li
                   key={notice.id}
-                  className="flex flex-col gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant/50 bg-surface-container-low/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-hairline/50 bg-panel-warm/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-on-surface truncate">{notice.title}</p>
-                    <p className="text-xs text-on-surface/55">
+                    <p className="font-medium text-ink truncate">{notice.title}</p>
+                    <p className="text-xs text-ink/55">
                       {notice.author.name} · {new Date(notice.createdAt).toLocaleDateString()}
                       {notice.isPinned ? " · pinned" : ""}
                     </p>
@@ -166,9 +167,7 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
                       className="text-error"
                       onClick={() => void handleDelete(notice)}
                     >
-                      <Trash2 className="size-4" />
-                      Delete
-                    </Button>
+                      <Trash2 className="size-4" />{t("disc.delete")}</Button>
                   </div>
                 </li>
               ))}

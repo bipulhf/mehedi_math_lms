@@ -14,25 +14,29 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { PaymentHistoryItem, PaymentStatus } from "@/lib/api/payments";
 import { listAccountingPayments, listMyPayments, refundPayment } from "@/lib/api/payments";
 import { queryKeys } from "@/lib/query/keys";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/")({
   component: PaymentsPage,
   errorComponent: RouteErrorView
 } as never);
 
-function paymentTone(status: PaymentStatus): "amber" | "green" | "red" {
+function paymentTone(status: PaymentStatus): "attention" | "neutral" | "attention" {
   if (status === "SUCCESS") {
-    return "green";
+    return "neutral";
   }
 
   if (status === "PENDING") {
-    return "amber";
+    return "attention";
   }
 
-  return "red";
+  return "attention";
 }
 
 function PaymentsPage(): JSX.Element {
+  const t = useT();
+  const format = useFormat();
+
   const { isPending: isSessionPending, session } = useAuthSession();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | "">("");
@@ -80,33 +84,33 @@ function PaymentsPage(): JSX.Element {
     }
 
     await refundPayment(paymentId, { remarks: "Refund issued from accountant operations dashboard." });
-    toast.success("Payment refunded");
+    toast.success(t("pay.refunded.done"));
     await loadPayments();
   };
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest" />
+        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
+           <Skeleton className="h-4 w-full max-w-sm bg-chip-active" />
         </div>
         {canManagePayments && (
           <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface-container-lowest/80 p-6 border border-outline-variant/30 relative overflow-hidden">
-                <Skeleton className="h-4 w-24 mb-3 bg-surface-container-highest" />
-                <Skeleton className="h-9 w-32 bg-surface-container-highest" />
+              <div key={i} className="bg-card/80 p-6 border border-hairline/30 relative overflow-hidden">
+                <Skeleton className="h-4 w-24 mb-3 bg-chip-active" />
+                <Skeleton className="h-9 w-32 bg-chip-active" />
               </div>
             ))}
           </section>
         )}
-        <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
+        <div className="bg-card/80 border border-hairline/40 overflow-hidden">
            <div className="p-0">
-             <div className="bg-surface-container-low h-12 w-full" />
+             <div className="bg-panel-warm h-12 w-full" />
              <div className="p-4 space-y-4">
                {Array.from({ length: 6 }).map((_, i) => (
-                 <Skeleton key={i} className="h-16 w-full bg-surface-container-high" />
+                 <Skeleton key={i} className="h-16 w-full bg-chip-active" />
                ))}
              </div>
            </div>
@@ -117,12 +121,12 @@ function PaymentsPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="mb-0">
-          <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
+          <h3 className="font-body text-3xl font-medium tracking-tight text-ink">
             {canManagePayments ? "Payment operations" : "Payment history"}
           </h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
             {canManagePayments
               ? "Track revenue, review transactions, and handle refunds from the accounting surface."
               : "Review your tuition payments, gateway outcomes, and enrollment transaction timeline."}
@@ -133,97 +137,94 @@ function PaymentsPage(): JSX.Element {
       {canManagePayments && stats ? (
         <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: "Total revenue", value: `BDT ${stats.totalRevenue.toFixed(2)}` },
-            { label: "Successful payments", value: stats.successfulPayments },
-            { label: "Pending payments", value: stats.pendingPayments },
-            { label: "Refunded value", value: `BDT ${stats.refundedRevenue.toFixed(2)}` }
+            // Through `format.currency`, so the taka sign sits tight against a
+            // grouped number instead of a bare "BDT" beside a raw one.
+            { label: t("an.totalRevenue"), value: format.currency(stats.totalRevenue) },
+            { label: t("pay.success"), value: format.number(stats.successfulPayments) },
+            { label: t("pay.pending"), value: format.number(stats.pendingPayments) },
+            { label: t("pay.refunded"), value: format.currency(stats.refundedRevenue) }
           ].map((stat, i) => (
-            <div key={i} className="bg-surface-container-lowest/80 p-6 border border-outline-variant/30 relative overflow-hidden group">
-              <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/54">{stat.label}</p>
-              <p className="mt-2 text-2xl font-body font-medium text-on-surface">{stat.value}</p>
+            <div key={i} className="bg-card/80 p-6 border border-hairline/30 relative overflow-hidden group">
+              <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/54">{stat.label}</p>
+              <p className="mt-2 text-2xl font-body font-medium text-ink">{stat.value}</p>
             </div>
           ))}
         </section>
       ) : null}
 
       {canManagePayments ? (
-        <div className="bg-surface-container-lowest/80 p-6 border border-outline-variant/40 relative w-full overflow-hidden">
+        <div className="bg-card/80 p-6 border border-hairline/40 relative w-full overflow-hidden">
           <div className="grid gap-4 md:grid-cols-[0.4fr]">
             <div className="space-y-2">
-              <Label htmlFor="payment-status-filter" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Filter by Status</Label>
+              <Label htmlFor="payment-status-filter" className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("pay.filterStatus")}</Label>
               <Select
                 id="payment-status-filter"
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
-                className="bg-surface-container-low/50 border-outline-variant/30"
+                className="bg-panel-warm/50 border-hairline/30"
               >
-                <option value="">All statuses</option>
-                <option value="PENDING">Pending</option>
-                <option value="SUCCESS">Success</option>
-                <option value="FAILED">Failed</option>
-                <option value="REFUNDED">Refunded</option>
+                <option value="">{t("pay.allStatuses")}</option>
+                <option value="PENDING">{t("pay.pending")}</option>
+                <option value="SUCCESS">{t("pay.success")}</option>
+                <option value="FAILED">{t("pay.failed")}</option>
+                <option value="REFUNDED">{t("pay.refunded")}</option>
               </Select>
             </div>
           </div>
         </div>
       ) : null}
 
-      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden">
+      <div className="bg-card/80 border border-hairline/40 relative overflow-hidden">
         <div className="p-0">
           {items.length === 0 ? (
-            <div className="p-10 text-center text-sm leading-7 text-on-surface-variant font-light italic">
-              No payments found for the current view.
-            </div>
+            <div className="p-10 text-center text-sm leading-7 text-muted font-light italic">{t("pay.empty")}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left text-sm">
-                <thead className="bg-surface-container-low/50 text-on-surface/54">
+                <thead className="bg-panel-warm/50 text-ink/54">
                   <tr>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Course</th>
-                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Student</th> : null}
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Amount</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Status</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Transaction</th>
-                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Created</th>
-                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">Action</th> : null}
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.course")}</th>
+                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.student")}</th> : null}
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.amount")}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.status")}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.transaction")}</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.created")}</th>
+                    {canManagePayments ? <th className="px-6 py-4 font-bold uppercase tracking-widest text-[0.65rem]">{t("pay.action")}</th> : null}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline-variant/20">
+                <tbody className="divide-y divide-hairline/20">
                   {items.map((item) => (
-                    <tr key={item.id} className="align-top group/row hover:bg-surface-container-low/30 transition-colors">
+                    <tr key={item.id} className="align-top group/row hover:bg-panel-warm/30 transition-colors">
                       <td className="px-6 py-5">
                         <div className="space-y-1">
-                          <p className="font-body font-bold text-on-surface group-hover/row:text-primary transition-colors">{item.course.title}</p>
-                          <p className="text-[0.65rem] font-mono text-on-surface-variant bg-surface-container-low/50 px-2 py-0.5 rounded-md inline-block">{item.course.id}</p>
+                          <p className="font-body font-bold text-ink group-hover/row:text-ink transition-colors">{item.course.title}</p>
+                          <p className="text-[0.65rem] font-mono text-muted bg-panel-warm/50 px-2 py-0.5 rounded-md inline-block">{item.course.id}</p>
                         </div>
                       </td>
                       {canManagePayments ? (
                         <td className="px-6 py-5">
                           <div className="space-y-1">
-                            <p className="font-semibold text-on-surface">{item.user?.name ?? "Unknown"}</p>
-                            <p className="text-xs text-on-surface-variant/70 font-light">{item.user?.email ?? "Unknown"}</p>
+                            <p className="font-semibold text-ink">{item.user?.name ?? "Unknown"}</p>
+                            <p className="text-xs text-muted/70 font-light">{item.user?.email ?? "Unknown"}</p>
                           </div>
                         </td>
                       ) : null}
-                      <td className="px-6 py-5 font-body font-medium text-on-surface">
-                         <span className="text-[0.7rem] text-on-surface-variant mr-1">BDT</span>
-                         {Number(item.amount).toFixed(2)}
+                      <td className="px-6 py-5 font-body font-medium text-ink">
+                                                  {Number(item.amount).toFixed(2)}
                       </td>
                       <td className="px-6 py-5">
                         <Badge tone={paymentTone(item.status)} className="rounded-full px-3">{item.status}</Badge>
                       </td>
-                      <td className="px-6 py-5 text-[0.7rem] font-mono text-on-surface-variant opacity-70">{item.transactionId}</td>
-                      <td className="px-6 py-5 text-xs text-on-surface-variant font-light">
+                      <td className="px-6 py-5 text-[0.7rem] font-mono text-muted opacity-70">{item.transactionId}</td>
+                      <td className="px-6 py-5 text-xs text-muted font-light">
                         {new Date(item.createdAt).toLocaleString("en-GB", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </td>
                       {canManagePayments ? (
                         <td className="px-6 py-5">
                           {item.status === "SUCCESS" ? (
-                            <Button size="sm" variant="outline" className="font-body font-semibold px-4 h-9 border-outline-variant/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>
-                              Refund
-                            </Button>
+                            <Button size="sm" variant="outline" className="font-body font-semibold px-4 h-9 border-hairline/30 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30 transition-all" onClick={() => void handleRefund(item.id)}>{t("pay.refund")}</Button>
                           ) : (
-                            <span className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/30">N/A</span>
+                            <span className="text-sm text-muted-faint">—</span>
                           )}
                         </td>
                       ) : null}

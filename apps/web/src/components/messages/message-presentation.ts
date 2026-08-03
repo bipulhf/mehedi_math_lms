@@ -10,22 +10,14 @@ export function initials(name: string): string {
     .toUpperCase();
 }
 
-export function roleTone(
-  role: MessageParticipant["role"]
-): "blue" | "gray" | "green" | "violet" {
-  if (role === "TEACHER") {
-    return "violet";
-  }
-
-  if (role === "STUDENT") {
-    return "blue";
-  }
-
-  if (role === "ADMIN") {
-    return "green";
-  }
-
-  return "gray";
+/**
+ * Every role reads the same. This used to hand each one its own colour, which
+ * DESIGN.md §2 has no budget for — the accent is reserved for what needs
+ * acting on, and "this person is a teacher" is not that. The role is already
+ * spelled out in the badge's own text.
+ */
+export function roleTone(role: MessageParticipant["role"]): "neutral" | "quiet" {
+  return role === "STUDENT" ? "quiet" : "neutral";
 }
 
 export function formatTimestamp(value: string): string {

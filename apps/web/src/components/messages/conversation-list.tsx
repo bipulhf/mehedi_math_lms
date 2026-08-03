@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { MessageConversation, MessageParticipant } from "@/lib/api/messages";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/locale-context";
 
 /** The inbox pane: connection state, search, participant lookup, and the threads. */
 export function ConversationList({
@@ -33,19 +34,17 @@ export function ConversationList({
   participantSearch: string;
   selectedConversationId: string | null;
 }): JSX.Element {
+  const t = useT();
+
   return (
-    <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative flex flex-col overflow-hidden group">
-      <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-outline-variant/20">
+    <div className="bg-card/80 border border-hairline/40 relative flex flex-col overflow-hidden group">
+      <div className="p-6 sm:p-8 space-y-6 shrink-0 border-b border-hairline/20">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
-              Inbox
-            </h3>
-            <p className="mt-2 text-xs text-on-surface-variant font-light leading-relaxed">
-              Quiet, direct conversations with live delivery and read states.
-            </p>
+            <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("msg.inbox")}</h3>
+            <p className="mt-2 text-xs text-muted font-light leading-relaxed">{t("msg.inboxLead")}</p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-surface-container-low/50 border border-outline-variant/20 px-3 py-2 text-xs text-on-surface/68">
+          <div className="inline-flex items-center gap-2 rounded-full bg-panel-warm/50 border border-hairline/20 px-3 py-2 text-xs text-ink/68">
             {isSocketConnected ? (
               <Wifi className="size-3.5 text-emerald-600" />
             ) : (
@@ -55,20 +54,18 @@ export function ConversationList({
           </div>
         </div>
         <Input
-          placeholder="Search conversations"
+          placeholder={t("msg.searchConversations")}
           value={conversationSearch}
           onChange={(event) => onConversationSearchChange(event.target.value)}
-          className="h-12 bg-surface-container-low/50 border-outline-variant/30"
+          className="h-12 bg-panel-warm/50 border-hairline/30"
         />
-        <div className="space-y-3 bg-surface-container-low/40 border border-outline-variant/20 p-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-on-surface/54">
-            Start new
-          </p>
+        <div className="space-y-3 bg-panel-warm/40 border border-hairline/20 p-4">
+          <p className="text-xs font-bold uppercase tracking-widest text-ink/54">{t("msg.startNew")}</p>
           <Input
             placeholder={currentUserRole === "STUDENT" ? "Find a teacher" : "Find a student"}
             value={participantSearch}
             onChange={(event) => onParticipantSearchChange(event.target.value)}
-            className="h-10 bg-surface border-outline-variant/30"
+            className="h-10 bg-paper border-hairline/30"
           />
           {participantResults.length > 0 ? (
             <div className="space-y-2">
@@ -76,16 +73,16 @@ export function ConversationList({
                 <button
                   key={participant.id}
                   type="button"
-                  className="flex w-full items-center justify-between bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-container-highest border border-outline-variant/10"
+                  className="flex w-full items-center justify-between bg-paper px-4 py-3 text-left transition-colors hover:bg-chip-active border border-hairline/10"
                   onClick={() => onStartConversation(participant.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-full bg-surface-container-highest text-sm font-semibold text-on-surface">
+                    <div className="flex size-10 items-center justify-center rounded-full bg-chip-active text-sm font-semibold text-ink">
                       {initials(participant.name)}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-on-surface">{participant.name}</p>
-                      <p className="text-xs text-on-surface/60">
+                      <p className="text-sm font-semibold text-ink">{participant.name}</p>
+                      <p className="text-xs text-ink/60">
                         {participant.isOnline ? "Online now" : "Offline"}
                       </p>
                     </div>
@@ -106,15 +103,15 @@ export function ConversationList({
               className={cn(
                 "w-full rounded-3xl px-4 py-4 text-left transition-all duration-300 ease-out border",
                 selectedConversationId === conversation.id
-                  ? "bg-surface border-outline-variant/40 shadow-md ring-1 ring-primary/10"
-                  : "bg-surface-container-lowest/50 border-transparent hover:bg-surface-container-low/80 hover:border-outline-variant/20 hover:shadow-sm"
+                  ? "bg-paper border-hairline/40 shadow-md ring-1 ring-ink/10"
+                  : "bg-card/50 border-transparent hover:bg-panel-warm/80 hover:border-hairline/20 hover:shadow-sm"
               )}
               onClick={() => onSelectConversation(conversation.id)}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="truncate font-semibold text-on-surface">
+                    <span className="truncate font-semibold text-ink">
                       {conversation.user.name}
                     </span>
                     <span
@@ -124,27 +121,25 @@ export function ConversationList({
                       )}
                     />
                   </div>
-                  <p className="mt-1 truncate text-sm text-on-surface/62">
+                  <p className="mt-1 truncate text-sm text-ink/62">
                     {conversation.lastMessage?.content ?? "No messages yet"}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   {conversation.lastMessageAt ? (
-                    <span className="text-[0.7rem] text-on-surface/50">
+                    <span className="text-[0.7rem] text-ink/50">
                       {new Date(conversation.lastMessageAt).toLocaleDateString()}
                     </span>
                   ) : null}
                   {conversation.unreadCount > 0 ? (
-                    <Badge tone="violet">{conversation.unreadCount}</Badge>
+                    <Badge tone="neutral">{conversation.unreadCount}</Badge>
                   ) : null}
                 </div>
               </div>
             </button>
           ))
         ) : (
-          <div className="bg-surface-container-low/50 border border-outline-variant/20 p-6 text-sm leading-7 text-on-surface-variant font-light text-center">
-            No conversations yet. Start a teacher-student chat from the search panel above.
-          </div>
+          <div className="bg-panel-warm/50 border border-hairline/20 p-6 text-sm leading-7 text-muted font-light text-center">{t("msg.noConversations")}</div>
         )}
       </div>
     </div>

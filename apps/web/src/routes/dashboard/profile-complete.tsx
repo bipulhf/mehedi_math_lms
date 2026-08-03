@@ -23,6 +23,7 @@ import {
   updateTeacherProfile
 } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 const searchSchema = z.object({
   courseSlug: z.string().trim().min(1).optional()
@@ -35,6 +36,8 @@ export const Route = createFileRoute("/dashboard/profile-complete")({
 });
 
 function CompleteProfilePage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const search = Route.useSearch();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
@@ -158,7 +161,7 @@ function CompleteProfilePage(): JSX.Element {
       onSubmitStudent={handleStudentSubmit}
       onSubmitTeacher={handleTeacherSubmit}
       role={session.session.role as UserRole}
-      title="Complete your profile"
+      title={t("profc.title")}
     />
   );
 }

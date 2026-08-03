@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 import {
   getTestDetail,
   saveSubmissionAnswers,
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/dashboard/tests/$testId")({
 } as never);
 
 function StudentTestPage(): JSX.Element {
+  const t = useT();
+
   const { testId } = Route.useParams();
   const router = useRouter();
   const { data: test = null, isPending: isLoadingTest } = useQuery<AssessmentTestDetail>({
@@ -154,7 +157,7 @@ function StudentTestPage(): JSX.Element {
           writtenAnswer: answer.writtenAnswer
         }))
       });
-      toast.success("Test submitted");
+      toast.success(t("test.submitted"));
       await router.navigate({
         params: {
           submissionId: result.id,
@@ -184,9 +187,9 @@ function StudentTestPage(): JSX.Element {
         </CardHeader>
         <CardContent className="space-y-4">
           {timeRemainingSeconds !== null ? (
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-on-surface/62">Time remaining</p>
-              <p className="mt-2 text-2xl font-semibold text-on-surface">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-ink/62">{t("test.timeRemaining")}</p>
+              <p className="mt-2 text-2xl font-semibold text-ink">
                 {Math.floor(timeRemainingSeconds / 60)
                   .toString()
                   .padStart(2, "0")}
@@ -208,15 +211,15 @@ function StudentTestPage(): JSX.Element {
                   key={question.id}
                   className={`rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-colors ${
                     index === currentQuestionIndex
-                      ? "border-secondary-container bg-secondary-container/10"
-                      : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                      ? "border-accent bg-accent/10"
+                      : "border-hairline bg-panel-warm hover:bg-panel-warm"
                   }`}
                   type="button"
                   onClick={() => setCurrentQuestionIndex(index)}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-on-surface">Question {index + 1}</span>
-                    <span className="text-xs uppercase tracking-[0.2em] text-on-surface/62">
+                    <span className="text-sm font-semibold text-ink">Question {index + 1}</span>
+                    <span className="text-xs uppercase tracking-[0.2em] text-ink/62">
                       {isAnswered ? "Saved" : "Pending"}
                     </span>
                   </div>
@@ -238,7 +241,7 @@ function StudentTestPage(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface">
+          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink">
             {currentQuestion.questionText}
           </div>
           {currentQuestion.type === "MCQ" ? (
@@ -246,7 +249,7 @@ function StudentTestPage(): JSX.Element {
               {currentQuestion.options.map((option) => (
                 <label
                   key={option.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low px-4 py-3"
+                  className="flex cursor-pointer items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm px-4 py-3"
                 >
                   <input
                     checked={draftAnswers[currentQuestion.id]?.selectedOptionId === option.id}
@@ -262,7 +265,7 @@ function StudentTestPage(): JSX.Element {
                       }))
                     }
                   />
-                  <span className="text-sm text-on-surface">{option.optionText}</span>
+                  <span className="text-sm text-ink">{option.optionText}</span>
                 </label>
               ))}
             </div>
@@ -285,18 +288,14 @@ function StudentTestPage(): JSX.Element {
               variant="outline"
               disabled={currentQuestionIndex === 0}
               onClick={() => setCurrentQuestionIndex((value) => Math.max(0, value - 1))}
-            >
-              Previous
-            </Button>
+            >{t("common.previous")}</Button>
             <Button
               type="button"
               disabled={currentQuestionIndex === test.questions.length - 1}
               onClick={() =>
                 setCurrentQuestionIndex((value) => Math.min(test.questions.length - 1, value + 1))
               }
-            >
-              Next
-            </Button>
+            >{t("common.next")}</Button>
           </div>
         </CardContent>
       </Card>

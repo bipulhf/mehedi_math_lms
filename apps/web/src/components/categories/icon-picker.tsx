@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface IconPickerProps {
   error: string | undefined;
@@ -24,6 +25,8 @@ const ACADEMIC_ICONS = [
 ];
 
 export function IconPicker({ error, name }: IconPickerProps) {
+  const t = useT();
+
   const { register, setValue, watch } = useFormContext();
   const selectedIcon = watch(name);
   const [isOpen, setIsOpen] = useState(false);
@@ -50,18 +53,14 @@ export function IconPicker({ error, name }: IconPickerProps) {
       <div className="flex items-center justify-between">
         <Label
           htmlFor="category-icon"
-          className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1"
-        >
-          Visual Identifier
-        </Label>
+          className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1"
+        >{t("cat.icon")}</Label>
         {selectedIcon && (
           <button
             type="button"
             onClick={() => setValue(name, "", { shouldDirty: true })}
             className="text-[0.6rem] font-bold text-red-500 uppercase tracking-tighter hover:opacity-70 transition-opacity"
-          >
-            Clear Icon
-          </button>
+          >{t("cat.clearIcon")}</button>
         )}
       </div>
 
@@ -70,13 +69,13 @@ export function IconPicker({ error, name }: IconPickerProps) {
           <div className="relative flex-1">
             <Input
               id="category-icon"
-              className="h-12 bg-surface-container-low/50 border-outline-variant/30 font-body pl-12"
-              placeholder="Search or type icon name..."
+              className="h-12 bg-panel-warm/50 border-hairline/30 font-body pl-12"
+              placeholder={t("cat.iconSearch")}
               {...register(name)}
               onFocus={() => setIsOpen(true)}
               autoComplete="off"
             />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-on-surface/30 group-focus-within/picker:text-primary transition-colors">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-ink/30 group-focus-within/picker:text-ink transition-colors">
               {SelectedIconComp ? <SelectedIconComp className="size-5" /> : <Search className="size-5" />}
             </div>
           </div>
@@ -85,8 +84,8 @@ export function IconPicker({ error, name }: IconPickerProps) {
             variant="outline"
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              "h-12 rounded-2xl px-4 border-outline-variant/30 transition-all active:scale-95",
-              isOpen ? "bg-surface-container-high ring-2 ring-primary/20" : "bg-surface-container-low/50"
+              "h-12 rounded-2xl px-4 border-hairline/30 transition-all active:scale-95",
+              isOpen ? "bg-chip-active ring-2 ring-ink/20" : "bg-panel-warm/50"
             )}
           >
             <Grid className="size-5" />
@@ -94,32 +93,32 @@ export function IconPicker({ error, name }: IconPickerProps) {
         </div>
 
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-surface-container-low/95 border border-outline-variant/40 p-4 sm:p-6">
+          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-panel-warm/95 border border-hairline/40 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="size-8 bg-primary/10 flex items-center justify-center text-primary">
+                <div className="size-8 bg-ink/10 flex items-center justify-center text-ink">
                   <Activity className="size-4" />
                 </div>
-                <h5 className="font-body font-medium text-sm text-on-surface tracking-tight">Icon Repository</h5>
+                <h5 className="font-body font-medium text-sm text-ink tracking-tight">{t("cat.iconLibrary")}</h5>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="size-8 bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors"
+                className="size-8 bg-chip-active flex items-center justify-center hover:bg-chip-active transition-colors"
               >
-                <X className="size-4 text-on-surface/40" />
+                <X className="size-4 text-ink/40" />
               </button>
             </div>
 
             <div className="relative mb-6">
               <Input
-                placeholder="Filter by name..."
+                placeholder={t("common.filterByName")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-10 bg-surface-container-highest/50 border-outline-variant/20 text-xs pl-10"
+                className="h-10 bg-chip-active/50 border-hairline/20 text-xs pl-10"
                 autoFocus
               />
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-on-surface/30" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-ink/30" />
             </div>
 
             <div className="grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-75 overflow-y-auto pr-2 custom-scrollbar">
@@ -140,8 +139,8 @@ export function IconPicker({ error, name }: IconPickerProps) {
                     className={cn(
                       "flex flex-col items-center justify-center aspect-square rounded-2xl border transition-all duration-300 group/icon-btn",
                       selectedIcon === iconName
-                        ? "bg-primary/10 border-primary/30 text-primary shadow-sm"
-                        : "bg-surface-container-high/30 border-outline-variant/10 hover:border-primary/2 text-on-surface/60 hover:text-primary"
+                        ? "bg-ink/10 border-ink/30 text-ink shadow-sm"
+                        : "bg-chip-active/30 border-hairline/10 hover:border-ink/2 text-ink/60 hover:text-ink"
                     )}
                   >
                     <IconComp className="size-5 group-hover/icon-btn:scale-110" />
@@ -152,7 +151,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
             </div>
 
             {filteredIcons.length === 0 && (
-              <div className="py-12 text-center opacity-40 font-light italic text-xs">No matching signifiers in the repository.</div>
+              <div className="py-12 text-center opacity-40 font-light italic text-xs">{t("cat.noIcon")}</div>
             )}
           </div>
         )}

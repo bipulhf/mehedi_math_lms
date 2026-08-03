@@ -57,7 +57,7 @@ function DevSeoPreviewPage(): JSX.Element {
       subtitle="Tune path, title, and description to see the same head payload TanStack Start would emit on any public route."
     >
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-4 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4">
+        <div className="space-y-4 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm p-4">
           <div className="space-y-2">
             <Label htmlFor="seo-path">Path</Label>
             <Input id="seo-path" value={path} onChange={(event) => setPath(event.target.value)} />
@@ -82,9 +82,9 @@ function DevSeoPreviewPage(): JSX.Element {
             Reset sample
           </Button>
         </div>
-        <div className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low p-4 text-sm">
-          <p className="font-semibold text-on-surface">Computed meta</p>
-          <ul className="space-y-2 text-on-surface/80">
+        <div className="space-y-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm p-4 text-sm">
+          <p className="font-semibold text-ink">Computed meta</p>
+          <ul className="space-y-2 text-ink/80">
             {preview.meta.map((tag) => {
               const tagKey =
                 "name" in tag && typeof tag.name === "string"
@@ -96,7 +96,7 @@ function DevSeoPreviewPage(): JSX.Element {
                       : `meta-${JSON.stringify(tag)}`;
 
               return (
-                <li key={tagKey} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
+                <li key={tagKey} className="rounded-md bg-paper px-3 py-2 font-mono text-xs">
                   {JSON.stringify(tag)}
                 </li>
               );
@@ -104,8 +104,8 @@ function DevSeoPreviewPage(): JSX.Element {
           </ul>
           {preview.scripts !== undefined && preview.scripts.length > 0 ? (
             <>
-              <p className="font-semibold text-on-surface">JSON-LD (scripts)</p>
-              <ul className="space-y-2 text-on-surface/80">
+              <p className="font-semibold text-ink">JSON-LD (scripts)</p>
+              <ul className="space-y-2 text-ink/80">
                 {preview.scripts.map((tag) => {
                   const tagKey =
                     "type" in tag && typeof tag.type === "string"
@@ -113,7 +113,7 @@ function DevSeoPreviewPage(): JSX.Element {
                       : `script-${JSON.stringify(tag)}`;
 
                   return (
-                    <li key={tagKey} className="rounded-md bg-surface px-3 py-2 font-mono text-xs">
+                    <li key={tagKey} className="rounded-md bg-paper px-3 py-2 font-mono text-xs">
                       {JSON.stringify(tag)}
                     </li>
                   );
@@ -121,8 +121,8 @@ function DevSeoPreviewPage(): JSX.Element {
               </ul>
             </>
           ) : null}
-          <p className="font-semibold text-on-surface">Canonical</p>
-          <pre className="overflow-x-auto rounded-md bg-surface px-3 py-2 text-xs">
+          <p className="font-semibold text-ink">Canonical</p>
+          <pre className="overflow-x-auto rounded-md bg-paper px-3 py-2 text-xs">
             {JSON.stringify(preview.links, null, 2)}
           </pre>
         </div>

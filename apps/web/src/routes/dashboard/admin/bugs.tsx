@@ -12,41 +12,44 @@ import { Select } from "@/components/ui/select";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { listAdminBugs } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/bugs")({
   component: AdminBugsPage,
   errorComponent: RouteErrorView
 } as never);
 
-function statusTone(status: AdminBugRecord["status"]): "amber" | "blue" | "gray" | "green" {
+function statusTone(status: AdminBugRecord["status"]): "attention" | "neutral" | "quiet" | "neutral" {
   if (status === "OPEN") {
-    return "amber";
+    return "attention";
   }
 
   if (status === "IN_PROGRESS") {
-    return "blue";
+    return "neutral";
   }
 
   if (status === "RESOLVED") {
-    return "green";
+    return "neutral";
   }
 
-  return "gray";
+  return "quiet";
 }
 
-function priorityTone(priority: AdminBugRecord["priority"]): "amber" | "blue" | "red" {
+function priorityTone(priority: AdminBugRecord["priority"]): "attention" | "neutral" | "attention" {
   if (priority === "HIGH") {
-    return "red";
+    return "attention";
   }
 
   if (priority === "MEDIUM") {
-    return "amber";
+    return "attention";
   }
 
-  return "blue";
+  return "neutral";
 }
 
 function AdminBugsPage(): JSX.Element {
+  const t = useT();
+
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [page, setPage] = useState(1);
@@ -66,16 +69,16 @@ function AdminBugsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest mb-8" />
+        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
+           <Skeleton className="h-4 w-full max-w-sm bg-chip-active mb-8" />
            <div className="grid gap-6 md:grid-cols-2 mb-8">
-              <Skeleton className="h-12 w-full bg-surface-container-highest" />
-              <Skeleton className="h-12 w-full bg-surface-container-highest" />
+              <Skeleton className="h-12 w-full bg-chip-active" />
+              <Skeleton className="h-12 w-full bg-chip-active" />
            </div>
            <div className="space-y-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full bg-surface-container-highest" />
+                <Skeleton key={i} className="h-16 w-full bg-chip-active" />
               ))}
            </div>
         </div>
@@ -85,49 +88,49 @@ function AdminBugsPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 border border-hairline/40 relative w-full overflow-hidden group">
         
-        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="p-8 sm:p-10 border-b border-hairline/30 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Bug Triage Center</h3>
-            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-lg leading-relaxed">
+            <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("admin.bugs.title")}</h3>
+            <p className="mt-2 text-sm text-muted font-light max-w-lg leading-relaxed">
               Review incoming reports, filter by urgency, and open the detail workspace for tactical resolution.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-2xl">
             <div className="flex-1 space-y-2">
-              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 pl-1">Status Filter</Label>
+              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 pl-1">{t("admin.bugs.statusFilter")}</Label>
               <Select
                 id="bug-status-filter"
-                className="h-11 bg-surface-container-low/30 border-outline-variant/20 font-body"
+                className="h-11 bg-panel-warm/30 border-hairline/20 font-body"
                 value={status}
                 onChange={(event) => {
                   setStatus(event.target.value);
                   setPage(1);
                 }}
               >
-                <option value="">All statuses</option>
-                <option value="OPEN">Open</option>
-                <option value="IN_PROGRESS">In progress</option>
-                <option value="RESOLVED">Resolved</option>
-                <option value="CLOSED">Closed</option>
+                <option value="">{t("admin.bugs.allStatuses")}</option>
+                <option value="OPEN">{t("admin.bugs.open")}</option>
+                <option value="IN_PROGRESS">{t("admin.bugs.inProgress")}</option>
+                <option value="RESOLVED">{t("admin.bugs.resolved")}</option>
+                <option value="CLOSED">{t("admin.bugs.closed")}</option>
               </Select>
             </div>
             <div className="flex-1 space-y-2">
-              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40 pl-1">Priority Level</Label>
+              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40 pl-1">{t("admin.bugs.priorityFilter")}</Label>
               <Select
                 id="bug-priority-filter"
-                className="h-11 bg-surface-container-low/30 border-outline-variant/20 font-body"
+                className="h-11 bg-panel-warm/30 border-hairline/20 font-body"
                 value={priority}
                 onChange={(event) => {
                   setPriority(event.target.value);
                   setPage(1);
                 }}
               >
-                <option value="">All priorities</option>
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
+                <option value="">{t("admin.bugs.allPriorities")}</option>
+                <option value="LOW">{t("admin.bugs.low")}</option>
+                <option value="MEDIUM">{t("admin.bugs.medium")}</option>
+                <option value="HIGH">{t("admin.bugs.high")}</option>
               </Select>
             </div>
           </div>
@@ -136,28 +139,28 @@ function AdminBugsPage(): JSX.Element {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left whitespace-nowrap">
             <thead>
-              <tr className="bg-surface-container-low/30 border-b border-outline-variant/20 font-bold text-[0.65rem] uppercase tracking-widest text-on-surface/50">
-                <th className="px-10 py-5">Issue Specification</th>
-                <th className="px-10 py-5">Reporter Details</th>
-                <th className="px-10 py-5">Current State</th>
-                <th className="px-10 py-5 text-center">Severity</th>
-                <th className="px-10 py-5">Timestamp</th>
-                <th className="px-10 py-5 text-right">Actions</th>
+              <tr className="bg-panel-warm/30 border-b border-hairline/20 font-bold text-[0.65rem] uppercase tracking-widest text-ink/50">
+                <th className="px-10 py-5">{t("admin.bugs.issue")}</th>
+                <th className="px-10 py-5">{t("admin.bugs.reporter")}</th>
+                <th className="px-10 py-5">{t("admin.bugs.state")}</th>
+                <th className="px-10 py-5 text-center">{t("admin.bugs.severity")}</th>
+                <th className="px-10 py-5">{t("admin.bugs.time")}</th>
+                <th className="px-10 py-5 text-right">{t("admin.bugs.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {bugs.map((bug) => (
-                <tr key={bug.id} className="group border-t border-outline-variant/10 transition-all hover:bg-primary/2">
+                <tr key={bug.id} className="group border-t border-hairline/10 transition-all hover:bg-ink/2">
                   <td className="px-10 py-6 min-w-75">
                     <div className="flex flex-col max-w-sm">
-                      <span className="font-body text-base font-medium text-on-surface tracking-tight group-hover:text-primary transition-colors truncate">{bug.title}</span>
-                      <span className="text-xs text-on-surface-variant font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>
+                      <span className="font-body text-base font-medium text-ink tracking-tight group-hover:text-ink transition-colors truncate">{bug.title}</span>
+                      <span className="text-xs text-muted font-light mt-0.5 line-clamp-1 opacity-60 italic">{bug.description}</span>
                     </div>
                   </td>
                   <td className="px-10 py-6">
                     <div className="flex flex-col">
-                      <span className="font-bold text-on-surface text-sm tracking-tight">{bug.user.name}</span>
-                      <span className="text-[0.6rem] uppercase tracking-widest text-on-surface/40 font-bold mt-0.5">{bug.user.role}</span>
+                      <span className="font-bold text-ink text-sm tracking-tight">{bug.user.name}</span>
+                      <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold mt-0.5">{bug.user.role}</span>
                     </div>
                   </td>
                   <td className="px-10 py-6">
@@ -167,15 +170,13 @@ function AdminBugsPage(): JSX.Element {
                     <Badge tone={priorityTone(bug.priority)} className="rounded-full px-3 font-semibold text-[0.65rem] uppercase tracking-widest">{bug.priority}</Badge>
                   </td>
                   <td className="px-10 py-6">
-                    <span className="text-xs text-on-surface/40 font-bold uppercase tracking-tighter">
+                    <span className="text-xs text-ink/40 font-bold uppercase tracking-tighter">
                       {new Date(bug.createdAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </td>
                   <td className="px-10 py-6 text-right">
-                    <Button asChild size="sm" variant="outline" className="h-9 border-outline-variant/30 hover:bg-surface-container-high transition-all font-bold text-[0.65rem] uppercase tracking-widest">
-                      <Link to="/dashboard/admin/bugs/$id" params={{ id: bug.id }}>
-                        Inspect
-                      </Link>
+                    <Button asChild size="sm" variant="outline" className="h-9 border-hairline/30 hover:bg-chip-active transition-all font-bold text-[0.65rem] uppercase tracking-widest">
+                      <Link to="/dashboard/admin/bugs/$id" params={{ id: bug.id }}>{t("admin.bugs.inspect")}</Link>
                     </Button>
                   </td>
                 </tr>
@@ -184,22 +185,18 @@ function AdminBugsPage(): JSX.Element {
           </table>
         </div>
 
-        <div className="p-8 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <p className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/40">Query Result Page <span className="text-on-surface">{page}</span> of <span className="text-on-surface">{totalPages}</span></p>
+        <div className="p-8 border-t border-hairline/20 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/40">{t("admin.users.pageLabel")}<span className="text-ink">{page}</span> of <span className="text-ink">{totalPages}</span></p>
           <div className="flex gap-3">
-            <Button size="sm" type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="h-10 px-6 border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:">
-              Previous
-            </Button>
+            <Button size="sm" type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)} className="h-10 px-6 border-hairline/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:">{t("common.previous")}</Button>
             <Button
               size="sm"
               type="button"
               variant="outline"
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
-              className="h-10 px-6 border-outline-variant/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:"
-            >
-              Next
-            </Button>
+              className="h-10 px-6 border-hairline/30 font-bold text-[0.65rem] uppercase tracking-widest transition-all disabled:opacity-30 disabled:"
+            >{t("common.next")}</Button>
           </div>
         </div>
       </div>

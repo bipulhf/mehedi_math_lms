@@ -11,6 +11,7 @@ import type { AccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { getAccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 import {
   Bar,
   BarChart,
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/dashboard/accountant/analytics")({
 const chartStroke = chartTheme.accent;
 
 function AccountantAnalyticsPage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const { isPending, session } = useAuthSession();
   const allowed = session?.session.role === "ACCOUNTANT" || session?.session.role === "ADMIN";
@@ -68,46 +71,42 @@ function AccountantAnalyticsPage(): JSX.Element {
   }
 
   if (!data) {
-    return <p className="text-sm text-on-surface/68">Unable to load financial analytics.</p>;
+    return <p className="text-sm text-ink/68">{t("an.loadFailed")}</p>;
   }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Financial overview</CardTitle>
-          <CardDescription>
-            Successful revenue, refunds, and gateway status distribution across the platform.
-          </CardDescription>
+          <CardTitle>{t("an.financeTitle")}</CardTitle>
+          <CardDescription>{t("an.financeLead")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-on-surface/54">Total revenue</p>
-            <p className="mt-1 text-2xl font-semibold text-on-surface">{data.totalRevenue.toFixed(2)} BDT</p>
+          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/54">{t("an.totalRevenue")}</p>
+            <p className="mt-1 text-2xl font-semibold text-ink">{data.totalRevenue.toFixed(2)} BDT</p>
           </div>
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-on-surface/54">Refunded</p>
-            <p className="mt-1 text-2xl font-semibold text-on-surface">
+          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink/54">{t("pay.refunded")}</p>
+            <p className="mt-1 text-2xl font-semibold text-ink">
               {data.totalRefunded.toFixed(2)} BDT ({data.refundedCount} txns)
             </p>
           </div>
           <Link
-            className="inline-flex items-center self-center rounded-md border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container-low"
+            className="inline-flex items-center self-center rounded-md border border-hairline px-4 py-2 text-sm font-semibold text-ink hover:bg-panel-warm"
             to="/dashboard/payments"
-          >
-            Payment operations
-          </Link>
+          >{t("an.paymentOps")}</Link>
         </CardContent>
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Revenue by course</CardTitle>
+            <CardTitle className="text-lg">{t("an.revenueByCourse")}</CardTitle>
           </CardHeader>
           <CardContent className="h-[360px]">
             {data.revenueByCourse.length === 0 ? (
-              <p className="text-sm text-on-surface/62">No revenue allocated yet.</p>
+              <p className="text-sm text-ink/62">{t("an.noRevenue")}</p>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -131,11 +130,11 @@ function AccountantAnalyticsPage(): JSX.Element {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Payment status mix</CardTitle>
+            <CardTitle className="text-lg">{t("an.statusMix")}</CardTitle>
           </CardHeader>
           <CardContent className="h-[360px]">
             {statusChart.length === 0 ? (
-              <p className="text-sm text-on-surface/62">No payments recorded.</p>
+              <p className="text-sm text-ink/62">{t("an.noPayments")}</p>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statusChart} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>

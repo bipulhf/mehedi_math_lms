@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { AssessmentTestDetail, SubmissionSummary } from "@/lib/api/tests";
 import { getTestDetail, listTestSubmissions } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
   component: TestSubmissionsPage,
@@ -17,6 +18,8 @@ export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
 } as never);
 
 function TestSubmissionsPage(): JSX.Element {
+  const t = useT();
+
   const { testId } = Route.useParams();
   const [testQuery, submissionsQuery] = useQueries({
     queries: [
@@ -45,15 +48,13 @@ function TestSubmissionsPage(): JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
-          <CardDescription>Review student submissions and complete written grading.</CardDescription>
+          <CardDescription>{t("grade.lead")}</CardDescription>
         </CardHeader>
       </Card>
 
       {submissions.length === 0 ? (
         <Card>
-          <CardContent className="p-6 text-sm leading-6 text-on-surface/70">
-            No submissions have arrived for this assessment yet.
-          </CardContent>
+          <CardContent className="p-6 text-sm leading-6 text-ink/70">{t("grade.empty")}</CardContent>
         </Card>
       ) : null}
 
@@ -61,11 +62,11 @@ function TestSubmissionsPage(): JSX.Element {
         <Card key={submission.id}>
           <CardContent className="flex flex-wrap items-center justify-between gap-4 p-6">
             <div className="space-y-2">
-              <p className="font-semibold text-on-surface">{submission.user.name}</p>
-              <p className="text-sm text-on-surface/62">{submission.user.email}</p>
+              <p className="font-semibold text-ink">{submission.user.name}</p>
+              <p className="text-sm text-ink/62">{submission.user.email}</p>
               <div className="flex flex-wrap gap-2">
-                <Badge tone="violet">{submission.status}</Badge>
-                <Badge tone="blue">
+                <Badge tone="neutral">{submission.status}</Badge>
+                <Badge tone="neutral">
                   {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
                 </Badge>
               </div>
@@ -74,9 +75,7 @@ function TestSubmissionsPage(): JSX.Element {
               <Link
                 to="/dashboard/tests/$testId/submissions/$submissionId"
                 params={{ submissionId: submission.id, testId }}
-              >
-                Open grading view
-              </Link>
+              >{t("grade.open")}</Link>
             </Button>
           </CardContent>
         </Card>

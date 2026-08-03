@@ -14,7 +14,6 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { FadeIn } from "@/components/common/fade-in";
 import { CourseNoticesPanel } from "@/components/courses/course-notices-panel";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +24,7 @@ import type { CourseDetail } from "@/lib/api/courses";
 import type { ContentChapter, ContentLecture, ContentMaterial } from "@/lib/api/content";
 import { markLectureComplete, type CourseProgressResponse } from "@/lib/api/progress";
 import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/tests";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface CoursePlayerProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -109,10 +109,10 @@ function ChunkedProgressBar({
             key={lecture.id}
             className={`h-2 rounded-full transition-all duration-150 ease-out ${
               lectureProgress?.isCompleted
-                ? "bg-secondary-container"
+                ? "bg-accent"
                 : isCurrent
-                  ? "bg-primary/45"
-                  : "bg-surface-container-highest"
+                  ? "bg-ink/45"
+                  : "bg-chip-active"
             }`}
           />
         );
@@ -141,16 +141,16 @@ function MaterialLinks({
         {materials.map((material) => (
           <a
             key={material.id}
-            className="flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-surface-container-low px-4 py-3 transition-all ease-out hover:bg-surface-container"
+            className="flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm px-4 py-3 transition-all ease-out hover:bg-panel-warm"
             href={material.fileUrl}
             rel="noreferrer"
             target="_blank"
           >
             <div className="min-w-0">
-              <p className="truncate font-medium text-on-surface">{material.title}</p>
-              <p className="text-xs text-on-surface/60">{material.fileType}</p>
+              <p className="truncate font-medium text-ink">{material.title}</p>
+              <p className="text-xs text-ink/60">{material.fileType}</p>
             </div>
-            <Download className="size-4 shrink-0 text-on-surface/60" />
+            <Download className="size-4 shrink-0 text-ink/60" />
           </a>
         ))}
       </CardContent>
@@ -164,6 +164,8 @@ export function CoursePlayer({
   course,
   initialProgress
 }: CoursePlayerProps): JSX.Element {
+  const t = useT();
+
   const [progress, setProgress] = useState(initialProgress);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
@@ -280,7 +282,7 @@ export function CoursePlayer({
       setProgress(nextProgress);
 
       if (!silent) {
-        toast.success("Lecture marked as complete");
+        toast.success(t("player.marked"));
       }
     } finally {
       setIsMarkingComplete(false);
@@ -295,50 +297,46 @@ export function CoursePlayer({
 
   return (
     <div className="space-y-4">
-      <FadeIn>
-        <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/80">
+      <div>
+        <Card className="overflow-hidden border-hairline/60 bg-panel-warm/80">
           <CardContent className="space-y-5 p-5 md:p-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="blue">{course.category.name}</Badge>
-                  <Badge tone={progress.enrollmentStatus === "COMPLETED" ? "green" : "violet"}>
+                  <Badge tone="neutral">{course.category.name}</Badge>
+                  <Badge tone={progress.enrollmentStatus === "COMPLETED" ? "neutral" : "neutral"}>
                     {progress.enrollmentStatus === "COMPLETED" ? "Course completed" : "In progress"}
                   </Badge>
                 </div>
-                <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-on-surface md:text-4xl">
+                <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink md:text-4xl">
                   {course.title}
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-on-surface/66">
+                <p className="max-w-3xl text-sm leading-7 text-ink/66">
                   {course.description}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
-                    Completed
-                  </p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.completed")}</p>
+                  <p className="mt-2 text-xl font-semibold text-ink">
                     {progress.completedLectures}
                   </p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Lectures</p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.lectures")}</p>
+                  <p className="mt-2 text-xl font-semibold text-ink">
                     {progress.totalLectures}
                   </p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">Progress</p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("mine.progress")}</p>
+                  <p className="mt-2 text-xl font-semibold text-ink">
                     {progress.completionPercentage}%
                   </p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
-                    Assessments
-                  </p>
-                  <p className="mt-2 text-xl font-semibold text-on-surface">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.assessments")}</p>
+                  <p className="mt-2 text-xl font-semibold text-ink">
                     {assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
                   </p>
                 </div>
@@ -353,37 +351,33 @@ export function CoursePlayer({
               <Button
                 type="button"
                 size="sm"
-                variant={playerMode === "learn" ? "default" : "outline"}
+                variant={playerMode === "learn" ? "ink" : "outline"}
                 onClick={() => setPlayerMode("learn")}
-              >
-                Lessons & tests
-              </Button>
+              >{t("player.lessonsAndTests")}</Button>
               <Button
                 type="button"
                 size="sm"
-                variant={playerMode === "notices" ? "default" : "outline"}
+                variant={playerMode === "notices" ? "ink" : "outline"}
                 onClick={() => setPlayerMode("notices")}
               >
-                <Megaphone className="size-4" />
-                Course notices
-              </Button>
+                <Megaphone className="size-4" />{t("player.notices")}</Button>
             </div>
           </CardContent>
         </Card>
-      </FadeIn>
+      </div>
 
       {playerMode === "notices" ? (
-        <FadeIn>
+        <div>
           <CourseNoticesPanel courseId={course.id} />
-        </FadeIn>
+        </div>
       ) : null}
 
       {playerMode === "learn" ? (
         <div className="grid gap-4 xl:grid-cols-[0.34fr_0.66fr]">
-          <FadeIn>
-            <Card className="border-outline-variant/60 bg-surface-container-low/70">
+          <div>
+            <Card className="border-hairline/60 bg-panel-warm/70">
               <CardHeader>
-                <CardTitle>Course navigator</CardTitle>
+                <CardTitle>{t("player.navigator")}</CardTitle>
                 <CardDescription>
                   Browse chapters, jump between lectures, and launch chapter tests with keyboard
                   arrows.
@@ -392,10 +386,10 @@ export function CoursePlayer({
               <CardContent className="space-y-4">
                 {content.map((chapter) => (
                   <div key={chapter.id} className="space-y-3">
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant/70 bg-surface px-4 py-3">
-                      <p className="font-semibold text-on-surface">{chapter.title}</p>
+                    <div className="rounded-[calc(var(--radius)-0.125rem)] border border-hairline/70 bg-paper px-4 py-3">
+                      <p className="font-semibold text-ink">{chapter.title}</p>
                       {chapter.description ? (
-                        <p className="mt-1 text-sm leading-6 text-on-surface/62">
+                        <p className="mt-1 text-sm leading-6 text-ink/62">
                           {chapter.description}
                         </p>
                       ) : null}
@@ -411,17 +405,17 @@ export function CoursePlayer({
                             key={lecture.id}
                             className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
                               isSelected
-                                ? "border-secondary-container bg-secondary-container/10"
-                                : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                                ? "border-accent bg-accent/10"
+                                : "border-hairline bg-panel-warm hover:bg-panel-warm"
                             }`}
                             type="button"
                             onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
                           >
                             <div className="min-w-0">
-                              <p className="truncate font-medium text-on-surface">
+                              <p className="truncate font-medium text-ink">
                                 {lecture.title}
                               </p>
-                              <p className="text-xs text-on-surface/58">
+                              <p className="text-xs text-ink/58">
                                 {lecture.type === "TEXT" ? "Reading" : "Video"} ·{" "}
                                 {lecture.videoDuration
                                   ? `${lecture.videoDuration} min`
@@ -429,9 +423,9 @@ export function CoursePlayer({
                               </p>
                             </div>
                             {lectureProgress?.isCompleted ? (
-                              <CheckCircle2 className="size-4 shrink-0 text-secondary-container" />
+                              <CheckCircle2 className="size-4 shrink-0 text-accent" />
                             ) : (
-                              <Circle className="size-4 shrink-0 text-on-surface/42" />
+                              <Circle className="size-4 shrink-0 text-ink/42" />
                             )}
                           </button>
                         );
@@ -445,20 +439,20 @@ export function CoursePlayer({
                             key={test.id}
                             className={`flex min-h-11 items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-3 py-3 text-left transition-all duration-150 ease-out ${
                               isSelected
-                                ? "border-secondary-container bg-secondary-container/10"
-                                : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                                ? "border-accent bg-accent/10"
+                                : "border-hairline bg-panel-warm hover:bg-panel-warm"
                             }`}
                             type="button"
                             onClick={() => setSelectedItemId(`test:${test.id}`)}
                           >
                             <div className="min-w-0">
-                              <p className="truncate font-medium text-on-surface">{test.title}</p>
-                              <p className="text-xs text-on-surface/58">
+                              <p className="truncate font-medium text-ink">{test.title}</p>
+                              <p className="text-xs text-ink/58">
                                 Assessment · {test.questionCount} questions · {test.totalMarks}{" "}
                                 marks
                               </p>
                             </div>
-                            <BookOpen className="size-4 shrink-0 text-on-surface/52" />
+                            <BookOpen className="size-4 shrink-0 text-ink/52" />
                           </button>
                         );
                       })}
@@ -467,18 +461,18 @@ export function CoursePlayer({
                 ))}
               </CardContent>
             </Card>
-          </FadeIn>
+          </div>
 
-          <FadeIn delayClassName="animation-delay-100">
+          <div>
             {selectedLecture && selectedChapter ? (
               <div className="space-y-4">
-                <Card className="overflow-hidden border-outline-variant/60 bg-surface-container-low/70">
+                <Card className="overflow-hidden border-hairline/60 bg-panel-warm/70">
                   <CardHeader>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone={selectedLectureProgress?.isCompleted ? "green" : "blue"}>
+                      <Badge tone={selectedLectureProgress?.isCompleted ? "neutral" : "neutral"}>
                         {selectedLectureProgress?.isCompleted ? "Completed" : "Active lecture"}
                       </Badge>
-                      <Badge tone="gray">
+                      <Badge tone="quiet">
                         {selectedLecture.type === "TEXT" ? "Reading" : "Video"}
                       </Badge>
                     </div>
@@ -492,17 +486,17 @@ export function CoursePlayer({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {selectedLecture.description ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3 text-sm leading-7 text-ink/72">
                         {selectedLecture.description}
                       </div>
                     ) : null}
 
                     {selectedLecture.type === "TEXT" ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-8 text-on-surface whitespace-pre-wrap">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-8 text-ink whitespace-pre-wrap">
                         {selectedLecture.content}
                       </div>
                     ) : embedVideoUrl ? (
-                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
+                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-black">
                         <div className="aspect-video">
                           <iframe
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -514,7 +508,7 @@ export function CoursePlayer({
                         </div>
                       </div>
                     ) : canUseNativeVideo && selectedLecture.videoUrl ? (
-                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-outline-variant bg-black">
+                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-black">
                         <video
                           className="aspect-video w-full"
                           controls
@@ -523,18 +517,16 @@ export function CoursePlayer({
                         />
                       </div>
                     ) : (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-5 py-5 text-sm leading-7 text-on-surface/68">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-7 text-ink/68">
                         This lecture uses an external video source that could not be embedded
                         directly.
                         {selectedLecture.videoUrl ? (
                           <a
-                            className="ml-2 font-semibold text-secondary-container underline-offset-4 hover:underline"
+                            className="ml-2 font-semibold text-accent underline-offset-4 hover:underline"
                             href={selectedLecture.videoUrl}
                             rel="noreferrer"
                             target="_blank"
-                          >
-                            Open video
-                          </a>
+                          >{t("player.openVideo")}</a>
                         ) : null}
                       </div>
                     )}
@@ -553,12 +545,10 @@ export function CoursePlayer({
                             : "Mark as complete"}
                       </Button>
                       <Button asChild variant="outline">
-                        <Link to="/courses/$slug" params={{ slug: course.slug }}>
-                          Course overview
-                        </Link>
+                        <Link to="/courses/$slug" params={{ slug: course.slug }}>{t("player.overview")}</Link>
                       </Button>
                       {selectedLectureProgress?.lastViewedAt ? (
-                        <div className="flex items-center gap-2 text-sm text-on-surface/58">
+                        <div className="flex items-center gap-2 text-sm text-ink/58">
                           <Clock3 className="size-4" />
                           <span>
                             Last updated{" "}
@@ -570,8 +560,8 @@ export function CoursePlayer({
                   </CardContent>
                 </Card>
 
-                <MaterialLinks materials={selectedLecture.materials} title="Lecture materials" />
-                <MaterialLinks materials={selectedChapter.materials} title="Chapter materials" />
+                <MaterialLinks materials={selectedLecture.materials} title={t("player.lectureMaterials")} />
+                <MaterialLinks materials={selectedChapter.materials} title={t("player.chapterMaterials")} />
                 <LectureDiscussion lectureId={selectedLecture.id} />
 
                 <Card>
@@ -583,28 +573,24 @@ export function CoursePlayer({
                         setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
                       }
                     >
-                      <ArrowLeft className="size-4" />
-                      Previous
-                    </Button>
+                      <ArrowLeft className="size-4" />{t("common.previous")}</Button>
                     <Button
                       disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
                       onClick={() =>
                         setSelectedItemId(navigationItems[selectedIndex + 1]?.id ?? null)
                       }
-                    >
-                      Next
-                      <ArrowRight className="size-4" />
+                    >{t("common.next")}<ArrowRight className="size-4" />
                     </Button>
                   </CardContent>
                 </Card>
               </div>
             ) : selectedItem?.kind === "test" ? (
               <div className="space-y-4">
-                <Card className="border-outline-variant/60 bg-surface-container-low/70">
+                <Card className="border-hairline/60 bg-panel-warm/70">
                   <CardHeader>
                     <div className="flex flex-wrap gap-2">
-                      <Badge tone="violet">Assessment</Badge>
-                      <Badge tone="gray">{selectedItem.test.type}</Badge>
+                      <Badge tone="neutral">{t("player.assessment")}</Badge>
+                      <Badge tone="quiet">{selectedItem.test.type}</Badge>
                     </div>
                     <CardTitle>{selectedItem.test.title}</CardTitle>
                     <CardDescription>
@@ -617,32 +603,26 @@ export function CoursePlayer({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {selectedItem.test.description ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-3 text-sm leading-7 text-on-surface/72">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3 text-sm leading-7 text-ink/72">
                         {selectedItem.test.description}
                       </div>
                     ) : null}
                     <div className="grid gap-3 md:grid-cols-3">
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
-                          Questions
-                        </p>
-                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("ab.questions")}</p>
+                        <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.questionCount}
                         </p>
                       </div>
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
-                          Marks
-                        </p>
-                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("qe.marks")}</p>
+                        <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.totalMarks}
                         </p>
                       </div>
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-on-surface/52">
-                          Passing
-                        </p>
-                        <p className="mt-2 text-xl font-semibold text-on-surface">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.passing")}</p>
+                        <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.passingScore ?? "N/A"}
                         </p>
                       </div>
@@ -653,9 +633,7 @@ export function CoursePlayer({
                           to="/dashboard/tests/$testId"
                           params={{ testId: selectedItem.test.id }}
                         >
-                          <PlayCircle className="size-4" />
-                          Open assessment
-                        </Link>
+                          <PlayCircle className="size-4" />{t("player.openAssessment")}</Link>
                       </Button>
                       <Button
                         variant="outline"
@@ -664,21 +642,17 @@ export function CoursePlayer({
                           setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
                         }
                       >
-                        <ArrowLeft className="size-4" />
-                        Previous item
-                      </Button>
+                        <ArrowLeft className="size-4" />{t("player.previousItem")}</Button>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             ) : (
               <Card>
-                <CardContent className="p-6 text-sm leading-7 text-on-surface/68">
-                  No course content is available yet.
-                </CardContent>
+                <CardContent className="p-6 text-sm leading-7 text-ink/68">{t("player.noContent")}</CardContent>
               </Card>
             )}
-          </FadeIn>
+          </div>
         </div>
       ) : null}
     </div>

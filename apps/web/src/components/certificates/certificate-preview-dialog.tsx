@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { CertificatePdfDocument } from "@/components/certificates/certificate-pdf-document";
+import { useT } from "@/lib/i18n/locale-context";
 
 export interface CertificatePreviewDialogProps {
   courseTitle: string;
@@ -22,6 +23,8 @@ export function CertificatePreviewDialog({
   studentName,
   title
 }: CertificatePreviewDialogProps): JSX.Element {
+  const t = useT();
+
   const certificateDoc = useMemo(
     () => (
       <CertificatePdfDocument
@@ -52,19 +55,15 @@ export function CertificatePreviewDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-highest">
-        <div className="flex items-center justify-between gap-3 border-b border-outline-variant/15 px-4 py-3">
-          <p className="font-semibold text-on-surface">{title}</p>
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-chip-active">
+        <div className="flex items-center justify-between gap-3 border-b border-hairline/15 px-4 py-3">
+          <p className="font-semibold text-ink">{title}</p>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={handleDownload}>
-              Download
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Close
-            </Button>
+            <Button type="button" variant="accent" onClick={handleDownload}>{t("common.download")}</Button>
+            <Button type="button" variant="outline" onClick={onClose}>{t("common.close")}</Button>
           </div>
         </div>
-        <div className="min-h-[70vh] flex-1 bg-surface-container-high">
+        <div className="min-h-[70vh] flex-1 bg-chip-active">
           <PDFViewer
             className="h-[70vh] w-full border-0"
             showToolbar={false}

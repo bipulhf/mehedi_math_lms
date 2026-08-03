@@ -20,7 +20,7 @@ export function StatsGridSkeleton({ cards = 4 }: { cards?: number }): JSX.Elemen
       {Array.from({ length: cards }).map((_, index) => (
         <div
           key={index}
-          className="border border-outline-variant/40 bg-surface-container-lowest/80 p-6"
+          className="border border-hairline/40 bg-card/80 p-6"
         >
           <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-4 h-9 w-20" />
@@ -52,7 +52,7 @@ export function ChartSkeleton({ className }: { className?: string }): JSX.Elemen
 
 export function RecentActivitySkeleton({ rows = 5 }: { rows?: number }): JSX.Element {
   return (
-    <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+    <div className="border border-hairline/40 bg-card/80 p-8">
       <Skeleton className="h-5 w-40" />
       <div className="mt-6 space-y-4">
         {Array.from({ length: rows }).map((_, index) => (
@@ -89,7 +89,7 @@ export function CourseDetailSkeleton(): JSX.Element {
         </div>
       </div>
       <aside className="space-y-4">
-        <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-6">
+        <div className="border border-hairline/40 bg-card/80 p-6">
           <Skeleton className="h-9 w-28" />
           <Skeleton className="mt-6 h-12 w-full rounded-full" />
           <div className="mt-6 space-y-3">
@@ -109,7 +109,7 @@ export function ConversationListSkeleton({ rows = 6 }: { rows?: number }): JSX.E
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="border border-outline-variant/20 bg-surface-container-low/40 p-5"
+          className="border border-hairline/20 bg-panel-warm/40 p-5"
         >
           <div className="flex items-center gap-3">
             <Skeleton className="size-11 shrink-0 rounded-full" />
@@ -157,7 +157,7 @@ export function CommentThreadSkeleton({ rows = 3 }: { rows?: number }): JSX.Elem
           </div>
           {/* One indented reply, matching the two-level nesting cap. */}
           {index === 0 ? (
-            <div className="flex items-start gap-3 border-l border-outline-variant/15 pl-4 md:pl-6">
+            <div className="flex items-start gap-3 border-l border-hairline/15 pl-4 md:pl-6">
               <Skeleton className="size-8 shrink-0 rounded-full" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-3 w-24" />
@@ -175,7 +175,7 @@ export function NotificationListSkeleton({ rows = 5 }: { rows?: number }): JSX.E
   return (
     <div className="space-y-2 p-3">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="bg-surface-container-low/50 p-4">
+        <div key={index} className="bg-panel-warm/50 p-4">
           <Skeleton className="h-3 w-2/5" />
           <Skeleton className="mt-2 h-3 w-full" />
           <Skeleton className="mt-2 h-3 w-1/4" />
@@ -209,7 +209,7 @@ export function TestBuilderSkeleton(): JSX.Element {
           <Skeleton key={index} className="h-20 w-full" />
         ))}
       </div>
-      <div className="space-y-4 border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+      <div className="space-y-4 border border-hairline/40 bg-card/80 p-8">
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-4 w-80 max-w-full" />
         <div className="space-y-3 pt-4">
@@ -229,7 +229,7 @@ export function TestTakingSkeleton(): JSX.Element {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-10 w-28 rounded-full" />
       </div>
-      <div className="border border-outline-variant/40 bg-surface-container-lowest/80 p-8">
+      <div className="border border-hairline/40 bg-card/80 p-8">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="mt-4 h-6 w-full" />
         <Skeleton className="mt-2 h-6 w-4/5" />

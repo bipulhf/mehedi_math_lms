@@ -14,6 +14,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { fetchEnrollmentReceiptPdf, listMyEnrollments } from "@/lib/api/enrollments";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 const CertificatePreviewDialog = lazy(async () => {
   const mod = await import("@/components/certificates/certificate-preview-dialog");
@@ -28,23 +29,25 @@ export const Route = createFileRoute("/dashboard/my-courses")({
 
 function paymentTone(
   status: StudentEnrollment["latestPaymentStatus"]
-): "amber" | "blue" | "green" | "red" {
+): "attention" | "neutral" | "neutral" | "attention" {
   if (status === "SUCCESS") {
-    return "green";
+    return "neutral";
   }
 
   if (status === "FAILED" || status === "REFUNDED") {
-    return "red";
+    return "attention";
   }
 
   if (status === "PENDING") {
-    return "amber";
+    return "attention";
   }
 
-  return "blue";
+  return "neutral";
 }
 
 function MyCoursesPage(): JSX.Element {
+  const t = useT();
+
   const { isPending: isSessionPending, session } = useAuthSession();
   const isStudent = !isSessionPending && session?.session.role === "STUDENT";
   const { data: enrollments = [], isPending } = useQuery<readonly StudentEnrollment[]>({
@@ -75,21 +78,21 @@ function MyCoursesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-surface-container-highest" />
-           <Skeleton className="h-4 w-full max-w-sm bg-surface-container-highest" />
+        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
+           <Skeleton className="h-4 w-full max-w-sm bg-chip-active" />
         </div>
         <div className="grid gap-6 xl:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
-              <Skeleton className="aspect-16/7 w-full bg-surface-container-highest" />
+            <div key={i} className="bg-card/80 border border-hairline/40 overflow-hidden">
+              <Skeleton className="aspect-16/7 w-full bg-chip-active" />
               <div className="p-8 space-y-4">
                 <div className="flex gap-2">
-                  <Skeleton className="h-6 w-20 rounded-full bg-surface-container-highest" />
-                  <Skeleton className="h-6 w-24 rounded-full bg-surface-container-highest" />
+                  <Skeleton className="h-6 w-20 rounded-full bg-chip-active" />
+                  <Skeleton className="h-6 w-24 rounded-full bg-chip-active" />
                 </div>
-                <Skeleton className="h-8 w-3/4 bg-surface-container-highest" />
-                <Skeleton className="h-4 w-full bg-surface-container-highest" />
+                <Skeleton className="h-8 w-3/4 bg-chip-active" />
+                <Skeleton className="h-4 w-full bg-chip-active" />
               </div>
             </div>
           ))}
@@ -100,10 +103,10 @@ function MyCoursesPage(): JSX.Element {
 
   if (session?.session.role !== "STUDENT") {
     return (
-      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden">
+      <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
         <div className="mb-4 text-center">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">Student access only</h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light leading-relaxed">This workspace is reserved for student enrollment and learning activity.</p>
+          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("mine.studentOnly")}</h3>
+          <p className="mt-2 text-sm text-muted font-light leading-relaxed">{t("mine.studentOnlyLead")}</p>
         </div>
       </div>
     );
@@ -115,7 +118,7 @@ function MyCoursesPage(): JSX.Element {
         <Suspense
           fallback={
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-              <div className="h-[70vh] w-full max-w-4xl bg-surface-container-highest" />
+              <div className="h-[70vh] w-full max-w-4xl bg-chip-active" />
             </div>
           }
         >
@@ -130,64 +133,60 @@ function MyCoursesPage(): JSX.Element {
         </Suspense>
       ) : null}
 
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="mb-0">
-          <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">My courses</h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-            Track active enrollments, payment state, and your current learning progress from one list.
-          </p>
+          <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("mine.title")}</h3>
+          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{t("mine.lead")}</p>
         </div>
       </div>
 
       {enrollments.length === 0 ? (
-        <div className="bg-surface-container-lowest/80 p-10 border border-outline-variant/40 relative w-full overflow-hidden text-center">
-            <p className="text-lg leading-7 text-on-surface-variant font-light mb-6">
-              You have not enrolled in any course yet. Explore the academy catalog to get started.
-            </p>
+        <div className="bg-card/80 p-10 border border-hairline/40 relative w-full overflow-hidden text-center">
+            <p className="text-lg leading-7 text-muted font-light mb-6">{t("mine.empty")}</p>
             <div className="flex justify-center">
               <Button asChild className="h-12 px-8 font-body font-semibold">
-                <Link to="/courses">Browse courses</Link>
+                <Link to="/courses">{t("mine.browse")}</Link>
               </Button>
             </div>
         </div>
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">
           {enrollments.map((enrollment) => (
-            <div key={enrollment.id} className="bg-surface-container-lowest/80 border border-outline-variant/40 relative overflow-hidden group flex flex-col h-full hover:border-primary/30 transition-all">
-               <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/5 rounded-full blur-xl pointer-events-none group-hover:bg-primary/10 transition-all z-[-1]"></div>
+            <div key={enrollment.id} className="bg-card/80 border border-hairline/40 relative overflow-hidden group flex flex-col h-full hover:border-ink/30 transition-all">
+               <div className="absolute -top-12 -right-12 w-32 h-32 bg-ink/5 rounded-full blur-xl pointer-events-none group-hover:bg-ink/10 transition-all z-[-1]"></div>
               {enrollment.course.coverImageUrl ? (
                 <ResponsiveImage
                   alt={enrollment.course.title}
-                  className="aspect-16/7 w-full object-cover border-b border-outline-variant/20"
+                  className="aspect-16/7 w-full object-cover border-b border-hairline/20"
                   sizes="(min-width: 1280px) 45vw, 100vw"
                   src={enrollment.course.coverImageUrl}
                 />
               ) : (
-                <div className="aspect-16/7 bg-[radial-gradient(circle_at_top_left,rgba(96,99,238,0.12),transparent_65%),linear-gradient(135deg,rgba(27,27,31,0.02),rgba(96,99,238,0.05))] border-b border-outline-variant/20" />
+                <div className="aspect-16/7 bg-[radial-gradient(circle_at_top_left,rgba(96,99,238,0.12),transparent_65%),linear-gradient(135deg,rgba(27,27,31,0.02),rgba(96,99,238,0.05))] border-b border-hairline/20" />
               )}
               <div className="flex-1 space-y-6 p-8">
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone="blue" className="rounded-full px-3">{enrollment.category.name}</Badge>
+                  <Badge tone="neutral" className="rounded-full px-3">{enrollment.category.name}</Badge>
                   <Badge tone={paymentTone(enrollment.latestPaymentStatus)} className="rounded-full px-3">
                     {enrollment.latestPaymentStatus ?? "FREE"}
                   </Badge>
-                  <Badge tone={enrollment.accessGranted ? "green" : "amber"} className="rounded-full px-3">
+                  <Badge tone={enrollment.accessGranted ? "neutral" : "attention"} className="rounded-full px-3">
                     {enrollment.accessGranted ? "Access ready" : "Payment pending"}
                   </Badge>
                 </div>
 
                 <div className="space-y-3">
-                  <h2 className="text-2xl font-body font-medium text-on-surface leading-tight transition-colors group-hover:text-primary">
+                  <h2 className="text-2xl font-body font-medium text-ink leading-tight transition-colors group-hover:text-ink">
                     {enrollment.course.title}
                   </h2>
-                  <p className="text-xs text-on-surface-variant font-light uppercase tracking-widest">
+                  <p className="text-xs text-muted font-light uppercase tracking-widest">
                     Enrolled on {new Date(enrollment.enrolledAt).toLocaleDateString("en-GB", { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
 
-                <div className="space-y-3 bg-surface-container-low/40 border border-outline-variant/10 p-4">
-                  <div className="flex items-center justify-between text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/54">
-                    <span>Progress</span>
+                <div className="space-y-3 bg-panel-warm/40 border border-hairline/10 p-4">
+                  <div className="flex items-center justify-between text-[0.7rem] font-bold uppercase tracking-widest text-ink/54">
+                    <span>{t("mine.progress")}</span>
                     <span>{enrollment.progressPercentage}%</span>
                   </div>
                   <ProgressTrack
@@ -203,26 +202,22 @@ function MyCoursesPage(): JSX.Element {
                       <Link
                         to="/dashboard/learn/$courseId"
                         params={{ courseId: enrollment.course.id }}
-                      >
-                        Resume learning
-                      </Link>
+                      >{t("mine.resume")}</Link>
                     </Button>
                   ) : (
                     <Button asChild className="h-11 px-5 font-body font-semibold transition-all ] ]">
-                      <Link to="/courses/$slug" params={{ slug: enrollment.course.slug }}>
-                        Finish payment
-                      </Link>
+                      <Link to="/courses/$slug" params={{ slug: enrollment.course.slug }}>{t("mine.finishPayment")}</Link>
                     </Button>
                   )}
-                  <Button asChild variant="outline" className="h-11 px-5 font-body font-semibold border-outline-variant/30 hover:bg-surface-container-high transition-all">
-                    <Link to="/dashboard/payments">Payment history</Link>
+                  <Button asChild variant="outline" className="h-11 px-5 font-body font-semibold border-hairline/30 hover:bg-chip-active transition-all">
+                    <Link to="/dashboard/payments">{t("mine.paymentHistory")}</Link>
                   </Button>
                   {enrollment.status === "COMPLETED" && session ? (
                     <>
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-11 px-5 font-body font-semibold border-outline-variant/30 hover:bg-surface-container-high transition-all"
+                        className="h-11 px-5 font-body font-semibold border-hairline/30 hover:bg-chip-active transition-all"
                         onClick={() =>
                           setCertificatePreview({
                             courseTitle: enrollment.course.title,
@@ -232,13 +227,11 @@ function MyCoursesPage(): JSX.Element {
                             title: `Certificate · ${enrollment.course.title}`
                           })
                         }
-                      >
-                        View certificate
-                      </Button>
+                      >{t("mine.viewCertificate")}</Button>
                       <Button
                         type="button"
-                        variant="secondary"
-                        className="h-11 px-5 font-body font-semibold transition-all hover:bg-secondary/10"
+                        variant="accent"
+                        className="h-11 px-5 font-body font-semibold transition-all hover:bg-accent/10"
                         onClick={() =>
                           void (async () => {
                             const [{ pdf }, { CertificatePdfDocument }] = await Promise.all([
@@ -255,25 +248,21 @@ function MyCoursesPage(): JSX.Element {
                             downloadBlob(blob, `certificate-${enrollment.id}.pdf`);
                           })()
                         }
-                      >
-                        Download certificate
-                      </Button>
+                      >{t("mine.downloadCertificate")}</Button>
                     </>
                   ) : null}
                   {enrollment.latestPaymentStatus === "SUCCESS" ? (
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-11 px-5 font-body font-semibold border-outline-variant/30 hover:bg-surface-container-high transition-all"
+                      className="h-11 px-5 font-body font-semibold border-hairline/30 hover:bg-chip-active transition-all"
                       onClick={() =>
                         void (async () => {
                           const blob = await fetchEnrollmentReceiptPdf(enrollment.id);
                           downloadBlob(blob, `receipt-${enrollment.id}.pdf`);
                         })()
                       }
-                    >
-                      Download receipt
-                    </Button>
+                    >{t("mine.downloadReceipt")}</Button>
                   ) : null}
                 </div>
               </div>

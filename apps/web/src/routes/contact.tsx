@@ -6,6 +6,7 @@ import { PublicLayout } from "@/components/layout/public-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/contact")({
   head: () =>
@@ -20,19 +21,21 @@ export const Route = createFileRoute("/contact")({
 });
 
 function ContactPage(): JSX.Element {
+  const t = useT();
+
   return (
     <PublicLayout
       eyebrow="Reach the team"
-      title="We read every note from students, guardians, and school partners."
+      title={t("contact.lead")}
       subtitle="Use the dashboard bug reporter for product issues, or email hello@genex.com.bd for general inquiries while dedicated in-app messaging rolls out."
     >
-      <Card className="bg-surface-container-low">
-        <CardContent className="space-y-3 p-6 text-sm leading-7 text-on-surface/80">
+      <Card className="bg-panel-warm">
+        <CardContent className="space-y-3 p-6 text-sm leading-7 text-ink/80">
           <p>
-            <span className="font-semibold text-on-surface">Email:</span> hello@genex.com.bd
+            <span className="font-semibold text-ink">{t("contact.email")}</span> hello@genex.com.bd
           </p>
           <p>
-            <span className="font-semibold text-on-surface">Site:</span> {siteConfig.url}
+            <span className="font-semibold text-ink">{t("contact.site")}</span> {siteConfig.url}
           </p>
         </CardContent>
       </Card>

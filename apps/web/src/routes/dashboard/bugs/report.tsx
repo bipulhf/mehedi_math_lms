@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { CreateBugReportInput } from "@/lib/api/bugs";
 import { createBugReport } from "@/lib/api/bugs";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/bugs/report")({
   component: ReportBugPage,
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/dashboard/bugs/report")({
 } as never);
 
 function ReportBugPage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const form = useZodForm<CreateBugReportInput>({
     defaultValues: {
@@ -40,30 +43,30 @@ function ReportBugPage(): JSX.Element {
 
   const onSubmit = handleSubmit(async (values) => {
     await createBugReport(values);
-    toast.success("Bug report submitted");
+    toast.success(t("bugs.submitted"));
     await router.navigate({ to: "/dashboard/bugs" });
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+    <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
       <div className="mb-8">
-        <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Report a bug</h3>
-        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+        <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("bugs.report")}</h3>
+        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
           Share the issue clearly, add a screenshot when helpful, and send it straight into the admin review queue.
         </p>
       </div>
       <form className="space-y-8" onSubmit={onSubmit}>
         <div className="grid gap-6">
           <div className="space-y-3">
-             <Label htmlFor="bug-title" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Title</Label>
-             <Input id="bug-title" className="h-12 bg-surface-container-low/50 border-outline-variant/30" error={errors.title?.message} {...register("title")} />
+             <Label htmlFor="bug-title" className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("bugs.fieldTitle")}</Label>
+             <Input id="bug-title" className="h-12 bg-panel-warm/50 border-hairline/30" error={errors.title?.message} {...register("title")} />
           </div>
           <div className="space-y-3">
-             <Label htmlFor="bug-description" className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Description</Label>
-             <Textarea id="bug-description" className="min-h-32 bg-surface-container-low/50 border-outline-variant/30 text-base" error={errors.description?.message} {...register("description")} />
+             <Label htmlFor="bug-description" className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("bugs.fieldDescription")}</Label>
+             <Textarea id="bug-description" className="min-h-32 bg-panel-warm/50 border-hairline/30 text-base" error={errors.description?.message} {...register("description")} />
           </div>
           <div className="space-y-3">
-             <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-on-surface/60 pl-1">Screenshot (Optional)</Label>
+             <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("bugs.fieldScreenshot")}</Label>
              <BugScreenshotUploadField
                id="bug-screenshot"
                error={errors.screenshotUrl?.message}
@@ -74,13 +77,11 @@ function ReportBugPage(): JSX.Element {
         </div>
         <div className="pt-4">
           <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-body font-medium text-lg transition-all ] ] group/btn overflow-hidden relative">
-            <div className="absolute inset-0 bg-linear-to-r from-primary to-primary/80 group-hover/btn:scale-105"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-ink to-ink/80 group-hover/btn:scale-105"></div>
             <span className="relative z-10 flex items-center justify-center gap-2">
               {isSubmitting ? (
                 <>
-                  <Skeleton className="h-4 w-4 rounded-full bg-white/20" />
-                  Submitting report...
-                </>
+                  <Skeleton className="h-4 w-4 rounded-full bg-white/20" />{t("bugs.submitting")}</>
               ) : (
                 "Submit bug report"
               )}

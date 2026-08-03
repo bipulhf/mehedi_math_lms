@@ -6,6 +6,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientEnv } from "@/lib/env";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/mock")({
   component: MockPaymentPage,
@@ -13,6 +14,8 @@ export const Route = createFileRoute("/dashboard/payments/mock")({
 } as never);
 
 function MockPaymentPage(): JSX.Element {
+  const t = useT();
+
   const [origin, setOrigin] = useState("");
   const [paymentId, setPaymentId] = useState("");
   const [transactionId, setTransactionId] = useState("");
@@ -46,14 +49,14 @@ function MockPaymentPage(): JSX.Element {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Mock gateway</CardTitle>
+          <CardTitle>{t("paymock.title")}</CardTitle>
           <CardDescription>
             SSLCommerz credentials are not configured, so this local payment gateway lets you finish
             the Phase 13 flow during development.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">
             <p>Payment ID: {paymentId || "Unavailable"}</p>
             <p>Transaction ID: {transactionId || "Unavailable"}</p>
           </div>
@@ -61,7 +64,7 @@ function MockPaymentPage(): JSX.Element {
             {actions.map((action) => (
               <Button
                 key={action.label}
-                variant={action.label === "Simulate success" ? "default" : "outline"}
+                variant={action.label === "Simulate success" ? "ink" : "outline"}
                 onClick={() => {
                   window.location.href = action.href;
                 }}

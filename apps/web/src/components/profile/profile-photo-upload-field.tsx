@@ -2,6 +2,7 @@ import type { JSX } from "react";
 
 import { uploadProfilePhoto } from "@/lib/api/profiles";
 import { ImageCropUploader } from "@/components/uploads/image-crop-uploader";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface ProfilePhotoUploadFieldProps {
   disabled?: boolean;
@@ -20,11 +21,13 @@ export function ProfilePhotoUploadField({
   onValueChange,
   value
 }: ProfilePhotoUploadFieldProps): JSX.Element {
+  const t = useT();
+
   return (
     <ImageCropUploader
       aspect={1}
       buttonLabel="Choose profile photo"
-      description="Crop before upload so the profile and teacher cards stay clean across the platform."
+      description={t("upload.cropHint")}
       disabled={disabled}
       error={error}
       id={id}

@@ -11,6 +11,7 @@ import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
 import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 import { TrendingUp, DollarSign, Target, PieChart, Activity } from "lucide-react";
 import {
   Bar,
@@ -32,6 +33,8 @@ export const Route = createFileRoute("/dashboard/admin/analytics")({
 const chartStroke = chartTheme.accent;
 
 function AdminAnalyticsPage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const { isPending, session } = useAuthSession();
   const isAdmin = !isPending && session?.session.role === "ADMIN";
@@ -87,20 +90,20 @@ function AdminAnalyticsPage(): JSX.Element {
   }
 
   if (!data) {
-    return <p className="text-sm text-on-surface/68">Unable to load analytics.</p>;
+    return <p className="text-sm text-ink/68">{t("an.loadFailed")}</p>;
   }
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          <div className="flex size-16 shrink-0 items-center justify-center bg-primary/10 border border-primary/20 text-primary relative overflow-hidden group/icon">
-             <div className="absolute inset-0 bg-primary/5" />
+          <div className="flex size-16 shrink-0 items-center justify-center bg-ink/10 border border-ink/20 text-ink relative overflow-hidden group/icon">
+             <div className="absolute inset-0 bg-ink/5" />
              <Activity className="size-8 relative z-10" />
           </div>
           <div className="space-y-2">
-            <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">Platform Intelligence</h3>
-            <p className="text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed italic">
+            <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("an.adminTitle")}</h3>
+            <p className="text-sm text-muted font-light max-w-2xl leading-relaxed italic">
               Macroscopic insights into the academic ecosystem — monitoring enrollment velocity, fiscal trends, and demographic cohorts.
             </p>
           </div>
@@ -108,14 +111,14 @@ function AdminAnalyticsPage(): JSX.Element {
       </div>
 
       <div className="grid gap-8 xl:grid-cols-2">
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 group/card">
+        <div className="bg-card/80 p-8 border border-hairline/40 group/card">
           <div className="flex items-center gap-4 mb-8">
-            <div className="size-10 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
+            <div className="size-10 bg-ink/10 flex items-center justify-center text-ink border border-ink/10">
               <TrendingUp className="size-5" />
             </div>
             <div>
-              <h4 className="font-body font-medium text-on-surface text-lg">Enrollment velocity</h4>
-              <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly Trend</p>
+              <h4 className="font-body font-medium text-ink text-lg">{t("an.enrollmentTrend")}</h4>
+              <p className="text-xs text-ink/40 uppercase tracking-widest font-bold">{t("an.monthlyTrend")}</p>
             </div>
           </div>
           <div className="h-75 w-full">
@@ -139,14 +142,14 @@ function AdminAnalyticsPage(): JSX.Element {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 group/card">
+        <div className="bg-card/80 p-8 border border-hairline/40 group/card">
           <div className="flex items-center gap-4 mb-8">
             <div className="size-10 bg-green-500/10 flex items-center justify-center text-green-600 border border-green-500/10">
               <DollarSign className="size-5" />
             </div>
             <div>
-              <h4 className="font-body font-medium text-on-surface text-lg">Revenue stream</h4>
-              <p className="text-xs text-on-surface/40 uppercase tracking-widest font-bold">Monthly totals</p>
+              <h4 className="font-body font-medium text-ink text-lg">{t("an.revenue")}</h4>
+              <p className="text-xs text-ink/40 uppercase tracking-widest font-bold">{t("an.monthlyTotals")}</p>
             </div>
           </div>
           <div className="h-75 w-full">
@@ -166,34 +169,34 @@ function AdminAnalyticsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
-        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center gap-4">
-          <div className="size-10 bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/10">
+      <div className="bg-card/80 border border-hairline/40 overflow-hidden">
+        <div className="p-8 sm:p-10 border-b border-hairline/30 flex items-center gap-4">
+          <div className="size-10 bg-accent/10 flex items-center justify-center text-accent border border-accent/10">
             <Target className="size-5" />
           </div>
           <div>
-            <h4 className="font-body font-medium text-on-surface text-xl">Scholarly completion</h4>
-            <p className="text-sm text-on-surface-variant font-light opacity-60">Success signals from most engaging academic modules.</p>
+            <h4 className="font-body font-medium text-ink text-xl">{t("an.completion")}</h4>
+            <p className="text-sm text-muted font-light opacity-60">{t("an.completionLead")}</p>
           </div>
         </div>
         <div className="p-8 sm:p-10 grid gap-6 md:grid-cols-2">
           {data.completions.length === 0 ? (
-            <div className="col-span-full py-12 text-center opacity-40 font-light italic font-body">No completion signals detected yet.</div>
+            <div className="col-span-full py-12 text-center opacity-40 font-light italic font-body">{t("an.noCompletion")}</div>
           ) : (
             data.completions.map((row) => (
               <div
                 key={row.courseId}
-                className="group p-6 bg-surface-container-low/30 border border-outline-variant/20 hover:border-primary/30 transition-all hover:bg-primary/2"
+                className="group p-6 bg-panel-warm/30 border border-hairline/20 hover:border-ink/30 transition-all hover:bg-ink/2"
               >
                 <div className="flex items-center justify-between gap-4 mb-4">
-                  <span className="font-body text-base font-medium text-on-surface tracking-tight group-hover:text-primary transition-colors">{row.courseTitle}</span>
-                  <span className="text-[0.65rem] font-bold text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
+                  <span className="font-body text-base font-medium text-ink tracking-tight group-hover:text-ink transition-colors">{row.courseTitle}</span>
+                  <span className="text-[0.65rem] font-bold text-ink bg-ink/5 px-3 py-1 rounded-full border border-ink/10">
                     {row.completionRate}% Done
                   </span>
                 </div>
                 <div className="flex items-center justify-between mb-2">
-                   <p className="text-xs text-on-surface-variant font-light opacity-60 italic">Completion Ratio</p>
-                   <p className="text-xs font-bold text-on-surface tracking-widest">{row.completedCount} / {row.enrollmentCount} Scholars</p>
+                   <p className="text-xs text-muted font-light opacity-60 italic">{t("an.completionRatio")}</p>
+                   <p className="text-xs font-bold text-ink tracking-widest">{row.completedCount} / {row.enrollmentCount} Scholars</p>
                 </div>
                 <ProgressTrack
                   completed={Math.min(100, row.completionRate)}
@@ -206,19 +209,19 @@ function AdminAnalyticsPage(): JSX.Element {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 border border-outline-variant/40 overflow-hidden">
-        <div className="p-8 sm:p-10 border-b border-outline-variant/30 flex items-center gap-4">
+      <div className="bg-card/80 border border-hairline/40 overflow-hidden">
+        <div className="p-8 sm:p-10 border-b border-hairline/30 flex items-center gap-4">
           <div className="size-10 bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/10">
             <PieChart className="size-5" />
           </div>
           <div>
-            <h4 className="font-body font-medium text-on-surface text-xl">Student distribution</h4>
-            <p className="text-sm text-on-surface-variant font-light opacity-60">Demographic cohorts organized by academic grade.</p>
+            <h4 className="font-body font-medium text-ink text-xl">{t("an.distribution")}</h4>
+            <p className="text-sm text-muted font-light opacity-60">{t("an.distributionLead")}</p>
           </div>
         </div>
         <div className="p-8 sm:p-10 h-100">
           {data.demographics.length === 0 ? (
-            <div className="h-full flex items-center justify-center opacity-40 font-light italic font-body">No demographic data in the repository.</div>
+            <div className="h-full flex items-center justify-center opacity-40 font-light italic font-body">{t("an.noDistribution")}</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart

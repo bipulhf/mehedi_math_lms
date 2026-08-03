@@ -22,6 +22,7 @@ import {
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/learn/$courseId")({
   component: CourseLearningPage,
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/dashboard/learn/$courseId")({
 } as never);
 
 function CourseLearningPage(): JSX.Element {
+  const t = useT();
+
   const { courseId } = Route.useParams();
   const { isPending: isSessionPending, session } = useAuthSession();
   const isStudent = !isSessionPending && session?.session.role === "STUDENT";
@@ -72,14 +75,10 @@ function CourseLearningPage(): JSX.Element {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Student access only</CardTitle>
-          <CardDescription>
-            The learning player is reserved for enrolled student accounts.
-          </CardDescription>
+          <CardTitle>{t("learn.studentOnly")}</CardTitle>
+          <CardDescription>{t("learn.studentOnlyLead")}</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm leading-7 text-on-surface/68">
-          Switch to a student account with course access to continue into the learning workspace.
-        </CardContent>
+        <CardContent className="text-sm leading-7 text-ink/68">{t("learn.switchAccount")}</CardContent>
       </Card>
     );
   }

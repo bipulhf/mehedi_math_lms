@@ -1,7 +1,6 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { JSX } from "react";
 
-import { FadeIn } from "@/components/common/fade-in";
 import { RouteErrorView } from "@/components/common/route-error";
 import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout } from "@/components/layout/public-layout";
@@ -13,6 +12,7 @@ import { findCategoryBySlug } from "@/lib/category-tree";
 import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet, ssrApiGetCourses } from "@/lib/ssr-api";
 import { siteConfig } from "@/lib/site";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/categories/$slug")({
   loader: async ({ params }) => {
@@ -80,6 +80,8 @@ export const Route = createFileRoute("/categories/$slug")({
 });
 
 function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element {
+  const t = useT();
+
   return (
     <Card className="overflow-hidden">
       <div className="relative aspect-video overflow-hidden bg-surface-container-low">
@@ -99,15 +101,15 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
       <CardContent className="space-y-3 p-4">
         <CardTitle className="text-lg">{course.title}</CardTitle>
         <CardDescription className="line-clamp-2">{course.description}</CardDescription>
-        <Link className="text-sm font-semibold text-secondary-container" to="/courses/$slug" params={{ slug: course.slug }}>
-          View course
-        </Link>
+        <Link className="text-sm font-semibold text-secondary-container" to="/courses/$slug" params={{ slug: course.slug }}>{t("cat.viewCourse")}</Link>
       </CardContent>
     </Card>
   );
 }
 
 function CategoryCoursesPage(): JSX.Element {
+  const t = useT();
+
   const { category, courses } = Route.useLoaderData();
 
   return (
@@ -121,11 +123,11 @@ function CategoryCoursesPage(): JSX.Element {
     >
       <div className="space-y-6">
         {category.children.length > 0 ? (
-          <FadeIn>
+          <div>
             <Card>
               <CardHeader>
-                <CardTitle>Subcategories</CardTitle>
-                <CardDescription>Move one layer deeper inside this academic branch.</CardDescription>
+                <CardTitle>{t("cat.subcategories")}</CardTitle>
+                <CardDescription>{t("cat.deeperLead")}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
                 {category.children.map((child: CategoryNode) => (
@@ -140,17 +142,17 @@ function CategoryCoursesPage(): JSX.Element {
                 ))}
               </CardContent>
             </Card>
-          </FadeIn>
+          </div>
         ) : null}
 
         {courses.length === 0 ? (
-          <p className="text-sm text-on-surface/68">No published courses in this category yet.</p>
+          <p className="text-sm text-on-surface/68">{t("cat.noCourses")}</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {courses.map((course: CourseSummary, index: number) => (
-              <FadeIn key={course.id} delayClassName={index > 0 ? "delay-75" : undefined}>
+            {courses.map((course: CourseSummary) => (
+              <div key={course.id}>
                 <CategoryCourseCard course={course} />
-              </FadeIn>
+              </div>
             ))}
           </div>
         )}

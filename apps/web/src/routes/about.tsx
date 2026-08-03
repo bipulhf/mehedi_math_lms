@@ -6,6 +6,7 @@ import { PublicLayout } from "@/components/layout/public-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/about")({
   head: () =>
@@ -20,14 +21,16 @@ export const Route = createFileRoute("/about")({
 });
 
 function AboutPage(): JSX.Element {
+  const t = useT();
+
   return (
     <PublicLayout
       eyebrow="Our story"
-      title="A digital atelier for serious mathematics learners."
+      title={t("site.tagline")}
       subtitle="We combine the Digital Atelier design language with structured programs, assessments, and human instructors who stay close to every cohort."
     >
-      <Card className="bg-surface-container-low">
-        <CardContent className="space-y-4 p-6 text-sm leading-7 text-on-surface/80">
+      <Card className="bg-panel-warm">
+        <CardContent className="space-y-4 p-6 text-sm leading-7 text-ink/80">
           <p>
             {siteConfig.name} exists to remove friction between curiosity and disciplined practice. Courses are authored with
             editorial rigor—layered surfaces, calm motion, and typography that keeps attention on the problem at hand.

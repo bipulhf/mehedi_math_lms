@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { uploadLectureVideo } from "@/lib/api/uploads";
+import { useT } from "@/lib/i18n/locale-context";
 
 type VideoInputMode = "VIDEO_LINK" | "VIDEO_UPLOAD";
 
@@ -53,6 +54,8 @@ export function VideoUploader({
   onValueChange,
   value
 }: VideoUploaderProps): JSX.Element {
+  const t = useT();
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -60,7 +63,7 @@ export function VideoUploader({
 
   const uploadVideoFile = async (file: File): Promise<void> => {
     if (!file.type.startsWith("video/")) {
-      toast.error("Choose a video file");
+      toast.error(t("upload.chooseVideo"));
       return;
     }
 
@@ -73,7 +76,7 @@ export function VideoUploader({
         mode: "VIDEO_UPLOAD",
         videoUrl: uploadedUrl
       });
-      toast.success("Lecture video uploaded");
+      toast.success(t("upload.videoDone"));
     } catch (uploadError) {
       toast.error(uploadError instanceof Error ? uploadError.message : "Video upload failed");
     } finally {
@@ -110,12 +113,12 @@ export function VideoUploader({
     <div className="space-y-3">
       <div className="space-y-2">
         <Label>{label}</Label>
-        <div className="inline-flex rounded-full border border-outline-variant bg-surface-container-low p-1">
+        <div className="inline-flex rounded-full border border-hairline bg-panel-warm p-1">
           <button
             className={`rounded-full px-4 py-2 text-sm transition-colors ${
               value.mode === "VIDEO_LINK"
-                ? "bg-secondary-container text-on-surface"
-                : "text-on-surface/62 hover:text-on-surface"
+                ? "bg-accent text-ink"
+                : "text-ink/62 hover:text-ink"
             }`}
             disabled={disabled || isUploading}
             type="button"
@@ -125,14 +128,12 @@ export function VideoUploader({
                 videoUrl: value.mode === "VIDEO_UPLOAD" ? "" : value.videoUrl
               })
             }
-          >
-            YouTube or Vimeo link
-          </button>
+          >{t("upload.linkLabel")}</button>
           <button
             className={`rounded-full px-4 py-2 text-sm transition-colors ${
               value.mode === "VIDEO_UPLOAD"
-                ? "bg-secondary-container text-on-surface"
-                : "text-on-surface/62 hover:text-on-surface"
+                ? "bg-accent text-ink"
+                : "text-ink/62 hover:text-ink"
             }`}
             disabled={disabled || isUploading}
             type="button"
@@ -142,9 +143,7 @@ export function VideoUploader({
                 videoUrl: value.mode === "VIDEO_LINK" ? "" : value.videoUrl
               })
             }
-          >
-            Direct upload
-          </button>
+          >{t("upload.direct")}</button>
         </div>
       </div>
       {value.mode === "VIDEO_LINK" ? (
@@ -165,9 +164,7 @@ export function VideoUploader({
               })
             }
           />
-          <p className="text-sm leading-6 text-on-surface/62">
-            Paste a YouTube or Vimeo URL. Supported links are normalized automatically.
-          </p>
+          <p className="text-sm leading-6 text-ink/62">{t("upload.linkHint")}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -182,8 +179,8 @@ export function VideoUploader({
           <button
             className={`w-full rounded-[calc(var(--radius)-0.125rem)] border border-dashed px-4 py-5 text-left transition-colors ${
               isDragging
-                ? "border-secondary-container bg-secondary-container/10"
-                : "border-outline-variant bg-surface-container-low hover:bg-surface-container"
+                ? "border-accent bg-accent/10"
+                : "border-hairline bg-panel-warm hover:bg-panel-warm"
             } ${disabled || isUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
             disabled={disabled || isUploading}
             type="button"
@@ -203,22 +200,20 @@ export function VideoUploader({
             onDrop={(event) => void handleDrop(event)}
           >
             <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex min-h-10 items-center rounded-(--radius) border border-outline-variant px-4 text-sm font-medium text-on-surface">
+              <span className="inline-flex min-h-10 items-center rounded-(--radius) border border-hairline px-4 text-sm font-medium text-ink">
                 {isUploading ? "Uploading..." : "Choose video"}
               </span>
-              <p className="text-sm leading-6 text-on-surface/70">
-                Drag a video here or upload directly to S3.
-              </p>
+              <p className="text-sm leading-6 text-ink/70">{t("upload.dragVideo")}</p>
             </div>
             {isUploading ? (
               <div className="mt-4 space-y-2">
-                <div className="h-2 overflow-hidden rounded-full bg-surface-container-high">
+                <div className="h-2 overflow-hidden rounded-full bg-chip-active">
                   <div
-                    className="h-full rounded-full bg-secondary-container transition-[width] ease-out"
+                    className="h-full rounded-full bg-accent transition-[width] ease-out"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-xs uppercase tracking-[0.18em] text-on-surface/62">{progress}% uploaded</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-ink/62">{progress}% uploaded</p>
               </div>
             ) : null}
           </button>
@@ -233,9 +228,7 @@ export function VideoUploader({
                   })
                 }
               />
-              <p className="text-sm leading-6 text-on-surface/62">
-                Uploaded video URL. You can replace it with another upload at any time.
-              </p>
+              <p className="text-sm leading-6 text-ink/62">{t("upload.uploadedHint")}</p>
             </div>
           ) : null}
         </div>

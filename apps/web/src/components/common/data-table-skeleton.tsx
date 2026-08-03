@@ -24,9 +24,9 @@ export function DataTableSkeleton({
           <Skeleton className="h-12" />
           <Skeleton className="h-12" />
         </div>
-        <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low">
+        <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm">
           <div
-            className="grid gap-3 border-b border-outline-variant/15 px-4 py-3"
+            className="grid gap-3 border-b border-hairline/15 px-4 py-3"
             style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
           >
             {Array.from({ length: columns }).map((_, index) => (
@@ -36,7 +36,7 @@ export function DataTableSkeleton({
           {Array.from({ length: rows }).map((_, rowIndex) => (
             <div
               key={`row-${rowIndex}`}
-              className="grid gap-3 border-b border-outline-variant/60 px-4 py-4 last:border-b-0"
+              className="grid gap-3 border-b border-hairline/60 px-4 py-4 last:border-b-0"
               style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
             >
               {Array.from({ length: columns }).map((_, columnIndex) => (

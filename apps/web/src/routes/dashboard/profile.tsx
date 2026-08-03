@@ -28,6 +28,7 @@ import {
   updateTeacherProfile
 } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/profile")({
   component: DashboardProfilePage,
@@ -50,6 +51,8 @@ const changePasswordSchema = z
   });
 
 function DashboardProfilePage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const { isPending: isSessionPending, refetch: refetchSession, session } = useAuthSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,7 +97,7 @@ function DashboardProfilePage(): JSX.Element {
 
       // Each step of the form saves. Only the last one is worth a toast.
       if (values.isComplete !== false) {
-        toast.success("Student profile updated");
+        toast.success(t("prof.studentUpdated"));
       }
     } finally {
       setIsSubmitting(false);
@@ -111,7 +114,7 @@ function DashboardProfilePage(): JSX.Element {
 
       // Each step of the form saves. Only the last one is worth a toast.
       if (values.isComplete !== false) {
-        toast.success("Teacher profile updated");
+        toast.success(t("prof.studentUpdated"));
       }
     } finally {
       setIsSubmitting(false);
@@ -128,7 +131,7 @@ function DashboardProfilePage(): JSX.Element {
 
       // Each step of the form saves. Only the last one is worth a toast.
       if (values.isComplete !== false) {
-        toast.success("Profile updated");
+        toast.success(t("prof.studentUpdated"));
       }
     } finally {
       setIsSubmitting(false);
@@ -150,7 +153,7 @@ function DashboardProfilePage(): JSX.Element {
       }
 
       resetPasswordForm();
-      toast.success("Password updated successfully");
+      toast.success(t("prof.passwordUpdated"));
     } finally {
       setIsPasswordSubmitting(false);
     }
@@ -174,16 +177,14 @@ function DashboardProfilePage(): JSX.Element {
         onSubmitStudent={handleStudentSubmit}
         onSubmitTeacher={handleTeacherSubmit}
         role={session.session.role as UserRole}
-        title="Your profile"
+        title={t("prof.title")}
       />
 
       {profile?.user.role === "TEACHER" ? (
-        <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
+        <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
           <div className="mb-8 text-center sm:text-left">
-            <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
-              Public teacher card
-            </h3>
-            <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+            <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("prof.teacherCard")}</h3>
+            <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">
               The public teacher page uses your bio, qualifications, specializations, and published
               courses.
             </p>
@@ -193,7 +194,7 @@ function DashboardProfilePage(): JSX.Element {
               teacher who has never saved one has no page to preview yet. */}
           {teacherPageSlug ? (
             <button
-              className="inline-flex h-12 items-center justify-center bg-surface-container-highest px-8 font-body font-semibold text-sm text-on-surface transition-all hover:bg-surface-container-high"
+              className="inline-flex h-12 items-center justify-center bg-chip-active px-8 font-body font-semibold text-sm text-ink transition-all hover:bg-chip-active"
               type="button"
               onClick={() =>
                 void router.navigate({
@@ -201,31 +202,23 @@ function DashboardProfilePage(): JSX.Element {
                   params: { slug: teacherPageSlug }
                 })
               }
-            >
-              Preview public teacher profile
-            </button>
+            >{t("prof.previewTeacher")}</button>
           ) : (
-            <p className="text-sm leading-6 text-on-surface/62">
-              Save your profile once and a public page will be published at its own address.
-            </p>
+            <p className="text-sm leading-6 text-ink/62">{t("prof.noSlug")}</p>
           )}
         </div>
       ) : null}
 
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="mb-8 text-center sm:text-left">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
-            Change password
-          </h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-            Use your current password and set a stronger one to keep your account secure.
-          </p>
+          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("prof.changePassword")}</h3>
+          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{t("prof.changePasswordLead")}</p>
         </div>
 
         <form className="space-y-6" onSubmit={handlePasswordChange}>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="current-password">Current password</Label>
+              <Label htmlFor="current-password">{t("prof.currentPassword")}</Label>
               <PasswordInput
                 id="current-password"
                 autoComplete="current-password"
@@ -234,7 +227,7 @@ function DashboardProfilePage(): JSX.Element {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-password">New password</Label>
+              <Label htmlFor="new-password">{t("prof.newPassword")}</Label>
               <PasswordInput
                 id="new-password"
                 autoComplete="new-password"
@@ -243,7 +236,7 @@ function DashboardProfilePage(): JSX.Element {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">Confirm new password</Label>
+              <Label htmlFor="confirm-new-password">{t("prof.confirmNewPassword")}</Label>
               <PasswordInput
                 id="confirm-new-password"
                 autoComplete="new-password"
@@ -253,12 +246,10 @@ function DashboardProfilePage(): JSX.Element {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-outline-variant/20 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-on-surface/50 font-light">
-              This updates your credential login password. Other sessions will be signed out.
-            </p>
+          <div className="pt-6 border-t border-hairline/20 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-ink/50 font-light">{t("prof.passwordNote")}</p>
             <Button
-              className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all"
+              className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all"
               type="submit"
               disabled={isPasswordSubmitting}
             >

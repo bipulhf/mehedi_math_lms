@@ -94,8 +94,8 @@ function RootComponent(): JSX.Element {
           toastOptions={{
             classNames: {
               toast:
-                "!bg-surface-container-lowest !text-on-surface !shadow-[0_16px_38px_-20px_rgba(19,27,46,0.22)]",
-              description: "!text-on-surface/66",
+                "!bg-card !text-ink !shadow-[0_16px_38px_-20px_rgba(19,27,46,0.22)]",
+              description: "!text-ink/66",
               title: "!font-semibold"
             }
           }}

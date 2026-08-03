@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useT } from "@/lib/i18n/locale-context";
 
 /**
  * The question form, used twice by `AssessmentBuilder` — once to add a question
@@ -26,13 +27,13 @@ export function QuestionEditor({
   onChange,
   onSave
 }: QuestionEditorProps): JSX.Element {
+  const t = useT();
+
   return (
     <div className="space-y-3">
       <div className="grid gap-2 md:grid-cols-[0.75fr_0.25fr]">
         <div className="space-y-1">
-          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-            Question type
-          </Label>
+          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.type")}</Label>
           <Select
             className="h-10"
             value={draft.type}
@@ -43,14 +44,12 @@ export function QuestionEditor({
               })
             }
           >
-            <option value="MCQ">MCQ</option>
-            <option value="WRITTEN">Written</option>
+            <option value="MCQ">{t("ab.mcq")}</option>
+            <option value="WRITTEN">{t("ab.written")}</option>
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-            Marks
-          </Label>
+          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.marks")}</Label>
           <Input
             className="h-10"
             min={1}
@@ -67,7 +66,7 @@ export function QuestionEditor({
       </div>
       <Textarea
         className="min-h-20"
-        placeholder="Question prompt"
+        placeholder={t("qe.prompt")}
         value={draft.questionText}
         onChange={(event) =>
           onChange({
@@ -83,7 +82,7 @@ export function QuestionEditor({
               key={`${index}-${option.optionText}`}
               className="grid gap-2 md:grid-cols-[auto_1fr]"
             >
-              <label className="flex items-center gap-2 text-xs text-on-surface">
+              <label className="flex items-center gap-2 text-xs text-ink">
                 <input
                   checked={option.isCorrect}
                   className="h-4 w-4 accent-(--secondary-container)"
@@ -101,9 +100,7 @@ export function QuestionEditor({
                       )
                     })
                   }
-                />
-                Correct
-              </label>
+                />{t("qe.correct")}</label>
               <Input
                 className="h-10"
                 placeholder={`Option ${index + 1}`}
@@ -135,9 +132,7 @@ export function QuestionEditor({
                   options: [...draft.options, { isCorrect: false, optionText: "" }]
                 })
               }
-            >
-              Add option
-            </Button>
+            >{t("qe.addOption")}</Button>
             {draft.options.length > 2 ? (
               <Button
                 size="sm"
@@ -149,20 +144,16 @@ export function QuestionEditor({
                     options: draft.options.slice(0, -1)
                   })
                 }
-              >
-                Remove last
-              </Button>
+              >{t("qe.removeLast")}</Button>
             ) : null}
           </div>
         </div>
       ) : (
         <div className="space-y-2">
-          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-on-surface/60">
-            Reference answer
-          </Label>
+          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.referenceAnswer")}</Label>
           <Textarea
             className="min-h-20"
-            placeholder="Expected answer for teacher reference"
+            placeholder={t("qe.expected")}
             value={draft.expectedAnswer}
             onChange={(event) =>
               onChange({
@@ -174,9 +165,7 @@ export function QuestionEditor({
         </div>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" className="h-9" disabled={isWorking} onClick={onSave}>
-          Save question
-        </Button>
+        <Button type="button" className="h-9" disabled={isWorking} onClick={onSave}>{t("qe.save")}</Button>
         {onCancel ? (
           <Button
             type="button"
@@ -184,9 +173,7 @@ export function QuestionEditor({
             variant="outline"
             disabled={isWorking}
             onClick={onCancel}
-          >
-            Cancel
-          </Button>
+          >{t("common.cancel")}</Button>
         ) : null}
       </div>
     </div>

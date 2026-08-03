@@ -22,6 +22,7 @@ import {
   submitCourse
 } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/new")({
   component: CreateCoursePage,
@@ -39,6 +40,8 @@ const initialValues: CourseEditorValues = {
 };
 
 function CreateCoursePage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [categoriesQuery, teachersQuery] = useQueries({
@@ -74,9 +77,9 @@ function CreateCoursePage(): JSX.Element {
 
       if (action === "submit") {
         await submitCourse(course.id);
-        toast.success("Course created and submitted for review");
+        toast.success(t("newcourse.createdSubmitted"));
       } else {
-        toast.success("Course draft created");
+        toast.success(t("newcourse.createdDraft"));
       }
 
       await router.navigate({
@@ -99,19 +102,17 @@ function CreateCoursePage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Creation Header */}
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-10 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-2">
-              <div className="size-10 bg-primary/10 flex items-center justify-center text-primary border border-primary/10">
+              <div className="size-10 bg-ink/10 flex items-center justify-center text-ink border border-ink/10">
                 <GraduationCap className="size-6" />
               </div>
-              <h3 className="font-body text-3xl font-medium tracking-tight text-on-surface">
-                Course Proposal
-              </h3>
+              <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("newcourse.title")}</h3>
             </div>
-            <p className="text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
+            <p className="text-sm text-muted font-light max-w-2xl leading-relaxed">
               Transform your niche expertise into a structured academic experience. Follow our
               curation builder to create a submission-ready syllabus.
             </p>
@@ -119,22 +120,20 @@ function CreateCoursePage(): JSX.Element {
 
           <Button
             variant="outline"
-            className="h-11 border-outline-variant/30 hover:bg-surface-container-high transition-all"
+            className="h-11 border-hairline/30 hover:bg-chip-active transition-all"
             onClick={() => router.navigate({ to: "/dashboard/courses" })}
           >
-            <ChevronLeft className="size-4 mr-2" />
-            Workshop Index
-          </Button>
+            <ChevronLeft className="size-4 mr-2" />{t("cbuild.back")}</Button>
         </div>
       </div>
 
       <CourseEditor
         categories={categories}
-        description="Construct your academic proposal across four distinct layers of curation."
+        description={t("newcourse.lead")}
         initialValues={initialValues}
         isSaving={isSaving}
         teachers={teachers}
-        title="Curriculum Builder"
+        title={t("cbuild.contentTitle")}
         onCommit={handleCommit}
       />
     </div>

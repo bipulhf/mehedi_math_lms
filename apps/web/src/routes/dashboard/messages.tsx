@@ -24,6 +24,7 @@ import {
   type MessageParticipant
 } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/messages")({
   component: DashboardMessagesPage,
@@ -31,6 +32,8 @@ export const Route = createFileRoute("/dashboard/messages")({
 } as never);
 
 function DashboardMessagesPage(): JSX.Element {
+  const t = useT();
+
   const router = useRouter();
   const { isPending: isSessionPending, session } = useAuthSession();
   const [conversations, setConversations] = useState<readonly MessageConversation[]>([]);
@@ -193,7 +196,7 @@ function DashboardMessagesPage(): JSX.Element {
     }
 
     if (!canUseMessaging) {
-      toast.error("Messaging is only available for students and teachers");
+      toast.error(t("msg.teacherStudentOnly"));
       void router.navigate({ to: "/dashboard" });
       return;
     }
@@ -340,14 +343,10 @@ function DashboardMessagesPage(): JSX.Element {
 
   if (!session || !canUseMessaging) {
     return (
-      <div className="bg-surface-container-lowest/80 p-8 border border-outline-variant/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden group">
         <div className="mb-4">
-          <h3 className="font-body text-2xl font-medium tracking-tight text-on-surface">
-            Messaging unavailable
-          </h3>
-          <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">
-            This workspace is reserved for teacher-student conversations.
-          </p>
+          <h3 className="font-body text-2xl font-medium tracking-tight text-ink">{t("msg.unavailable")}</h3>
+          <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{t("msg.teacherStudentOnly")}</p>
         </div>
       </div>
     );

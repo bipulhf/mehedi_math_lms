@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute(
   "/dashboard/tests/$testId/submissions/$submissionId"
@@ -22,6 +23,8 @@ export const Route = createFileRoute(
 } as never);
 
 function GradeSubmissionPage(): JSX.Element {
+  const t = useT();
+
   const { submissionId, testId } = Route.useParams();
   const [testQuery, submissionQuery] = useQueries({
     queries: [
@@ -91,7 +94,7 @@ function GradeSubmissionPage(): JSX.Element {
         feedback
       });
       setSubmission(graded);
-      toast.success("Submission graded");
+      toast.success(t("grade.graded"));
     } finally {
       setIsSaving(false);
     }
@@ -129,10 +132,10 @@ function GradeSubmissionPage(): JSX.Element {
             <CardContent className="space-y-4">
               {question.type === "MCQ" ? (
                 <>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                     Selected option: {selectedOption?.optionText ?? "No answer"}
                   </div>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                     Correct option(s):{" "}
                     {question.options
                       .filter((option) => option.isCorrect)
@@ -142,10 +145,10 @@ function GradeSubmissionPage(): JSX.Element {
                 </>
               ) : (
                 <>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                     {answer?.writtenAnswer || "No written answer submitted"}
                   </div>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-6 text-on-surface">
+                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
                     Reference answer: {question.expectedAnswer || "Not provided"}
                   </div>
                   {answer ? (
@@ -171,7 +174,7 @@ function GradeSubmissionPage(): JSX.Element {
 
       <Card>
         <CardHeader>
-          <CardTitle>Submission feedback</CardTitle>
+          <CardTitle>{t("grade.feedback")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea value={feedback} onChange={(event) => setFeedback(event.target.value)} />

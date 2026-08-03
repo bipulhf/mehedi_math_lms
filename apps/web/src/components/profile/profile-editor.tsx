@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface StudentProfileFormProps {
   description: string;
@@ -108,20 +109,20 @@ function StepRail({
           className={[
             "rounded-2xl border px-5 py-5 transition-all duration-300 ease-out",
             index === activeStep
-              ? "border-primary/30 bg-primary/5 shadow-inner scale-[1.02]"
-              : "border-outline-variant/30 bg-surface-container-low opacity-60"
+              ? "border-ink/30 bg-ink/5 shadow-inner scale-[1.02]"
+              : "border-hairline/30 bg-panel-warm opacity-60"
           ].join(" ")}
         >
           <div className="flex items-center gap-3">
-            <div className={["flex size-6 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-colors", index === activeStep ? "bg-primary text-white" : "bg-outline-variant/30 text-on-surface/50"].join(" ")}>
+            <div className={["flex size-6 items-center justify-center rounded-full text-[10px] font-bold shadow-sm transition-colors", index === activeStep ? "bg-ink text-white" : "bg-hairline/30 text-ink/50"].join(" ")}>
               {index + 1}
             </div>
-            <p className="text-[0.7rem] font-bold uppercase tracking-widest text-on-surface/50">
+            <p className="text-[0.7rem] font-bold uppercase tracking-widest text-ink/50">
               Step {index + 1}
             </p>
           </div>
-          <p className="mt-4 font-body text-lg font-semibold text-on-surface">{step.label}</p>
-          <p className="mt-1 text-sm leading-6 text-on-surface-variant font-light">{step.description}</p>
+          <p className="mt-4 font-body text-lg font-semibold text-ink">{step.label}</p>
+          <p className="mt-1 text-sm leading-6 text-muted font-light">{step.description}</p>
         </div>
       ))}
     </div>
@@ -141,21 +142,23 @@ function StudentStepFields({
   register: ReturnType<typeof useZodForm<StudentProfileInput>>["register"];
   step: number;
 }): JSX.Element {
+  const t = useT();
+
   if (step === 0) {
     return (
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="student-name">Full name</Label>
+          <Label htmlFor="student-name">{t("profile.fullName")}</Label>
           <Input id="student-name" error={errors.name?.message} {...register("name")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="student-phone">Phone</Label>
+          <Label htmlFor="student-phone">{t("profile.phone")}</Label>
           <Input id="student-phone" error={errors.phone?.message} {...register("phone")} />
         </div>
         <div className="space-y-2">
           <ProfilePhotoUploadField
             id="student-photo"
-            label="Profile photo"
+            label={t("profile.photo")}
             error={errors.profilePhoto?.message}
             value={photoValue}
             onValueChange={onPhotoChange}
@@ -169,7 +172,7 @@ function StudentStepFields({
     return (
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="student-dob">Date of birth</Label>
+          <Label htmlFor="student-dob">{t("profile.dob")}</Label>
           <Input
             id="student-dob"
             type="date"
@@ -179,7 +182,7 @@ function StudentStepFields({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="student-guardian-name">Guardian name</Label>
+          <Label htmlFor="student-guardian-name">{t("profile.guardianName")}</Label>
           <Input
             id="student-guardian-name"
             error={errors.guardianName?.message}
@@ -187,7 +190,7 @@ function StudentStepFields({
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="student-guardian-phone">Guardian phone</Label>
+          <Label htmlFor="student-guardian-phone">{t("profile.guardianPhone")}</Label>
           <Input
             id="student-guardian-phone"
             error={errors.guardianPhone?.message}
@@ -201,15 +204,15 @@ function StudentStepFields({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-2">
-        <Label htmlFor="student-institution">Institution</Label>
+        <Label htmlFor="student-institution">{t("profile.institution")}</Label>
         <Input id="student-institution" error={errors.institution?.message} {...register("institution")} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="student-grade">Class or grade</Label>
+        <Label htmlFor="student-grade">{t("profile.classOrGrade")}</Label>
         <Input id="student-grade" error={errors.classOrGrade?.message} {...register("classOrGrade")} />
       </div>
       <div className="space-y-2 md:col-span-2">
-        <Label htmlFor="student-address">Address</Label>
+        <Label htmlFor="student-address">{t("profile.address")}</Label>
         <Textarea id="student-address" error={errors.address?.message} {...register("address")} />
       </div>
     </div>
@@ -229,21 +232,23 @@ function TeacherStepFields({
   register: ReturnType<typeof useZodForm<TeacherProfileInput>>["register"];
   step: number;
 }): JSX.Element {
+  const t = useT();
+
   if (step === 0) {
     return (
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="teacher-name">Full name</Label>
+          <Label htmlFor="teacher-name">{t("profile.fullName")}</Label>
           <Input id="teacher-name" error={errors.name?.message} {...register("name")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="teacher-phone">Phone</Label>
+          <Label htmlFor="teacher-phone">{t("profile.phone")}</Label>
           <Input id="teacher-phone" error={errors.phone?.message} {...register("phone")} />
         </div>
         <div className="space-y-2">
           <ProfilePhotoUploadField
             id="teacher-photo"
-            label="Profile photo"
+            label={t("profile.photo")}
             error={errors.profilePhoto?.message}
             value={photoValue}
             onValueChange={onPhotoChange}
@@ -257,11 +262,11 @@ function TeacherStepFields({
     return (
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="teacher-bio">Bio</Label>
+          <Label htmlFor="teacher-bio">{t("profile.bio")}</Label>
           <Textarea id="teacher-bio" error={errors.bio?.message} {...register("bio")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="teacher-qualifications">Qualifications</Label>
+          <Label htmlFor="teacher-qualifications">{t("profile.qualifications")}</Label>
           <Textarea
             id="teacher-qualifications"
             error={errors.qualifications?.message}
@@ -269,7 +274,7 @@ function TeacherStepFields({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="teacher-specializations">Specializations</Label>
+          <Label htmlFor="teacher-specializations">{t("profile.specializations")}</Label>
           <Textarea
             id="teacher-specializations"
             error={errors.specializations?.message}
@@ -282,10 +287,10 @@ function TeacherStepFields({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="teacher-social-links">Social links</Label>
+      <Label htmlFor="teacher-social-links">{t("profile.socialLinks")}</Label>
       <Textarea
         id="teacher-social-links"
-        placeholder="Website, Facebook, LinkedIn, YouTube, or any public contact links"
+        placeholder={t("profile.socialLinksHint")}
         error={errors.socialLinks?.message}
         {...register("socialLinks")}
       />
@@ -300,6 +305,8 @@ export function StudentProfileForm({
   onSubmit,
   title
 }: StudentProfileFormProps): JSX.Element {
+  const t = useT();
+
   const [step, setStep] = useState(0);
   const form = useZodForm<StudentProfileInput>({
     defaultValues: {
@@ -368,10 +375,10 @@ export function StudentProfileForm({
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
+    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
-        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
+        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={studentSteps} />
@@ -383,10 +390,8 @@ export function StudentProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
-            <Button className="h-12 font-body font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
-              Previous
-            </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-hairline/20">
+            <Button className="h-12 font-body font-semibold px-8 hover:bg-chip-active transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>{t("common.previous")}</Button>
             {/* The keys are load-bearing. Without them React reuses one DOM
                 node for both buttons and only swaps `type`, so the click that
                 advances to the last step finds itself on a submit button by the
@@ -394,11 +399,11 @@ export function StudentProfileForm({
                 itself. Distinct keys make it a different node. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < studentSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
                   {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
@@ -417,6 +422,8 @@ export function TeacherProfileForm({
   onSubmit,
   title
 }: TeacherProfileFormProps): JSX.Element {
+  const t = useT();
+
   const [step, setStep] = useState(0);
   const form = useZodForm<TeacherProfileInput>({
     defaultValues: {
@@ -483,10 +490,10 @@ export function TeacherProfileForm({
   });
 
   return (
-    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
+    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
-        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
+        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <div className="space-y-6">
         <StepRail activeStep={step} steps={teacherSteps} />
@@ -498,20 +505,18 @@ export function TeacherProfileForm({
             register={register}
             step={step}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-outline-variant/20">
-            <Button className="h-12 font-body font-semibold px-8 hover:bg-surface-container-high transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>
-              Previous
-            </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between pt-8 mt-8 border-t border-hairline/20">
+            <Button className="h-12 font-body font-semibold px-8 hover:bg-chip-active transition-all" type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>{t("common.previous")}</Button>
             {/* See the note in StudentProfileForm: the keys stop React reusing
                 one node for Continue and Save, which turned the click that
                 reached the last step into a submit. */}
             <div className="flex gap-3 w-full sm:w-auto">
               {step < teacherSteps.length - 1 ? (
-                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
+                <Button key="next" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="button" disabled={isSubmitting} onClick={() => void onNext()}>
                   {isSubmitting ? "Saving..." : "Continue"}
                 </Button>
               ) : (
-                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
+                <Button key="save" className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
                                     {isSubmitting ? "Saving profile..." : "Save profile"}
                 </Button>
               )}
@@ -530,6 +535,8 @@ export function BasicProfileForm({
   onSubmit,
   title
 }: BasicProfileFormProps): JSX.Element {
+  const t = useT();
+
   const form = useZodForm<BasicProfileInput>({
     defaultValues: {
       name: initialProfile?.user.name ?? "",
@@ -547,21 +554,21 @@ export function BasicProfileForm({
   const profilePhotoValue = watch("profilePhoto");
 
   return (
-    <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden group">
+    <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden group">
       <div className="mb-10 text-center sm:text-left">
-        <h2 className="font-body text-3xl font-medium tracking-tight text-on-surface">{title}</h2>
-        <p className="mt-2 text-sm text-on-surface-variant font-light max-w-2xl leading-relaxed">{description}</p>
+        <h2 className="font-body text-3xl font-medium tracking-tight text-ink">{title}</h2>
+        <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">{description}</p>
       </div>
       <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="basic-name">Display name</Label>
+            <Label htmlFor="basic-name">{t("profile.displayName")}</Label>
             <Input id="basic-name" error={errors.name?.message} {...register("name")} />
           </div>
           <div className="space-y-2 md:col-span-2">
             <ProfilePhotoUploadField
               id="basic-photo"
-              label="Profile photo"
+              label={t("profile.photo")}
               error={errors.profilePhoto?.message}
               value={profilePhotoValue ?? ""}
               onValueChange={(value) =>
@@ -570,8 +577,8 @@ export function BasicProfileForm({
             />
           </div>
         </div>
-        <div className="pt-8 mt-8 border-t border-outline-variant/20 flex justify-end">
-          <Button className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-primary text-white hover:bg-on-surface transition-all" type="submit" disabled={isSubmitting}>
+        <div className="pt-8 mt-8 border-t border-hairline/20 flex justify-end">
+          <Button className="h-12 w-full sm:w-auto font-body font-semibold px-10 bg-ink text-white hover:bg-ink transition-all" type="submit" disabled={isSubmitting}>
                         {isSubmitting ? "Saving profile..." : "Save profile"}
           </Button>
         </div>
@@ -628,33 +635,33 @@ export function RoleProfileForm({
 export function ProfilePageSkeleton(): JSX.Element {
   return (
     <div className="space-y-6">
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden">
+      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden">
         <div className="space-y-4 mb-10">
-          <Skeleton className="h-8 w-64 bg-surface-container-high" />
-          <Skeleton className="h-5 w-full max-w-xl bg-surface-container-high" />
+          <Skeleton className="h-8 w-64 bg-chip-active" />
+          <Skeleton className="h-5 w-full max-w-xl bg-chip-active" />
         </div>
         <div className="space-y-8">
           <div className="grid gap-3 sm:grid-cols-3">
-            <Skeleton className="h-32 bg-surface-container-high" />
-            <Skeleton className="h-32 bg-surface-container-high" />
-            <Skeleton className="h-32 bg-surface-container-high" />
+            <Skeleton className="h-32 bg-chip-active" />
+            <Skeleton className="h-32 bg-chip-active" />
+            <Skeleton className="h-32 bg-chip-active" />
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-20 w-full bg-surface-container-high md:col-span-2" />
-            <Skeleton className="h-20 w-full bg-surface-container-high" />
-            <Skeleton className="h-20 w-full bg-surface-container-high" />
-            <Skeleton className="h-36 w-full bg-surface-container-high md:col-span-2" />
+            <Skeleton className="h-20 w-full bg-chip-active md:col-span-2" />
+            <Skeleton className="h-20 w-full bg-chip-active" />
+            <Skeleton className="h-20 w-full bg-chip-active" />
+            <Skeleton className="h-36 w-full bg-chip-active md:col-span-2" />
           </div>
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest/80 p-8 sm:p-12 border border-outline-variant/40 relative w-full overflow-hidden opacity-50">
-        <Skeleton className="h-8 w-48 bg-surface-container-high mb-4" />
-        <Skeleton className="h-5 w-full max-w-lg bg-surface-container-high mb-8" />
+      <div className="bg-card/80 p-8 sm:p-12 border border-hairline/40 relative w-full overflow-hidden opacity-50">
+        <Skeleton className="h-8 w-48 bg-chip-active mb-4" />
+        <Skeleton className="h-5 w-full max-w-lg bg-chip-active mb-8" />
         <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-20 bg-surface-container-high md:col-span-2" />
-          <Skeleton className="h-20 bg-surface-container-high md:col-span-2" />
-          <Skeleton className="h-12 w-full sm:w-48 bg-surface-container-high" />
+          <Skeleton className="h-20 bg-chip-active md:col-span-2" />
+          <Skeleton className="h-20 bg-chip-active md:col-span-2" />
+          <Skeleton className="h-12 w-full sm:w-48 bg-chip-active" />
         </div>
       </div>
     </div>

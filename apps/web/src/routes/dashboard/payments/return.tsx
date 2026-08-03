@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { PaymentHistoryItem } from "@/lib/api/payments";
 import { getPaymentById } from "@/lib/api/payments";
 import { queryKeys } from "@/lib/query/keys";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/return")({
   component: PaymentReturnPage,
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/dashboard/payments/return")({
 } as never);
 
 function PaymentReturnPage(): JSX.Element {
+  const t = useT();
+
   const [status, setStatus] = useState("pending");
   // The gateway hands the ids back on the query string, which only exists in the
   // browser -- hence a mount effect rather than a route search schema.
@@ -47,20 +50,18 @@ function PaymentReturnPage(): JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>Payment {status}</CardTitle>
-          <CardDescription>
-            The gateway returned your transaction. Review the latest payment state below.
-          </CardDescription>
+          <CardDescription>{t("paymock.lead")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {payment ? (
             <>
               <div className="flex flex-wrap gap-2">
-                <Badge tone={payment.status === "SUCCESS" ? "green" : payment.status === "PENDING" ? "amber" : "red"}>
+                <Badge tone={payment.status === "SUCCESS" ? "neutral" : payment.status === "PENDING" ? "attention" : "attention"}>
                   {payment.status}
                 </Badge>
-                <Badge tone="blue">{payment.course.title}</Badge>
+                <Badge tone="neutral">{payment.course.title}</Badge>
               </div>
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">
                 <p>Amount: BDT {Number(payment.amount).toFixed(2)}</p>
                 <p>Transaction ID: {payment.transactionId}</p>
                 <p>Created: {new Date(payment.createdAt).toLocaleString()}</p>
@@ -68,16 +69,16 @@ function PaymentReturnPage(): JSX.Element {
               </div>
             </>
           ) : (
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-surface-container-low p-4 text-sm leading-7 text-on-surface/68">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">
               Payment details are unavailable. The callback may have been interrupted before the final redirect.
             </div>
           )}
           <div className="flex gap-3">
             <Button asChild>
-              <Link to="/dashboard/payments">Open payment history</Link>
+              <Link to="/dashboard/payments">{t("paymock.openHistory")}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to="/dashboard/my-courses">Go to my courses</Link>
+              <Link to="/dashboard/my-courses">{t("paymock.goCourses")}</Link>
             </Button>
           </div>
         </CardContent>
