@@ -84,6 +84,10 @@ function getEmbedVideoUrl(value: string): string | null {
   }
 }
 
+function getPdfMaterial(lecture: ContentLecture): ContentMaterial | null {
+  return lecture.materials.find((material) => material.fileType === "application/pdf") ?? null;
+}
+
 function ChunkedProgressBar({
   currentLectureId,
   progress,
@@ -168,6 +172,7 @@ export function CoursePlayer({
 
   const [progress, setProgress] = useState(initialProgress);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [openChapterId, setOpenChapterId] = useState<string | null>(null);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [playerMode, setPlayerMode] = useState<"learn" | "notices">("learn");
   const progressByLectureId = useMemo(
@@ -211,6 +216,7 @@ export function CoursePlayer({
     [navigationItems, selectedItemId]
   );
   const selectedLecture = selectedItem?.kind === "lecture" ? selectedItem.lecture : null;
+  const selectedPdf = selectedLecture ? getPdfMaterial(selectedLecture) : null;
   const selectedChapter = useMemo(() => {
     if (!selectedItem) {
       return null;
@@ -235,6 +241,12 @@ export function CoursePlayer({
         : (navigationItems[0]?.id ?? null);
     setSelectedItemId(nextLectureId);
   }, [navigationItems, progress.nextLectureId, selectedItemId]);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setOpenChapterId(selectedItem.chapterId);
+    }
+  }, [selectedItem]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -311,31 +323,35 @@ export function CoursePlayer({
                 <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink md:text-4xl">
                   {course.title}
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-ink/66">
-                  {course.description}
-                </p>
+                <p className="max-w-3xl text-sm leading-7 text-ink/66">{course.description}</p>
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.completed")}</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                    {t("player.completed")}
+                  </p>
                   <p className="mt-2 text-xl font-semibold text-ink">
                     {progress.completedLectures}
                   </p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.lectures")}</p>
-                  <p className="mt-2 text-xl font-semibold text-ink">
-                    {progress.totalLectures}
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                    {t("player.lectures")}
                   </p>
+                  <p className="mt-2 text-xl font-semibold text-ink">{progress.totalLectures}</p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("mine.progress")}</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                    {t("mine.progress")}
+                  </p>
                   <p className="mt-2 text-xl font-semibold text-ink">
                     {progress.completionPercentage}%
                   </p>
                 </div>
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
-                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.assessments")}</p>
+                  <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                    {t("player.assessments")}
+                  </p>
                   <p className="mt-2 text-xl font-semibold text-ink">
                     {assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
                   </p>
@@ -353,14 +369,18 @@ export function CoursePlayer({
                 size="sm"
                 variant={playerMode === "learn" ? "ink" : "outline"}
                 onClick={() => setPlayerMode("learn")}
-              >{t("player.lessonsAndTests")}</Button>
+              >
+                {t("player.lessonsAndTests")}
+              </Button>
               <Button
                 type="button"
                 size="sm"
                 variant={playerMode === "notices" ? "ink" : "outline"}
                 onClick={() => setPlayerMode("notices")}
               >
-                <Megaphone className="size-4" />{t("player.notices")}</Button>
+                <Megaphone className="size-4" />
+                {t("player.notices")}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -384,18 +404,40 @@ export function CoursePlayer({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {content.map((chapter) => (
-                  <div key={chapter.id} className="space-y-3">
-                    <div className="rounded-[calc(var(--radius)-0.125rem)] border border-hairline/70 bg-paper px-4 py-3">
-                      <p className="font-semibold text-ink">{chapter.title}</p>
-                      {chapter.description ? (
-                        <p className="mt-1 text-sm leading-6 text-ink/62">
-                          {chapter.description}
-                        </p>
-                      ) : null}
-                    </div>
+                {content.map((chapter) => {
+                  const isChapterOpen = openChapterId === chapter.id;
+                  const itemCount =
+                    chapter.lectures.length + (testsByChapterId.get(chapter.id)?.length ?? 0);
 
-                    <div className="grid gap-2">
+                  return (
+                  <div key={chapter.id} className="border border-hairline bg-paper">
+                    <button
+                      aria-expanded={isChapterOpen}
+                      className="flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left"
+                      type="button"
+                      onClick={() =>
+                        setOpenChapterId((current) =>
+                          current === chapter.id && selectedItem?.chapterId !== chapter.id
+                            ? null
+                            : chapter.id
+                        )
+                      }
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-semibold text-ink">{chapter.title}</span>
+                        {chapter.description ? (
+                          <span className="mt-1 block text-sm leading-6 text-ink/62">
+                            {chapter.description}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="shrink-0 text-xs text-muted">{itemCount}</span>
+                      <span aria-hidden="true" className="w-4 text-center text-xl text-muted">
+                        {isChapterOpen ? "−" : "+"}
+                      </span>
+                    </button>
+
+                    {isChapterOpen ? <div className="grid gap-2 border-t border-hairline p-3">
                       {chapter.lectures.map((lecture) => {
                         const lectureProgress = progressByLectureId.get(lecture.id);
                         const isSelected = selectedItemId === `lecture:${lecture.id}`;
@@ -412,11 +454,14 @@ export function CoursePlayer({
                             onClick={() => setSelectedItemId(`lecture:${lecture.id}`)}
                           >
                             <div className="min-w-0">
-                              <p className="truncate font-medium text-ink">
-                                {lecture.title}
-                              </p>
+                              <p className="truncate font-medium text-ink">{lecture.title}</p>
                               <p className="text-xs text-ink/58">
-                                {lecture.type === "TEXT" ? "Reading" : "Video"} ·{" "}
+                                {getPdfMaterial(lecture)
+                                  ? t("author.pdf")
+                                  : lecture.type === "TEXT"
+                                    ? t("cb.textLesson")
+                                    : t("author.video")}{" "}
+                                ·{" "}
                                 {lecture.videoDuration
                                   ? `${lecture.videoDuration} min`
                                   : "Self-paced"}
@@ -456,9 +501,10 @@ export function CoursePlayer({
                           </button>
                         );
                       })}
-                    </div>
+                    </div> : null}
                   </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           </div>
@@ -473,7 +519,11 @@ export function CoursePlayer({
                         {selectedLectureProgress?.isCompleted ? "Completed" : "Active lecture"}
                       </Badge>
                       <Badge tone="quiet">
-                        {selectedLecture.type === "TEXT" ? "Reading" : "Video"}
+                        {selectedPdf
+                          ? t("author.pdf")
+                          : selectedLecture.type === "TEXT"
+                            ? t("cb.textLesson")
+                            : t("author.video")}
                       </Badge>
                     </div>
                     <CardTitle>{selectedLecture.title}</CardTitle>
@@ -491,7 +541,15 @@ export function CoursePlayer({
                       </div>
                     ) : null}
 
-                    {selectedLecture.type === "TEXT" ? (
+                    {selectedPdf ? (
+                      <div className="overflow-hidden border border-hairline bg-card">
+                        <iframe
+                          className="h-[70vh] min-h-96 w-full"
+                          src={selectedPdf.fileUrl}
+                          title={selectedLecture.title}
+                        />
+                      </div>
+                    ) : selectedLecture.type === "TEXT" ? (
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-8 text-ink whitespace-pre-wrap">
                         {selectedLecture.content}
                       </div>
@@ -526,7 +584,9 @@ export function CoursePlayer({
                             href={selectedLecture.videoUrl}
                             rel="noreferrer"
                             target="_blank"
-                          >{t("player.openVideo")}</a>
+                          >
+                            {t("player.openVideo")}
+                          </a>
                         ) : null}
                       </div>
                     )}
@@ -545,7 +605,9 @@ export function CoursePlayer({
                             : "Mark as complete"}
                       </Button>
                       <Button asChild variant="outline">
-                        <Link to="/courses/$slug" params={{ slug: course.slug }}>{t("player.overview")}</Link>
+                        <Link to="/courses/$slug" params={{ slug: course.slug }}>
+                          {t("player.overview")}
+                        </Link>
                       </Button>
                       {selectedLectureProgress?.lastViewedAt ? (
                         <div className="flex items-center gap-2 text-sm text-ink/58">
@@ -560,8 +622,14 @@ export function CoursePlayer({
                   </CardContent>
                 </Card>
 
-                <MaterialLinks materials={selectedLecture.materials} title={t("player.lectureMaterials")} />
-                <MaterialLinks materials={selectedChapter.materials} title={t("player.chapterMaterials")} />
+                <MaterialLinks
+                  materials={selectedLecture.materials}
+                  title={t("player.lectureMaterials")}
+                />
+                <MaterialLinks
+                  materials={selectedChapter.materials}
+                  title={t("player.chapterMaterials")}
+                />
                 <LectureDiscussion lectureId={selectedLecture.id} />
 
                 <Card>
@@ -573,13 +641,17 @@ export function CoursePlayer({
                         setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
                       }
                     >
-                      <ArrowLeft className="size-4" />{t("common.previous")}</Button>
+                      <ArrowLeft className="size-4" />
+                      {t("common.previous")}
+                    </Button>
                     <Button
                       disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
                       onClick={() =>
                         setSelectedItemId(navigationItems[selectedIndex + 1]?.id ?? null)
                       }
-                    >{t("common.next")}<ArrowRight className="size-4" />
+                    >
+                      {t("common.next")}
+                      <ArrowRight className="size-4" />
                     </Button>
                   </CardContent>
                 </Card>
@@ -609,19 +681,25 @@ export function CoursePlayer({
                     ) : null}
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("ab.questions")}</p>
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                          {t("ab.questions")}
+                        </p>
                         <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.questionCount}
                         </p>
                       </div>
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("qe.marks")}</p>
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                          {t("qe.marks")}
+                        </p>
                         <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.totalMarks}
                         </p>
                       </div>
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("player.passing")}</p>
+                        <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                          {t("player.passing")}
+                        </p>
                         <p className="mt-2 text-xl font-semibold text-ink">
                           {selectedItem.test.passingScore ?? "N/A"}
                         </p>
@@ -633,7 +711,9 @@ export function CoursePlayer({
                           to="/dashboard/tests/$testId"
                           params={{ testId: selectedItem.test.id }}
                         >
-                          <PlayCircle className="size-4" />{t("player.openAssessment")}</Link>
+                          <PlayCircle className="size-4" />
+                          {t("player.openAssessment")}
+                        </Link>
                       </Button>
                       <Button
                         variant="outline"
@@ -642,14 +722,18 @@ export function CoursePlayer({
                           setSelectedItemId(navigationItems[selectedIndex - 1]?.id ?? null)
                         }
                       >
-                        <ArrowLeft className="size-4" />{t("player.previousItem")}</Button>
+                        <ArrowLeft className="size-4" />
+                        {t("player.previousItem")}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             ) : (
               <Card>
-                <CardContent className="p-6 text-sm leading-7 text-ink/68">{t("player.noContent")}</CardContent>
+                <CardContent className="p-6 text-sm leading-7 text-ink/68">
+                  {t("player.noContent")}
+                </CardContent>
               </Card>
             )}
           </div>

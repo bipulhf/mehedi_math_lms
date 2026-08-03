@@ -39,7 +39,15 @@ import {
   YAxis
 } from "recharts";
 
+import { seo } from "@/lib/seo";
+
 export const Route = createFileRoute("/dashboard/analytics")({
+  head: () =>
+    seo({
+      description: "Performance metrics and course engagement insights.",
+      path: "/dashboard/analytics",
+      title: "Teacher Analytics"
+    }),
   component: TeacherAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

@@ -35,14 +35,12 @@ function CourseAssessmentsPage(): JSX.Element {
   };
 
   if (isLoading || !course) {
-    return (
-      <TestBuilderSkeleton />
-    );
+    return <TestBuilderSkeleton />;
   }
 
   return (
     <div className="space-y-8">
-      <CourseBuilderSteps courseId={id} current="tests" />
+      <CourseBuilderSteps courseId={id} current="lectures" />
       <AssessmentBuilder assessments={assessments} course={course} onRefresh={loadData} />
     </div>
   );

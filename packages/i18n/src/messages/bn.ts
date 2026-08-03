@@ -1,3 +1,5 @@
+import { authoringBn } from "./authoring-bn";
+
 /**
  * The Bangla catalogue, and the source of truth for what keys exist.
  * `en.ts` is typed against it, so adding a key here without adding it there is
@@ -10,6 +12,7 @@
  * as they are rebuilt. It is not meant to be complete ahead of them.
  */
 export const bn = {
+  ...authoringBn,
   "action.back": "আগের ধাপ",
   "action.cancel": "বাদ দাও",
   "action.clearFilters": "ফিল্টার মুছে দাও",
@@ -68,21 +71,6 @@ export const bn = {
   "common.teachers": "শিক্ষক",
   "common.tests": "পরীক্ষা",
 
-  "builder.checkDescription": "বর্ণনা অন্তত ৪০ অক্ষরের",
-  "builder.checkFreeLesson": "অন্তত একটা ফ্রি ক্লাস আছে",
-  "builder.checkLessons": "অন্তত ৩টি ক্লাস যোগ করা হয়েছে",
-  "builder.checkModules": "অন্তত একটা মডিউল আছে",
-  "builder.checkPrice": "দাম বসানো হয়েছে",
-  "builder.checkTitle": "নাম অন্তত ৮ অক্ষরের",
-  "builder.checklistDone": "{done}/{total}টি ঠিক আছে",
-  "builder.publishLead": "প্রকাশ করলে অ্যাডমিন একবার দেখে অনুমোদন দেবেন। তারপর কোর্সটা সবার জন্য খুলে যাবে।",
-  "builder.publishTitle": "প্রকাশ",
-  "builder.stepContent": "ক্লাস সাজাও",
-  "builder.stepInfo": "কোর্সের তথ্য ও দাম",
-  "builder.stepPublish": "প্রকাশ",
-  "builder.stepTests": "পরীক্ষা",
-  "builder.submit": "প্রকাশের জন্য পাঠাও",
-  "builder.submitted": "অনুমোদনের অপেক্ষায় আছে",
   "common.close": "বন্ধ কর",
   "course.enroll": "ভর্তি হও",
   "course.examOnly": "পরীক্ষা ব্যাচ",
@@ -166,7 +154,8 @@ export const bn = {
   "home.closingLead": "একটা ফ্রি অ্যাকাউন্ট খুলে কোর্সগুলো ঘুরে দেখ। পছন্দ হলে তখন ভর্তি হয়ো।",
   "home.closingTitle": "এই মাসেই নতুন ক্লাস শুরু",
   "home.faqTitle": "যা জিজ্ঞেস করা হয়",
-  "home.heroLead": "স্কুল-কলেজ থেকে ভর্তি পরীক্ষা পর্যন্ত আমরা তোমার সাথেই আছি। একটা কোর্স কিনলেই পাবে তার সব ক্লাস, নোট আর পরীক্ষা।",
+  "home.heroLead":
+    "স্কুল-কলেজ থেকে ভর্তি পরীক্ষা পর্যন্ত আমরা তোমার সাথেই আছি। একটা কোর্স কিনলেই পাবে তার সব ক্লাস, নোট আর পরীক্ষা।",
   "home.heroTitle": "দেশের {ring} শিক্ষকদের সাথে পড়াশোনা কর",
   "home.heroTitleRing": "সেরা",
   "home.levelLead": "যেটা তোমার জন্য, সেটা বেছে নাও।",
@@ -351,14 +340,17 @@ export const bn = {
   "admin.cat.visibility": "দেখানো হবে?",
   "admin.courses.allStatuses": "সব স্ট্যাটাস",
   "admin.courses.archive": "আর্কাইভ",
-  "admin.courses.archiveDesc": "এই কোর্সটি ক্যাটালগ থেকে প্রত্যাহার করবেন? এনরোল করা শিক্ষার্থীরা অ্যাক্সেস পাবে।",
+  "admin.courses.archiveDesc":
+    "এই কোর্সটি ক্যাটালগ থেকে প্রত্যাহার করবেন? এনরোল করা শিক্ষার্থীরা অ্যাক্সেস পাবে।",
   "admin.courses.archiveTitle": "কোর্স আর্কাইভ করুন",
   "admin.courses.create": "নতুন কোর্স",
   "admin.courses.creator": "তৈরিকারক",
   "admin.courses.date": "তারিখ",
   "admin.courses.examOnly": "শুধুমাত্র পরীক্ষা",
-  "admin.courses.lead": "যেকোনো কোর্স তৈরি, সম্পাদনা ও পর্যবেক্ষণ করুন। অপেক্ষমান প্রস্তাব অনুমোদন বা ফেরত পাঠান, প্রকাশিত কোর্স প্রত্যাহার করুন এবং পুনঃস্থাপন করুন।",
-  "admin.courses.notFoundLead": "এই স্ট্যাটাস বা ফিল্টারের সাথে কোনো কোর্স মেলেনি। ফিল্টার সরান বা নতুন কোর্স তৈরি করুন।",
+  "admin.courses.lead":
+    "যেকোনো কোর্স তৈরি, সম্পাদনা ও পর্যবেক্ষণ করুন। অপেক্ষমান প্রস্তাব অনুমোদন বা ফেরত পাঠান, প্রকাশিত কোর্স প্রত্যাহার করুন এবং পুনঃস্থাপন করুন।",
+  "admin.courses.notFoundLead":
+    "এই স্ট্যাটাস বা ফিল্টারের সাথে কোনো কোর্স মেলেনি। ফিল্টার সরান বা নতুন কোর্স তৈরি করুন।",
   "admin.courses.notFoundTitle": "কোনো কোর্স পাওয়া যায়নি",
   "admin.courses.price": "মূল্য",
   "admin.courses.restore": "পুনঃস্থাপন",
@@ -424,7 +416,7 @@ export const bn = {
   "tcourses.submitted": "কোর্স অনুমোদনের জন্য পাঠানো হয়েছে",
   "tcourses.archivedDone": "কোর্স আর্কাইভ হয়েছে",
   "newcourse.title": "নতুন কোর্স",
-  "newcourse.lead": "প্রথমে নাম, বিষয় আর দাম। ক্লাস আর পরীক্ষা পরের ধাপে।",
+  "newcourse.lead": "প্রথমে প্রাথমিক তথ্য, এরপর অধ্যায় ও ক্লাস। সবশেষে রিভিউ করে পাঠাও।",
   "newcourse.createdSubmitted": "কোর্স তৈরি হয়েছে ও অনুমোদনের জন্য পাঠানো হয়েছে",
   "newcourse.createdDraft": "ড্রাফট তৈরি হয়েছে",
   "cb.courseSettings": "কোর্সের সেটিংস",
@@ -605,6 +597,9 @@ export const bn = {
   "cbx.chapterReordered": "মডিউলের ক্রম বদলানো হয়েছে",
   "cbx.lessonReordered": "ক্লাসের ক্রম বদলানো হয়েছে",
   "disc.title": "আলোচনা",
+  "disc.collapse": "আলোচনা বন্ধ কর",
+  "disc.expand": "আলোচনা খোল",
+  "disc.lead": "এই ক্লাস নিয়ে প্রশ্ন কর বা দরকারি তথ্য রেখে দাও।",
   "disc.you": "তুমি",
   "disc.reply": "উত্তর দাও",
   "disc.delete": "মুছে ফেল",
@@ -791,12 +786,14 @@ export const bn = {
   "cbuild.assessments": "পরীক্ষা",
   "about.title": "আমরা কারা",
   "about.lead": "দেশের শিক্ষকদের কোর্স, নোট আর পরীক্ষা — এক জায়গায়, সহজ ভাষায়।",
-  "about.body1": "জেনেক্স তৈরি হয়েছে একটা সহজ কারণে: ভালো শিক্ষকের ক্লাস যেন জায়গা বা টাকার কারণে আটকে না থাকে। একটা কোর্স কিনলে তার সব ক্লাস, নোট আর পরীক্ষা তোমার — কোনো মেয়াদ নেই।",
-  "about.body2": "প্রতিটা কোর্সের পেছনে একজন শিক্ষক আছেন, আর তাঁকে সাহায্য করার জন্য আছে মেসেজ, নোটিশ আর পরীক্ষার ব্যবস্থা।",
+  "about.body1":
+    "জেনেক্স তৈরি হয়েছে একটা সহজ কারণে: ভালো শিক্ষকের ক্লাস যেন জায়গা বা টাকার কারণে আটকে না থাকে। একটা কোর্স কিনলে তার সব ক্লাস, নোট আর পরীক্ষা তোমার — কোনো মেয়াদ নেই।",
+  "about.body2":
+    "প্রতিটা কোর্সের পেছনে একজন শিক্ষক আছেন, আর তাঁকে সাহায্য করার জন্য আছে মেসেজ, নোটিশ আর পরীক্ষার ব্যবস্থা।",
   "contact.title": "যোগাযোগ",
   "contact.address": "ঠিকানা:",
   "contact.helpline": "হেল্পলাইন:",
-  "contact.bugNote": "অ্যাপে কোনো সমস্যা পেলে ড্যাশবোর্ড থেকে জানাও — সেটা সরাসরি টিমের কাছে যায়।",
+  "contact.bugNote": "অ্যাপে কোনো সমস্যা পেলে ড্যাশবোর্ড থেকে জানাও — সেটা সরাসরি টিমের কাছে যায়।"
 } as const;
 
 export type MessageKey = keyof typeof bn;

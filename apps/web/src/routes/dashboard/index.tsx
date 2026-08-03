@@ -9,7 +9,15 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 
+import { seo } from "@/lib/seo";
+
 export const Route = createFileRoute("/dashboard/")({
+  head: () =>
+    seo({
+      description: "Overview of your courses, stats, and platform activities.",
+      path: "/dashboard",
+      title: "Dashboard Overview"
+    }),
   component: DashboardHomePage,
   errorComponent: RouteErrorView
 });

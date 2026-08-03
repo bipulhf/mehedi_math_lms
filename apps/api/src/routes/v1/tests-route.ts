@@ -7,6 +7,7 @@ import {
   submissionIdParamsSchema,
   submitTestSchema,
   testIdParamsSchema,
+  testQuestionParamsSchema,
   updateTestSchema
 } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
@@ -59,7 +60,7 @@ testsRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), (context) => {
 });
 
 testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (context) => {
-  const params = testIdParamsSchema.transform((value) => ({ testId: value.id })).parse(context.req.param());
+  const params = testQuestionParamsSchema.parse(context.req.param());
   const payload = createQuestionSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
@@ -74,7 +75,7 @@ testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (c
 });
 
 testsRoutes.patch("/:testId/questions/reorder", requireRole("ADMIN", "TEACHER"), async (context) => {
-  const params = testIdParamsSchema.transform((value) => ({ testId: value.id })).parse(context.req.param());
+  const params = testQuestionParamsSchema.parse(context.req.param());
   const payload = reorderQuestionsSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");

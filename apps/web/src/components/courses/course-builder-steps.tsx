@@ -5,30 +5,30 @@ import type { MessageKey } from "@genex/i18n";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
-export type BuilderStep = "info" | "content" | "tests" | "publish";
+export type BuilderStep = "chapters" | "info" | "lectures" | "review";
 
 interface StepDefinition {
   readonly labelKey: MessageKey;
+  readonly stage?: "chapters" | "lectures" | undefined;
   readonly step: BuilderStep;
   readonly to: string;
 }
 
-/**
- * Four steps, not the design's five. Its "কোর্সের তথ্য" and "দাম ও ব্যাচ" are
- * separate screens because the second holds a discount, a seat count and a
- * batch date — none of which exist here (GENEX_MIGRATION.md §2). What is left
- * of the pricing step is one price field, which belongs on the details form.
- *
- * The steps are routes rather than local state: each already existed as its own
- * page with its own saving, and turning four working forms into one component's
- * state would have risked the whole authoring flow to gain nothing the user can
- * see.
- */
 const steps: readonly StepDefinition[] = [
   { labelKey: "builder.stepInfo", step: "info", to: "/dashboard/courses/$id/edit" },
-  { labelKey: "builder.stepContent", step: "content", to: "/dashboard/courses/$id/content" },
-  { labelKey: "builder.stepTests", step: "tests", to: "/dashboard/courses/$id/tests" },
-  { labelKey: "builder.stepPublish", step: "publish", to: "/dashboard/courses/$id/publish" }
+  {
+    labelKey: "builder.stepContent",
+    stage: "chapters",
+    step: "chapters",
+    to: "/dashboard/courses/$id/content"
+  },
+  {
+    labelKey: "builder.stepTests",
+    stage: "lectures",
+    step: "lectures",
+    to: "/dashboard/courses/$id/content"
+  },
+  { labelKey: "builder.stepPublish", step: "review", to: "/dashboard/courses/$id/publish" }
 ];
 
 /**
@@ -58,6 +58,7 @@ export function CourseBuilderSteps({
             )}
             key={definition.step}
             params={{ id: courseId }}
+            search={definition.stage ? { stage: definition.stage } : {}}
             to={definition.to}
           >
             <span

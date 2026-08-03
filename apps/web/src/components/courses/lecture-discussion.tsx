@@ -228,6 +228,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
 
   const { session } = useAuthSession();
   const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [replyTargetId, setReplyTargetId] = useState<string | null>(null);
   const [submittingReplyId, setSubmittingReplyId] = useState<string | null>(null);
@@ -248,6 +249,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
     hasNextPage,
     isPending: isLoading
   } = useInfiniteQuery<CommentPage>({
+    enabled: isOpen,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.page < lastPage.pagination.pages
         ? lastPage.pagination.page + 1
@@ -276,14 +278,23 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
         }
 
         const flattened = update(current.pages.flatMap((commentPage) => commentPage.data));
+        const loadedCount = current.pages.reduce(
+          (total, commentPage) => total + commentPage.data.length,
+          0
+        );
+        const firstPageDelta = flattened.length - loadedCount;
         let cursor = 0;
 
         return {
           ...current,
-          pages: current.pages.map((commentPage) => {
-            const slice = flattened.slice(cursor, cursor + commentPage.data.length);
+          pages: current.pages.map((commentPage, index) => {
+            const pageSize = Math.max(
+              0,
+              commentPage.data.length + (index === 0 ? firstPageDelta : 0)
+            );
+            const slice = flattened.slice(cursor, cursor + pageSize);
 
-            cursor += commentPage.data.length;
+            cursor += pageSize;
 
             return { ...commentPage, data: slice };
           })
@@ -338,14 +349,25 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
 
   return (
     <Card className="border-hairline/60 bg-panel-warm/70">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="size-4" />{t("disc.title")}</CardTitle>
-        <CardDescription>
-          Ask questions, leave context for future learners, and keep the lecture conversation attached to the material.
-        </CardDescription>
+      <CardHeader className="p-0">
+        <button
+          aria-expanded={isOpen}
+          className="flex min-h-14 w-full items-center gap-4 px-5 py-4 text-left sm:px-6"
+          type="button"
+          onClick={() => setIsOpen((current) => !current)}
+        >
+          <MessageSquare className="size-4 shrink-0" />
+          <span className="min-w-0 flex-1">
+            <CardTitle>{t("disc.title")}</CardTitle>
+            <CardDescription className="mt-1">{t("disc.lead")}</CardDescription>
+          </span>
+          <span aria-hidden="true" className="text-xl font-light text-muted">
+            {isOpen ? "−" : "+"}
+          </span>
+          <span className="sr-only">{isOpen ? t("disc.collapse") : t("disc.expand")}</span>
+        </button>
       </CardHeader>
-      <CardContent className="space-y-4">
+      {isOpen ? <CardContent className="space-y-4 border-t border-hairline pt-5">
         {canDiscuss ? (
           <CommentComposer
             isPending={isCreating}
@@ -452,7 +474,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
             </Button>
           </div>
         ) : null}
-      </CardContent>
+      </CardContent> : null}
 
       <ConfirmDialog
         cancelLabel={t("common.cancel")}

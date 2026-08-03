@@ -1,4 +1,5 @@
 import type { MessageKey } from "./bn";
+import { authoringEn } from "./authoring-en";
 
 /**
  * The English catalogue. Typed as a complete record of `MessageKey`, so a key
@@ -8,6 +9,7 @@ import type { MessageKey } from "./bn";
  * same plain register and resist making them longer or more formal.
  */
 export const en: Readonly<Record<MessageKey, string>> = {
+  ...authoringEn,
   "action.back": "Back",
   "action.cancel": "Cancel",
   "action.clearFilters": "Clear filters",
@@ -66,21 +68,6 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "common.teachers": "teachers",
   "common.tests": "tests",
 
-  "builder.checkDescription": "Description is at least 40 characters",
-  "builder.checkFreeLesson": "At least one class is free",
-  "builder.checkLessons": "At least 3 classes added",
-  "builder.checkModules": "At least one module",
-  "builder.checkPrice": "A price is set",
-  "builder.checkTitle": "Title is at least 8 characters",
-  "builder.checklistDone": "{done} of {total} ready",
-  "builder.publishLead": "Publishing sends the course to an admin for one review. Once approved it opens to everyone.",
-  "builder.publishTitle": "Publish",
-  "builder.stepContent": "Classes",
-  "builder.stepInfo": "Course details and price",
-  "builder.stepPublish": "Publish",
-  "builder.stepTests": "Tests",
-  "builder.submit": "Send for review",
-  "builder.submitted": "Waiting for approval",
   "common.close": "Close",
   "course.enroll": "Enrol",
   "course.examOnly": "Exam batch",
@@ -115,7 +102,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
 
   "courses.allLevels": "All",
   "courses.freeOnly": "Has a free class",
-  "courses.lead": "From school and college to job skills — every course in one place. Pick a level and a subject.",
+  "courses.lead":
+    "From school and college to job skills — every course in one place. Pick a level and a subject.",
   "courses.level": "Level",
   "courses.searchPlaceholder": "Course or teacher name",
   "courses.sort.newest": "Newest",
@@ -164,7 +152,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "home.closingLead": "Open a free account and look around. Enrol when something fits.",
   "home.closingTitle": "New classes start this month",
   "home.faqTitle": "What people ask",
-  "home.heroLead": "From school and college to admission tests, we are with you. Buy one course and you get all its classes, notes and tests.",
+  "home.heroLead":
+    "From school and college to admission tests, we are with you. Buy one course and you get all its classes, notes and tests.",
   "home.heroTitle": "Study with the country's {ring} teachers",
   "home.heroTitleRing": "best",
   "home.levelLead": "Pick the one that fits you.",
@@ -180,7 +169,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "home.teachersLead": "The people you will study with.",
   "home.teachersTitle": "Our teachers",
 
-  "faq.a1": "Once you buy a course, all of its classes, notes and tests are yours. There is no expiry.",
+  "faq.a1":
+    "Once you buy a course, all of its classes, notes and tests are yours. There is no expiry.",
   "faq.a2": "Every course keeps a few classes free. Watch those, then decide.",
   "faq.a3": "bKash, Nagad, Rocket and cards all work.",
   "faq.a4": "Finish a course and the certificate is downloadable from your dashboard.",
@@ -232,7 +222,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "teacher.phone": "Phone",
   "teacher.specializations": "Teaches",
   "teachers.empty": "No teacher has a published course yet",
-  "teachers.lead": "Who you will study with — their courses, subjects and student numbers in one place.",
+  "teachers.lead":
+    "Who you will study with — their courses, subjects and student numbers in one place.",
   "teachers.title": "Our teachers",
 
   "role.accountant": "Accountant",
@@ -240,7 +231,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "role.student": "Student",
   "role.teacher": "Teacher",
   "mine.title": "My courses",
-  "mine.lead": "Track active enrollments, payment state, and your current learning progress from one list.",
+  "mine.lead":
+    "Track active enrollments, payment state, and your current learning progress from one list.",
   "mine.empty": "You have not enrolled in any course yet. Explore the catalogue to get started.",
   "mine.browse": "Browse courses",
   "mine.progress": "Progress",
@@ -251,7 +243,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "mine.downloadCertificate": "Download certificate",
   "mine.downloadReceipt": "Download receipt",
   "mine.studentOnly": "Student access only",
-  "mine.studentOnlyLead": "This workspace is reserved for student enrollment and learning activity.",
+  "mine.studentOnlyLead":
+    "This workspace is reserved for student enrollment and learning activity.",
   "pay.filterStatus": "Filter by status",
   "pay.allStatuses": "All statuses",
   "pay.pending": "Pending",
@@ -269,7 +262,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "pay.refund": "Refund",
   "pay.refunded.done": "Payment refunded",
   "bugs.mineTitle": "My bug reports",
-  "bugs.mineLead": "Track what you submitted, what is being investigated, and what has already been resolved.",
+  "bugs.mineLead":
+    "Track what you submitted, what is being investigated, and what has already been resolved.",
   "bugs.report": "Report a bug",
   "bugs.adminResponse": "Admin response",
   "bugs.mineEmpty": "No bug reports submitted yet.",
@@ -347,14 +341,17 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "admin.cat.visibility": "Visibility",
   "admin.courses.allStatuses": "All statuses",
   "admin.courses.archive": "Archive",
-  "admin.courses.archiveDesc": "Withdraw this course from the catalog? Enrolled students keep access.",
+  "admin.courses.archiveDesc":
+    "Withdraw this course from the catalog? Enrolled students keep access.",
   "admin.courses.archiveTitle": "Archive course",
   "admin.courses.create": "Create course",
   "admin.courses.creator": "Creator",
   "admin.courses.date": "Date",
   "admin.courses.examOnly": "Exam only",
-  "admin.courses.lead": "Create, edit and curate every course. Approve or send back pending proposals, withdraw published ones, and restore withdrawn drafts.",
-  "admin.courses.notFoundLead": "No courses match this status and search. Clear a filter or create a new course.",
+  "admin.courses.lead":
+    "Create, edit and curate every course. Approve or send back pending proposals, withdraw published ones, and restore withdrawn drafts.",
+  "admin.courses.notFoundLead":
+    "No courses match this status and search. Clear a filter or create a new course.",
   "admin.courses.notFoundTitle": "No courses found",
   "admin.courses.price": "Price",
   "admin.courses.restore": "Restore",
@@ -420,7 +417,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "tcourses.submitted": "Course sent for review",
   "tcourses.archivedDone": "Course archived",
   "newcourse.title": "New course",
-  "newcourse.lead": "Name, subject and price first. Classes and tests come next.",
+  "newcourse.lead":
+    "Start with the basics, then add chapters and lectures. Review everything before sending.",
   "newcourse.createdSubmitted": "Course created and sent for review",
   "newcourse.createdDraft": "Draft created",
   "cb.courseSettings": "Course settings",
@@ -601,6 +599,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "cbx.chapterReordered": "Module order updated",
   "cbx.lessonReordered": "Class order updated",
   "disc.title": "Discussion",
+  "disc.collapse": "Collapse discussion",
+  "disc.expand": "Expand discussion",
+  "disc.lead": "Ask a question or leave useful context about this lecture.",
   "disc.you": "You",
   "disc.reply": "Reply",
   "disc.delete": "Delete",
@@ -786,11 +787,15 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "site.tagline": "Mathematics and science, made plain.",
   "cbuild.assessments": "Tests",
   "about.title": "About Genex",
-  "about.lead": "Courses, notes and tests from teachers around the country, in one place and in plain language.",
-  "about.body1": "Genex exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
-  "about.body2": "Behind every course there is a teacher, and behind them the messaging, notices and assessment tools that keep a batch running.",
+  "about.lead":
+    "Courses, notes and tests from teachers around the country, in one place and in plain language.",
+  "about.body1":
+    "Genex exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
+  "about.body2":
+    "Behind every course there is a teacher, and behind them the messaging, notices and assessment tools that keep a batch running.",
   "contact.title": "Contact us",
   "contact.address": "Address:",
   "contact.helpline": "Helpline:",
-  "contact.bugNote": "Found a problem in the app? Report it from the dashboard and it reaches the team directly.",
+  "contact.bugNote":
+    "Found a problem in the app? Report it from the dashboard and it reaches the team directly."
 };
