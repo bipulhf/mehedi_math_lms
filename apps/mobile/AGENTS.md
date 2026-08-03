@@ -60,6 +60,26 @@ React Native has no cookie jar, so the app stores Better Auth's session cookie i
 
 A rejected cookie is treated as "signed out", not as an error — it is cleared so the next launch does not retry it.
 
+## Design tokens and locale
+
+`src/theme/tokens.ts` restates `DESIGN.md` in values Metro can bundle — the
+Genex warm-paper palette, square cards, 4px on buttons and inputs, and no
+shadows (`shadow.card` is an empty object kept only so screens that spread it
+still compile). The Material token names below it are compatibility aliases and
+go when the screens using them are rebuilt.
+
+Type is Hind Siliguri for everything set in words and Archivo for Latin
+numerals, ids and small all-caps labels. Several `fonts` entries deliberately
+map to the same family: React Native does not synthesise a bold for a custom
+family on Android, so `fontWeight` over a family name silently renders regular
+— reach for a family, never a weight.
+
+Strings and number formatting come from `@genex/i18n`, the same catalogue the
+web app uses, through `src/lib/locale.tsx` (`useT`, `useFormat`, `useLocale`).
+There is no SSR here, so unlike the web there is no cookie and no first-paint
+problem: the stored locale is read in an effect and the first frame uses the
+default.
+
 **Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `genex://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
 
 A **401 from any product request clears the stored cookie**. A session can end while the app is backgrounded, and without this every screen would keep replaying a dead cookie with nothing telling the app to ask for a sign-in.

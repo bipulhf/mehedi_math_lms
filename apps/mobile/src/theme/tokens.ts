@@ -1,43 +1,72 @@
 /**
- * The Digital Atelier palette, transcribed from `apps/web/src/styles/app.css`
- * into plain values React Native can use. Tailwind's token names are kept so a
- * screen can be read against its web counterpart without a translation step.
+ * The Genex palette, transcribed from `apps/web/src/styles/app.css` into plain
+ * values React Native can use. `DESIGN.md` is the authority; this file only
+ * restates it in a form Metro can bundle.
+ *
+ * The Material token names are kept as aliases at the bottom so screens that
+ * have not been rebuilt still resolve. They go when those screens do.
  */
 export const colors = {
-  background: "#faf8ff",
-  error: "#c4353b",
-  errorContainer: "#ffdad8",
-  onBackground: "#1a1b21",
+  accent: "#ee5622",
+  barIdle: "#e4ded5",
+  barTrack: "#f1eee9",
+  card: "#ffffff",
+  chipActive: "#efebe4",
+  dotIdle: "#ddd8d1",
+  error: "#ba1a1a",
+  hairline: "#e8e4de",
+  hairlineFaint: "#f0ede7",
+  ink: "#23211e",
+  inkMuted: "#4a453f",
+  lineStrong: "#c9c3bb",
+  muted: "#6b6763",
+  mutedFaint: "#a8a29a",
+  mutedLight: "#8a857d",
+  panelWarm: "#f7f5f1",
+  paper: "#fcfbf9",
+  placeholder: "#b4aea6",
+  placeholderFill: "#f1eee9",
+  rowHover: "#fbf9f6",
+
+  // Compatibility aliases for screens not yet rebuilt. Remove with them.
+  background: "#fcfbf9",
+  errorContainer: "#ffdad6",
+  onBackground: "#23211e",
   onError: "#ffffff",
-  onPrimary: "#ffffff",
-  onPrimaryContainer: "#141a63",
-  onSecondaryContainer: "#131b3f",
-  onSurface: "#1a1b21",
-  onSurfaceVariant: "#45464f",
-  outline: "#76777d",
-  outlineVariant: "#c6c6d0",
-  primary: "#6061ee",
-  primaryContainer: "#e0e0ff",
-  secondary: "#5a5c92",
-  secondaryContainer: "#e0e0ff",
-  success: "#2f6b4f",
-  surface: "#faf8ff",
-  surfaceContainer: "#eeedf6",
-  surfaceContainerHigh: "#e8e7f1",
-  surfaceContainerHighest: "#dae2fd",
-  surfaceContainerLow: "#f2f3ff",
+  onPrimary: "#fcfbf9",
+  onPrimaryContainer: "#23211e",
+  onSecondaryContainer: "#fcfbf9",
+  onSurface: "#23211e",
+  onSurfaceVariant: "#6b6763",
+  outline: "#c9c3bb",
+  outlineVariant: "#e8e4de",
+  primary: "#23211e",
+  primaryContainer: "#efebe4",
+  secondary: "#ee5622",
+  secondaryContainer: "#ee5622",
+  success: "#6b6763",
+  surface: "#fcfbf9",
+  surfaceContainer: "#f7f5f1",
+  surfaceContainerHigh: "#efebe4",
+  surfaceContainerHighest: "#efebe4",
+  surfaceContainerLow: "#f7f5f1",
   surfaceContainerLowest: "#ffffff",
-  warning: "#8a5a00"
+  warning: "#ee5622"
 } as const;
 
-/** Matches the web `--radius-*` scale. */
+/**
+ * Cards are square and buttons are 4px. `full` survives for dots, avatars and
+ * pills — the only round things in the design.
+ */
 export const radius = {
   full: 999,
-  lg: 16,
-  md: 12,
-  sm: 8,
-  xl: 24,
-  xxl: 32
+  lg: 4,
+  md: 4,
+  pill: 100,
+  sm: 4,
+  square: 0,
+  xl: 4,
+  xxl: 4
 } as const;
 
 /** A 4pt scale; every gap and padding in the app comes from here. */
@@ -55,33 +84,36 @@ export const spacing = {
  * The exact family names registered by `useFonts` in `app/_layout.tsx`.
  *
  * One family per weight, deliberately: React Native does not synthesise a bold
- * for a custom family on Android, so `fontWeight: "700"` over `"Manrope"`
+ * for a custom family on Android, so `fontWeight: "700"` over a family name
  * silently renders regular. Reach for a family here instead of a weight.
+ *
+ * Everything set in words is Hind Siliguri — the design uses one family for
+ * that. Archivo is only for Latin numerals, ids and small all-caps labels.
  */
 export const fonts = {
-  body: "Inter_400Regular",
-  bodyMedium: "Inter_500Medium",
-  bodySemiBold: "Inter_600SemiBold",
-  displayBold: "Manrope_700Bold",
-  displayExtraBold: "Manrope_800ExtraBold",
-  displaySemiBold: "Manrope_600SemiBold"
+  body: "HindSiliguri_300Light",
+  bodyMedium: "HindSiliguri_400Regular",
+  bodySemiBold: "HindSiliguri_500Medium",
+  displayBold: "HindSiliguri_500Medium",
+  displayExtraBold: "HindSiliguri_600SemiBold",
+  displaySemiBold: "HindSiliguri_500Medium",
+  monoLabel: "Archivo_500Medium"
 } as const;
 
 export const typography = {
-  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
-  caption: { fontFamily: fonts.body, fontSize: 12, lineHeight: 16 },
-  display: { fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 36 },
-  heading: { fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 28 },
-  label: { fontFamily: fonts.displaySemiBold, fontSize: 13, lineHeight: 18 },
+  body: { fontFamily: fonts.body, fontSize: 16, lineHeight: 26 },
+  caption: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
+  display: { fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 38 },
+  heading: { fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 30 },
+  label: { fontFamily: fonts.monoLabel, fontSize: 12, letterSpacing: 0.6, lineHeight: 16 },
   title: { fontFamily: fonts.displayBold, fontSize: 17, lineHeight: 24 }
 } as const;
 
+/**
+ * No shadows. DESIGN.md §1 — depth comes from hairlines, and a card is a
+ * hairline border on white. Kept as an exported empty style so the screens
+ * that spread it keep compiling until they are rebuilt.
+ */
 export const shadow = {
-  card: {
-    elevation: 2,
-    shadowColor: "#131b2e",
-    shadowOffset: { height: 6, width: 0 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16
-  }
+  card: {}
 } as const;

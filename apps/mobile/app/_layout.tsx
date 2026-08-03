@@ -1,12 +1,11 @@
 // Imported per weight, not from the package root: the root index re-exports
 // every weight and italic, and Metro bundles each one it can see — about 10MB
 // of TTF for the six files this app registers.
-import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
-import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
-import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
-import { Manrope_600SemiBold } from "@expo-google-fonts/manrope/600SemiBold";
-import { Manrope_700Bold } from "@expo-google-fonts/manrope/700Bold";
-import { Manrope_800ExtraBold } from "@expo-google-fonts/manrope/800ExtraBold";
+import { Archivo_500Medium } from "@expo-google-fonts/archivo/500Medium";
+import { HindSiliguri_300Light } from "@expo-google-fonts/hind-siliguri/300Light";
+import { HindSiliguri_400Regular } from "@expo-google-fonts/hind-siliguri/400Regular";
+import { HindSiliguri_500Medium } from "@expo-google-fonts/hind-siliguri/500Medium";
+import { HindSiliguri_600SemiBold } from "@expo-google-fonts/hind-siliguri/600SemiBold";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -15,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
+import { LocaleProvider } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
 import { colors, fonts } from "@/src/theme/tokens";
 
@@ -33,13 +33,15 @@ export default function RootLayout(): JSX.Element | null {
   // Created in state, not at module scope: a fast refresh would otherwise keep
   // a client whose cache no longer matches the code that filled it.
   const [queryClient] = useState(createMobileQueryClient);
+  // Four Hind Siliguri weights plus one Archivo. Several `fonts` entries map to
+  // the same family on purpose — the design sets everything in words in one
+  // family, and Archivo is only for Latin numerals and small all-caps labels.
   const [fontsLoaded, fontError] = useFonts({
-    [fonts.body]: Inter_400Regular,
-    [fonts.bodyMedium]: Inter_500Medium,
-    [fonts.bodySemiBold]: Inter_600SemiBold,
-    [fonts.displayBold]: Manrope_700Bold,
-    [fonts.displayExtraBold]: Manrope_800ExtraBold,
-    [fonts.displaySemiBold]: Manrope_600SemiBold
+    [fonts.body]: HindSiliguri_300Light,
+    [fonts.bodyMedium]: HindSiliguri_400Regular,
+    [fonts.bodySemiBold]: HindSiliguri_500Medium,
+    [fonts.displayExtraBold]: HindSiliguri_600SemiBold,
+    [fonts.monoLabel]: Archivo_500Medium
   });
   const isReady = fontsLoaded || fontError !== null;
 
@@ -58,31 +60,33 @@ export default function RootLayout(): JSX.Element | null {
       client={queryClient}
       persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
     >
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          contentStyle: { backgroundColor: colors.background },
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.onSurface,
-          headerTitleStyle: { fontFamily: fonts.displayBold }
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="sign-in" options={{ title: "Sign in" }} />
-        <Stack.Screen name="sign-up" options={{ title: "Create account" }} />
-        <Stack.Screen name="courses/[courseId]" options={{ title: "Course" }} />
-        <Stack.Screen name="learn/[courseId]" options={{ title: "Course player" }} />
-        <Stack.Screen name="tests/[testId]" options={{ title: "Test" }} />
-        <Stack.Screen name="messages/[conversationId]" options={{ title: "Conversation" }} />
-        <Stack.Screen name="profile-complete" options={{ title: "Complete your profile" }} />
-        <Stack.Screen name="bug-report" options={{ title: "Report a bug" }} />
-        {/* Deep-link landing pads. Android delivers `genex://…` through Linking
+      <LocaleProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            contentStyle: { backgroundColor: colors.paper },
+            headerShadowVisible: false,
+            headerStyle: { backgroundColor: colors.paper },
+            headerTintColor: colors.ink,
+            headerTitleStyle: { fontFamily: fonts.displayBold }
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-in" options={{ title: "Sign in" }} />
+          <Stack.Screen name="sign-up" options={{ title: "Create account" }} />
+          <Stack.Screen name="courses/[courseId]" options={{ title: "Course" }} />
+          <Stack.Screen name="learn/[courseId]" options={{ title: "Course player" }} />
+          <Stack.Screen name="tests/[testId]" options={{ title: "Test" }} />
+          <Stack.Screen name="messages/[conversationId]" options={{ title: "Conversation" }} />
+          <Stack.Screen name="profile-complete" options={{ title: "Complete your profile" }} />
+          <Stack.Screen name="bug-report" options={{ title: "Report a bug" }} />
+          {/* Deep-link landing pads. Android delivers `genex://…` through Linking
             as well as resolving the browser session, and Expo Router would
             otherwise route that to +not-found. */}
-        <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
-        <Stack.Screen name="payment-callback" options={{ headerShown: false }} />
-      </Stack>
+          <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+          <Stack.Screen name="payment-callback" options={{ headerShown: false }} />
+        </Stack>
+      </LocaleProvider>
     </PersistQueryClientProvider>
   );
 }

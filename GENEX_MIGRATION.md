@@ -296,7 +296,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 8 | Dashboard overviews — student, teacher, admin, accountant | ☑ |
 | 9 | Admin dashboard + accountant analytics | ☑ |
 | 10 | System-only surfaces restyled (§3). Auth localised; the rest carry English copy — see §11 | ◐ |
-| 11 | Mobile: token and i18n sync, deep-link scheme | ☐ |
+| 11 | Mobile: token and i18n sync, deep-link scheme | ☑ |
 | 12 | Cleanup: compatibility aliases, `FadeIn`, E2E updates, SEO / `og-image` restyle, `PLAN.md` reconciliation | ☐ |
 
 Phases 0–5 are foundation and must land in order. 6–10 can be reordered or
@@ -595,6 +595,28 @@ gone, and the layout is derived from the marketing bands rather than invented.
 **The rest of the dashboard copy is still English.** Roughly 495 strings across
 64 files — see §11. This is the one part of the migration that is measured
 rather than finished, and it is called out rather than glossed.
+
+**Phase 11** — mobile. The deep-link scheme moved in Phase 1, so this was the
+palette, the type and the catalogue.
+
+`src/theme/tokens.ts` now restates the Genex palette. `shadow.card` is an empty
+object rather than deleted, so the screens that spread it keep compiling until
+they are rebuilt; the Material names below the real tokens are aliases with the
+same fate. `radius.full` survives because dots, avatars and pills are the only
+round things left.
+
+Inter and Manrope are out, Hind Siliguri and Archivo in. Several `fonts` entries
+map to the same family on purpose: React Native does not synthesise a bold for a
+custom family on Android, so a weight over a family name silently renders
+regular — the app reaches for a family instead, and the design only uses one for
+everything set in words.
+
+`@genex/i18n` is wired through `src/lib/locale.tsx`. No cookie and no
+first-paint problem here, because there is no SSR: the stored locale is read in
+an effect and the first frame uses the default, which is the language most
+readers want anyway.
+
+Mobile tests: 60 passing across 7 suites.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt

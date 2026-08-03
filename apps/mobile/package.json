@@ -12,8 +12,9 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo-google-fonts/inter": "^0.4.2",
-    "@expo-google-fonts/manrope": "^0.4.2",
+    "@expo-google-fonts/archivo": "^0.4.2",
+    "@expo-google-fonts/hind-siliguri": "^0.4.1",
+    "@genex/i18n": "workspace:*",
     "@genex/shared": "workspace:*",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.3.14",

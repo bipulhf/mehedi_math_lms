@@ -44,8 +44,9 @@
       "name": "@genex/mobile",
       "version": "1.0.0",
       "dependencies": {
-        "@expo-google-fonts/inter": "^0.4.2",
-        "@expo-google-fonts/manrope": "^0.4.2",
+        "@expo-google-fonts/archivo": "^0.4.2",
+        "@expo-google-fonts/hind-siliguri": "^0.4.1",
+        "@genex/i18n": "workspace:*",
         "@genex/shared": "workspace:*",
         "@react-native-async-storage/async-storage": "2.2.0",
         "@react-navigation/native": "^7.3.14",
@@ -499,9 +500,9 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.7.2", "", { "dependencies": { "@eslint/core": "^1.2.1", "levn": "^0.4.1" } }, "sha512-+CNAzxglkrpNf/kKywqQfk74QjtceuOE7Qm+AF8miRvPF/wmmK5+OJOgVh3AVTT3RP2mH3+FOaxlE5v72owk0A=="],
 
-    "@expo-google-fonts/inter": ["@expo-google-fonts/inter@0.4.2", "", {}, "sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ=="],
+    "@expo-google-fonts/archivo": ["@expo-google-fonts/archivo@0.4.2", "", {}, "sha512-FLhI4/ZVIFSHHxx15Z7Rr4QX/4ZrJozEebBEFSdHSRRwULGCuSIpbb3dz56Hslux6LZEnJ1mVpZ6CyVpUzLwIg=="],
 
-    "@expo-google-fonts/manrope": ["@expo-google-fonts/manrope@0.4.2", "", {}, "sha512-BZsKe8d9BJrVnIQIZcTS7/Kac0TbXnqs/+8EBSiQxrmK6GoCO6eTkmr50D1weIk/EoF20pTmAkpWICnovATr/g=="],
+    "@expo-google-fonts/hind-siliguri": ["@expo-google-fonts/hind-siliguri@0.4.1", "", {}, "sha512-x6OODAk3r/pYCzrOp+wrnKbnbjl+MCdjR8B8JkZc1KFCoo6blzz4pvRLkj6zKq+rfi2NpwF+2pfT9L2uZVNdrw=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.27", "", {}, "sha512-cnb3DZnWUWpezGFkJ8y4MT5f/lw6FcgDzeJzic+T+vpQHLHG1cg3SC3i1w1i8Bk4xKR4HPY3t9iIRNvtr5ml8A=="],
 
