@@ -85,6 +85,15 @@ is a 404 rather than a redirect that settles it. Assertions that need a publishe
 course read the catalogue first and skip with a stated reason when an environment
 has none.
 
+`mobile-handoff.spec.ts` covers the two routes that redirect out of this app and
+into the Expo one. It belongs in E2E rather than in a unit test because what is
+being asserted is a `Location` header on a real response: that each route
+redirects into `mma://` and refuses every target outside the allow-list, that an
+anonymous auth handoff carries an error and never a token, and that one-time
+tokens are not mintable over HTTP. **Redirects are never followed** — `mma://`
+is not fetchable, and following would turn a passing assertion into a
+connection error.
+
 The dashboard chunk compiles on first navigation, so the guard-redirect
 assertions allow 45s. Do not tighten that back to 15s: it made the suite fail
 cold and pass warm.
