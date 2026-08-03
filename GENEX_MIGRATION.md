@@ -291,7 +291,7 @@ Each phase is independently shippable and ends green on `bun run typecheck`,
 | 5 | Layouts: public, app shell, auth. Responsive scaffolding. `/teachers` index and demo seed data, pulled forward | ☑ |
 | 6 | Public screens: Homepage, Courses, Course Detail, Teacher Profile | ☑ |
 | 7 | Teacher dashboard + the stepped course builder | ☑ |
-| 8 | Student dashboard | ☐ |
+| 8 | Dashboard overviews — student, teacher, admin, accountant | ☑ |
 | 9 | Admin dashboard + accountant analytics | ☐ |
 | 10 | System-only surfaces restyled (§3): messages, notifications, SMS, bugs, tests, certificates, analytics, category admin, user admin, auth | ☐ |
 | 11 | Mobile: token and i18n sync, deep-link scheme | ☐ |
@@ -534,6 +534,38 @@ rather than English strings, so it is bilingual like the rest of the chrome, and
 the accountant's rows are in it.
 
 Typecheck 9/9, lint 9/9, tests 8/8. Verified signed in as a teacher.
+
+**Phase 8** — the dashboard overview. All four roles landed together because
+they are one route: `/dashboard` dispatches on role into four components that
+share nothing but the shell.
+
+The page it replaced was a grid of link cards describing the product to the
+person already using it. What is there now answers the question each role
+actually arrives with — a student, what to watch next; a teacher, how their
+courses are doing; an admin, what is waiting on them; an accountant, where the
+money went.
+
+Three of the design's student panels are **not** built. It opens with a resume
+card, then a task list, the next scheduled test, and a "weak area" insight
+naming a topic. Only the resume card has data behind it: there is no task list,
+no test schedule and no per-topic scoring in the schema, and three panels of
+fiction to fill out a grid would be worse than a page that fits what it knows.
+
+The teacher's revenue figure is **gross course revenue**, not a payout. The
+design's ৭০/৩০ split and its payout table need a revenue-share model that does
+not exist.
+
+The admin watch list is derived from the pending-approval and open-bug counts
+the page already holds, and disappears when both are zero — the design's
+hardcoded version would go stale the moment someone cleared the queue.
+
+The monthly bar chart is divs, not Recharts: eight rectangles and a label do not
+justify a charting library, and one that writes SVG presentation attributes
+would need its colours mirrored as literals to boot.
+
+Typecheck 9/9, lint 9/9, tests 8/8. Verified signed in as a student and a
+teacher — Bangla greeting, chunked accent progress, percentages in Bangla
+numerals.
 
 **Phase 1** — rename across 182 files. `@mma/*` → `@genex/*` on all eight
 workspaces, root package `mehedis-math-academy` → `genex`, `siteConfig` rebuilt
