@@ -2038,9 +2038,11 @@ rather than a task.
 - **No thumbnail variants for course covers.** §16 asks for them; the upload pipeline stores one size.
 - **`apps/web` has no component tests.** (`packages/shared` validators and `apps/mobile` are covered as of
   3 August 2026.)
-- **Nothing in `apps/mobile` has ever executed.** It typechecks, lints, bundles (4.8MB Hermes, 33 assets)
-  and passes 60 tests, and none of that is a device. `docs/mobile-plan.md` Stage 0 is the first thing to do
-  with a phone in hand.
+- **`apps/mobile` has never run on a phone.** All 15 routes do boot in a real browser, through the
+  react-native-web export — which found two unhandled rejections that no test caught. But
+  react-native-web is not React Native: layout on a small screen, gestures, the keyboard, native video
+  and the share sheet are all still unobserved, and `expo prebuild` writes a Gradle project without
+  compiling one. `docs/mobile-plan.md` Stage 0 is the first thing to do with a phone in hand.
 - **`callbackOrigin` on enrolment is trusted as given.** An authenticated student can set the post-payment
   redirect to any origin. `callbackPath` is constrained to a path _on_ that origin, so it adds nothing, but
   the origin itself predates this and is still unvalidated.

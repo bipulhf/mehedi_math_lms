@@ -1,9 +1,9 @@
 # Mobile plan — from "it compiles" to "it ships"
 
 The Expo app was built in `e0e8b34`, extended during the 3 August drift sweep, and worked through
-stage by stage on 3 August 2026. **Seven of the ten stages below are done. The three that are not
-each need a device, a store account or an EAS build — none of which can be produced from a
-checkout.**
+stage by stage on 3 August 2026. **Seven of the ten stages below are done, and the remaining three
+are done as far as they can be without hardware.** What is left in each is named precisely: a
+handset, a Google account, an EAS build.
 
 Scope is `apps/mobile` only. Where a stage needed an API or web change it is named; nothing here
 reorganised the backend.
@@ -11,18 +11,18 @@ reorganised the backend.
 **Ordering principle: prove it runs, close the hole where money can go missing, then buy the right to
 change things (tests), then close the three deliberate boundaries, then parity, then release.**
 
-| Stage                     | State                                                                |
-| ------------------------- | -------------------------------------------------------------------- |
-| 0 — run it once           | **Not done.** Needs a device or emulator.                            |
-| 1 — payment return loop   | Done.                                                                |
-| 2 — test harness          | Done. 60 tests, `bun run test` now covers three workspaces.          |
-| 3 — verify Google sign-in | **Partly.** Automated where it is decidable; the walk needs a phone. |
-| 4 — video playback        | Done. `expo-video`, progress driven from playback.                   |
-| 5 — profile completion    | Done, and not the way this plan first proposed. See below.           |
-| 6 — realtime messaging    | Done. `AppState`-driven socket, poll as the fallback.                |
-| 7 — parity gaps           | Done. All six.                                                       |
-| 8 — resilience            | Done.                                                                |
-| 9 — release               | **Not done.** Needs EAS and store accounts.                          |
+| Stage                     | State                                                                  |
+| ------------------------- | ---------------------------------------------------------------------- |
+| 0 — run it once           | **Partly.** Every screen booted in a browser; a handset is still owed. |
+| 1 — payment return loop   | Done, and asserted end to end against a running stack.                 |
+| 2 — test harness          | Done. 60 tests, `bun run test` now covers three workspaces.            |
+| 3 — verify Google sign-in | **Partly.** Automated where it is decidable; the walk needs a phone.   |
+| 4 — video playback        | Done. `expo-video`, progress driven from playback.                     |
+| 5 — profile completion    | Done, and not the way this plan first proposed. See below.             |
+| 6 — realtime messaging    | Done. `AppState`-driven socket, poll as the fallback.                  |
+| 7 — parity gaps           | Done. All six.                                                         |
+| 8 — resilience            | Done.                                                                  |
+| 9 — release               | **Partly.** The native project generates; EAS and stores are owed.     |
 
 ---
 
@@ -30,37 +30,64 @@ change things (tests), then close the three deliberate boundaries, then parity, 
 
 Verified:
 
-| Claim                                       | Evidence                                                                 |
-| ------------------------------------------- | ------------------------------------------------------------------------ |
-| Typechecks and lints                        | `bun run typecheck`, `bun run lint` — 8/8 workspaces                     |
-| Expo config is sound                        | `bunx expo-doctor` — 20/20                                               |
-| The module graph bundles                    | `bunx expo export --platform android` — 4.8MB Hermes bytecode, 33 assets |
-| Every screen renders, with data and without | `src/screens.test.tsx`                                                   |
-| 60 tests pass                               | `bun run --filter @mma/mobile test`                                      |
-| 33 typed API functions                      | `src/lib/api.ts`                                                         |
+| Claim                                        | Evidence                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| Typechecks and lints                         | `bun run typecheck`, `bun run lint` — 8/8 workspaces                      |
+| Expo config is sound                         | `bunx expo-doctor` — 20/20                                                |
+| The module graph bundles                     | `bunx expo export --platform android` — 4.8MB Hermes bytecode, 33 assets  |
+| Every screen renders, with data and without  | `src/screens.test.tsx`                                                    |
+| 60 tests pass                                | `bun run --filter @mma/mobile test`                                       |
+| **All 15 routes boot in a real browser**     | `expo export --platform web`, then each route loaded headless — see below |
+| **The native project generates**             | `bunx expo prebuild --platform android` — every config plugin resolves    |
+| **Both redirect hops behave over real HTTP** | `apps/web/e2e/mobile-handoff.spec.ts` — 8 tests against a running stack   |
+| 33 typed API functions                       | `src/lib/api.ts`                                                          |
 
 Not verified, and not implied by any of the above:
 
-- **Nothing has executed on a device.** No simulator, no handset, no `expo start`. A screen that
-  throws on mount now fails a test rather than passing silently — but a screen that renders in
-  `react-test-renderer` can still be unusable in the hand.
-- **No native build.** EAS has never run. `bunfig.toml`'s hoisted linker only matters at that step,
-  which is exactly why it has never been exercised.
+- **Nothing has executed on a phone.** The browser run below is real execution, but react-native-web
+  is not React Native: it says nothing about layout on a small screen, gestures, the keyboard, native
+  video, the share sheet, or whether the fonts loaded.
+- **No native build.** EAS has never run. `expo prebuild` proves the config plugins resolve and a
+  Gradle project is written; it does not compile one. `bunfig.toml`'s hoisted linker still only
+  matters at that step.
 - **Google sign-in has not been walked.** The token exchange and the failure paths are tested against
-  a mocked browser; the round trip through Google is not. (`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`
-  _are_ set in the root `.env`, so this is testable today.)
-- **No payment has been taken from a phone.** The URL the API builds and the URL the app reads back
-  are both asserted; the gateway in between is not.
+  a mocked browser, and the handoff route is tested over HTTP; the round trip through Google is not.
+  (`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` _are_ set in the root `.env`, so this is testable today.)
+- **No payment has been taken from a phone.** Every URL in the chain is now asserted — what the API
+  builds, what the web route redirects to, what the app reads back. The gateway in between is not.
 
 ---
 
-## Stage 0 — run it once
+## Stage 0 — run it once ◐
 
-**Not done. This is the next thing to do, and it needs a phone.**
+**Done in a browser. A handset is still owed.**
 
-**Why first:** every later stage was written against a codebase that had never executed. The tests
-added in Stage 2 close much of that gap — a screen cannot throw on mount undetected any more — but
-they say nothing about layout, gestures, keyboard behaviour or whether a font actually loaded.
+**Why first:** every later stage was written against a codebase that had never executed.
+
+### What was run
+
+`bunx expo export --platform web` renders every route to static HTML through react-native-web, which
+means every route module _executes_. Serving that output and loading each route headless — watching
+for `pageerror` and console errors — is the closest thing to a device that a checkout can produce.
+
+All 15 routes boot clean, including both deep-link landing pads: `/payment-callback` lands on My
+courses and `/auth-callback` on the catalogue, which is what those two `Redirect` routes were added
+for.
+
+**It found two real bugs, which is the entire argument for running things.** Both were unhandled
+rejections in fire-and-forget async work, and both would have taken a screen down through its own
+error boundary while the thing that failed was something the student never sees:
+
+- `use-messaging-socket.ts` read the session cookie with nothing catching it. On native the keychain
+  answers, so this would have waited for a device with a locked keystore to appear.
+- The conversation screen's `markConversationRead` effect had no `.catch`. Offline, or on a 403, the
+  thread would load fine and then the screen would blank.
+
+This is a one-off technique, not a committed harness: react-native-web is not React Native, and a
+suite that green-lit the wrong runtime would be worse than none. To repeat it, export for web, serve
+the output with a server that maps `/sign-in` to `sign-in.html`, and load each route with Playwright.
+
+### What still needs a phone
 
 - Start the API (`bun run --filter @mma/api dev`) and the web app (`bun run --filter @mma/web dev`) —
   mobile needs both: the API for data, the web origin for Better Auth and for the two redirect hops.
@@ -71,10 +98,10 @@ they say nothing about layout, gestures, keyboard behaviour or whether a font ac
 - Walk the whole signed-in path once, in order, and write down what breaks:
   catalogue → course detail → enrol on a **free** course → player → play a lecture → a test →
   submit → discussion → notices → messages → notifications → profile → sign out.
-- Check the things that are invisible to a test renderer: that the type scale is Manrope/Inter rather
-  than Roboto, that `ScreenSkeleton` shows on a cold launch rather than a blank frame, that the
-  video surface fills its 16:9 box, and that fullscreen rotates despite the portrait lock in
-  `app.json`.
+- Check the things neither a test renderer nor a browser can show: that the type scale is
+  Manrope/Inter rather than Roboto, that `ScreenSkeleton` shows on a cold launch rather than a blank
+  frame, that the video surface fills its 16:9 box, that fullscreen rotates despite the portrait lock
+  in `app.json`, and that the certificate reaches a real share sheet.
 
 **Done when:** the walkthrough completes on both targets and every defect found is either fixed or
 filed.
@@ -106,6 +133,11 @@ What landed:
 - On success the app **invalidates and re-reads access from the server** rather than trusting the
   redirect.
 
+`apps/web/e2e/mobile-handoff.spec.ts` asserts the web hop over real HTTP, because what it does is a
+`Location` header and unit tests cannot see one: it redirects into the app carrying the gateway's
+verdict, a missing status is `pending` rather than success, and it refuses `https://evil.test`,
+`//evil.test`, `javascript:`, a bare path and an empty string with a 400.
+
 Left to verify on a device: a sandbox payment end to end. `SSLCOMMERZ_STORE_ID` is set in the root
 `.env`, so this needs no new credentials.
 
@@ -135,12 +167,19 @@ Sixty tests, in the order the plan asked for:
 
 ## Stage 3 — verify Google sign-in end to end ◐
 
-**Automated:** that Better Auth is sent to `/api/mobile-auth-handoff` rather than to a dashboard; that
-the one-time token is exchanged and the returned cookie stored; that a dismissed sheet is
-`"cancelled"` and not an error; that a callback carrying no token fails rather than appearing to
-sign in.
+**Automated in the app** (`src/lib/auth.test.ts`): that Better Auth is sent to
+`/api/mobile-auth-handoff` rather than to a dashboard; that the one-time token is exchanged and the
+returned cookie stored; that a dismissed sheet is `"cancelled"` and not an error; that a callback
+carrying no token fails rather than appearing to sign in.
 
-**Still needs a device**, because it crosses three processes and an external provider:
+**Automated over HTTP** (`apps/web/e2e/mobile-handoff.spec.ts`): that an anonymous caller reaching
+the handoff is redirected into the app's own scheme carrying an error and **no token** — every
+failure mode looks the same and none of them carries a credential; that the route refuses any target
+outside the allow-list; that `GET /api/auth/one-time-token/generate` does not answer an anonymous
+request with a token; and that verifying a token that was never minted fails without a `Set-Cookie`.
+
+**Still needs a device and a Google account**, because it crosses three processes and an external
+provider:
 
 - Add the Expo redirect to the Google console's authorised origins if the provider rejects the flow.
 - Walk it: tap through, complete consent, confirm the browser closes on `mma://auth-callback`.
@@ -148,7 +187,8 @@ sign in.
   consumed one (must be refused — it is single-use, and that is the security property the whole
   design rests on).
 - Confirm `disableClientRequest: true` still holds by calling `GET /api/auth/one-time-token/generate`
-  directly with a valid session cookie. It must fail. If it succeeds, any authenticated client can
+  **with a valid session cookie**. It must fail. The E2E covers the anonymous case; the signed-in one
+  is the case that matters, and it needs an account. If it succeeds, any authenticated client can
   mint a session-exchange token and the handoff is no longer a boundary.
 
 ---
@@ -257,14 +297,27 @@ relaunch, and confirm the catalogue and enrolments render from AsyncStorage rath
 
 ---
 
-## Stage 9 — release
+## Stage 9 — release ◐
 
-**Not done. Needs EAS and store accounts.**
+**The native project generates. EAS and store accounts are owed.**
+
+`bunx expo prebuild --platform android --no-install --clean` writes a complete Gradle project, which
+means every config plugin resolves and applies — including the four native modules added while
+working through this plan (`expo-video`, `expo-file-system`, `expo-sharing`, `expo-system-ui`). It
+does not compile one; that is what EAS is for.
+
+That run surfaced one thing worth fixing: `app.json` declares `"userInterfaceStyle": "light"` and
+Android was ignoring it, because enforcing it needs `expo-system-ui`. The palette is light-only, so a
+device in dark mode would have drawn system chrome the app never designed for. `expo-system-ui` is
+now a dependency and the warning is gone.
+
+Note that prebuild rewrites the `android` and `ios` scripts to `expo run:*` as a side effect. This is
+a managed project — `/android` and `/ios` are gitignored — so revert that and delete the generated
+directory afterwards.
 
 - `eas.json` already defines development, preview and production profiles with the right origins. Run
   `eas build --profile development` first; it is the step that will surface any native linking problem
-  the hoisted `bunfig.toml` is holding together. Four native modules were added since it was last
-  looked at — `expo-video`, `expo-file-system`, `expo-sharing` and their config plugins.
+  the hoisted `bunfig.toml` is holding together.
 - Then `preview` on a real device against production origins, which is the first time the app talks to
   a deployment rather than a laptop.
 - Store requirements are not code and take calendar time: privacy policy URL, data-safety
