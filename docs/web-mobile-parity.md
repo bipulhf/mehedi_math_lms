@@ -372,6 +372,11 @@ web's radio labels and single-line input on a phone.
 
 Both `hairlineWidth` borders (`:337`, `:362`) are `1`.
 
+Submit-button gating (last question only), a per-test attempt cap (`maxAttempts`), answer-locking
+(`lockAnswerOnSelect`), and a computed Passed/Failed verdict on results are new as of the exam UX
+overhaul and should be re-verified for web/mobile parity once QA'd end to end — this section's ✅
+predates that work.
+
 ### 6.5 Messages — ✅ all three gaps closed, plus a presence bug neither edition had found
 
 - **Starting a conversation** — `app/messages/new.tsx` (126 lines), debounced

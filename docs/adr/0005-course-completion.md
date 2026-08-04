@@ -27,8 +27,9 @@ could express at all.
 - Complete when every Lecture is marked complete **and** every published Test is passed. Exam-Only courses
   need no special case — their lecture set is empty, so only Tests decide.
 - Passing a Test means holding a graded submission scoring at least its `passingScore`. Retakes are
-  unlimited and the best attempt counts. A null `passingScore` is passed by any graded submission, so
-  existing tests do not silently become impossible.
+  unlimited by default; a Test may cap attempts via `maxAttempts`, in which case the best of the permitted
+  attempts counts. A null `passingScore` is passed by any graded submission, so existing tests do not
+  silently become impossible.
 - Promote to `COMPLETED` only on a student action — marking a lecture complete, or one of their
   submissions reaching `GRADED`. Reading progress never writes.
 - Completion latches. Publishing new content never revokes it, and a refund cancels access without
