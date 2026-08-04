@@ -69,7 +69,7 @@ function PlayerBufferingSpinner(): JSX.Element | null {
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink/30">
+    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-ink/30">
       <span className="size-8 animate-spin rounded-full border-2 border-paper/25 border-t-paper" />
     </div>
   );
@@ -87,7 +87,12 @@ function PlayerControlsBar(): JSX.Element {
   return (
     <div
       className={cn(
-        "absolute inset-x-0 bottom-0 flex flex-col gap-1.5 bg-ink/55 px-3 py-2.5 backdrop-blur-[2px]",
+        // z-20: vidstack renders its own click-blocker over iframe providers
+        // (youtube/vimeo) at z-index: 1 (.vds-blocker in base.css) to stop the
+        // iframe itself from swallowing clicks -- without a higher z-index
+        // here, that blocker sits on top of these controls and eats every
+        // click and seek-drag before it reaches them.
+        "absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 bg-ink/55 px-3 py-2.5 backdrop-blur-md",
         "transition-opacity duration-300",
         visible ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
         "sm:px-4"
