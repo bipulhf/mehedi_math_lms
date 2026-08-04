@@ -140,6 +140,9 @@ function AdminBugDetailPage(): JSX.Element {
               </Select>
             </div>
 
+          </div>
+
+          <div className="space-y-4 border-t border-hairline pt-6 xl:col-span-2">
             <div className="space-y-2">
               <Label htmlFor="bug-admin-notes">{t("abug.notes")}</Label>
               <RichTextEditor

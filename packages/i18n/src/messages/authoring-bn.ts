@@ -89,6 +89,7 @@ export const authoringBn = {
   "author.questionPageLead": "প্রশ্ন যোগ, বদলানো ও সাজানো শেষ হলে এই ট্যাবটি বন্ধ করতে পার।",
   "author.questionPageTitle": "এমসিকিউ প্রশ্ন তৈরি",
   "author.removeQuestion": "প্রশ্ন বাদ দাও",
+  "author.removeOption": "অপশন সরাও",
   "author.reviewLead": "তথ্য, অধ্যায়, ক্লাস ও পরীক্ষা একবার দেখে তারপর অনুমোদনের জন্য পাঠাও।",
   "author.reviewTitle": "রিভিউ",
   "author.saveBasic": "তথ্য সেভ কর",

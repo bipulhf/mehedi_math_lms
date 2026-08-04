@@ -49,7 +49,7 @@ function FeaturedCoursesPage(): JSX.Element {
   });
 
   const { data: catalogData, isPending: isCatalogPending } = useQuery({
-    queryFn: async () => listCourses({ limit: 100, page: 1, search, status: "PUBLISHED" }),
+    queryFn: async () => listCourses({ limit: 50, page: 1, search, status: "PUBLISHED" }),
     queryKey: queryKeys.courses.list({ featuredPicker: true, search })
   });
 

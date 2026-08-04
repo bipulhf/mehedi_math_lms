@@ -1,4 +1,4 @@
-import { Plus, Trash2, X } from "lucide-react";
+import { Eye, Plus, Trash2, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
@@ -87,8 +87,8 @@ export function CourseExamEditor({
   const [draft, setDraft] = useState<McqDraft>(createEmptyQuestion);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
-  const [collapsedQuestionIds, setCollapsedQuestionIds] = useState<Set<string>>(new Set());
-  const [isExamInfoOpen, setIsExamInfoOpen] = useState(true);
+  const [expandedQuestionIds, setExpandedQuestionIds] = useState<Set<string>>(new Set());
+  const [isExamInfoOpen, setIsExamInfoOpen] = useState(false);
   const [isQuestionFormOpen, setIsQuestionFormOpen] = useState(true);
   const [isWorking, setIsWorking] = useState(false);
 
@@ -169,7 +169,7 @@ export function CourseExamEditor({
   };
 
   const toggleQuestion = (questionId: string): void => {
-    setCollapsedQuestionIds((current) => {
+    setExpandedQuestionIds((current) => {
       const next = new Set(current);
 
       if (next.has(questionId)) {
@@ -222,7 +222,7 @@ export function CourseExamEditor({
 
         {isExamInfoOpen ? (
           <div className="space-y-6 border-t border-hairline p-5 sm:p-6">
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid gap-5">
               <div className="space-y-2">
                 <Label htmlFor={`exam-title-${examId}`}>{t("ab.testTitle")}</Label>
                 <Input
@@ -273,7 +273,7 @@ export function CourseExamEditor({
             <li className="border border-hairline bg-card" key={question.id}>
               <div className="flex items-center gap-3 p-4 sm:p-5">
                 <button
-                  aria-expanded={!collapsedQuestionIds.has(question.id)}
+                  aria-expanded={expandedQuestionIds.has(question.id)}
                   className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left"
                   onClick={() => toggleQuestion(question.id)}
                   type="button"
@@ -288,7 +288,7 @@ export function CourseExamEditor({
                     </span>
                   </span>
                   <span aria-hidden="true" className="text-xl font-light text-accent">
-                    {collapsedQuestionIds.has(question.id) ? "+" : "-"}
+                    {expandedQuestionIds.has(question.id) ? "-" : "+"}
                   </span>
                 </button>
                 <div className="flex items-center gap-1 self-end border-t border-hairline pt-3 sm:self-start sm:border-t-0 sm:pt-0">
@@ -314,7 +314,7 @@ export function CourseExamEditor({
                   </Button>
                 </div>
               </div>
-              {!collapsedQuestionIds.has(question.id) ? (
+              {expandedQuestionIds.has(question.id) ? (
                 <div className="border-t border-hairline px-5 pb-5 pt-4 sm:pl-16">
                   <RichTextContent className="font-medium text-ink" html={question.questionText} />
                   <ul className="mt-3 grid gap-2 text-sm font-light text-muted sm:grid-cols-2">
@@ -406,7 +406,7 @@ function McqQuestionForm({
 
       {isOpen ? (
         <div className="space-y-5 border-t border-hairline p-5 sm:p-6">
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_8rem]">
+          <div className="grid gap-4">
             <div className="space-y-2">
               <Label>{t("author.mcqQuestion")}</Label>
               <RichTextEditor
@@ -415,7 +415,7 @@ function McqQuestionForm({
                 onChange={(value) => onChange({ ...draft, questionText: value })}
               />
             </div>
-            <div className="space-y-2">
+            <div className="max-w-xs space-y-2">
               <Label>{t("qe.marks")}</Label>
               <Input
                 min={1}
@@ -427,10 +427,14 @@ function McqQuestionForm({
           </div>
 
           <div className="space-y-3">
+            <div>
+              <p className="label-mono text-xs uppercase text-muted-faint">{t("author.mcqCorrect")}</p>
+              <p className="mt-1 text-sm font-light text-muted">{t("ab.questionsLead")}</p>
+            </div>
             {draft.options.map((option, index) => (
-              <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] gap-3" key={index}>
+              <div className="grid gap-3 sm:grid-cols-[9rem_minmax(0,1fr)]" key={index}>
                 <label
-                  className="flex min-h-11 items-center justify-center border border-hairline bg-panel-warm"
+                  className="flex min-h-11 items-center gap-2 border border-hairline bg-panel-warm px-3 text-sm text-ink"
                   title={t("author.mcqCorrect")}
                 >
                   <input
@@ -448,22 +452,73 @@ function McqQuestionForm({
                       })
                     }
                   />
+                  <span>
+                    {option.isCorrect
+                      ? t("qe.correct")
+                      : t("author.mcqOption", { number: String(index + 1) })}
+                  </span>
                 </label>
-                <Input
-                  placeholder={t("author.mcqOption", { number: String(index + 1) })}
-                  value={option.optionText}
-                  onChange={(event) =>
-                    onChange({
-                      ...draft,
-                      options: draft.options.map((current, optionIndex) =>
-                        optionIndex === index ? { ...current, optionText: event.target.value } : current
-                      )
-                    })
-                  }
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="min-w-0 flex-1"
+                    placeholder={t("author.mcqOption", { number: String(index + 1) })}
+                    value={option.optionText}
+                    onChange={(event) =>
+                      onChange({
+                        ...draft,
+                        options: draft.options.map((current, optionIndex) =>
+                          optionIndex === index ? { ...current, optionText: event.target.value } : current
+                        )
+                      })
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter") {
+                        return;
+                      }
+
+                      event.preventDefault();
+
+                      if (draft.options.length >= 8) {
+                        return;
+                      }
+
+                      onChange({
+                        ...draft,
+                        options: [...draft.options, { isCorrect: false, optionText: "" }]
+                      });
+                    }}
+                  />
+                  <Button
+                    aria-label={t("author.removeOption")}
+                    className="size-11 shrink-0 text-error"
+                    disabled={draft.options.length <= 2}
+                    size="icon"
+                    title={t("author.removeOption")}
+                    variant="ghost"
+                    onClick={() => {
+                      if (draft.options.length <= 2) {
+                        return;
+                      }
+
+                      let remaining = draft.options.filter((_, optionIndex) => optionIndex !== index);
+
+                      if (!remaining.some((current) => current.isCorrect)) {
+                        remaining = remaining.map((current, optionIndex) =>
+                          optionIndex === 0 ? { ...current, isCorrect: true } : current
+                        );
+                      }
+
+                      onChange({ ...draft, options: remaining });
+                    }}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
+
+          <McqQuestionPreview draft={draft} />
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
             <div className="flex flex-wrap gap-2">
@@ -505,5 +560,41 @@ function McqQuestionForm({
         </div>
       ) : null}
     </div>
+  );
+}
+
+function McqQuestionPreview({ draft }: { draft: McqDraft }): JSX.Element {
+  const t = useT();
+  const hasQuestion = !isEmptyHtml(draft.questionText);
+
+  return (
+    <section className="space-y-4 border border-hairline bg-panel-warm/45 p-5 sm:p-6">
+      <div className="flex items-start gap-3 border-b border-hairline pb-4">
+        <Eye className="mt-0.5 size-5 text-accent" />
+        <div>
+          <h4 className="text-lg font-medium text-ink">{t("editor.preview")}</h4>
+          <p className="mt-1 text-sm font-light text-muted">{t("ab.questionsLead")}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {hasQuestion ? (
+          <RichTextContent className="text-base font-medium leading-relaxed text-ink" html={draft.questionText} />
+        ) : (
+          <p className="text-base font-light italic text-muted-faint">{t("author.mcqQuestionPlaceholder")}</p>
+        )}
+
+        <div className="space-y-2">
+          {draft.options.map((option, index) => (
+            <div className="flex items-center gap-3 border border-hairline bg-card px-4 py-3" key={index}>
+              <span aria-hidden="true" className="size-4 shrink-0 rounded-full border border-line-strong" />
+              <span className={option.optionText.trim() ? "text-sm text-ink" : "text-sm italic text-muted-faint"}>
+                {option.optionText.trim() || t("author.mcqOption", { number: String(index + 1) })}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

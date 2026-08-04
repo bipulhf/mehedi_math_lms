@@ -159,7 +159,7 @@ export function CourseChapterBuilder({
   return (
     <div className="space-y-6">
       <section className="border border-hairline bg-card p-5 sm:p-6">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] lg:items-end">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="space-y-2">
             <Label htmlFor="chapter-name">
               {t("author.chapterName")} <span className="text-error">*</span>
@@ -173,15 +173,6 @@ export function CourseChapterBuilder({
               }
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="chapter-description">{t("author.chapterDescription")}</Label>
-            <RichTextEditor
-              id="chapter-description"
-              placeholder={t("author.chapterDescriptionPlaceholder")}
-              value={draft.description ?? ""}
-              onChange={(value) => setDraft((current) => ({ ...current, description: value }))}
-            />
-          </div>
           <Button
             className="h-11 w-full lg:w-auto"
             disabled={isWorking || !draft.title.trim()}
@@ -190,6 +181,15 @@ export function CourseChapterBuilder({
             <Plus className="size-4" />
             {t("cb.createChapter")}
           </Button>
+          <div className="space-y-2 lg:col-span-2">
+            <Label htmlFor="chapter-description">{t("author.chapterDescription")}</Label>
+            <RichTextEditor
+              id="chapter-description"
+              placeholder={t("author.chapterDescriptionPlaceholder")}
+              value={draft.description ?? ""}
+              onChange={(value) => setDraft((current) => ({ ...current, description: value }))}
+            />
+          </div>
         </div>
       </section>
 
@@ -222,7 +222,7 @@ export function CourseChapterBuilder({
                 {isEditing ? (
                   <div className="space-y-5 p-5 sm:p-6">
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
+                      <div className="space-y-2 md:col-span-2">
                         <Label>{t("author.chapterName")}</Label>
                         <Input
                           value={editDraft.title}
