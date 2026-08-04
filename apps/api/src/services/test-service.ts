@@ -14,16 +14,10 @@ import type {
 
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
-import type { SubmissionSummaryRecord, TestRepository } from "@/repositories/test-repository";
+import type { TestRepository } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
+import { validateQuestionAgainstTest, validateQuestionInput } from "@/services/assessment-grading";
 import {
-  gradeAnswers,
-  validateQuestionAgainstTest,
-  validateQuestionInput
-} from "@/services/assessment-grading";
-import {
-  mapSubmissionDetail,
-  mapSubmissionSummary,
   type AssessmentOption,
   type AssessmentQuestion,
   type AssessmentTestDetail,
@@ -34,7 +28,8 @@ import {
 } from "@/services/assessment-views";
 import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type { ProgressService } from "@/services/progress-service";
-import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
+import { TestSubmissionService } from "@/services/test-submission-service";
+import { ValidationError } from "@/utils/errors";
 
 export type {
   AssessmentChapterSummary,
@@ -57,37 +52,39 @@ type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 type SubmitTestInput = z.infer<typeof submitTestSchema>;
 type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
 
+/**
+ * Test and question authoring. Taking a test, autosaving answers, submitting,
+ * and grading live in `TestSubmissionService` — a distinct responsibility,
+ * composed here so the public API this class exposes is unchanged.
+ */
 export class TestService {
+  private readonly submissions: TestSubmissionService;
+
   public constructor(
     private readonly testRepository: TestRepository,
     private readonly contentRepository: ContentRepository,
     private readonly enrollmentRepository: EnrollmentRepository,
     private readonly access: AssessmentAccessGuards,
     private readonly progressService: ProgressService
-  ) {}
-
-  /**
-   * A graded submission can be the last thing a course was waiting on, so the
-   * enrolment is re-evaluated here. For an Exam-Only Course this is the only
-   * path to completion — it has no lectures to mark. ADR-0005.
-   */
-  private async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<void> {
-    const chapter = await this.contentRepository.findChapterById(chapterId);
-
-    if (!chapter) {
-      return;
-    }
-
-    const enrollment = await this.enrollmentRepository.findByUserAndCourse(
-      userId,
-      chapter.courseId
+  ) {
+    this.submissions = new TestSubmissionService(
+      testRepository,
+      contentRepository,
+      enrollmentRepository,
+      access,
+      progressService
     );
+  }
 
-    if (!enrollment) {
-      return;
+  private attemptsRemaining(
+    maxAttempts: number | null,
+    attemptsUsed: number | null
+  ): number | null {
+    if (maxAttempts === null || attemptsUsed === null) {
+      return null;
     }
 
-    await this.progressService.promoteIfFinished(chapter.courseId, enrollment);
+    return Math.max(0, maxAttempts - attemptsUsed);
   }
 
   private async loadTestQuestions(
@@ -160,19 +157,29 @@ export class TestService {
       );
     }
 
+    const attemptCounts =
+      currentUserRole === "STUDENT"
+        ? await this.testRepository.countCompletedSubmissionsByTestIds(testIds, currentUserId)
+        : new Map<string, number>();
+
     const testsMap = new Map<string, AssessmentTestSummary[]>();
     for (const test of testsByChapter) {
       if (currentUserRole === "STUDENT" && !test.isPublished) {
         continue;
       }
 
+      const attemptsUsed = currentUserRole === "STUDENT" ? (attemptCounts.get(test.id) ?? 0) : null;
       const chapterTests = testsMap.get(test.chapterId) ?? [];
       chapterTests.push({
+        attemptsRemaining: this.attemptsRemaining(test.maxAttempts, attemptsUsed),
+        attemptsUsed,
         chapterId: test.chapterId,
         description: test.description,
         durationInMinutes: test.durationInMinutes,
         id: test.id,
         isPublished: test.isPublished,
+        lockAnswerOnSelect: test.lockAnswerOnSelect,
+        maxAttempts: test.maxAttempts,
         passingScore: test.passingScore,
         questionCount: questionCountMap.get(test.id) ?? 0,
         sortOrder: test.sortOrder,
@@ -203,6 +210,8 @@ export class TestService {
       description: normalizeOptionalHtml(input.description),
       durationInMinutes: input.durationInMinutes ?? null,
       isPublished: input.isPublished,
+      lockAnswerOnSelect: input.lockAnswerOnSelect,
+      maxAttempts: input.maxAttempts ?? null,
       passingScore: input.passingScore ?? null,
       sortOrder: existingTests.length,
       title: input.title.trim(),
@@ -210,11 +219,15 @@ export class TestService {
     });
 
     return {
+      attemptsRemaining: null,
+      attemptsUsed: null,
       chapterId: record.chapterId,
       description: record.description,
       durationInMinutes: record.durationInMinutes,
       id: record.id,
       isPublished: record.isPublished,
+      lockAnswerOnSelect: record.lockAnswerOnSelect,
+      maxAttempts: record.maxAttempts,
       passingScore: record.passingScore,
       questionCount: 0,
       sortOrder: record.sortOrder,
@@ -243,17 +256,26 @@ export class TestService {
         input.description !== undefined ? normalizeOptionalHtml(input.description) : undefined,
       durationInMinutes: input.durationInMinutes ?? undefined,
       isPublished: input.isPublished,
+      lockAnswerOnSelect: input.lockAnswerOnSelect,
+      // Not `?? undefined` — `maxAttempts: null` is an explicit "uncap this
+      // test," and coalescing would turn it into `undefined`, which Drizzle's
+      // `.set()` silently skips instead of writing NULL.
+      maxAttempts: input.maxAttempts,
       passingScore: input.passingScore ?? undefined,
       title: input.title?.trim(),
       type: input.type
     });
 
     return {
+      attemptsRemaining: null,
+      attemptsUsed: null,
       chapterId: record.chapterId,
       description: record.description,
       durationInMinutes: record.durationInMinutes,
       id: record.id,
       isPublished: record.isPublished,
+      lockAnswerOnSelect: record.lockAnswerOnSelect,
+      maxAttempts: record.maxAttempts,
       passingScore: record.passingScore,
       questionCount: existingQuestions.length,
       sortOrder: record.sortOrder,
@@ -282,13 +304,23 @@ export class TestService {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const includeAnswers = currentUserRole === "ADMIN" || currentUserRole === "TEACHER";
     const { questions, totalMarks } = await this.loadTestQuestions(test.id, includeAnswers);
+    const attemptsUsed =
+      currentUserRole === "STUDENT"
+        ? ((
+            await this.testRepository.countCompletedSubmissionsByTestIds([test.id], currentUserId)
+          ).get(test.id) ?? 0)
+        : null;
 
     return {
+      attemptsRemaining: this.attemptsRemaining(test.maxAttempts, attemptsUsed),
+      attemptsUsed,
       chapterId: test.chapterId,
       description: test.description,
       durationInMinutes: test.durationInMinutes,
       id: test.id,
       isPublished: test.isPublished,
+      lockAnswerOnSelect: test.lockAnswerOnSelect,
+      maxAttempts: test.maxAttempts,
       passingScore: test.passingScore,
       questionCount: questions.length,
       questions,
@@ -493,45 +525,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
-
-    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(
-      testId,
-      currentUserId
-    );
-
-    if (!submission || submission.status !== "STARTED") {
-      submission = await this.testRepository.createSubmission(testId, currentUserId);
-    }
-
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
-
-    return {
-      answers: answers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      })),
-      createdAt: submission.createdAt.toISOString(),
-      feedback: submission.feedback,
-      gradedAt: submission.gradedAt?.toISOString() ?? null,
-      gradedById: submission.gradedById,
-      id: submission.id,
-      maxScore: submission.maxScore,
-      score: submission.score,
-      startedAt: submission.startedAt?.toISOString() ?? null,
-      status: submission.status,
-      submittedAt: submission.submittedAt?.toISOString() ?? null,
-      testId: submission.testId,
-      user: {
-        email: "",
-        id: currentUserId,
-        name: ""
-      }
-    };
+    return this.submissions.startSubmission(testId, currentUserId, currentUserRole);
   }
 
   public async saveSubmissionAnswers(
@@ -540,36 +534,12 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    const submission = await this.testRepository.findSubmissionById(submissionId);
-
-    if (!submission) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    if (submission.userId !== currentUserId && currentUserRole !== "ADMIN") {
-      throw new ForbiddenError("You do not have permission to edit this submission");
-    }
-
-    if (submission.status !== "STARTED") {
-      throw new ValidationError("Only started submissions can be updated", [
-        {
-          field: "status",
-          message: "This submission can no longer be edited"
-        }
-      ]);
-    }
-
-    const questions = await this.testRepository.listQuestionsByTestId(submission.testId);
-    const options = await this.testRepository.listOptionsByQuestionIds(
-      questions.map((question) => question.id)
+    return this.submissions.saveSubmissionAnswers(
+      submissionId,
+      input,
+      currentUserId,
+      currentUserRole
     );
-    const graded = gradeAnswers(questions, options, input.answers);
-    await this.testRepository.replaceSubmissionAnswers({
-      answers: graded.normalizedAnswers,
-      submissionId
-    });
-
-    return this.startSubmission(submission.testId, currentUserId, currentUserRole);
   }
 
   public async submitTest(
@@ -578,59 +548,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
-
-    let submission = await this.testRepository.findLatestSubmissionByTestAndUser(
-      testId,
-      currentUserId
-    );
-
-    if (!submission || submission.status !== "STARTED") {
-      submission = await this.testRepository.createSubmission(testId, currentUserId);
-    }
-
-    const questions = await this.testRepository.listQuestionsByTestId(testId);
-    const options = await this.testRepository.listOptionsByQuestionIds(
-      questions.map((question) => question.id)
-    );
-    const graded = gradeAnswers(questions, options, input.answers);
-    await this.testRepository.replaceSubmissionAnswers({
-      answers: graded.normalizedAnswers,
-      submissionId: submission.id
-    });
-
-    const updatedSubmission = await this.testRepository.updateSubmission(submission.id, {
-      maxScore: graded.maxScore,
-      score: graded.autoGradedScore,
-      status: graded.hasWrittenQuestions ? "SUBMITTED" : "GRADED",
-      submittedAt: new Date()
-    });
-    if (updatedSubmission.status === "GRADED") {
-      const test = await this.testRepository.findTestById(testId);
-
-      if (test) {
-        await this.promoteEnrollmentIfFinished(test.chapterId, currentUserId);
-      }
-    }
-
-    const summaryRecord: SubmissionSummaryRecord = {
-      ...updatedSubmission,
-      userEmail: "",
-      userName: ""
-    };
-    const savedAnswers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
-
-    return mapSubmissionDetail(
-      summaryRecord,
-      savedAnswers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      }))
-    );
+    return this.submissions.submitTest(testId, input, currentUserId, currentUserRole);
   }
 
   public async listSubmissions(
@@ -638,10 +556,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly SubmissionSummary[]> {
-    await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
-    const submissions = await this.testRepository.listSubmissionsByTestId(testId);
-
-    return submissions.map(mapSubmissionSummary);
+    return this.submissions.listSubmissions(testId, currentUserId, currentUserRole);
   }
 
   public async getSubmissionDetail(
@@ -649,44 +564,7 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    const submission = await this.testRepository.findSubmissionById(submissionId);
-
-    if (!submission) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    const test = await this.testRepository.findTestById(submission.testId);
-
-    if (!test) {
-      throw new NotFoundError("Test not found");
-    }
-
-    if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.access.requireManageableTest(test.id, currentUserId, currentUserRole);
-    } else if (submission.userId !== currentUserId) {
-      throw new ForbiddenError("You do not have permission to view this submission");
-    }
-
-    const submissions = await this.testRepository.listSubmissionsByTestId(test.id);
-    const summaryRecord = submissions.find((item) => item.id === submissionId);
-
-    if (!summaryRecord) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
-
-    return mapSubmissionDetail(
-      summaryRecord,
-      answers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      }))
-    );
+    return this.submissions.getSubmissionDetail(submissionId, currentUserId, currentUserRole);
   }
 
   public async gradeSubmission(
@@ -695,93 +573,6 @@ export class TestService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
-    const submission = await this.testRepository.findSubmissionById(submissionId);
-
-    if (!submission) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    await this.access.requireManageableTest(submission.testId, currentUserId, currentUserRole);
-
-    const questions = await this.testRepository.listQuestionsByTestId(submission.testId);
-    const questionMap = new Map(questions.map((question) => [question.id, question]));
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
-    const answerMap = new Map(answers.map((answer) => [answer.id, answer]));
-
-    for (const gradedAnswer of input.answers) {
-      const answer = answerMap.get(gradedAnswer.answerId);
-
-      if (!answer) {
-        throw new ValidationError("Invalid grading payload", [
-          {
-            field: "answers",
-            message: "Answer does not belong to the submission"
-          }
-        ]);
-      }
-
-      const question = questionMap.get(answer.questionId);
-
-      if (!question || question.type !== "WRITTEN") {
-        throw new ValidationError("Only written answers can be graded manually", [
-          {
-            field: "answers",
-            message: "One or more graded answers are not written responses"
-          }
-        ]);
-      }
-
-      if (gradedAnswer.awardedMarks > question.marks) {
-        throw new ValidationError("Awarded marks exceed question marks", [
-          {
-            field: "answers",
-            message: "Awarded marks must be less than or equal to the question marks"
-          }
-        ]);
-      }
-    }
-
-    for (const gradedAnswer of input.answers) {
-      await this.testRepository.updateSubmissionAnswer(gradedAnswer.answerId, {
-        awardedMarks: gradedAnswer.awardedMarks,
-        isCorrect: null
-      });
-    }
-
-    const refreshedAnswers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
-    const score = refreshedAnswers.reduce((sum, answer) => sum + (answer.awardedMarks ?? 0), 0);
-    const maxScore = questions.reduce((sum, question) => sum + question.marks, 0);
-    const updatedSubmission = await this.testRepository.updateSubmission(submissionId, {
-      feedback: input.feedback !== undefined ? normalizeOptionalHtml(input.feedback) : undefined,
-      gradedAt: new Date(),
-      gradedById: currentUserId,
-      maxScore,
-      score,
-      status: "GRADED"
-    });
-    const gradedTest = await this.testRepository.findTestById(updatedSubmission.testId);
-
-    if (gradedTest) {
-      await this.promoteEnrollmentIfFinished(gradedTest.chapterId, updatedSubmission.userId);
-    }
-
-    const summaries = await this.testRepository.listSubmissionsByTestId(updatedSubmission.testId);
-    const summaryRecord = summaries.find((item) => item.id === submissionId);
-
-    if (!summaryRecord) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    return mapSubmissionDetail(
-      summaryRecord,
-      refreshedAnswers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      }))
-    );
+    return this.submissions.gradeSubmission(submissionId, input, currentUserId, currentUserRole);
   }
 }

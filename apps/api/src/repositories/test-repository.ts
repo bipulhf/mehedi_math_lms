@@ -31,6 +31,8 @@ export interface TestRecord {
   durationInMinutes: number | null;
   id: string;
   isPublished: boolean;
+  lockAnswerOnSelect: boolean;
+  maxAttempts: number | null;
   passingScore: number | null;
   sortOrder: number;
   title: string;
@@ -98,6 +100,8 @@ interface CreateTestInput {
   description: string | null;
   durationInMinutes: number | null;
   isPublished: boolean;
+  lockAnswerOnSelect: boolean;
+  maxAttempts: number | null;
   passingScore: number | null;
   sortOrder: number;
   title: string;
@@ -108,6 +112,8 @@ interface UpdateTestInput {
   description?: string | null | undefined;
   durationInMinutes?: number | null | undefined;
   isPublished?: boolean | undefined;
+  lockAnswerOnSelect?: boolean | undefined;
+  maxAttempts?: number | null | undefined;
   passingScore?: number | null | undefined;
   title?: string | undefined;
   type?: TestType | undefined;
@@ -233,6 +239,36 @@ export class TestRepository {
       passingScore: row.passingScore,
       testId: row.testId
     }));
+  }
+
+  /**
+   * How many attempts a student has already used up on each Test, counting
+   * only completed submissions. A `STARTED` submission is a resumable
+   * in-progress attempt, not a used one — it must not count toward a cap, or
+   * a student who merely opened a test and left would burn an attempt for
+   * nothing.
+   */
+  public async countCompletedSubmissionsByTestIds(
+    testIds: readonly string[],
+    userId: string
+  ): Promise<Map<string, number>> {
+    if (testIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await db
+      .select({ count: sql<number>`count(*)`, testId: testSubmissions.testId })
+      .from(testSubmissions)
+      .where(
+        and(
+          inArray(testSubmissions.testId, [...testIds]),
+          eq(testSubmissions.userId, userId),
+          inArray(testSubmissions.status, ["SUBMITTED", "GRADED"])
+        )
+      )
+      .groupBy(testSubmissions.testId);
+
+    return new Map(rows.map((row) => [row.testId, Number(row.count)]));
   }
 
   public async listTestsByChapterIds(

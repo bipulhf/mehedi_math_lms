@@ -23,11 +23,17 @@ export interface AssessmentQuestion {
 }
 
 export interface AssessmentTestSummary {
+  /** Completed attempts (SUBMITTED/GRADED) used so far. Null for a non-student view. */
+  attemptsRemaining: number | null;
+  attemptsUsed: number | null;
   chapterId: string;
   description: string | null;
   durationInMinutes: number | null;
   id: string;
   isPublished: boolean;
+  lockAnswerOnSelect: boolean;
+  /** Null means unlimited retakes. */
+  maxAttempts: number | null;
   passingScore: number | null;
   questionCount: number;
   sortOrder: number;
@@ -57,6 +63,8 @@ export interface SubmissionSummary {
   gradedAt: string | null;
   id: string;
   maxScore: number | null;
+  /** Null when never graded. See `isTestPassed`. */
+  passed: boolean | null;
   score: number | null;
   startedAt: string | null;
   status: "STARTED" | "SUBMITTED" | "GRADED";
@@ -88,13 +96,32 @@ export function normalizeOptionalString(value: string | undefined): string | nul
   return trimmedValue.length > 0 ? trimmedValue : null;
 }
 
-export function mapSubmissionSummary(record: SubmissionSummaryRecord): SubmissionSummary {
+/**
+ * A Test is passed when its score reaches the passing score. A null score
+ * (never graded) has no verdict yet — callers that need a strict boolean
+ * (course completion) must treat null as "not passed." A null or zero
+ * passing score is a threshold nobody opted into, so any graded score
+ * clears it. ADR-0005.
+ */
+export function isTestPassed(score: number | null, passingScore: number | null): boolean | null {
+  if (score === null) {
+    return null;
+  }
+
+  return score >= (passingScore ?? 0);
+}
+
+export function mapSubmissionSummary(
+  record: SubmissionSummaryRecord,
+  passingScore: number | null
+): SubmissionSummary {
   return {
     createdAt: record.createdAt.toISOString(),
     feedback: record.feedback,
     gradedAt: record.gradedAt?.toISOString() ?? null,
     id: record.id,
     maxScore: record.maxScore,
+    passed: isTestPassed(record.score, passingScore),
     score: record.score,
     startedAt: record.startedAt?.toISOString() ?? null,
     status: record.status,
@@ -109,10 +136,11 @@ export function mapSubmissionSummary(record: SubmissionSummaryRecord): Submissio
 
 export function mapSubmissionDetail(
   record: SubmissionSummaryRecord,
-  answers: readonly SubmissionAnswerView[]
+  answers: readonly SubmissionAnswerView[],
+  passingScore: number | null
 ): SubmissionDetail {
   return {
-    ...mapSubmissionSummary(record),
+    ...mapSubmissionSummary(record, passingScore),
     answers,
     gradedById: record.gradedById,
     testId: record.testId

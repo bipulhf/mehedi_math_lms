@@ -29,8 +29,11 @@ interface OptionSpec {
 }
 
 interface Overrides {
+  completedAttempts?: number;
   isPublished?: boolean;
   latestSubmissionStatus?: string | null;
+  lockAnswerOnSelect?: boolean;
+  maxAttempts?: number | null;
   options?: readonly OptionSpec[];
   passingScore?: number | null;
   questions?: readonly QuestionSpec[];
@@ -40,6 +43,7 @@ interface Calls {
   createdSubmissions: number;
   promotionChecks: number;
   submissionUpdates: Record<string, unknown>[];
+  testUpdates: Record<string, unknown>[];
 }
 
 const defaultQuestions: readonly QuestionSpec[] = [
@@ -55,7 +59,12 @@ const defaultOptions: readonly OptionSpec[] = [
 ];
 
 function buildService(overrides: Overrides = {}): { calls: Calls; service: TestService } {
-  const calls: Calls = { createdSubmissions: 0, promotionChecks: 0, submissionUpdates: [] };
+  const calls: Calls = {
+    createdSubmissions: 0,
+    promotionChecks: 0,
+    submissionUpdates: [],
+    testUpdates: []
+  };
   const questions = overrides.questions ?? defaultQuestions;
   const options = overrides.options ?? defaultOptions;
 
@@ -80,16 +89,24 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
 
       return { ...submission, status: "STARTED" };
     },
+    countCompletedSubmissionsByTestIds: async () =>
+      new Map(overrides.completedAttempts !== undefined ? [["test-1", overrides.completedAttempts]] : []),
     findLatestSubmissionByTestAndUser: async () =>
       overrides.latestSubmissionStatus === null ? null : submission,
+    findSubmissionById: async () => submission,
     findTestById: async () => ({
       chapterId: "chap-1",
       id: "test-1",
       isPublished: overrides.isPublished ?? true,
+      lockAnswerOnSelect: overrides.lockAnswerOnSelect ?? false,
+      maxAttempts: overrides.maxAttempts ?? null,
       passingScore: overrides.passingScore ?? null,
       title: "Chapter 1 Test"
     }),
-    listAnswersBySubmissionIds: async () => [],
+    listAnswersBySubmissionIds: async () =>
+      overrides.lockAnswerOnSelect
+        ? [{ questionId: "q1", selectedOptionId: "o1a" }]
+        : [],
     listOptionsByQuestionIds: async () => options,
     listQuestionsByTestId: async () => questions,
     replaceSubmissionAnswers: async () => undefined,
@@ -97,6 +114,24 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
       calls.submissionUpdates.push(patch);
 
       return { ...submission, ...patch };
+    },
+    updateTest: async (_id: string, patch: Record<string, unknown>) => {
+      calls.testUpdates.push(patch);
+
+      return {
+        chapterId: "chap-1",
+        description: null,
+        durationInMinutes: null,
+        id: "test-1",
+        isPublished: true,
+        lockAnswerOnSelect: false,
+        maxAttempts: null,
+        passingScore: null,
+        sortOrder: 0,
+        title: "Chapter 1 Test",
+        type: "MCQ",
+        ...patch
+      };
     }
   } as unknown as TestRepository;
 
@@ -293,12 +328,10 @@ describe("TestService.submitTest — retakes and access", () => {
     ).rejects.toBeInstanceOf(ForbiddenError);
   });
 
-  test("GAP: passingScore is stored but never evaluated", async () => {
-    // The service records a score and nothing compares it to passingScore, so
-    // "passed" cannot be expressed today. ADR-0005 makes it load-bearing.
-    const { calls, service } = buildService({ passingScore: 8 });
+  test("passingScore is evaluated into a passed verdict on the response", async () => {
+    const { service } = buildService({ passingScore: 8 });
 
-    await service.submitTest(
+    const detail = await service.submitTest(
       "test-1",
       { answers: [
         { questionId: "q1", selectedOptionId: "o1a" },
@@ -308,10 +341,97 @@ describe("TestService.submitTest — retakes and access", () => {
       "STUDENT"
     );
 
-    const patch = calls.submissionUpdates[0];
+    expect(detail.score).toBe(5);
+    expect(detail.passed).toBe(false);
+  });
+});
 
-    expect(patch?.score).toBe(5);
-    expect(patch).not.toHaveProperty("isPassed");
-    expect(patch?.status).toBe("GRADED");
+describe("TestService — max attempts", () => {
+  test("starting a new attempt beyond maxAttempts is rejected", async () => {
+    const { service } = buildService({
+      completedAttempts: 2,
+      latestSubmissionStatus: null,
+      maxAttempts: 2
+    });
+
+    await expect(service.startSubmission("test-1", "user-1", "STUDENT")).rejects.toBeInstanceOf(
+      ForbiddenError
+    );
+  });
+
+  test("resuming a STARTED submission does not consume an attempt", async () => {
+    const { calls, service } = buildService({
+      completedAttempts: 2,
+      latestSubmissionStatus: "STARTED",
+      maxAttempts: 2
+    });
+
+    const detail = await service.startSubmission("test-1", "user-1", "STUDENT");
+
+    expect(detail.id).toBe("sub-1");
+    expect(calls.createdSubmissions).toBe(0);
+  });
+
+  test("an attempt within the cap is allowed", async () => {
+    const { calls, service } = buildService({
+      completedAttempts: 1,
+      latestSubmissionStatus: null,
+      maxAttempts: 2
+    });
+
+    await service.startSubmission("test-1", "user-1", "STUDENT");
+
+    expect(calls.createdSubmissions).toBe(1);
+  });
+});
+
+describe("TestService.saveSubmissionAnswers — lock answer on select", () => {
+  test("changing a previously selected option is rejected when locked", async () => {
+    const { service } = buildService({ lockAnswerOnSelect: true });
+
+    await expect(
+      service.saveSubmissionAnswers(
+        "sub-1",
+        { answers: [{ questionId: "q1", selectedOptionId: "o1b" }] },
+        "user-1",
+        "STUDENT"
+      )
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  test("resubmitting the same selection is allowed when locked", async () => {
+    const { service } = buildService({ lockAnswerOnSelect: true });
+
+    await expect(
+      service.saveSubmissionAnswers(
+        "sub-1",
+        { answers: [{ questionId: "q1", selectedOptionId: "o1a" }] },
+        "user-1",
+        "STUDENT"
+      )
+    ).resolves.toBeDefined();
+  });
+
+  test("answering an unanswered question is allowed when locked", async () => {
+    const { service } = buildService({ lockAnswerOnSelect: true });
+
+    await expect(
+      service.saveSubmissionAnswers(
+        "sub-1",
+        { answers: [{ questionId: "q2", selectedOptionId: "o2a" }] },
+        "user-1",
+        "STUDENT"
+      )
+    ).resolves.toBeDefined();
+  });
+});
+
+describe("TestService.updateTest — maxAttempts", () => {
+  test("an explicit null clears a previously set cap", async () => {
+    const { calls, service } = buildService({ maxAttempts: 3 });
+
+    await service.updateTest("test-1", { maxAttempts: null }, "admin-1", "ADMIN");
+
+    expect(calls.testUpdates[0]?.maxAttempts).toBeNull();
   });
 });

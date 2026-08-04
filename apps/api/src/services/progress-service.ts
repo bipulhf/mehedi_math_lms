@@ -5,7 +5,8 @@ import {
   type CourseProgressRecord,
   type EnrollmentRecord
 } from "@/repositories/enrollment-repository";
-import type { CourseTestResultRecord, TestRepository } from "@/repositories/test-repository";
+import type { TestRepository } from "@/repositories/test-repository";
+import { isTestPassed } from "@/services/assessment-views";
 import { ForbiddenError, NotFoundError } from "@/utils/errors";
 
 export interface CourseProgressLectureItem {
@@ -68,20 +69,6 @@ export class ProgressService {
   }
 
   /**
-   * A Test is passed when the best graded attempt reaches its passing score.
-   * A null or zero passing score is a threshold nobody opted into, so any
-   * graded attempt passes it — existing tests must not become impossible.
-   * ADR-0005.
-   */
-  private isTestPassed(result: CourseTestResultRecord): boolean {
-    if (result.bestGradedScore === null) {
-      return false;
-    }
-
-    return result.bestGradedScore >= (result.passingScore ?? 0);
-  }
-
-  /**
    * Finished the course: every Lecture watched and every published Test passed.
    * One rule for both course kinds — an Exam-Only Course simply has no
    * lectures, so only its Tests decide. ADR-0005.
@@ -102,7 +89,9 @@ export class ProgressService {
       return false;
     }
 
-    return testResults.every((result) => this.isTestPassed(result));
+    return testResults.every(
+      (result) => isTestPassed(result.bestGradedScore, result.passingScore) === true
+    );
   }
 
   private async buildCourseProgress(
