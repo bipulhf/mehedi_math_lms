@@ -4,7 +4,7 @@ import { admin, oneTimeToken } from "better-auth/plugins";
 import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { accounts, db, eq, sessions, users, verificationTokens } from "@genex/db";
+import { accounts, auditLogs, db, eq, sessions, users, verificationTokens } from "@genex/db";
 import * as schema from "@genex/db/schema";
 import { generateUniqueSlug } from "@genex/shared";
 import { z } from "zod";
@@ -39,6 +39,23 @@ const isDevelopment = process.env.NODE_ENV === "development";
 interface AuthUserFields extends UserWithRole {
   profileCompleted?: boolean;
   isActive?: boolean;
+}
+
+// Login/logout land in the audit trail too, but this package has no access to
+// the API's AuditLogService/container -- it already talks to the database
+// directly (see `database: drizzleAdapter(db, ...)` below), so these hooks do
+// the same. Never let a logging failure block an auth flow.
+async function recordAuthAuditEvent(action: "session.created" | "session.deleted", userId: string): Promise<void> {
+  try {
+    await db.insert(auditLogs).values({
+      action,
+      actorId: userId,
+      entityId: userId,
+      entityType: "user"
+    });
+  } catch (writeError) {
+    console.error("Failed to write auth audit log entry", writeError);
+  }
 }
 
 async function createUniqueUserSlug(name: string): Promise<string> {
@@ -147,6 +164,18 @@ export const auth = betterAuth({
               slug: await createUniqueUserSlug(typeof user.name === "string" ? user.name : "")
             }
           };
+        }
+      }
+    },
+    session: {
+      create: {
+        after: async (session) => {
+          await recordAuthAuditEvent("session.created", session.userId);
+        }
+      },
+      delete: {
+        after: async (session) => {
+          await recordAuthAuditEvent("session.deleted", session.userId);
         }
       }
     }
