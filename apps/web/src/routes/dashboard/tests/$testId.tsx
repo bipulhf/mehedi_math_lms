@@ -6,8 +6,10 @@ import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
@@ -51,6 +53,7 @@ function StudentTestPage(): JSX.Element {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmingSubmit, setIsConfirmingSubmit] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
   const isHydratingAnswersRef = useRef(true);
   const isLoading = isLoadingTest || isStartingSubmission;
@@ -189,9 +192,30 @@ function StudentTestPage(): JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
-          <CardDescription>
-            {answeredCount}/{test.questions.length} answered
-          </CardDescription>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardDescription>
+              {answeredCount}/{test.questions.length} {t("test.answered")}
+            </CardDescription>
+            {test.maxAttempts !== null ? (
+              <Badge tone="neutral">
+                {t("test.attemptIndicator", {
+                  current: String((test.attemptsUsed ?? 0) + 1),
+                  total: String(test.maxAttempts)
+                })}
+              </Badge>
+            ) : null}
+          </div>
+          <div
+            aria-hidden="true"
+            className="h-1.5 w-full overflow-hidden rounded-full bg-panel-warm"
+          >
+            <div
+              className="h-full rounded-full bg-accent transition-[width]"
+              style={{
+                width: `${test.questions.length === 0 ? 0 : (answeredCount / test.questions.length) * 100}%`
+              }}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {timeRemainingSeconds !== null ? (
@@ -235,9 +259,6 @@ function StudentTestPage(): JSX.Element {
               );
             })}
           </div>
-          <Button type="button" disabled={isSubmitting} onClick={() => void handleSubmit()}>
-            {isSubmitting ? "Submitting..." : "Submit test"}
-          </Button>
         </CardContent>
       </Card>
 
@@ -255,28 +276,45 @@ function StudentTestPage(): JSX.Element {
           />
           {currentQuestion.type === "MCQ" ? (
             <div className="grid gap-3">
-              {currentQuestion.options.map((option) => (
-                <label
-                  key={option.id}
-                  className="flex items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm px-4 py-3"
-                >
-                  <input
-                    checked={draftAnswers[currentQuestion.id]?.selectedOptionId === option.id}
-                    className="h-4 w-4 accent-(--secondary-container)"
-                    name={currentQuestion.id}
-                    type="radio"
-                    onChange={() =>
-                      setDraftAnswers((currentValues) => ({
-                        ...currentValues,
-                        [currentQuestion.id]: {
-                          selectedOptionId: option.id
+              {(() => {
+                const selectedOptionId = draftAnswers[currentQuestion.id]?.selectedOptionId;
+                const isLocked = test.lockAnswerOnSelect && Boolean(selectedOptionId);
+
+                return currentQuestion.options.map((option) => {
+                  const isSelected = selectedOptionId === option.id;
+
+                  return (
+                    <label
+                      key={option.id}
+                      className={`flex items-center gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-4 py-4 transition-colors ${
+                        isSelected
+                          ? "border-accent bg-accent/8"
+                          : "border-hairline bg-panel-warm"
+                      } ${isLocked && !isSelected ? "opacity-50" : ""}`}
+                    >
+                      <input
+                        checked={isSelected}
+                        className="h-4 w-4 accent-(--secondary-container)"
+                        disabled={isLocked && !isSelected}
+                        name={currentQuestion.id}
+                        type="radio"
+                        onChange={() =>
+                          setDraftAnswers((currentValues) => ({
+                            ...currentValues,
+                            [currentQuestion.id]: {
+                              selectedOptionId: option.id
+                            }
+                          }))
                         }
-                      }))
-                    }
-                  />
-                  <span className="text-sm text-ink">{option.optionText}</span>
-                </label>
-              ))}
+                      />
+                      <span className="text-sm text-ink">{option.optionText}</span>
+                    </label>
+                  );
+                });
+              })()}
+              {test.lockAnswerOnSelect && draftAnswers[currentQuestion.id]?.selectedOptionId ? (
+                <p className="text-xs text-ink/55">{t("test.optionLocked")}</p>
+              ) : null}
             </div>
           ) : (
             <Input
@@ -298,16 +336,42 @@ function StudentTestPage(): JSX.Element {
               disabled={currentQuestionIndex === 0}
               onClick={() => setCurrentQuestionIndex((value) => Math.max(0, value - 1))}
             >{t("common.previous")}</Button>
-            <Button
-              type="button"
-              disabled={currentQuestionIndex === test.questions.length - 1}
-              onClick={() =>
-                setCurrentQuestionIndex((value) => Math.min(test.questions.length - 1, value + 1))
-              }
-            >{t("common.next")}</Button>
+            {currentQuestionIndex === test.questions.length - 1 ? (
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => setIsConfirmingSubmit(true)}
+              >
+                {t("test.confirmSubmitAction")}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={() =>
+                  setCurrentQuestionIndex((value) => Math.min(test.questions.length - 1, value + 1))
+                }
+              >{t("common.next")}</Button>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("test.confirmSubmitAction")}
+        description={t("test.confirmSubmitDescription", {
+          answered: String(answeredCount),
+          total: String(test.questions.length)
+        })}
+        onCancel={() => setIsConfirmingSubmit(false)}
+        onConfirm={() => {
+          setIsConfirmingSubmit(false);
+          void handleSubmit();
+        }}
+        open={isConfirmingSubmit}
+        pending={isSubmitting}
+        title={t("test.confirmSubmitTitle")}
+      />
     </div>
   );
 }

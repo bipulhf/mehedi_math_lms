@@ -11,6 +11,7 @@ import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
+import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/results/$submissionId")({
   head: () =>
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/dashboard/tests/$testId/results/$submissi
 } as never);
 
 function SubmissionResultPage(): JSX.Element {
+  const t = useT();
   const { submissionId, testId } = Route.useParams();
   const [testQuery, submissionQuery] = useQueries({
     queries: [
@@ -64,6 +66,11 @@ function SubmissionResultPage(): JSX.Element {
             Score {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
           </Badge>
           {test.passingScore !== null ? <Badge tone="neutral">Passing score {test.passingScore}</Badge> : null}
+          {submission.passed !== null ? (
+            <Badge tone={submission.passed ? "neutral" : "attention"}>
+              {submission.passed ? t("test.passed") : t("test.failed")}
+            </Badge>
+          ) : null}
         </CardContent>
       </Card>
 

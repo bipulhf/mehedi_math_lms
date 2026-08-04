@@ -690,17 +690,37 @@ export function CoursePlayer({
                           {selectedItem.test.passingScore ?? "N/A"}
                         </p>
                       </div>
+                      {selectedItem.test.maxAttempts !== null ? (
+                        <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                          <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                            {t("test.attemptsRemainingLabel")}
+                          </p>
+                          <p className="mt-2 text-xl font-semibold text-ink">
+                            {selectedItem.test.attemptsRemaining ?? selectedItem.test.maxAttempts}
+                          </p>
+                        </div>
+                      ) : null}
                     </div>
+                    {selectedItem.test.attemptsRemaining === 0 ? (
+                      <p className="text-sm text-ink/70">{t("test.attemptsExhausted")}</p>
+                    ) : null}
                     <div className="flex gap-3">
-                      <Button asChild>
-                        <Link
-                          to="/dashboard/tests/$testId"
-                          params={{ testId: selectedItem.test.id }}
-                        >
+                      {selectedItem.test.attemptsRemaining === 0 ? (
+                        <Button disabled type="button">
                           <PlayCircle className="size-4" />
                           {t("player.openAssessment")}
-                        </Link>
-                      </Button>
+                        </Button>
+                      ) : (
+                        <Button asChild>
+                          <Link
+                            to="/dashboard/tests/$testId"
+                            params={{ testId: selectedItem.test.id }}
+                          >
+                            <PlayCircle className="size-4" />
+                            {t("player.openAssessment")}
+                          </Link>
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         disabled={selectedIndex <= 0}

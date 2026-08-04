@@ -31,7 +31,11 @@ interface McqDraft {
 
 interface ExamSettingsDraft {
   description: string;
+  durationInMinutes: number | null;
   isPublished: boolean;
+  lockAnswerOnSelect: boolean;
+  maxAttempts: number | null;
+  passingScore: number | null;
   title: string;
 }
 
@@ -86,7 +90,11 @@ export function CourseExamEditor({
   });
   const [settings, setSettings] = useState<ExamSettingsDraft>({
     description: "",
+    durationInMinutes: null,
     isPublished: false,
+    lockAnswerOnSelect: false,
+    maxAttempts: null,
+    passingScore: null,
     title: ""
   });
   const [draft, setDraft] = useState<McqDraft>(createEmptyQuestion);
@@ -101,7 +109,11 @@ export function CourseExamEditor({
     if (exam) {
       setSettings({
         description: exam.description ?? "",
+        durationInMinutes: exam.durationInMinutes,
         isPublished: exam.isPublished,
+        lockAnswerOnSelect: exam.lockAnswerOnSelect,
+        maxAttempts: exam.maxAttempts,
+        passingScore: exam.passingScore,
         title: exam.title
       });
     }
@@ -122,7 +134,12 @@ export function CourseExamEditor({
     try {
       await updateTest(examId, {
         description: settings.description,
+        durationInMinutes: settings.durationInMinutes ?? undefined,
         isPublished: settings.isPublished,
+        lockAnswerOnSelect: settings.lockAnswerOnSelect,
+        // Not `?? undefined` — an explicit `null` means "uncap this test."
+        maxAttempts: settings.maxAttempts,
+        passingScore: settings.passingScore ?? undefined,
         title: settings.title,
         type: "MCQ"
       });
@@ -251,6 +268,55 @@ export function CourseExamEditor({
                   onChange={(value) => setSettings((current) => ({ ...current, description: value }))}
                 />
               </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor={`exam-duration-${examId}`}>{t("ab.duration")}</Label>
+                  <Input
+                    id={`exam-duration-${examId}`}
+                    min={1}
+                    type="number"
+                    value={settings.durationInMinutes ?? ""}
+                    onChange={(event) =>
+                      setSettings((current) => ({
+                        ...current,
+                        durationInMinutes:
+                          event.target.value === "" ? null : Number(event.target.value)
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`exam-pass-score-${examId}`}>{t("ab.passScore")}</Label>
+                  <Input
+                    id={`exam-pass-score-${examId}`}
+                    min={0}
+                    type="number"
+                    value={settings.passingScore ?? ""}
+                    onChange={(event) =>
+                      setSettings((current) => ({
+                        ...current,
+                        passingScore: event.target.value === "" ? null : Number(event.target.value)
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`exam-max-attempts-${examId}`}>{t("ab.maxAttempts")}</Label>
+                  <Input
+                    id={`exam-max-attempts-${examId}`}
+                    min={1}
+                    title={t("ab.maxAttemptsHint")}
+                    type="number"
+                    value={settings.maxAttempts ?? ""}
+                    onChange={(event) =>
+                      setSettings((current) => ({
+                        ...current,
+                        maxAttempts: event.target.value === "" ? null : Number(event.target.value)
+                      }))
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             <label className="flex items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
@@ -269,6 +335,26 @@ export function CourseExamEditor({
                 <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
                 <span className="mt-1 block text-sm font-light leading-relaxed text-muted">
                   {t("ab.studentView")}
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
+              <input
+                checked={settings.lockAnswerOnSelect}
+                className="mt-1 size-4 accent-accent"
+                type="checkbox"
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    lockAnswerOnSelect: event.target.checked
+                  }))
+                }
+              />
+              <span>
+                <span className="block text-sm font-medium text-ink">{t("ab.lockAnswerOnSelect")}</span>
+                <span className="mt-1 block text-sm font-light leading-relaxed text-muted">
+                  {t("ab.lockAnswerOnSelectHint")}
                 </span>
               </span>
             </label>

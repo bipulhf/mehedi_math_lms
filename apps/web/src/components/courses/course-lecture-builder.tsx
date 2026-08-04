@@ -188,6 +188,7 @@ export function CourseLectureBuilder({
           exam = await createTest(activeChapter.id, {
             description: draft.description,
             isPublished: false,
+            lockAnswerOnSelect: false,
             title: draft.title,
             type: "MCQ"
           });

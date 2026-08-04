@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { CreateTestPanel } from "@/components/tests/create-test-panel";
 import {
   createQuestionPayload,
   initialQuestionDraft,
@@ -45,6 +46,8 @@ const initialTestDraft: CreateTestInput = {
   description: "",
   durationInMinutes: 60,
   isPublished: false,
+  lockAnswerOnSelect: false,
+  maxAttempts: null,
   passingScore: 0,
   title: "",
   type: "MCQ"
@@ -139,6 +142,10 @@ export function AssessmentBuilder({
         description: selectedTest.description ?? "",
         durationInMinutes: selectedTest.durationInMinutes ?? undefined,
         isPublished: selectedTest.isPublished,
+        lockAnswerOnSelect: selectedTest.lockAnswerOnSelect,
+        // Not `?? undefined` — an explicit `null` here means "uncap this test,"
+        // and coalescing would erase that.
+        maxAttempts: selectedTest.maxAttempts,
         passingScore: selectedTest.passingScore ?? undefined,
         title: selectedTest.title,
         type: selectedTest.type
@@ -356,118 +363,17 @@ export function AssessmentBuilder({
                       </button>
                     ))}
                   </div>
-                  <div className="grid gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-hairline bg-panel-warm p-3">
-                    <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("ab.newTitle")}</Label>
-                    <Input
-                      className="h-10"
-                      placeholder="e.g. Chapter Quiz 1"
-                      value={testDrafts[chapter.chapterId]?.title ?? ""}
-                      onChange={(event) =>
-                        setTestDrafts((currentValues) => ({
-                          ...currentValues,
-                          [chapter.chapterId]: {
-                            ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                            title: event.target.value
-                          }
-                        }))
-                      }
-                    />
-                    <div className="grid gap-2 md:grid-cols-3">
-                      <Select
-                        className="h-10"
-                        value={testDrafts[chapter.chapterId]?.type ?? initialTestDraft.type}
-                        onChange={(event) =>
-                          setTestDrafts((currentValues) => ({
-                            ...currentValues,
-                            [chapter.chapterId]: {
-                              ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                              type: event.target.value as CreateTestInput["type"]
-                            }
-                          }))
-                        }
-                      >
-                        <option value="MCQ">{t("ab.mcq")}</option>
-                        <option value="WRITTEN">{t("ab.written")}</option>
-                        <option value="MIXED">{t("ab.mixed")}</option>
-                      </Select>
-                      <Input
-                        className="h-10"
-                        min={1}
-                        placeholder={t("ab.duration")}
-                        type="number"
-                        value={
-                          testDrafts[chapter.chapterId]?.durationInMinutes ??
-                          initialTestDraft.durationInMinutes ??
-                          ""
-                        }
-                        onChange={(event) =>
-                          setTestDrafts((currentValues) => ({
-                            ...currentValues,
-                            [chapter.chapterId]: {
-                              ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                              durationInMinutes: Number(event.target.value)
-                            }
-                          }))
-                        }
-                      />
-                      <Input
-                        className="h-10"
-                        min={0}
-                        placeholder={t("ab.passScore")}
-                        type="number"
-                        value={
-                          testDrafts[chapter.chapterId]?.passingScore ??
-                          initialTestDraft.passingScore ??
-                          ""
-                        }
-                        onChange={(event) =>
-                          setTestDrafts((currentValues) => ({
-                            ...currentValues,
-                            [chapter.chapterId]: {
-                              ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                              passingScore: Number(event.target.value)
-                            }
-                          }))
-                        }
-                      />
-                    </div>
-                    <RichTextEditor
-                      placeholder={t("ab.instruction")}
-                      value={testDrafts[chapter.chapterId]?.description ?? ""}
-                      onChange={(value) =>
-                        setTestDrafts((currentValues) => ({
-                          ...currentValues,
-                          [chapter.chapterId]: {
-                            ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                            description: value
-                          }
-                        }))
-                      }
-                    />
-                    <label className="flex items-center gap-2 text-xs text-ink/75">
-                      <input
-                        checked={testDrafts[chapter.chapterId]?.isPublished ?? false}
-                        className="h-4 w-4 accent-(--secondary-container)"
-                        type="checkbox"
-                        onChange={(event) =>
-                          setTestDrafts((currentValues) => ({
-                            ...currentValues,
-                            [chapter.chapterId]: {
-                              ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                              isPublished: event.target.checked
-                            }
-                          }))
-                        }
-                      />
-                      <span>{t("ab.publishNow")}</span>
-                    </label>
-                    <Button
-                      type="button"
-                      className="h-10"
-                      disabled={isWorking}
-                      onClick={() => void handleCreateTest(chapter.chapterId)}
-                    >{t("ab.createTest")}</Button>
-                  </div>
+                  <CreateTestPanel
+                    draft={testDrafts[chapter.chapterId] ?? initialTestDraft}
+                    isWorking={isWorking}
+                    onChange={(next) =>
+                      setTestDrafts((currentValues) => ({
+                        ...currentValues,
+                        [chapter.chapterId]: next
+                      }))
+                    }
+                    onCreate={() => void handleCreateTest(chapter.chapterId)}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -591,6 +497,46 @@ export function AssessmentBuilder({
                           )
                         }
                       />{t("ab.published")}</label>
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <Input
+                      className="h-10"
+                      min={1}
+                      placeholder={t("ab.maxAttempts")}
+                      title={t("ab.maxAttemptsHint")}
+                      type="number"
+                      value={selectedTest.maxAttempts ?? ""}
+                      onChange={(event) =>
+                        setSelectedTest((currentValue) =>
+                          currentValue
+                            ? {
+                                ...currentValue,
+                                maxAttempts:
+                                  event.target.value === "" ? null : Number(event.target.value)
+                              }
+                            : currentValue
+                        )
+                      }
+                    />
+                    <label
+                      className="flex h-10 items-center gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3 text-xs text-ink"
+                      title={t("ab.lockAnswerOnSelectHint")}
+                    >
+                      <input
+                        checked={selectedTest.lockAnswerOnSelect}
+                        className="h-4 w-4 accent-(--secondary-container)"
+                        type="checkbox"
+                        onChange={(event) =>
+                          setSelectedTest((currentValue) =>
+                            currentValue
+                              ? {
+                                  ...currentValue,
+                                  lockAnswerOnSelect: event.target.checked
+                                }
+                              : currentValue
+                          )
+                        }
+                      />{t("ab.lockAnswerOnSelect")}</label>
                   </div>
                   <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("common.description")}</Label>
                   <RichTextEditor
