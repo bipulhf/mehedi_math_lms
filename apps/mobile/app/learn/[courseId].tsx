@@ -460,8 +460,15 @@ export default function CoursePlayerScreen(): JSX.Element {
               {selectedItem.test.durationInMinutes
                 ? t("course.minutes", { count: selectedItem.test.durationInMinutes })
                 : t("player.untimed")}
+              {selectedItem.test.maxAttempts !== null
+                ? ` · ${t("test.attemptsRemaining", { count: selectedItem.test.attemptsRemaining ?? selectedItem.test.maxAttempts })}`
+                : ""}
             </Caption>
+            {selectedItem.test.attemptsRemaining === 0 ? (
+              <Caption tone="error">{t("test.attemptsExhausted")}</Caption>
+            ) : null}
             <Button
+              disabled={selectedItem.test.attemptsRemaining === 0}
               label={t("player.openTest")}
               onPress={() =>
                 router.push({ params: { testId: selectedItem.test.id }, pathname: "/tests/[testId]" })

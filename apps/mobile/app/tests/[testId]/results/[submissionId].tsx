@@ -69,6 +69,11 @@ export default function SubmissionResultScreen(): JSX.Element {
             {test.passingScore !== null ? (
               <Badge tone="quiet">{t("test.passScore", { count: test.passingScore })}</Badge>
             ) : null}
+            {submission.passed !== null ? (
+              <Badge tone={submission.passed ? "neutral" : "attention"}>
+                {submission.passed ? t("test.passed") : t("test.failed")}
+              </Badge>
+            ) : null}
           </View>
         </Card>
 

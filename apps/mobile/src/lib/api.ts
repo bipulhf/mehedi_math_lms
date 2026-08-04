@@ -163,11 +163,15 @@ export interface TestQuestion {
 }
 
 export interface AssessmentTestSummary {
+  attemptsRemaining: number | null;
+  attemptsUsed: number | null;
   chapterId: string;
   description: string | null;
   durationInMinutes: number | null;
   id: string;
   isPublished: boolean;
+  lockAnswerOnSelect: boolean;
+  maxAttempts: number | null;
   passingScore: number | null;
   questionCount: number;
   sortOrder: number;
@@ -201,6 +205,7 @@ export interface SubmissionSummary {
   gradedAt: string | null;
   id: string;
   maxScore: number | null;
+  passed: boolean | null;
   score: number | null;
   startedAt: string | null;
   status: "STARTED" | "SUBMITTED" | "GRADED";

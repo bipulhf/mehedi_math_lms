@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
 import {
@@ -194,6 +194,16 @@ export default function TestScreen(): JSX.Element {
     }
   };
 
+  const confirmSubmit = (): void => {
+    Alert.alert(t("test.confirmSubmitTitle"), t("test.confirmSubmitDescription", {
+      answered: answeredCount,
+      total: test?.questions.length ?? 0
+    }), [
+      { style: "cancel", text: t("common.cancel") },
+      { onPress: () => void handleSubmit(), style: "default", text: t("test.confirmSubmitAction") }
+    ]);
+  };
+
   const isLoading = isPending || isStartingSubmission;
 
   if (isLoading || !test || !submission || !currentQuestion) {
@@ -215,9 +225,19 @@ export default function TestScreen(): JSX.Element {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Card style={{ gap: spacing.md }}>
           <Title>{test.title}</Title>
-          <Badge>
-            {t("test.answered", { count: answeredCount, total: test.questions.length })}
-          </Badge>
+          <View style={styles.badgeRow}>
+            <Badge>
+              {t("test.answered", { count: answeredCount, total: test.questions.length })}
+            </Badge>
+            {test.maxAttempts !== null ? (
+              <Badge>
+                {t("test.attemptIndicator", {
+                  current: (test.attemptsUsed ?? 0) + 1,
+                  total: test.maxAttempts
+                })}
+              </Badge>
+            ) : null}
+          </View>
           {timeRemainingSeconds !== null ? (
             <View style={styles.timerPanel}>
               <Caption>{t("test.timeRemaining")}</Caption>
@@ -258,26 +278,42 @@ export default function TestScreen(): JSX.Element {
           <HtmlContent html={currentQuestion.questionText} />
 
           {currentQuestion.type === "MCQ" ? (
-            currentQuestion.options.map((option) => {
-              const isSelected = draftAnswers[currentQuestion.id]?.selectedOptionId === option.id;
+            <>
+              {(() => {
+                const selectedOptionId = draftAnswers[currentQuestion.id]?.selectedOptionId;
+                const isLocked = test.lockAnswerOnSelect && Boolean(selectedOptionId);
 
-              return (
-                <Pressable
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected: isSelected }}
-                  key={option.id}
-                  onPress={() =>
-                    setDraftAnswers((current) => ({
-                      ...current,
-                      [currentQuestion.id]: { selectedOptionId: option.id }
-                    }))
-                  }
-                  style={[styles.option, isSelected ? styles.optionSelected : null]}
-                >
-                  <Body>{option.optionText}</Body>
-                </Pressable>
-              );
-            })
+                return currentQuestion.options.map((option) => {
+                  const isSelected = selectedOptionId === option.id;
+                  const isDisabled = isLocked && !isSelected;
+
+                  return (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ disabled: isDisabled, selected: isSelected }}
+                      disabled={isDisabled}
+                      key={option.id}
+                      onPress={() =>
+                        setDraftAnswers((current) => ({
+                          ...current,
+                          [currentQuestion.id]: { selectedOptionId: option.id }
+                        }))
+                      }
+                      style={[
+                        styles.option,
+                        isSelected ? styles.optionSelected : null,
+                        isDisabled ? styles.optionDisabled : null
+                      ]}
+                    >
+                      <Body>{option.optionText}</Body>
+                    </Pressable>
+                  );
+                });
+              })()}
+              {test.lockAnswerOnSelect && draftAnswers[currentQuestion.id]?.selectedOptionId ? (
+                <Caption tone="faint">{t("test.optionLocked")}</Caption>
+              ) : null}
+            </>
           ) : (
             <TextInput
               multiline
@@ -301,29 +337,31 @@ export default function TestScreen(): JSX.Element {
               onPress={() => setCurrentQuestionIndex((value) => Math.max(0, value - 1))}
               variant="outline"
             />
-            <Button
-              disabled={currentQuestionIndex === test.questions.length - 1}
-              label={t("common.next")}
-              onPress={() =>
-                setCurrentQuestionIndex((value) =>
-                  Math.min(test.questions.length - 1, value + 1)
-                )
-              }
-            />
+            {currentQuestionIndex === test.questions.length - 1 ? (
+              <Button
+                isBusy={isSubmitting}
+                label={isSubmitting ? t("test.submitting") : t("test.confirmSubmitAction")}
+                onPress={confirmSubmit}
+              />
+            ) : (
+              <Button
+                label={t("common.next")}
+                onPress={() =>
+                  setCurrentQuestionIndex((value) =>
+                    Math.min(test.questions.length - 1, value + 1)
+                  )
+                }
+              />
+            )}
           </View>
         </Card>
-
-        <Button
-          isBusy={isSubmitting}
-          label={isSubmitting ? t("test.submitting") : t("test.submit")}
-          onPress={() => void handleSubmit()}
-        />
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   content: { gap: spacing.md, padding: spacing.lg },
   metaRow: {
     alignItems: "center",
@@ -337,7 +375,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: spacing.lg
   },
-  optionSelected: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
+  optionDisabled: { opacity: 0.5 },
+  optionSelected: { backgroundColor: colors.chipActive, borderColor: colors.accent },
   prevNext: { flexDirection: "row", gap: spacing.md },
   questionDot: {
     alignItems: "center",
