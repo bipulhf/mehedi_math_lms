@@ -1,12 +1,20 @@
+import { createTranslator } from "@genex/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LandingSnapshot } from "@/lib/api/landing";
-import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
+import { faqPageJsonLd, itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import { ssrApiGet } from "@/lib/ssr-api";
+
+const FAQ_KEYS = [
+  { answerKey: "faq.a1", questionKey: "faq.q1" },
+  { answerKey: "faq.a2", questionKey: "faq.q2" },
+  { answerKey: "faq.a3", questionKey: "faq.q3" },
+  { answerKey: "faq.a4", questionKey: "faq.q4" }
+] as const;
 
 import { PublicLayout } from "@/components/layout/public-layout";
 import { CtaSection } from "@/features/landing/components/cta-section";
@@ -24,8 +32,12 @@ const EMPTY_SNAPSHOT: LandingSnapshot = {
 };
 
 export const Route = createFileRoute("/")({
-  head: ({ loaderData }) => {
+  head: ({ loaderData, match }) => {
     const courses = loaderData?.courses ?? [];
+    const t = createTranslator(match.context.locale);
+    const faq = faqPageJsonLd(
+      FAQ_KEYS.map((key) => ({ answer: t(key.answerKey), question: t(key.questionKey) }))
+    );
 
     return seo({
       description: siteConfig.description,
@@ -40,11 +52,12 @@ export const Route = createFileRoute("/")({
                   name: course.title,
                   path: `/courses/${course.slug}`
                 }))
-              )
+              ),
+              faq
             ]
-          : [organizationJsonLd()],
+          : [organizationJsonLd(), faq],
       path: "/",
-      title: "Courses, Notes, Tests and Certificates in One Place"
+      title: "Learn from Bangladesh's Best Teachers"
     });
   },
   loader: async () => ssrApiGet<LandingSnapshot>("/landing"),

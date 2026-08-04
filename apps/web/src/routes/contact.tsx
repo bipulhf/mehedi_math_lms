@@ -3,7 +3,7 @@ import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
-import { organizationJsonLd, seo } from "@/lib/seo";
+import { localBusinessJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
@@ -11,7 +11,13 @@ export const Route = createFileRoute("/contact")({
   head: () =>
     seo({
       description: `Contact ${siteConfig.name} for enrollment questions, partnerships, or institutional collaborations.`,
-      jsonLd: [organizationJsonLd()],
+      jsonLd: [
+        localBusinessJsonLd({
+          address: siteConfig.contact.address,
+          email: siteConfig.contact.email,
+          telephone: siteConfig.contact.helpline
+        })
+      ],
       path: "/contact",
       title: "Contact"
     }),

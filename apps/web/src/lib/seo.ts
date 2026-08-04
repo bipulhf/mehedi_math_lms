@@ -290,6 +290,43 @@ export function itemListJsonLd(
   };
 }
 
+export function faqPageJsonLd(items: ReadonlyArray<{ answer: string; question: string }>): JsonLdRecord {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      },
+      name: item.question
+    }))
+  };
+}
+
+export function localBusinessJsonLd(input: {
+  address: string;
+  email: string;
+  telephone: string;
+}): JsonLdRecord {
+  const base = stripTrailingSlash(siteConfig.url);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "BD",
+      streetAddress: input.address
+    },
+    email: input.email,
+    name: SITE,
+    telephone: input.telephone,
+    url: `${base}/`
+  };
+}
+
 export function catalogItemListFromCourses(
   courses: readonly Pick<CourseSummary, "slug" | "title">[]
 ): JsonLdRecord {
