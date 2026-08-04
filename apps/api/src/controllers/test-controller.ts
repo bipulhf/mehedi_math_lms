@@ -210,6 +210,17 @@ export class TestController {
     return success(context, data);
   }
 
+  public async listMySubmissions(
+    context: Context<AppBindings>,
+    testId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<Response> {
+    const data = await this.testService.listMySubmissions(testId, currentUserId, currentUserRole);
+
+    return success(context, data);
+  }
+
   public async getSubmissionDetail(
     context: Context<AppBindings>,
     submissionId: string,

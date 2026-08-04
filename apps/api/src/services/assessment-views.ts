@@ -58,6 +58,8 @@ export interface SubmissionAnswerView {
 }
 
 export interface SubmissionSummary {
+  /** This user's Nth attempt at this test, oldest = 1. */
+  attemptNumber: number;
   createdAt: string;
   feedback: string | null;
   gradedAt: string | null;
@@ -111,11 +113,48 @@ export function isTestPassed(score: number | null, passingScore: number | null):
   return score >= (passingScore ?? 0);
 }
 
+/**
+ * Attempt numbers are per-user, not per-row: group by `userId`, rank by
+ * `createdAt` ascending. Works whether `records` covers one student's history
+ * or an entire test's submissions across every student.
+ */
+export function attachAttemptNumbers(
+  records: readonly SubmissionSummaryRecord[]
+): ReadonlyMap<string, number> {
+  const byUser = new Map<string, SubmissionSummaryRecord[]>();
+
+  for (const record of records) {
+    const existing = byUser.get(record.userId);
+
+    if (existing) {
+      existing.push(record);
+    } else {
+      byUser.set(record.userId, [record]);
+    }
+  }
+
+  const attemptNumberBySubmissionId = new Map<string, number>();
+
+  for (const userRecords of byUser.values()) {
+    const sorted = [...userRecords].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
+
+    sorted.forEach((record, index) => {
+      attemptNumberBySubmissionId.set(record.id, index + 1);
+    });
+  }
+
+  return attemptNumberBySubmissionId;
+}
+
 export function mapSubmissionSummary(
   record: SubmissionSummaryRecord,
-  passingScore: number | null
+  passingScore: number | null,
+  attemptNumber: number
 ): SubmissionSummary {
   return {
+    attemptNumber,
     createdAt: record.createdAt.toISOString(),
     feedback: record.feedback,
     gradedAt: record.gradedAt?.toISOString() ?? null,
@@ -137,10 +176,11 @@ export function mapSubmissionSummary(
 export function mapSubmissionDetail(
   record: SubmissionSummaryRecord,
   answers: readonly SubmissionAnswerView[],
-  passingScore: number | null
+  passingScore: number | null,
+  attemptNumber: number
 ): SubmissionDetail {
   return {
-    ...mapSubmissionSummary(record, passingScore),
+    ...mapSubmissionSummary(record, passingScore, attemptNumber),
     answers,
     gradedById: record.gradedById,
     testId: record.testId

@@ -658,4 +658,34 @@ export class TestRepository {
 
     return rows;
   }
+
+  public async listSubmissionsByTestAndUser(
+    testId: string,
+    userId: string
+  ): Promise<readonly SubmissionSummaryRecord[]> {
+    const rows = await db
+      .select({
+        createdAt: testSubmissions.createdAt,
+        feedback: testSubmissions.feedback,
+        gradedAt: testSubmissions.gradedAt,
+        gradedById: testSubmissions.gradedById,
+        id: testSubmissions.id,
+        maxScore: testSubmissions.maxScore,
+        score: testSubmissions.score,
+        startedAt: testSubmissions.startedAt,
+        status: testSubmissions.status,
+        submittedAt: testSubmissions.submittedAt,
+        testId: testSubmissions.testId,
+        updatedAt: testSubmissions.updatedAt,
+        userEmail: users.email,
+        userId: testSubmissions.userId,
+        userName: users.name
+      })
+      .from(testSubmissions)
+      .innerJoin(users, eq(users.id, testSubmissions.userId))
+      .where(and(eq(testSubmissions.testId, testId), eq(testSubmissions.userId, userId)))
+      .orderBy(desc(testSubmissions.createdAt));
+
+    return rows;
+  }
 }

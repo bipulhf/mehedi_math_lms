@@ -28,6 +28,15 @@ interface OptionSpec {
   questionId: string;
 }
 
+interface SubmissionHistoryRecord {
+  createdAt: Date;
+  id: string;
+  status: string;
+  userEmail: string;
+  userId: string;
+  userName: string;
+}
+
 interface Overrides {
   completedAttempts?: number;
   isPublished?: boolean;
@@ -37,6 +46,7 @@ interface Overrides {
   options?: readonly OptionSpec[];
   passingScore?: number | null;
   questions?: readonly QuestionSpec[];
+  submissionHistory?: readonly SubmissionHistoryRecord[];
 }
 
 interface Calls {
@@ -109,6 +119,16 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
         : [],
     listOptionsByQuestionIds: async () => options,
     listQuestionsByTestId: async () => questions,
+    listSubmissionsByTestAndUser: async (_testId: string, userId: string) =>
+      (
+        overrides.submissionHistory ?? [
+          { ...submission, userEmail: "student@example.com", userName: "Student" }
+        ]
+      ).filter((record) => record.userId === userId),
+    listSubmissionsByTestId: async () =>
+      overrides.submissionHistory ?? [
+        { ...submission, userEmail: "student@example.com", userName: "Student" }
+      ],
     replaceSubmissionAnswers: async () => undefined,
     updateSubmission: async (_id: string, patch: Record<string, unknown>) => {
       calls.submissionUpdates.push(patch);
@@ -439,6 +459,59 @@ describe("TestService.updateTest — maxAttempts", () => {
     await service.updateTest("test-1", { maxAttempts: null }, "admin-1", "ADMIN");
 
     expect(calls.testUpdates[0]?.maxAttempts).toBeNull();
+  });
+});
+
+describe("TestService — attempt history", () => {
+  const twoAttemptsByOneStudent: readonly SubmissionHistoryRecord[] = [
+    {
+      createdAt: new Date("2026-01-05T00:00:00Z"),
+      id: "sub-2",
+      status: "GRADED",
+      userEmail: "student@example.com",
+      userId: "user-1",
+      userName: "Student"
+    },
+    {
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+      id: "sub-1",
+      status: "GRADED",
+      userEmail: "student@example.com",
+      userId: "user-1",
+      userName: "Student"
+    }
+  ];
+
+  test("listMySubmissions numbers attempts oldest-first regardless of input order", async () => {
+    const { service } = buildService({ submissionHistory: twoAttemptsByOneStudent });
+
+    const submissions = await service.listMySubmissions("test-1", "user-1", "STUDENT");
+    const byId = new Map(submissions.map((submission) => [submission.id, submission.attemptNumber]));
+
+    expect(byId.get("sub-1")).toBe(1);
+    expect(byId.get("sub-2")).toBe(2);
+  });
+
+  test("listSubmissions numbers attempts per student, not globally", async () => {
+    const bothStudents: readonly SubmissionHistoryRecord[] = [
+      ...twoAttemptsByOneStudent,
+      {
+        createdAt: new Date("2026-01-03T00:00:00Z"),
+        id: "sub-3",
+        status: "GRADED",
+        userEmail: "other@example.com",
+        userId: "user-2",
+        userName: "Other Student"
+      }
+    ];
+    const { service } = buildService({ submissionHistory: bothStudents });
+
+    const submissions = await service.listSubmissions("test-1", "teacher-1", "TEACHER");
+    const byId = new Map(submissions.map((submission) => [submission.id, submission.attemptNumber]));
+
+    expect(byId.get("sub-1")).toBe(1);
+    expect(byId.get("sub-2")).toBe(2);
+    expect(byId.get("sub-3")).toBe(1);
   });
 });
 

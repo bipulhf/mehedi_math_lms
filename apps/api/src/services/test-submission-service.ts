@@ -17,6 +17,7 @@ import type {
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { gradeAnswers } from "@/services/assessment-grading";
 import {
+  attachAttemptNumbers,
   isTestPassed,
   mapSubmissionDetail,
   mapSubmissionSummary,
@@ -103,6 +104,17 @@ export class TestSubmissionService {
     return this.testRepository.createSubmission(test.id, currentUserId);
   }
 
+  /**
+   * A `STARTED` submission is always the newest for its user (only one can
+   * exist at a time), so every completed attempt precedes it chronologically
+   * — its rank is simply the completed count plus one.
+   */
+  private async getAttemptNumber(testId: string, userId: string): Promise<number> {
+    const counts = await this.testRepository.countCompletedSubmissionsByTestIds([testId], userId);
+
+    return (counts.get(testId) ?? 0) + 1;
+  }
+
   public async startSubmission(
     testId: string,
     currentUserId: string,
@@ -111,6 +123,7 @@ export class TestSubmissionService {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const submission = await this.getOrCreateActiveSubmission(test, currentUserId);
     const answers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
+    const attemptNumber = await this.getAttemptNumber(testId, currentUserId);
 
     return {
       answers: answers.map((answer) => ({
@@ -121,6 +134,7 @@ export class TestSubmissionService {
         selectedOptionId: answer.selectedOptionId,
         writtenAnswer: answer.writtenAnswer
       })),
+      attemptNumber,
       createdAt: submission.createdAt.toISOString(),
       feedback: submission.feedback,
       gradedAt: submission.gradedAt?.toISOString() ?? null,
@@ -215,6 +229,7 @@ export class TestSubmissionService {
   ): Promise<SubmissionDetail> {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const submission = await this.getOrCreateActiveSubmission(test, currentUserId);
+    const attemptNumber = await this.getAttemptNumber(testId, currentUserId);
 
     const questions = await this.testRepository.listQuestionsByTestId(testId);
     const options = await this.testRepository.listOptionsByQuestionIds(
@@ -253,7 +268,8 @@ export class TestSubmissionService {
         selectedOptionId: answer.selectedOptionId,
         writtenAnswer: answer.writtenAnswer
       })),
-      test.passingScore
+      test.passingScore,
+      attemptNumber
     );
   }
 
@@ -264,8 +280,29 @@ export class TestSubmissionService {
   ): Promise<readonly SubmissionSummary[]> {
     const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
     const submissions = await this.testRepository.listSubmissionsByTestId(testId);
+    const attemptNumbers = attachAttemptNumbers(submissions);
 
-    return submissions.map((submission) => mapSubmissionSummary(submission, test.passingScore));
+    return submissions.map((submission) =>
+      mapSubmissionSummary(submission, test.passingScore, attemptNumbers.get(submission.id) ?? 1)
+    );
+  }
+
+  /** A student's own attempt history for one test — every attempt, oldest first is `attemptNumber` 1. */
+  public async listMySubmissions(
+    testId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<readonly SubmissionSummary[]> {
+    const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
+    const submissions = await this.testRepository.listSubmissionsByTestAndUser(
+      testId,
+      currentUserId
+    );
+    const attemptNumbers = attachAttemptNumbers(submissions);
+
+    return submissions.map((submission) =>
+      mapSubmissionSummary(submission, test.passingScore, attemptNumbers.get(submission.id) ?? 1)
+    );
   }
 
   public async getSubmissionDetail(
@@ -298,6 +335,7 @@ export class TestSubmissionService {
       throw new NotFoundError("Submission not found");
     }
 
+    const attemptNumbers = attachAttemptNumbers(submissions);
     const answers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
 
     return mapSubmissionDetail(
@@ -310,7 +348,8 @@ export class TestSubmissionService {
         selectedOptionId: answer.selectedOptionId,
         writtenAnswer: answer.writtenAnswer
       })),
-      test.passingScore
+      test.passingScore,
+      attemptNumbers.get(summaryRecord.id) ?? 1
     );
   }
 
@@ -397,6 +436,8 @@ export class TestSubmissionService {
       throw new NotFoundError("Submission not found");
     }
 
+    const attemptNumbers = attachAttemptNumbers(summaries);
+
     return mapSubmissionDetail(
       summaryRecord,
       refreshedAnswers.map((answer) => ({
@@ -407,7 +448,8 @@ export class TestSubmissionService {
         selectedOptionId: answer.selectedOptionId,
         writtenAnswer: answer.writtenAnswer
       })),
-      gradedTest?.passingScore ?? null
+      gradedTest?.passingScore ?? null,
+      attemptNumbers.get(summaryRecord.id) ?? 1
     );
   }
 }

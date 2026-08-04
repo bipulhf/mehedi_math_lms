@@ -567,6 +567,14 @@ export class TestService {
     return this.submissions.listSubmissions(testId, currentUserId, currentUserRole);
   }
 
+  public async listMySubmissions(
+    testId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<readonly SubmissionSummary[]> {
+    return this.submissions.listMySubmissions(testId, currentUserId, currentUserRole);
+  }
+
   public async getSubmissionDetail(
     submissionId: string,
     currentUserId: string,

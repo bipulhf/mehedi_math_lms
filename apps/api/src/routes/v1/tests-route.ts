@@ -132,6 +132,19 @@ testsRoutes.get("/:id/submissions", requireRole("ADMIN", "TEACHER"), (context) =
   );
 });
 
+testsRoutes.get("/:id/submissions/mine", requireAuth(), (context) => {
+  const params = testIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return testController.listMySubmissions(
+    context,
+    params.id,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
 testsRoutes.put("/submissions/:id/answers", requireAuth(), async (context) => {
   const params = submissionIdParamsSchema.parse(context.req.param());
   const payload = saveSubmissionAnswersSchema.parse(await context.req.json());
