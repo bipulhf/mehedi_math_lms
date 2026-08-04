@@ -100,10 +100,13 @@ function PlayerControlsBar(): JSX.Element {
     >
       <TimeSlider.Root className="group/slider relative flex h-4 w-full items-center">
         <TimeSlider.Track className="relative h-[3px] w-full bg-paper/25">
-          <TimeSlider.Progress className="absolute h-full bg-paper/40" />
-          <TimeSlider.TrackFill className="absolute h-full bg-accent" />
+          {/* Vidstack drives fill width via the --slider-fill/--slider-progress
+              CSS vars it sets on the root, not an inline style -- these have
+              to be consumed explicitly or the bar never visibly fills. */}
+          <TimeSlider.Progress className="absolute h-full w-[var(--slider-progress)] bg-paper/40" />
+          <TimeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-accent" />
         </TimeSlider.Track>
-        <TimeSlider.Thumb className="size-2.5 bg-accent opacity-0 transition-opacity group-hover/slider:opacity-100" />
+        <TimeSlider.Thumb className="absolute left-[var(--slider-fill)] size-2.5 -translate-x-1/2 bg-accent opacity-0 transition-opacity group-hover/slider:opacity-100" />
         <TimeSlider.Preview className="flex flex-col items-center opacity-0 transition-opacity group-hover/slider:opacity-100">
           <TimeSlider.Value className="label-mono border border-hairline bg-card px-1.5 py-0.5 text-[0.65rem] text-ink" />
         </TimeSlider.Preview>
@@ -124,9 +127,9 @@ function PlayerControlsBar(): JSX.Element {
           <PlayerMuteButton />
           <VolumeSlider.Root className="relative hidden h-4 w-16 items-center sm:flex">
             <VolumeSlider.Track className="relative h-[3px] w-full bg-paper/25">
-              <VolumeSlider.TrackFill className="absolute h-full bg-paper" />
+              <VolumeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-paper" />
             </VolumeSlider.Track>
-            <VolumeSlider.Thumb className="size-2.5 bg-paper" />
+            <VolumeSlider.Thumb className="absolute left-[var(--slider-fill)] size-2.5 -translate-x-1/2 bg-paper" />
           </VolumeSlider.Root>
         </div>
 
