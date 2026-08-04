@@ -1,6 +1,7 @@
 import type {
   adminUpdateBugSchema,
   adminUsersQuerySchema,
+  auditLogsQuerySchema,
   bugReportPrioritySchema,
   bugReportStatusSchema,
   createAdminUserSchema,
@@ -81,11 +82,26 @@ export interface AdminBugRecord {
   };
 }
 
+export interface AdminAuditLogRecord {
+  action: string;
+  actor: {
+    email: string;
+    id: string;
+    name: string;
+  } | null;
+  createdAt: string;
+  entityId: string;
+  entityType: string;
+  id: string;
+  metadata: Record<string, string | number | boolean | null> | null;
+}
+
 export type AdminUsersQuery = z.infer<typeof adminUsersQuerySchema>;
 export type CreateAdminUserInput = z.infer<typeof createAdminUserSchema>;
 export type UpdateAdminUserInput = z.infer<typeof updateAdminUserSchema>;
 export type UpdateAdminUserStatusInput = z.infer<typeof updateAdminUserStatusSchema>;
 export type AdminUpdateBugInput = z.infer<typeof adminUpdateBugSchema>;
+export type AdminAuditLogsQuery = z.infer<typeof auditLogsQuerySchema>;
 
 function buildQueryString(query: Record<string, string | number | undefined>): string {
   const searchParams = new URLSearchParams();
@@ -244,6 +260,27 @@ export async function listAdminSmsHistory(params: {
       page: params.page
     })}`
   ) as Promise<PaginatedEnvelope<AdminSmsBatchRow>>;
+}
+
+export async function listAdminAuditLogs(
+  query: Partial<AdminAuditLogsQuery>
+): Promise<PaginatedEnvelope<AdminAuditLogRecord>> {
+  return apiGet<readonly AdminAuditLogRecord[]>(
+    `admin/logs${buildQueryString({
+      action: query.action,
+      actorSearch: query.actorSearch,
+      from: query.from,
+      limit: query.limit,
+      page: query.page,
+      to: query.to
+    })}`
+  ) as Promise<PaginatedEnvelope<AdminAuditLogRecord>>;
+}
+
+export async function listAdminAuditLogActions(): Promise<readonly string[]> {
+  const response = await apiGet<readonly string[]>("admin/logs/actions");
+
+  return response.data;
 }
 
 export { userListStatusSchema };

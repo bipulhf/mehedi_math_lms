@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BookCopy,
   ChartColumn,
+  History,
   Layers3,
   LayoutDashboard,
   ListOrdered,
@@ -56,7 +57,8 @@ const dashboardNavigation = {
     { icon: Smartphone, labelKey: "nav.sms", to: "/dashboard/admin/sms" },
     { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/admin/bugs" },
     { icon: ShieldAlert, labelKey: "nav.reports", to: "/dashboard/admin/message-reports" },
-    { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/admin/analytics" }
+    { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/admin/analytics" },
+    { icon: History, labelKey: "nav.logs", to: "/dashboard/admin/logs" }
   ],
   STUDENT: [
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
