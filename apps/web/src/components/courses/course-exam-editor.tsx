@@ -31,6 +31,7 @@ interface McqDraft {
 
 interface ExamSettingsDraft {
   description: string;
+  isPublished: boolean;
   title: string;
 }
 
@@ -83,7 +84,11 @@ export function CourseExamEditor({
     queryFn: async () => getTestDetail(examId),
     queryKey: queryKeys.tests.detail(examId)
   });
-  const [settings, setSettings] = useState<ExamSettingsDraft>({ description: "", title: "" });
+  const [settings, setSettings] = useState<ExamSettingsDraft>({
+    description: "",
+    isPublished: false,
+    title: ""
+  });
   const [draft, setDraft] = useState<McqDraft>(createEmptyQuestion);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
@@ -94,7 +99,11 @@ export function CourseExamEditor({
 
   useEffect(() => {
     if (exam) {
-      setSettings({ description: exam.description ?? "", title: exam.title });
+      setSettings({
+        description: exam.description ?? "",
+        isPublished: exam.isPublished,
+        title: exam.title
+      });
     }
   }, [exam]);
 
@@ -113,6 +122,7 @@ export function CourseExamEditor({
     try {
       await updateTest(examId, {
         description: settings.description,
+        isPublished: settings.isPublished,
         title: settings.title,
         type: "MCQ"
       });
@@ -242,6 +252,26 @@ export function CourseExamEditor({
                 />
               </div>
             </div>
+
+            <label className="flex items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
+              <input
+                checked={settings.isPublished}
+                className="mt-1 size-4 accent-accent"
+                type="checkbox"
+                onChange={(event) =>
+                  setSettings((current) => ({
+                    ...current,
+                    isPublished: event.target.checked
+                  }))
+                }
+              />
+              <span>
+                <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
+                <span className="mt-1 block text-sm font-light leading-relaxed text-muted">
+                  {t("ab.studentView")}
+                </span>
+              </span>
+            </label>
 
             <div className="flex justify-end border-t border-hairline pt-4">
               <Button

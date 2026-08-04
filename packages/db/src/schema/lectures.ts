@@ -27,6 +27,7 @@ export const lectures = pgTable(
     content: text("content"),
     sortOrder: integer("sort_order").default(0).notNull(),
     isPreview: boolean("is_preview").default(false).notNull(),
+    isPublished: boolean("is_published").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },

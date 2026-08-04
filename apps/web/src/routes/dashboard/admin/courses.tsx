@@ -11,6 +11,7 @@ import {
   Eye,
   Archive,
   ArchiveRestore,
+  ExternalLink,
   X
 } from "lucide-react";
 import type { JSX } from "react";
@@ -349,6 +350,19 @@ function AdminCoursesPage(): JSX.Element {
                                 <Eye className="size-4" />
                               </Link>
                             </Button>
+
+                            {course.status === "PUBLISHED" ? (
+                              <Button asChild size="sm" variant="ghost" title={t("cat.viewCourse")}>
+                                <Link
+                                  params={{ slug: course.slug }}
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                  to="/courses/$slug"
+                                >
+                                  <ExternalLink className="size-4" />
+                                </Link>
+                              </Button>
+                            ) : null}
 
                             <Button asChild size="sm" variant="ghost">
                               <Link params={{ id: course.id }} to="/dashboard/courses/$id/notices">

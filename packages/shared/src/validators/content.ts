@@ -23,12 +23,14 @@ export const materialIdParamsSchema = z.object({
 
 export const createChapterSchema = z.object({
   description: optionalTextSchema,
+  isPublished: z.boolean().default(false),
   title: z.string().trim().min(1).max(255)
 });
 
 export const updateChapterSchema = z
   .object({
     description: optionalTextSchema.optional(),
+    isPublished: z.boolean().optional(),
     title: z.string().trim().min(1).max(255).optional()
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
@@ -47,6 +49,7 @@ export const createLectureSchema = z
     content: optionalTextSchema,
     description: optionalTextSchema,
     isPreview: z.boolean().default(false),
+    isPublished: z.boolean().default(false),
     title: z.string().trim().min(1).max(255),
     type: lectureTypeSchema,
     videoDuration: z.number().int().min(0).optional(),
@@ -78,6 +81,7 @@ export const updateLectureSchema = z
     content: optionalTextSchema.optional(),
     description: optionalTextSchema.optional(),
     isPreview: z.boolean().optional(),
+    isPublished: z.boolean().optional(),
     title: z.string().trim().min(1).max(255).optional(),
     type: lectureTypeSchema.optional(),
     videoDuration: z.number().int().min(0).optional(),

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Archive, Plus, Send } from "lucide-react";
+import { Archive, ExternalLink, Plus, Send } from "lucide-react";
 import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -130,6 +130,19 @@ function DashboardCoursesPage(): JSX.Element {
         align: "end",
         cell: (course) => (
           <div className="flex flex-wrap justify-end gap-2">
+            {course.status === "PUBLISHED" ? (
+              <Button asChild size="sm" variant="outline">
+                <Link
+                  params={{ slug: course.slug }}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  to="/courses/$slug"
+                >
+                  <ExternalLink className="size-4" />
+                  {t("cat.viewCourse")}
+                </Link>
+              </Button>
+            ) : null}
             <Button asChild size="sm" variant="outline">
               <Link params={{ id: course.id }} to="/dashboard/courses/$id/notices">
                 {t("manage.notices")}

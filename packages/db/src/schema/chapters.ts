@@ -1,4 +1,4 @@
-import { index, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 import { courses } from "./courses";
 
@@ -12,6 +12,7 @@ export const chapters = pgTable(
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
     sortOrder: integer("sort_order").default(0).notNull(),
+    isPublished: boolean("is_published").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
