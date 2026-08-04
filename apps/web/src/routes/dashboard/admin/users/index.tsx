@@ -237,6 +237,7 @@ function AdminUsersPage(): JSX.Element {
             <Button
               className="w-full lg:w-fit"
               disabled={isSubmitting}
+              size="lg"
               type="submit"
             >
               {isSubmitting ? "Authorizing" : "Authorize Staff"}

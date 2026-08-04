@@ -214,7 +214,7 @@ function DashboardCoursesPage(): JSX.Element {
               <option value="ARCHIVED">{t("tcourses.archived")}</option>
             </Select>
           </div>
-          <Button asChild className="h-11 shrink-0">
+          <Button asChild className="shrink-0" size="lg">
             <Link to="/dashboard/courses/new">
               <Plus className="size-4" />
               {t("tcourses.add")}
