@@ -107,6 +107,7 @@ export const authoringEn: Readonly<Record<keyof typeof authoringBn, string>> = {
   "author.saveBasic": "Save information",
   "author.saveExam": "Save exam",
   "author.saveLecture": "Save lecture",
+  "author.editLectureTitle": "Edit lecture",
   "author.stageLabel": "Course setup",
   "author.video": "Video",
   "author.videoHint": "Upload a video directly or add a YouTube or Vimeo link.",

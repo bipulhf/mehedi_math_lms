@@ -23,6 +23,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FilterPill } from "@/components/ui/pill";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import type { ContentChapter, ContentLecture } from "@/lib/api/content";
 import {
@@ -510,12 +511,31 @@ export function CourseLectureBuilder({
 
       <LectureComposer
         draft={draft}
-        isEditing={editingLectureId !== null}
+        isEditing={false}
         isWorking={isWorking}
         onCancel={resetComposer}
         onChange={setDraft}
-        onSave={() => void (editingLectureId ? handleUpdate() : handleCreate())}
+        onSave={() => void handleCreate()}
       />
+
+      {/* Editing opens in its own modal instead of reusing this same inline
+          slot -- switching the "add new" composer into edit mode in place
+          was confusing about which lecture was actually being changed. */}
+      <Modal
+        className="max-h-[90vh] max-w-3xl overflow-y-auto"
+        onClose={resetComposer}
+        open={editingLectureId !== null}
+        title={t("author.editLectureTitle")}
+      >
+        <LectureComposer
+          draft={draft}
+          isEditing
+          isWorking={isWorking}
+          onCancel={resetComposer}
+          onChange={setDraft}
+          onSave={() => void handleUpdate()}
+        />
+      </Modal>
 
       <section className="space-y-4 border-t border-hairline pt-6">
         <div>

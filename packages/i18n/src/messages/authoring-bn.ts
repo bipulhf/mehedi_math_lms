@@ -99,6 +99,7 @@ export const authoringBn = {
   "author.saveBasic": "তথ্য সেভ কর",
   "author.saveExam": "পরীক্ষা সেভ কর",
   "author.saveLecture": "ক্লাস সেভ কর",
+  "author.editLectureTitle": "ক্লাস সম্পাদনা",
   "author.stageLabel": "কোর্স তৈরি",
   "author.video": "ভিডিও",
   "author.videoHint": "সরাসরি ভিডিও আপলোড কর অথবা ইউটিউব/ভিমিও লিংক দাও।",
