@@ -7,7 +7,7 @@ import { chapterMaterials, chapters } from "./chapters";
 import { comments } from "./comments";
 import { courseProgress, enrollments } from "./enrollments";
 import { courseTeachers, courses, notices } from "./courses";
-import { lectureMaterials, lectures } from "./lectures";
+import { lectureMaterials, lectures, videoChapters } from "./lectures";
 import { conversationReports, conversations, messages } from "./messages";
 import { smsBatches, smsRecipients } from "./sms";
 import { fcmTokens, notifications } from "./notifications";
@@ -186,7 +186,15 @@ export const lecturesRelations = relations(lectures, ({ many, one }) => ({
   }),
   materials: many(lectureMaterials),
   comments: many(comments),
-  progress: many(courseProgress)
+  progress: many(courseProgress),
+  videoChapters: many(videoChapters)
+}));
+
+export const videoChaptersRelations = relations(videoChapters, ({ one }) => ({
+  lecture: one(lectures, {
+    fields: [videoChapters.lectureId],
+    references: [lectures.id]
+  })
 }));
 
 export const lectureMaterialsRelations = relations(lectureMaterials, ({ one }) => ({

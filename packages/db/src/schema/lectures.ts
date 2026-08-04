@@ -53,3 +53,22 @@ export const lectureMaterials = pgTable(
   },
   (table) => [index("lecture_materials_lecture_id_idx").on(table.lectureId)]
 );
+
+// YouTube-style in-video markers, not to be confused with `chapters` (the
+// course-structure table above) -- this is timestamps inside one lecture's
+// own video. Rows are always deleted and re-inserted as a whole set on save
+// (ContentService.setLectureVideoChapters), never patched individually, so
+// there is no updatedAt and ordering is just timeSeconds ascending.
+export const videoChapters = pgTable(
+  "video_chapters",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    lectureId: uuid("lecture_id")
+      .notNull()
+      .references(() => lectures.id, { onDelete: "cascade" }),
+    title: varchar("title", { length: 255 }).notNull(),
+    timeSeconds: integer("time_seconds").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull()
+  },
+  (table) => [index("video_chapters_lecture_id_idx").on(table.lectureId)]
+);
