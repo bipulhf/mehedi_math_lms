@@ -24,9 +24,16 @@ import {
   type MessageParticipant
 } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/messages")({
+  head: () =>
+    seo({
+      description: "Direct conversations between teachers and students.",
+      path: "/dashboard/messages",
+      title: "Messages"
+    }),
   component: DashboardMessagesPage,
   errorComponent: RouteErrorView
 } as never);

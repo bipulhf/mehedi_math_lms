@@ -13,9 +13,16 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { OwnProfileData } from "@/lib/api/profiles";
 import { getAdminStudentProfile } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/students/$id")({
+  head: () =>
+    seo({
+      description: "A student's enrolment history and contact details.",
+      path: "/dashboard/students",
+      title: "Student Profile"
+    }),
   component: AdminStudentProfilePage,
   errorComponent: RouteErrorView
 });

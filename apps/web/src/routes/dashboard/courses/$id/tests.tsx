@@ -11,8 +11,15 @@ import { getCourse } from "@/lib/api/courses";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/dashboard/courses/$id/tests")({
+  head: () =>
+    seo({
+      description: "Build and manage the tests attached to this course.",
+      path: "/dashboard/courses",
+      title: "Course Tests"
+    }),
   component: CourseAssessmentsPage,
   errorComponent: RouteErrorView
 } as never);

@@ -11,9 +11,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { PaymentHistoryItem } from "@/lib/api/payments";
 import { getPaymentById } from "@/lib/api/payments";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/return")({
+  head: () =>
+    seo({
+      description: "The outcome of your most recent payment.",
+      path: "/dashboard/payments/return",
+      title: "Payment Result"
+    }),
   component: PaymentReturnPage,
   errorComponent: RouteErrorView
 } as never);

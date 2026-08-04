@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import {
   getTestDetail,
@@ -26,6 +27,12 @@ interface DraftAnswer {
 }
 
 export const Route = createFileRoute("/dashboard/tests/$testId")({
+  head: () =>
+    seo({
+      description: "Answer the test's questions before time runs out.",
+      path: "/dashboard/tests",
+      title: "Take Test"
+    }),
   component: StudentTestPage,
   errorComponent: RouteErrorView
 } as never);

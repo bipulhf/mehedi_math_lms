@@ -10,9 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { AssessmentTestDetail, SubmissionSummary } from "@/lib/api/tests";
 import { getTestDetail, listTestSubmissions } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/submissions")({
+  head: () =>
+    seo({
+      description: "Every student submission for this test, ready to grade.",
+      path: "/dashboard/tests",
+      title: "Test Submissions"
+    }),
   component: TestSubmissionsPage,
   errorComponent: RouteErrorView
 } as never);

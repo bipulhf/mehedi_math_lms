@@ -38,9 +38,16 @@ import {
   withdrawCourse
 } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/courses")({
+  head: () =>
+    seo({
+      description: "Review, approve, or archive courses submitted by teachers.",
+      path: "/dashboard/admin/courses",
+      title: "Course Approval"
+    }),
   component: AdminCoursesPage,
   errorComponent: RouteErrorView
 } as never);

@@ -17,9 +17,16 @@ import { Select } from "@/components/ui/select";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { getAdminBug, updateAdminBug } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/bugs/$id")({
+  head: () =>
+    seo({
+      description: "Review and respond to a reported bug.",
+      path: "/dashboard/admin/bugs",
+      title: "Bug Report"
+    }),
   component: AdminBugDetailPage,
   errorComponent: RouteErrorView
 } as never);

@@ -6,9 +6,16 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientEnv } from "@/lib/env";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/mock")({
+  head: () =>
+    seo({
+      description: "A local stand-in for the payment gateway, for testing.",
+      path: "/dashboard/payments/mock",
+      title: "Mock Payment"
+    }),
   component: MockPaymentPage,
   errorComponent: RouteErrorView
 } as never);

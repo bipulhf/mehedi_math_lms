@@ -17,9 +17,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses, submitCourse, withdrawCourse } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/")({
+  head: () =>
+    seo({
+      description: "Every course you teach, with its status and stats.",
+      path: "/dashboard/courses",
+      title: "My Courses"
+    }),
   component: DashboardCoursesPage,
   errorComponent: RouteErrorView
 } as never);

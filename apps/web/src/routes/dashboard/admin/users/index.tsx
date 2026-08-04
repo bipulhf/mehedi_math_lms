@@ -39,9 +39,16 @@ import {
 } from "@/lib/api/admin";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/users/")({
+  head: () =>
+    seo({
+      description: "Every account on the platform, searchable by role and status.",
+      path: "/dashboard/admin/users",
+      title: "Users"
+    }),
   component: AdminUsersPage,
   errorComponent: RouteErrorView
 } as never);

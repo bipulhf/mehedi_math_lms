@@ -8,12 +8,19 @@ import { CourseExamEditor } from "@/components/courses/course-exam-editor";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 
 const examSearchSchema = z.object({
   examId: z.string().uuid()
 });
 
 export const Route = createFileRoute("/dashboard/courses/$id/exam")({
+  head: () =>
+    seo({
+      description: "Write or update a test question for this course.",
+      path: "/dashboard/courses",
+      title: "Edit Question"
+    }),
   component: CourseExamQuestionPage,
   validateSearch: examSearchSchema
 } as never);

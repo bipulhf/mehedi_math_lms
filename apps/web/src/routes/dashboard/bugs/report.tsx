@@ -13,9 +13,16 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { CreateBugReportInput } from "@/lib/api/bugs";
 import { createBugReport } from "@/lib/api/bugs";
 import { useZodForm } from "@/lib/forms/use-zod-form";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/bugs/report")({
+  head: () =>
+    seo({
+      description: "Tell us what went wrong so the team can fix it.",
+      path: "/dashboard/bugs/report",
+      title: "Report a Bug"
+    }),
   component: ReportBugPage,
   errorComponent: RouteErrorView
 } as never);

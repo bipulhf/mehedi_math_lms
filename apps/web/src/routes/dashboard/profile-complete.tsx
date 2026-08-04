@@ -23,6 +23,7 @@ import {
   updateTeacherProfile
 } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 const searchSchema = z.object({
@@ -30,6 +31,12 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/dashboard/profile-complete")({
+  head: () =>
+    seo({
+      description: "Finish setting up your account to unlock the rest of the dashboard.",
+      path: "/dashboard/profile-complete",
+      title: "Complete Your Profile"
+    }),
   validateSearch: (search) => searchSchema.parse(search),
   component: CompleteProfilePage,
   errorComponent: RouteErrorView

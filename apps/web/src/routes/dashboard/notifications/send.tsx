@@ -26,9 +26,16 @@ import { cn } from "@/lib/utils";
 import { stripHtml } from "@/lib/html";
 import { RouteErrorView } from "@/components/common/route-error";
 import genexMark from "@/assets/genex-mark.png";
+import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/notifications/send")({
+  head: () =>
+    seo({
+      description: "Send a notification to students, teachers, or everyone.",
+      path: "/dashboard/notifications/send",
+      title: "Send Notification"
+    }),
   component: SendNotificationPage,
   errorComponent: RouteErrorView
 });

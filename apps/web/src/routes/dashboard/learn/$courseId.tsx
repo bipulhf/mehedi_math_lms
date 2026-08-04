@@ -22,9 +22,16 @@ import {
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/learn/$courseId")({
+  head: () =>
+    seo({
+      description: "Watch classes, track progress, and take tests for this course.",
+      path: "/dashboard/learn",
+      title: "Course Player"
+    }),
   component: CourseLearningPage,
   errorComponent: RouteErrorView
 } as never);

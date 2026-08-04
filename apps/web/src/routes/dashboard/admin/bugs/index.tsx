@@ -14,9 +14,16 @@ import type { AdminBugRecord } from "@/lib/api/admin";
 import { listAdminBugs } from "@/lib/api/admin";
 import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/bugs/")({
+  head: () =>
+    seo({
+      description: "Every bug reported from the app or the web, in one queue.",
+      path: "/dashboard/admin/bugs",
+      title: "Bug Reports"
+    }),
   component: AdminBugsPage,
   errorComponent: RouteErrorView
 } as never);

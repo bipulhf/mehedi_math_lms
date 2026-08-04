@@ -10,9 +10,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/$id/notices")({
+  head: () =>
+    seo({
+      description: "Post and manage notices your students will see in the player.",
+      path: "/dashboard/courses",
+      title: "Course Notices"
+    }),
   component: CourseNoticesPage,
   errorComponent: RouteErrorView
 } as never);

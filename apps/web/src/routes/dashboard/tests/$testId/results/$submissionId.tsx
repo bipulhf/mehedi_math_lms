@@ -10,8 +10,15 @@ import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/results/$submissionId")({
+  head: () =>
+    seo({
+      description: "Your score and answers for this test submission.",
+      path: "/dashboard/tests",
+      title: "Test Results"
+    }),
   component: SubmissionResultPage,
   errorComponent: RouteErrorView
 } as never);

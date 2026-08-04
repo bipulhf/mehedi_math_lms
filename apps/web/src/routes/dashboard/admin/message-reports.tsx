@@ -17,10 +17,17 @@ import {
   reviewReportedConversation
 } from "@/lib/api/moderation";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/message-reports")({
+  head: () =>
+    seo({
+      description: "Conversations flagged for review by a student or teacher.",
+      path: "/dashboard/admin/message-reports",
+      title: "Message Reports"
+    }),
   component: AdminMessageReportsPage,
   errorComponent: RouteErrorView
 } as never);

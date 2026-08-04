@@ -28,9 +28,16 @@ import {
   updateTeacherProfile
 } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/profile")({
+  head: () =>
+    seo({
+      description: "Your account details, password, and role-specific information.",
+      path: "/dashboard/profile",
+      title: "Profile"
+    }),
   component: DashboardProfilePage,
   errorComponent: RouteErrorView
 });

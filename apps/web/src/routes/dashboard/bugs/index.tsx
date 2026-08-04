@@ -10,9 +10,16 @@ import type { BugReportRecord } from "@/lib/api/bugs";
 import { listMyBugReports } from "@/lib/api/bugs";
 import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/bugs/")({
+  head: () =>
+    seo({
+      description: "Bugs you have reported and their current status.",
+      path: "/dashboard/bugs",
+      title: "My Bug Reports"
+    }),
   component: MyBugReportsPage,
   errorComponent: RouteErrorView
 } as never);

@@ -15,6 +15,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { fetchEnrollmentReceiptPdf, listMyEnrollments } from "@/lib/api/enrollments";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 const CertificatePreviewDialog = lazy(async () => {
@@ -24,6 +25,12 @@ const CertificatePreviewDialog = lazy(async () => {
 });
 
 export const Route = createFileRoute("/dashboard/my-courses")({
+  head: () =>
+    seo({
+      description: "Courses you are enrolled in, and your progress in each.",
+      path: "/dashboard/my-courses",
+      title: "My Courses"
+    }),
   component: MyCoursesPage,
   errorComponent: RouteErrorView
 } as never);

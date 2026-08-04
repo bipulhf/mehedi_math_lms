@@ -14,11 +14,18 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute(
   "/dashboard/tests/$testId/submissions/$submissionId"
 )({
+  head: () =>
+    seo({
+      description: "Review and grade a student's written answers.",
+      path: "/dashboard/tests",
+      title: "Grade Submission"
+    }),
   component: GradeSubmissionPage,
   errorComponent: RouteErrorView
 } as never);

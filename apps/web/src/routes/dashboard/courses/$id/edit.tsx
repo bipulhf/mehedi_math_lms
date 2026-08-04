@@ -22,9 +22,16 @@ import {
   updateCourse
 } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/courses/$id/edit")({
+  head: () =>
+    seo({
+      description: "Update this course's title, description, price, and teachers.",
+      path: "/dashboard/courses",
+      title: "Edit Course"
+    }),
   component: EditCoursePage,
   errorComponent: RouteErrorView
 } as never);

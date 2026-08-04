@@ -21,9 +21,16 @@ import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
 import genexMark from "@/assets/genex-mark.png";
 import { Badge } from "@/components/ui/badge";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/sms")({
+  head: () =>
+    seo({
+      description: "Send bulk SMS to students or teachers and track delivery.",
+      path: "/dashboard/admin/sms",
+      title: "SMS"
+    }),
   component: AdminSmsPage,
   errorComponent: RouteErrorView
 });

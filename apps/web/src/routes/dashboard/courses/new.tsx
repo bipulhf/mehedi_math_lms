@@ -23,6 +23,7 @@ import {
   updateCourse
 } from "@/lib/api/courses";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 /** Send only the fields that already pass their own rule, so a mid-typing
@@ -62,6 +63,12 @@ function createPayload(values: CourseEditorValues): CreateCourseInput | null {
 }
 
 export const Route = createFileRoute("/dashboard/courses/new")({
+  head: () =>
+    seo({
+      description: "Set up a new course's basics before adding content.",
+      path: "/dashboard/courses/new",
+      title: "New Course"
+    }),
   component: CreateCoursePage,
   errorComponent: RouteErrorView
 } as never);

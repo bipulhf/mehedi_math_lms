@@ -19,9 +19,16 @@ import { getCourseAssessments } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/courses/$id/publish")({
+  head: () =>
+    seo({
+      description: "Check this course is ready, then make it visible to students.",
+      path: "/dashboard/courses",
+      title: "Publish Course"
+    }),
   component: PublishCoursePage,
   errorComponent: RouteErrorView
 } as never);

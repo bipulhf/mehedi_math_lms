@@ -24,9 +24,16 @@ import { Select } from "@/components/ui/select";
 import type { AdminUserListItem } from "@/lib/api/admin";
 import { listAdminUsers } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/students/")({
+  head: () =>
+    seo({
+      description: "Every enrolled student, searchable by name and status.",
+      path: "/dashboard/students",
+      title: "Students"
+    }),
   component: StudentsDirectoryPage,
   errorComponent: RouteErrorView
 } as never);

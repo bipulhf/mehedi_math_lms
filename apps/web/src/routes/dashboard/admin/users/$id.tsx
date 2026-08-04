@@ -14,9 +14,16 @@ import { Select } from "@/components/ui/select";
 import type { AdminUserDetail } from "@/lib/api/admin";
 import { getAdminUser, updateAdminUser } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/users/$id")({
+  head: () =>
+    seo({
+      description: "View and edit an account's role, status, and details.",
+      path: "/dashboard/admin/users",
+      title: "User Detail"
+    }),
   component: AdminUserDetailPage,
   errorComponent: RouteErrorView
 } as never);

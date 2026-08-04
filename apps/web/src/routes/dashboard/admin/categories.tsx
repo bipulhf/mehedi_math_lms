@@ -29,9 +29,16 @@ import {
 } from "@/lib/api/categories";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/admin/categories")({
+  head: () =>
+    seo({
+      description: "Manage the subject and level tree courses are organised under.",
+      path: "/dashboard/admin/categories",
+      title: "Categories"
+    }),
   component: AdminCategoriesPage,
   errorComponent: RouteErrorView
 } as never);

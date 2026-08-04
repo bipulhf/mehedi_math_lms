@@ -11,6 +11,7 @@ import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
 import { getCourseAnalytics } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import {
   Bar,
@@ -25,6 +26,12 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
+  head: () =>
+    seo({
+      description: "Enrolments, completion, and revenue for this course.",
+      path: "/dashboard/courses",
+      title: "Course Analytics"
+    }),
   component: CourseAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

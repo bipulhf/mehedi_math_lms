@@ -11,6 +11,7 @@ import type { AccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { getAccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import {
   Bar,
@@ -23,6 +24,12 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard/accountant/analytics")({
+  head: () =>
+    seo({
+      description: "Revenue, refunds, and payment trends across the platform.",
+      path: "/dashboard/accountant/analytics",
+      title: "Accountant Analytics"
+    }),
   component: AccountantAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

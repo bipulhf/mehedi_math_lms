@@ -12,6 +12,7 @@ import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
 import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import { TrendingUp, DollarSign, Target, PieChart, Activity } from "lucide-react";
 import {
@@ -27,6 +28,12 @@ import {
 } from "recharts";
 
 export const Route = createFileRoute("/dashboard/admin/analytics")({
+  head: () =>
+    seo({
+      description: "Platform-wide growth, revenue, and enrolment trends.",
+      path: "/dashboard/admin/analytics",
+      title: "Admin Analytics"
+    }),
   component: AdminAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);

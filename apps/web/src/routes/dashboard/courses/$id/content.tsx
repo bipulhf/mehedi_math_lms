@@ -17,12 +17,19 @@ import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 
 const contentSearchSchema = z.object({
   stage: z.enum(["chapters", "lectures"]).default("chapters")
 });
 
 export const Route = createFileRoute("/dashboard/courses/$id/content")({
+  head: () =>
+    seo({
+      description: "Build the chapters and classes that make up this course.",
+      path: "/dashboard/courses",
+      title: "Course Content"
+    }),
   component: CourseContentPage,
   errorComponent: RouteErrorView,
   validateSearch: (search: unknown) => contentSearchSchema.parse(search)

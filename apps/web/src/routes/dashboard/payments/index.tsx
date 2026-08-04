@@ -16,9 +16,16 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { PaymentHistoryItem, PaymentStatus } from "@/lib/api/payments";
 import { listAccountingPayments, listMyPayments, refundPayment } from "@/lib/api/payments";
 import { queryKeys } from "@/lib/query/keys";
+import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/")({
+  head: () =>
+    seo({
+      description: "Every tuition payment and its gateway outcome, in one place.",
+      path: "/dashboard/payments",
+      title: "Payments"
+    }),
   component: PaymentsPage,
   errorComponent: RouteErrorView
 } as never);
