@@ -30,8 +30,8 @@ function SubmissionResultPage(): JSX.Element {
   const [testQuery, submissionQuery] = useQueries({
     queries: [
       {
-        queryFn: async () => getTestDetail(testId),
-        queryKey: queryKeys.tests.detail(testId)
+        queryFn: async () => getTestDetail(testId, true),
+        queryKey: queryKeys.tests.detailWithAnswers(testId)
       },
       {
         queryFn: async () => getSubmissionDetail(submissionId),
@@ -77,6 +77,7 @@ function SubmissionResultPage(): JSX.Element {
       {test.questions.map((question) => {
         const answer = answerMap.get(question.id);
         const selectedOption = question.options.find((option) => option.id === answer?.selectedOptionId);
+        const correctOptions = question.options.filter((option) => option.isCorrect);
 
         return (
           <Card key={question.id}>
@@ -89,19 +90,32 @@ function SubmissionResultPage(): JSX.Element {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {question.type === "MCQ" ? (
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                  {selectedOption?.optionText ?? "No option selected"}
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.yourAnswer")}</p>
+                <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
+                  {question.type === "MCQ"
+                    ? (selectedOption?.optionText ?? t("test.noOption"))
+                    : (answer?.writtenAnswer || t("test.noAnswer"))}
                 </div>
-              ) : (
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                  {answer?.writtenAnswer || "No written answer submitted"}
+              </div>
+              {question.type === "MCQ" && correctOptions.length > 0 ? (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.correctAnswer")}</p>
+                  <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
+                    {correctOptions.map((option) => option.optionText).join(", ")}
+                  </div>
                 </div>
-              )}
+              ) : null}
+              {question.type === "WRITTEN" && question.expectedAnswer ? (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.correctAnswer")}</p>
+                  <RichTextContent className="mt-2" html={question.expectedAnswer} />
+                </div>
+              ) : null}
               <div className="flex flex-wrap gap-3 text-sm text-ink/70">
-                <span>Awarded marks: {answer?.awardedMarks ?? 0}</span>
+                <span>{t("test.awardedMarks", { count: String(answer?.awardedMarks ?? 0) })}</span>
                 {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (
-                  <span>{answer.isCorrect ? "Marked correct" : "Marked incorrect"}</span>
+                  <span>{answer.isCorrect ? t("test.markedCorrect") : t("test.markedIncorrect")}</span>
                 ) : null}
               </div>
             </CardContent>

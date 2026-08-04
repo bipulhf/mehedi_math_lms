@@ -194,7 +194,7 @@ function StudentTestPage(): JSX.Element {
           <CardTitle>{test.title}</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             <CardDescription>
-              {answeredCount}/{test.questions.length} {t("test.answered")}
+              {t("test.answered", { count: answeredCount, total: test.questions.length })}
             </CardDescription>
             {test.maxAttempts !== null ? (
               <Badge tone="neutral">

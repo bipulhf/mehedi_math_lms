@@ -299,10 +299,18 @@ export class TestService {
   public async getTestDetail(
     testId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    revealAnswers = false
   ): Promise<AssessmentTestDetail> {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
-    const includeAnswers = currentUserRole === "ADMIN" || currentUserRole === "TEACHER";
+    const includeAnswers =
+      currentUserRole === "ADMIN" ||
+      currentUserRole === "TEACHER" ||
+      (revealAnswers &&
+        currentUserRole === "STUDENT" &&
+        ((await this.testRepository.countCompletedSubmissionsByTestIds([test.id], currentUserId)).get(
+          test.id
+        ) ?? 0) > 0);
     const { questions, totalMarks } = await this.loadTestQuestions(test.id, includeAnswers);
     const attemptsUsed =
       currentUserRole === "STUDENT"

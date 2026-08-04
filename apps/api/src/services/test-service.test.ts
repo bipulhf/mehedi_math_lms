@@ -140,7 +140,13 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
   } as unknown as ContentRepository;
 
   const courseRepository = {
-    findById: async () => ({ id: "course-1", status: "PUBLISHED", title: "HSC Physics" })
+    findById: async () => ({
+      creator: { id: "teacher-1", name: "Teacher", role: "TEACHER" },
+      id: "course-1",
+      status: "PUBLISHED",
+      teachers: [],
+      title: "HSC Physics"
+    })
   } as unknown as CourseRepository;
 
   const enrollmentRepository = {
@@ -433,5 +439,40 @@ describe("TestService.updateTest — maxAttempts", () => {
     await service.updateTest("test-1", { maxAttempts: null }, "admin-1", "ADMIN");
 
     expect(calls.testUpdates[0]?.maxAttempts).toBeNull();
+  });
+});
+
+describe("TestService.getTestDetail — answer reveal", () => {
+  test("a student with no completed submission never sees the correct answers", async () => {
+    const { service } = buildService({ completedAttempts: 0 });
+
+    const detail = await service.getTestDetail("test-1", "user-1", "STUDENT", true);
+
+    expect(detail.questions[0]?.options[0]?.isCorrect).toBeNull();
+    expect(detail.questions[0]?.expectedAnswer).toBeNull();
+  });
+
+  test("a student gets answers only after a completed submission", async () => {
+    const { service } = buildService({ completedAttempts: 1 });
+
+    const detail = await service.getTestDetail("test-1", "user-1", "STUDENT", true);
+
+    expect(detail.questions[0]?.options[0]?.isCorrect).toBe(true);
+  });
+
+  test("a student gets answers only when they ask to reveal them", async () => {
+    const { service } = buildService({ completedAttempts: 1 });
+
+    const detail = await service.getTestDetail("test-1", "user-1", "STUDENT", false);
+
+    expect(detail.questions[0]?.options[0]?.isCorrect).toBeNull();
+  });
+
+  test("a teacher always sees correct answers without a submission", async () => {
+    const { service } = buildService();
+
+    const detail = await service.getTestDetail("test-1", "teacher-1", "TEACHER", false);
+
+    expect(detail.questions[0]?.options[0]?.isCorrect).toBe(true);
   });
 });

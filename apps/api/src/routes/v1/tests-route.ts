@@ -6,6 +6,7 @@ import {
   saveSubmissionAnswersSchema,
   submissionIdParamsSchema,
   submitTestSchema,
+  testDetailQuerySchema,
   testIdParamsSchema,
   testQuestionParamsSchema,
   updateTestSchema
@@ -20,6 +21,7 @@ export const testsRoutes = new Hono<AppBindings>();
 
 testsRoutes.get("/:id", requireAuth(), (context) => {
   const params = testIdParamsSchema.parse(context.req.param());
+  const query = testDetailQuerySchema.parse(context.req.query());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
@@ -27,7 +29,8 @@ testsRoutes.get("/:id", requireAuth(), (context) => {
     context,
     params.id,
     authUser!.id,
-    authSession!.role as UserRole
+    authSession!.role as UserRole,
+    query.revealAnswers
   );
 });
 

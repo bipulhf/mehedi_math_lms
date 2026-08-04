@@ -442,8 +442,13 @@ export async function getCourseAssessments(
   return apiGet<readonly AssessmentChapterSummary[]>(`courses/${courseId}/tests`);
 }
 
-export async function getTestDetail(testId: string): Promise<AssessmentTestDetail> {
-  return apiGet<AssessmentTestDetail>(`tests/${testId}`);
+export async function getTestDetail(
+  testId: string,
+  revealAnswers = false
+): Promise<AssessmentTestDetail> {
+  return apiGet<AssessmentTestDetail>(
+    `tests/${testId}${revealAnswers ? "?revealAnswers=true" : ""}`
+  );
 }
 
 export async function startSubmission(testId: string): Promise<SubmissionDetail> {

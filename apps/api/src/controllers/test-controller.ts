@@ -44,9 +44,15 @@ export class TestController {
     context: Context<AppBindings>,
     testId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    revealAnswers = false
   ): Promise<Response> {
-    const data = await this.testService.getTestDetail(testId, currentUserId, currentUserRole);
+    const data = await this.testService.getTestDetail(
+      testId,
+      currentUserId,
+      currentUserRole,
+      revealAnswers
+    );
 
     return success(context, data);
   }

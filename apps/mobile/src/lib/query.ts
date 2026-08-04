@@ -30,6 +30,7 @@ export const queryKeys = {
   // changes the session's `profileCompleted` flag and has to invalidate it.
   session: () => ["session"] as const,
   test: (testId: string) => ["tests", testId] as const,
+  testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
   testSubmission: (submissionId: string) => ["tests", "submission", submissionId] as const,
   unreadNotifications: () => ["notifications", "unread"] as const
 } as const;

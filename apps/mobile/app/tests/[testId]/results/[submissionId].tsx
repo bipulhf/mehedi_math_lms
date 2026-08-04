@@ -23,7 +23,10 @@ export default function SubmissionResultScreen(): JSX.Element {
 
   const [testQuery, submissionQuery] = useQueries({
     queries: [
-      { queryFn: () => getTestDetail(testId), queryKey: queryKeys.test(testId) },
+      {
+        queryFn: () => getTestDetail(testId, true),
+        queryKey: queryKeys.testWithAnswers(testId)
+      },
       {
         queryFn: () => getSubmissionDetail(submissionId),
         queryKey: queryKeys.testSubmission(submissionId)
@@ -82,6 +85,7 @@ export default function SubmissionResultScreen(): JSX.Element {
           const selectedOption = question.options.find(
             (option) => option.id === answer?.selectedOptionId
           );
+          const correctOptions = question.options.filter((option) => option.isCorrect);
 
           return (
             <Card key={question.id} style={{ gap: spacing.sm }}>
@@ -89,11 +93,23 @@ export default function SubmissionResultScreen(): JSX.Element {
                 {question.type} · {question.marks}
               </Caption>
               <HtmlContent html={question.questionText} />
-              <Body>
+              <Caption>
+                {t("test.yourAnswer")}:{" "}
                 {question.type === "MCQ"
                   ? (selectedOption?.optionText ?? t("test.noOption"))
                   : (answer?.writtenAnswer ?? t("test.noAnswer"))}
-              </Body>
+              </Caption>
+              {question.type === "MCQ" && correctOptions.length > 0 ? (
+                <Body>
+                  {t("test.correctAnswer")}: {correctOptions.map((option) => option.optionText).join(", ")}
+                </Body>
+              ) : null}
+              {question.type === "WRITTEN" && question.expectedAnswer ? (
+                <View style={{ gap: spacing.xs }}>
+                  <Caption>{t("test.correctAnswer")}</Caption>
+                  <HtmlContent html={question.expectedAnswer} />
+                </View>
+              ) : null}
               <Caption>
                 {t("test.awardedMarks", { count: answer?.awardedMarks ?? 0 })}
                 {answer?.isCorrect !== null && answer?.isCorrect !== undefined

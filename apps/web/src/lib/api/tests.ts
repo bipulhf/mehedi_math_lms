@@ -121,8 +121,13 @@ export async function createTest(
   return response.data;
 }
 
-export async function getTestDetail(testId: string): Promise<AssessmentTestDetail> {
-  const response = await apiGet<AssessmentTestDetail>(`tests/${testId}`);
+export async function getTestDetail(
+  testId: string,
+  revealAnswers = false
+): Promise<AssessmentTestDetail> {
+  const response = await apiGet<AssessmentTestDetail>(
+    `tests/${testId}${revealAnswers ? "?revealAnswers=true" : ""}`
+  );
 
   return response.data;
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { optionalRichTextSchema, richTextSchema } from "./common";
+import { booleanQueryParamSchema, optionalRichTextSchema, richTextSchema } from "./common";
 
 const idSchema = z.string().uuid();
 const optionalTextSchema = optionalRichTextSchema(6000);
@@ -11,6 +11,10 @@ export const testSubmissionStatusSchema = z.enum(["STARTED", "SUBMITTED", "GRADE
 
 export const testIdParamsSchema = z.object({
   id: idSchema
+});
+
+export const testDetailQuerySchema = z.object({
+  revealAnswers: booleanQueryParamSchema.optional()
 });
 
 export const questionIdParamsSchema = z.object({
