@@ -14,6 +14,7 @@ export interface ChapterRecord {
   createdAt: Date;
   description: string | null;
   id: string;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
   updatedAt: Date;
@@ -26,6 +27,7 @@ export interface LectureRecord {
   description: string | null;
   id: string;
   isPreview: boolean;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
   type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
@@ -48,12 +50,14 @@ export interface MaterialRecord {
 export interface CreateChapterInput {
   courseId: string;
   description: string | null;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
 }
 
 export interface UpdateChapterInput {
   description?: string | null | undefined;
+  isPublished?: boolean | undefined;
   sortOrder?: number | undefined;
   title?: string | undefined;
 }
@@ -63,6 +67,7 @@ export interface CreateLectureInput {
   content: string | null;
   description: string | null;
   isPreview: boolean;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
   type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
@@ -75,6 +80,7 @@ export interface UpdateLectureInput {
   content?: string | null | undefined;
   description?: string | null | undefined;
   isPreview?: boolean | undefined;
+  isPublished?: boolean | undefined;
   sortOrder?: number | undefined;
   title?: string | undefined;
   type?: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT" | undefined;
@@ -101,6 +107,7 @@ function mapChapterRecord(row: {
   createdAt: Date;
   description: string | null;
   id: string;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
   updatedAt: Date;
@@ -115,6 +122,7 @@ function mapLectureRecord(row: {
   description: string | null;
   id: string;
   isPreview: boolean;
+  isPublished: boolean;
   sortOrder: number;
   title: string;
   type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
@@ -146,6 +154,7 @@ export class ContentRepository {
         createdAt: chapters.createdAt,
         description: chapters.description,
         id: chapters.id,
+        isPublished: chapters.isPublished,
         sortOrder: chapters.sortOrder,
         title: chapters.title,
         updatedAt: chapters.updatedAt
@@ -170,6 +179,7 @@ export class ContentRepository {
         description: lectures.description,
         id: lectures.id,
         isPreview: lectures.isPreview,
+        isPublished: lectures.isPublished,
         sortOrder: lectures.sortOrder,
         title: lectures.title,
         type: lectures.type,
@@ -237,6 +247,7 @@ export class ContentRepository {
         createdAt: chapters.createdAt,
         description: chapters.description,
         id: chapters.id,
+        isPublished: chapters.isPublished,
         sortOrder: chapters.sortOrder,
         title: chapters.title,
         updatedAt: chapters.updatedAt
@@ -258,6 +269,7 @@ export class ContentRepository {
         description: lectures.description,
         id: lectures.id,
         isPreview: lectures.isPreview,
+        isPublished: lectures.isPublished,
         sortOrder: lectures.sortOrder,
         title: lectures.title,
         type: lectures.type,
@@ -322,6 +334,7 @@ export class ContentRepository {
       .values({
         courseId: input.courseId,
         description: input.description,
+        isPublished: input.isPublished,
         sortOrder: input.sortOrder,
         title: input.title
       })
@@ -330,6 +343,7 @@ export class ContentRepository {
         createdAt: chapters.createdAt,
         description: chapters.description,
         id: chapters.id,
+        isPublished: chapters.isPublished,
         sortOrder: chapters.sortOrder,
         title: chapters.title,
         updatedAt: chapters.updatedAt
@@ -353,6 +367,10 @@ export class ContentRepository {
       values.description = input.description;
     }
 
+    if (input.isPublished !== undefined) {
+      values.isPublished = input.isPublished;
+    }
+
     if (input.sortOrder !== undefined) {
       values.sortOrder = input.sortOrder;
     }
@@ -370,6 +388,7 @@ export class ContentRepository {
         createdAt: chapters.createdAt,
         description: chapters.description,
         id: chapters.id,
+        isPublished: chapters.isPublished,
         sortOrder: chapters.sortOrder,
         title: chapters.title,
         updatedAt: chapters.updatedAt
@@ -404,6 +423,7 @@ export class ContentRepository {
         content: input.content,
         description: input.description,
         isPreview: input.isPreview,
+        isPublished: input.isPublished,
         sortOrder: input.sortOrder,
         title: input.title,
         type: input.type,
@@ -417,6 +437,7 @@ export class ContentRepository {
         description: lectures.description,
         id: lectures.id,
         isPreview: lectures.isPreview,
+        isPublished: lectures.isPublished,
         sortOrder: lectures.sortOrder,
         title: lectures.title,
         type: lectures.type,
@@ -455,6 +476,10 @@ export class ContentRepository {
       values.isPreview = input.isPreview;
     }
 
+    if (input.isPublished !== undefined) {
+      values.isPublished = input.isPublished;
+    }
+
     if (input.sortOrder !== undefined) {
       values.sortOrder = input.sortOrder;
     }
@@ -486,6 +511,7 @@ export class ContentRepository {
         description: lectures.description,
         id: lectures.id,
         isPreview: lectures.isPreview,
+        isPublished: lectures.isPublished,
         sortOrder: lectures.sortOrder,
         title: lectures.title,
         type: lectures.type,

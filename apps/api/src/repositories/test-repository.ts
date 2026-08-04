@@ -220,7 +220,13 @@ export class TestRepository {
       })
       .from(tests)
       .innerJoin(chapters, eq(chapters.id, tests.chapterId))
-      .where(and(eq(chapters.courseId, courseId), eq(tests.isPublished, true)));
+      .where(
+        and(
+          eq(chapters.courseId, courseId),
+          eq(chapters.isPublished, true),
+          eq(tests.isPublished, true)
+        )
+      );
 
     return rows.map((row) => ({
       bestGradedScore: row.bestGradedScore === null ? null : Number(row.bestGradedScore),

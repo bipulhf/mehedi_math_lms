@@ -140,7 +140,11 @@ export class TestService {
       await this.access.requireStudentCourseAccess(courseId, currentUserId, currentUserRole);
     }
 
-    const chapters = await this.contentRepository.listCourseChapters(courseId);
+    const chapterRecords = await this.contentRepository.listCourseChapters(courseId);
+    const chapters =
+      currentUserRole === "STUDENT"
+        ? chapterRecords.filter((chapter) => chapter.isPublished !== false)
+        : chapterRecords;
     const chapterIds = chapters.map((chapter) => chapter.id);
     const testsByChapter = await this.testRepository.listTestsByChapterIds(chapterIds);
     const testIds = testsByChapter.map((test) => test.id);

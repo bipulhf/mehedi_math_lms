@@ -29,6 +29,7 @@ export interface ContentLecture {
   description: string | null;
   id: string;
   isPreview: boolean;
+  isPublished: boolean;
   materials: readonly ContentMaterial[];
   sortOrder: number;
   title: string;
@@ -43,6 +44,7 @@ export interface ContentChapter {
   createdAt: string;
   description: string | null;
   id: string;
+  isPublished: boolean;
   lectures: readonly ContentLecture[];
   materials: readonly ContentMaterial[];
   sortOrder: number;

@@ -129,7 +129,7 @@ export class AssessmentAccessGuards {
 
     await this.requireStudentCourseAccess(chapter.courseId, currentUserId, currentUserRole);
 
-    if (!test.isPublished) {
+    if (chapter.isPublished === false || !test.isPublished) {
       throw new ForbiddenError("This test is not available yet");
     }
 

@@ -97,6 +97,10 @@ export const authoringEn: Readonly<Record<keyof typeof authoringBn, string>> = {
   "author.questionPageTitle": "Build MCQ questions",
   "author.removeQuestion": "Remove question",
   "author.removeOption": "Remove option",
+  "author.itemPublished": "Item published",
+  "author.itemUnpublished": "Item unpublished",
+  "author.publishItem": "Publish",
+  "author.unpublishItem": "Unpublish",
   "author.reviewLead":
     "Check the information, chapters, lectures and exams before sending the course for approval.",
   "author.reviewTitle": "Review",

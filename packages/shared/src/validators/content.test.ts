@@ -6,6 +6,7 @@ import {
   createMaterialSchema,
   lectureTypeSchema,
   reorderLecturesSchema,
+  updateChapterSchema,
   updateLectureSchema,
   updateMaterialSchema
 } from "./content";
@@ -23,6 +24,11 @@ describe("createChapterSchema", () => {
   test("needs a title", () => {
     expect(createChapterSchema.safeParse({ title: "   " }).success).toBe(false);
     expect(createChapterSchema.parse({ title: " Chapter 1 " }).title).toBe("Chapter 1");
+    expect(createChapterSchema.parse({ title: "Chapter 1" }).isPublished).toBe(false);
+  });
+
+  test("publication can be changed without changing title", () => {
+    expect(updateChapterSchema.parse({ isPublished: true })).toEqual({ isPublished: true });
   });
 });
 
@@ -38,7 +44,15 @@ describe("createLectureSchema", () => {
     expect(
       createLectureSchema.safeParse({ title: "Intro", type: "VIDEO_UPLOAD", videoUrl: "   " })
         .success
-    ).toBe(false);
+      ).toBe(false);
+    expect(
+      createLectureSchema.parse({
+        isPublished: true,
+        title: "Intro",
+        type: "VIDEO_LINK",
+        videoUrl: "https://example.com/v.mp4"
+      }).isPublished
+    ).toBe(true);
   });
 
   test("a text lecture without content is rejected, and says which field", () => {

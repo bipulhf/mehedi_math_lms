@@ -175,7 +175,10 @@ export class CourseRepository {
         sql`exists (
           select 1 from ${chapters}
           join ${lectures} on ${lectures.chapterId} = ${chapters.id}
-          where ${chapters.courseId} = ${courses.id} and ${lectures.isPreview} = true
+           where ${chapters.courseId} = ${courses.id}
+             and ${chapters.isPublished} = true
+             and ${lectures.isPublished} = true
+             and ${lectures.isPreview} = true
         )`
       );
     }
@@ -207,8 +210,8 @@ export class CourseRepository {
       db
         .select({
           courseId: chapters.courseId,
-          freeLessonCount: sql<string>`count(*) filter (where ${lectures.isPreview})`,
-          lectureCount: sql<string>`count(${lectures.id})`,
+           freeLessonCount: sql<string>`count(*) filter (where ${chapters.isPublished} and ${lectures.isPublished} and ${lectures.isPreview})`,
+           lectureCount: sql<string>`count(*) filter (where ${chapters.isPublished} and ${lectures.isPublished})`,
           totalDurationSeconds: sql<string>`coalesce(sum(${lectures.videoDuration}), 0)`
         })
         .from(chapters)

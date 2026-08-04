@@ -109,10 +109,12 @@ export class ProgressService {
     courseId: string,
     enrollment: EnrollmentRecord
   ): Promise<CourseProgressResponse> {
-    const chapters = await this.contentRepository.listCourseChapters(courseId);
-    const lectures = await this.contentRepository.listLecturesByChapterIds(
-      chapters.map((chapter) => chapter.id)
+    const chapters = (await this.contentRepository.listCourseChapters(courseId)).filter(
+      (chapter) => chapter.isPublished !== false
     );
+    const lectures = (await this.contentRepository.listLecturesByChapterIds(
+      chapters.map((chapter) => chapter.id)
+    )).filter((lecture) => lecture.isPublished !== false);
     const progressRecords = await this.enrollmentRepository.listProgressByEnrollment(enrollment.id);
     const progressByLectureId = new Map(
       progressRecords.map((record) => [record.lectureId, record] as const)
@@ -158,6 +160,10 @@ export class ProgressService {
       throw new NotFoundError("Lecture not found");
     }
 
+    if (lecture.isPublished === false) {
+      throw new NotFoundError("Lecture not found");
+    }
+
     const enrollment = await this.requireAccessibleEnrollment(lecture.courseId, currentUserId);
     const existingProgress = await this.enrollmentRepository.findProgressByEnrollmentAndLecture(
       enrollment.id,
@@ -199,10 +205,12 @@ export class ProgressService {
       return enrollment;
     }
 
-    const chapters = await this.contentRepository.listCourseChapters(courseId);
-    const lectures = await this.contentRepository.listLecturesByChapterIds(
-      chapters.map((chapter) => chapter.id)
+    const chapters = (await this.contentRepository.listCourseChapters(courseId)).filter(
+      (chapter) => chapter.isPublished !== false
     );
+    const lectures = (await this.contentRepository.listLecturesByChapterIds(
+      chapters.map((chapter) => chapter.id)
+    )).filter((lecture) => lecture.isPublished !== false);
     const progressRecords = await this.enrollmentRepository.listProgressByEnrollment(enrollment.id);
     const completedLectureIds = new Set(
       progressRecords.filter((record) => record.isCompleted).map((record) => record.lectureId)

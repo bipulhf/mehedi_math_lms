@@ -24,6 +24,8 @@ export const tests = pgTable(
     description: text("description"),
     durationInMinutes: integer("duration_in_minutes"),
     passingScore: integer("passing_score"),
+    maxAttempts: integer("max_attempts"),
+    lockAnswerOnSelect: boolean("lock_answer_on_select").default(false).notNull(),
     isPublished: boolean("is_published").default(false).notNull(),
     type: testTypeEnum("type").notNull(),
     sortOrder: integer("sort_order").default(0).notNull(),

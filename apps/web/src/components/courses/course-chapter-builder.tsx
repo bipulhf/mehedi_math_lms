@@ -14,6 +14,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ interface CourseChapterBuilderProps {
 
 const emptyChapter: CreateChapterInput = {
   description: "",
+  isPublished: false,
   title: ""
 };
 
@@ -77,6 +79,17 @@ export function CourseChapterBuilder({
       setEditingId(null);
       await onRefresh();
       toast.success(t("author.chapterSaved"));
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
+  const handleTogglePublished = async (chapter: ContentChapter): Promise<void> => {
+    setIsWorking(true);
+    try {
+      await updateChapter(chapter.id, { isPublished: !chapter.isPublished });
+      await onRefresh();
+      toast.success(chapter.isPublished ? t("author.itemUnpublished") : t("author.itemPublished"));
     } finally {
       setIsWorking(false);
     }
@@ -190,6 +203,20 @@ export function CourseChapterBuilder({
               onChange={(value) => setDraft((current) => ({ ...current, description: value }))}
             />
           </div>
+          <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4 lg:col-span-2">
+            <input
+              checked={draft.isPublished}
+              className="mt-1 size-4 accent-accent"
+              type="checkbox"
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, isPublished: event.target.checked }))
+              }
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
+              <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
+            </span>
+          </label>
         </div>
       </section>
 
@@ -222,7 +249,7 @@ export function CourseChapterBuilder({
                 {isEditing ? (
                   <div className="space-y-5 p-5 sm:p-6">
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                         <Label>{t("author.chapterName")}</Label>
                         <Input
                           value={editDraft.title}
@@ -231,7 +258,7 @@ export function CourseChapterBuilder({
                           }
                         />
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 md:col-span-2">
                         <Label>{t("author.chapterDescription")}</Label>
                         <RichTextEditor
                           value={editDraft.description ?? ""}
@@ -243,6 +270,23 @@ export function CourseChapterBuilder({
                           }
                         />
                       </div>
+                      <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4 md:col-span-2">
+                        <input
+                          checked={editDraft.isPublished}
+                          className="mt-1 size-4 accent-accent"
+                          type="checkbox"
+                          onChange={(event) =>
+                            setEditDraft((current) => ({
+                              ...current,
+                              isPublished: event.target.checked
+                            }))
+                          }
+                        />
+                        <span>
+                          <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
+                          <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
+                        </span>
+                      </label>
                     </div>
                     <div className="flex flex-wrap justify-end gap-3">
                       <Button className="h-11" variant="outline" onClick={() => setEditingId(null)}>
@@ -277,8 +321,21 @@ export function CourseChapterBuilder({
                           html={chapter.description}
                         />
                       ) : null}
+                      <div className="mt-2">
+                        <Badge tone={chapter.isPublished ? "neutral" : "attention"}>
+                          {chapter.isPublished ? t("common.published") : t("common.draft")}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 self-end sm:self-center">
+                    <div className="flex flex-wrap items-center justify-end gap-1 self-end sm:self-center">
+                      <Button
+                        className="h-11"
+                        disabled={isWorking}
+                        variant="ghost"
+                        onClick={() => void handleTogglePublished(chapter)}
+                      >
+                        {chapter.isPublished ? t("author.unpublishItem") : t("author.publishItem")}
+                      </Button>
                       <Button
                         aria-label={t("ab.moveUp")}
                         className="size-11"
@@ -311,6 +368,7 @@ export function CourseChapterBuilder({
                           setEditingId(chapter.id);
                           setEditDraft({
                             description: chapter.description ?? "",
+                            isPublished: chapter.isPublished,
                             title: chapter.title
                           });
                         }}

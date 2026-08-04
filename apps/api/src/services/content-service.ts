@@ -49,6 +49,7 @@ export interface ContentLecture {
   description: string | null;
   id: string;
   isPreview: boolean;
+  isPublished: boolean;
   materials: readonly ContentMaterial[];
   sortOrder: number;
   title: string;
@@ -63,6 +64,7 @@ export interface ContentChapter {
   createdAt: string;
   description: string | null;
   id: string;
+  isPublished: boolean;
   lectures: readonly ContentLecture[];
   materials: readonly ContentMaterial[];
   sortOrder: number;
@@ -100,6 +102,7 @@ function mapLecture(record: LectureRecord, materials: readonly ContentMaterial[]
     description: record.description,
     id: record.id,
     isPreview: record.isPreview,
+    isPublished: record.isPublished,
     materials,
     sortOrder: record.sortOrder,
     title: record.title,
@@ -120,6 +123,7 @@ function mapChapter(
     createdAt: record.createdAt.toISOString(),
     description: record.description,
     id: record.id,
+    isPublished: record.isPublished,
     lectures,
     materials,
     sortOrder: record.sortOrder,
@@ -320,7 +324,7 @@ export class ContentService {
 
     const lessonsByChapterId = new Map<string, CourseOutlineLesson[]>();
 
-    for (const lecture of lectureRecords) {
+    for (const lecture of lectureRecords.filter((item) => item.isPublished !== false)) {
       const current = lessonsByChapterId.get(lecture.chapterId) ?? [];
 
       current.push({
@@ -332,7 +336,7 @@ export class ContentService {
       lessonsByChapterId.set(lecture.chapterId, current);
     }
 
-    return chapterRecords.map((chapter) => ({
+    return chapterRecords.filter((chapter) => chapter.isPublished !== false).map((chapter) => ({
       id: chapter.id,
       lessons: lessonsByChapterId.get(chapter.id) ?? [],
       title: chapter.title
@@ -346,7 +350,7 @@ export class ContentService {
   public async getLecturePreview(lectureId: string): Promise<CourseLecturePreview> {
     const lecture = await this.contentRepository.findLectureById(lectureId);
 
-    if (!lecture || !lecture.isPreview) {
+    if (!lecture || !lecture.isPreview || lecture.isPublished === false) {
       throw new NotFoundError("Lecture not found");
     }
 
@@ -378,7 +382,11 @@ export class ContentService {
     await this.requireCourseContentAccess(courseId, currentUserId, currentUserRole);
 
     const chapterRecords = await this.contentRepository.listCourseChapters(courseId);
-    const chapterIds = chapterRecords.map((chapter) => chapter.id);
+    const visibleChapters =
+      currentUserRole === "STUDENT"
+        ? chapterRecords.filter((chapter) => chapter.isPublished !== false)
+        : chapterRecords;
+    const chapterIds = visibleChapters.map((chapter) => chapter.id);
     const [lectureRecords, chapterMaterials] = await Promise.all([
       this.contentRepository.listLecturesByChapterIds(chapterIds),
       this.contentRepository.listChapterMaterialsByChapterIds(chapterIds)
@@ -401,8 +409,12 @@ export class ContentService {
       lectureMaterialMap.set(material.parentId, [...currentMaterials, mapMaterial(material)]);
     }
 
+    const visibleLectureRecords =
+      currentUserRole === "STUDENT"
+        ? lectureRecords.filter((lecture) => lecture.isPublished !== false)
+        : lectureRecords;
     const lecturesByChapterId = new Map<string, readonly ContentLecture[]>();
-    for (const lecture of lectureRecords) {
+    for (const lecture of visibleLectureRecords) {
       const currentLectures = lecturesByChapterId.get(lecture.chapterId) ?? [];
       lecturesByChapterId.set(lecture.chapterId, [
         ...currentLectures,
@@ -410,7 +422,7 @@ export class ContentService {
       ]);
     }
 
-    return chapterRecords.map((chapter) =>
+    return visibleChapters.map((chapter) =>
       mapChapter(
         chapter,
         lecturesByChapterId.get(chapter.id) ?? [],
@@ -430,6 +442,7 @@ export class ContentService {
     const chapter = await this.contentRepository.createChapter({
       courseId,
       description: normalizeOptionalString(input.description),
+      isPublished: input.isPublished,
       sortOrder: currentChapters.length,
       title: input.title.trim()
     });
@@ -447,6 +460,7 @@ export class ContentService {
     const chapter = await this.contentRepository.updateChapter(chapterId, {
       description:
         input.description === undefined ? undefined : normalizeOptionalString(input.description),
+      isPublished: input.isPublished,
       title: input.title?.trim()
     });
 
@@ -537,6 +551,7 @@ export class ContentService {
       content: normalizedLectureInput.content,
       description: normalizeOptionalString(input.description),
       isPreview: input.isPreview,
+      isPublished: input.isPublished,
       sortOrder: lectures.length,
       title: input.title.trim(),
       type: input.type,
@@ -571,6 +586,7 @@ export class ContentService {
       description:
         input.description === undefined ? undefined : normalizeOptionalString(input.description),
       isPreview: input.isPreview,
+      isPublished: input.isPublished,
       title: input.title?.trim(),
       type: input.type,
       videoDuration: input.videoDuration ?? undefined,

@@ -40,6 +40,7 @@ interface LectureDraft {
   description: string;
   existingPdfUrl: string;
   isPreview: boolean;
+  isPublished: boolean;
   pdfFile: File | null;
   title: string;
   type: AuthoringLectureType;
@@ -71,6 +72,7 @@ function createEmptyDraft(): LectureDraft {
     description: "",
     existingPdfUrl: "",
     isPreview: false,
+    isPublished: false,
     pdfFile: null,
     title: "",
     type: "VIDEO",
@@ -216,6 +218,7 @@ export function CourseLectureBuilder({
         content: draft.type === "PDF" ? "PDF" : "",
         description: draft.description,
         isPreview: draft.isPreview,
+        isPublished: draft.isPublished,
         title: draft.title,
         type: draft.type === "PDF" ? "TEXT" : draft.videoMode,
         videoUrl: draft.type === "VIDEO" ? draft.videoUrl : ""
@@ -269,6 +272,7 @@ export function CourseLectureBuilder({
         content: draft.type === "PDF" ? "PDF" : "",
         description: draft.description,
         isPreview: draft.isPreview,
+        isPublished: draft.isPublished,
         title: draft.title,
         type: draft.type === "PDF" ? "TEXT" : draft.videoMode,
         videoUrl: draft.type === "VIDEO" ? draft.videoUrl : ""
@@ -297,6 +301,17 @@ export function CourseLectureBuilder({
     }
   };
 
+  const handleToggleLecturePublished = async (lecture: ContentLecture): Promise<void> => {
+    setIsWorking(true);
+    try {
+      await updateLecture(lecture.id, { isPublished: !lecture.isPublished });
+      await onRefresh();
+      toast.success(lecture.isPublished ? t("author.itemUnpublished") : t("author.itemPublished"));
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
   const startEditLecture = (chapterId: string, lecture: ContentLecture): void => {
     const isPdf = isPdfLecture(lecture);
     const pdfMaterial = lecture.materials.find(
@@ -308,6 +323,7 @@ export function CourseLectureBuilder({
       description: lecture.description ?? "",
       existingPdfUrl: pdfMaterial?.fileUrl ?? "",
       isPreview: lecture.isPreview,
+      isPublished: lecture.isPublished,
       pdfFile: null,
       title: lecture.title,
       type: isPdf ? "PDF" : "VIDEO",
@@ -521,6 +537,7 @@ export function CourseLectureBuilder({
                         count={chapterItems.length}
                         index={itemIndex}
                         isDragging={draggedItem?.id === item.id}
+                        isPublished={item.lecture.isPublished}
                         isWorking={isWorking}
                         key={item.id}
                         lecture={item.lecture}
@@ -536,6 +553,7 @@ export function CourseLectureBuilder({
                         onDrop={(event) => void handleItemDrop(event, chapter.id, item.id)}
                         onEdit={() => startEditLecture(chapter.id, item.lecture)}
                         onMove={(offset) => void handleMoveItem(chapter.id, item.id, offset)}
+                        onTogglePublished={() => void handleToggleLecturePublished(item.lecture)}
                       />
                     ) : (
                       <ExamOutlineRow
@@ -737,14 +755,28 @@ function LectureComposer({
       ) : null}
 
       {draft.type !== "EXAM" ? (
-        <label className="flex min-h-11 items-center gap-3">
-          <input
-            checked={draft.isPreview}
-            type="checkbox"
-            onChange={(event) => onChange({ ...draft, isPreview: event.target.checked })}
-          />
-          <span className="text-sm text-ink">{t("cb.allowPreview")}</span>
-        </label>
+        <div className="space-y-3 border-t border-hairline pt-5">
+          <label className="flex min-h-11 items-center gap-3">
+            <input
+              checked={draft.isPreview}
+              type="checkbox"
+              onChange={(event) => onChange({ ...draft, isPreview: event.target.checked })}
+            />
+            <span className="text-sm text-ink">{t("cb.allowPreview")}</span>
+          </label>
+          <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
+            <input
+              checked={draft.isPublished}
+              className="mt-1 size-4 accent-accent"
+              type="checkbox"
+              onChange={(event) => onChange({ ...draft, isPublished: event.target.checked })}
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
+              <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
+            </span>
+          </label>
+        </div>
       ) : null}
 
       <div className="flex flex-wrap justify-end gap-3 border-t border-hairline pt-5">

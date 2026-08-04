@@ -12,6 +12,7 @@ import {
 import type { DragEvent, JSX } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { ContentLecture } from "@/lib/api/content";
 import type { AssessmentTestSummary } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -27,6 +28,7 @@ export function LectureOutlineRow({
   count,
   index,
   isDragging,
+  isPublished,
   isWorking,
   lecture,
   onDelete,
@@ -34,11 +36,13 @@ export function LectureOutlineRow({
   onDragStart,
   onDrop,
   onEdit,
-  onMove
+  onMove,
+  onTogglePublished
 }: {
   count: number;
   index: number;
   isDragging: boolean;
+  isPublished: boolean;
   isWorking: boolean;
   lecture: ContentLecture;
   onDelete: () => void;
@@ -47,6 +51,7 @@ export function LectureOutlineRow({
   onDrop: (event: DragEvent<HTMLDivElement>) => void;
   onEdit: () => void;
   onMove: (offset: -1 | 1) => void;
+  onTogglePublished: () => void;
 }): JSX.Element {
   const t = useT();
   const isPdf = isPdfLecture(lecture);
@@ -83,9 +88,22 @@ export function LectureOutlineRow({
             {isPdf ? t("author.pdf") : t("author.video")}
             {lecture.description ? ` · ${lecture.description}` : ""}
           </p>
+          <div className="mt-2">
+            <Badge tone={isPublished ? "neutral" : "attention"}>
+              {isPublished ? t("common.published") : t("common.draft")}
+            </Badge>
+          </div>
         </div>
       </div>
-      <div className="flex items-center gap-1 self-end sm:self-center">
+      <div className="flex flex-wrap items-center justify-end gap-1 self-end sm:self-center">
+        <Button
+          className="h-11"
+          disabled={isWorking}
+          variant="ghost"
+          onClick={onTogglePublished}
+        >
+          {isPublished ? t("author.unpublishItem") : t("author.publishItem")}
+        </Button>
         <Button
           aria-label={t("ab.moveUp")}
           className="size-11"
