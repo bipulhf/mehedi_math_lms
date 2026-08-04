@@ -1,6 +1,7 @@
 import {
   ChapterTitle,
   FullscreenButton,
+  Gesture,
   MediaPlayer,
   MediaProvider,
   MuteButton,
@@ -279,6 +280,12 @@ export function LecturePlayer({
         ) : null}
         {chaptersVtt ? <Track content={chaptersVtt} default kind="chapters" label="Chapters" /> : null}
       </MediaProvider>
+
+      {/* z-10: above vidstack's own click-blocker on iframe providers
+          (z-index: 1, see the note on the controls bar below), but under the
+          controls bar itself (z-20) so a click on an actual button still
+          reaches that button instead of toggling playback underneath it. */}
+      <Gesture action="toggle:paused" className="absolute inset-0 z-10" event="pointerup" />
 
       <PlayerWatermark />
       <PlayerBufferingSpinner />
