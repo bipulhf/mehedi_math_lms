@@ -2,8 +2,8 @@ import { FileText, Video } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
+import { LecturePlayer } from "@/components/media/lecture-player";
 import { useT } from "@/lib/i18n/locale-context";
-import { getEmbedVideoUrl } from "@/lib/video";
 
 interface PdfLecturePreviewProps {
   existingUrl: string;
@@ -17,7 +17,6 @@ interface VideoLecturePreviewProps {
 export function VideoLecturePreview({ url }: VideoLecturePreviewProps): JSX.Element | null {
   const t = useT();
   const trimmedUrl = url.trim();
-  const embedUrl = getEmbedVideoUrl(trimmedUrl);
 
   if (!trimmedUrl) {
     return null;
@@ -29,22 +28,7 @@ export function VideoLecturePreview({ url }: VideoLecturePreviewProps): JSX.Elem
         <Video className="size-4" />
         {t("author.previewTitle")}
       </div>
-      <div className="aspect-video w-full overflow-hidden border border-hairline bg-ink">
-        {embedUrl ? (
-          <iframe
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-            referrerPolicy="strict-origin-when-cross-origin"
-            src={embedUrl}
-            title={t("author.video")}
-          />
-        ) : (
-          <video className="h-full w-full" controls preload="metadata" src={trimmedUrl}>
-            <track kind="captions" />
-          </video>
-        )}
-      </div>
+      <LecturePlayer src={trimmedUrl} title={t("author.video")} />
     </div>
   );
 }

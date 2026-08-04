@@ -650,6 +650,7 @@ export const bn = {
   "player.lessonsAndTests": "ক্লাস ও পরীক্ষা",
   "player.notices": "নোটিশ",
   "player.navigator": "কোর্সের তালিকা",
+  "player.noVideoSource": "এই ক্লাসের জন্য এখনো কোনো ভিডিও যোগ করা হয়নি।",
   "player.openVideo": "ভিডিও খোল",
   "player.overview": "কোর্স পরিচিতি",
   "player.assessment": "পরীক্ষা",

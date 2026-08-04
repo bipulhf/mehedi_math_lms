@@ -9,6 +9,10 @@
 @import "@fontsource/archivo/400.css";
 @import "@fontsource/archivo/500.css";
 @import "@fontsource/archivo/600.css";
+/* Base reset only -- no default/plyr theme. The player is fully reskinned in
+   apps/web/src/components/media/lecture-player.tsx to match the app's own
+   controls, not vidstack's. */
+@import "@vidstack/react/player/styles/base.css";
 @import "tailwindcss";
 @source "../";
 

@@ -4,13 +4,13 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 
 import { formatCourseLength } from "@/components/courses/course-meta";
+import { LecturePlayer } from "@/components/media/lecture-player";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseLecturePreview, ContentMaterial } from "@/lib/api/content";
 import { getLecturePreview } from "@/lib/api/content";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
-import { getEmbedVideoUrl } from "@/lib/video";
 
 export interface CoursePreviewDialogProps {
   /** The free lesson to play; `null` keeps the dialog closed. */
@@ -25,7 +25,6 @@ function getPdfMaterial(materials: readonly ContentMaterial[]): ContentMaterial 
 function LectureBody({ lecture }: { lecture: CourseLecturePreview }): JSX.Element {
   const t = useT();
   const pdf = getPdfMaterial(lecture.materials);
-  const embedUrl = lecture.videoUrl ? getEmbedVideoUrl(lecture.videoUrl) : null;
 
   if (pdf) {
     return (
@@ -45,29 +44,8 @@ function LectureBody({ lecture }: { lecture: CourseLecturePreview }): JSX.Elemen
     );
   }
 
-  if (embedUrl) {
-    return (
-      <div className="aspect-video w-full overflow-hidden border border-hairline bg-ink">
-        <iframe
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="h-full w-full"
-          referrerPolicy="strict-origin-when-cross-origin"
-          src={embedUrl}
-          title={lecture.title}
-        />
-      </div>
-    );
-  }
-
   if (lecture.videoUrl) {
-    return (
-      <div className="aspect-video w-full overflow-hidden border border-hairline bg-ink">
-        <video className="h-full w-full" controls preload="metadata" src={lecture.videoUrl}>
-          <track kind="captions" />
-        </video>
-      </div>
-    );
+    return <LecturePlayer src={lecture.videoUrl} title={lecture.title} />;
   }
 
   return <EmptyState message={t("detail.previewUnavailable")} />;

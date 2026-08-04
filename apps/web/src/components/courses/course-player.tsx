@@ -13,6 +13,7 @@ import {
   type NavigationItem
 } from "@/components/courses/course-player-parts";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
+import { LecturePlayer } from "@/components/media/lecture-player";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import type { ContentChapter } from "@/lib/api/content";
 import { markLectureComplete, type CourseProgressResponse } from "@/lib/api/progress";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { useT } from "@/lib/i18n/locale-context";
-import { getEmbedVideoUrl } from "@/lib/video";
 
 interface CoursePlayerProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -178,12 +178,6 @@ export function CoursePlayer({
       setIsMarkingComplete(false);
     }
   };
-
-  const embedVideoUrl = selectedLecture?.videoUrl
-    ? getEmbedVideoUrl(selectedLecture.videoUrl)
-    : null;
-  const canUseNativeVideo =
-    selectedLecture?.type !== "TEXT" && Boolean(selectedLecture?.videoUrl) && !embedVideoUrl;
 
   return (
     <div className="space-y-4">
@@ -386,41 +380,15 @@ export function CoursePlayer({
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-8 text-ink whitespace-pre-wrap">
                         {selectedLecture.content}
                       </div>
-                    ) : embedVideoUrl ? (
-                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-black">
-                        <div className="aspect-video">
-                          <iframe
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="h-full w-full"
-                            src={embedVideoUrl}
-                            title={selectedLecture.title}
-                          />
-                        </div>
-                      </div>
-                    ) : canUseNativeVideo && selectedLecture.videoUrl ? (
-                      <div className="overflow-hidden rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-black">
-                        <video
-                          className="aspect-video w-full"
-                          controls
-                          src={selectedLecture.videoUrl}
-                          onEnded={() => void handleMarkComplete(true)}
-                        />
-                      </div>
+                    ) : selectedLecture.videoUrl ? (
+                      <LecturePlayer
+                        onEnded={() => void handleMarkComplete(true)}
+                        src={selectedLecture.videoUrl}
+                        title={selectedLecture.title}
+                      />
                     ) : (
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-7 text-ink/68">
-                        This lecture uses an external video source that could not be embedded
-                        directly.
-                        {selectedLecture.videoUrl ? (
-                          <a
-                            className="ml-2 font-semibold text-accent underline-offset-4 hover:underline"
-                            href={selectedLecture.videoUrl}
-                            rel="noreferrer"
-                            target="_blank"
-                          >
-                            {t("player.openVideo")}
-                          </a>
-                        ) : null}
+                        {t("player.noVideoSource")}
                       </div>
                     )}
 

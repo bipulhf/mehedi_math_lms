@@ -652,6 +652,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "player.lessonsAndTests": "Classes and tests",
   "player.notices": "Notices",
   "player.navigator": "Course contents",
+  "player.noVideoSource": "This lecture has no video source yet.",
   "player.openVideo": "Open the video",
   "player.overview": "Course overview",
   "player.assessment": "Test",
