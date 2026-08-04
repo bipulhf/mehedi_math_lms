@@ -13,6 +13,7 @@ import {
 import { Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { JSX } from "react";
 
+import genexMark from "@/assets/genex-mark.png";
 import { cn } from "@/lib/utils";
 
 export interface LecturePlayerProps {
@@ -24,14 +25,19 @@ export interface LecturePlayerProps {
 }
 
 const controlButtonClassName =
-  "flex size-8 shrink-0 items-center justify-center text-paper transition-colors hover:text-accent";
+  "flex size-8 shrink-0 items-center justify-center text-paper/85 transition-colors hover:text-paper";
+const controlIconClassName = "size-4";
 
 function PlayerPlayButton(): JSX.Element {
   const paused = useMediaState("paused");
 
   return (
     <PlayButton aria-label={paused ? "Play" : "Pause"} className={controlButtonClassName}>
-      {paused ? <Play className="size-4" fill="currentColor" /> : <Pause className="size-4" fill="currentColor" />}
+      {paused ? (
+        <Play className={controlIconClassName} fill="currentColor" strokeWidth={1.5} />
+      ) : (
+        <Pause className={controlIconClassName} fill="currentColor" strokeWidth={1.5} />
+      )}
     </PlayButton>
   );
 }
@@ -43,7 +49,7 @@ function PlayerMuteButton(): JSX.Element {
 
   return (
     <MuteButton aria-label={muted ? "Unmute" : "Mute"} className={controlButtonClassName}>
-      <VolumeIcon className="size-4" />
+      <VolumeIcon className={controlIconClassName} strokeWidth={1.5} />
     </MuteButton>
   );
 }
@@ -56,8 +62,26 @@ function PlayerFullscreenButton(): JSX.Element {
       aria-label={active ? "Exit fullscreen" : "Enter fullscreen"}
       className={controlButtonClassName}
     >
-      {active ? <Minimize className="size-4" /> : <Maximize className="size-4" />}
+      {active ? (
+        <Minimize className={controlIconClassName} strokeWidth={1.5} />
+      ) : (
+        <Maximize className={controlIconClassName} strokeWidth={1.5} />
+      )}
     </FullscreenButton>
+  );
+}
+
+/**
+ * A quiet corner mark, not a logo lockup -- present whether or not the
+ * controls are showing, but never fighting for attention with them.
+ */
+function PlayerWatermark(): JSX.Element {
+  return (
+    <img
+      alt=""
+      className="pointer-events-none absolute top-3 left-3 z-10 size-5 opacity-35 sm:size-6"
+      src={genexMark}
+    />
   );
 }
 
@@ -92,7 +116,7 @@ function PlayerControlsBar(): JSX.Element {
         // iframe itself from swallowing clicks -- without a higher z-index
         // here, that blocker sits on top of these controls and eats every
         // click and seek-drag before it reaches them.
-        "absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 bg-ink/55 px-3 py-2.5 backdrop-blur-md",
+        "absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 bg-ink/40 px-3 py-2.5 backdrop-blur-md",
         "transition-opacity duration-300",
         visible ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
         "sm:px-4"
@@ -123,11 +147,11 @@ function PlayerControlsBar(): JSX.Element {
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-1.5">
+        <div className="group/volume flex items-center gap-1.5">
           <PlayerMuteButton />
-          <VolumeSlider.Root className="relative hidden h-4 w-16 items-center sm:flex">
+          <VolumeSlider.Root className="relative hidden h-4 w-16 items-center pointer-events-none opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100 sm:flex">
             <VolumeSlider.Track className="relative h-[3px] w-full bg-paper/25">
-              <VolumeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-paper" />
+              <VolumeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-paper/80" />
             </VolumeSlider.Track>
             <VolumeSlider.Thumb className="absolute left-[var(--slider-fill)] size-2.5 -translate-x-1/2 bg-paper" />
           </VolumeSlider.Root>
@@ -174,6 +198,7 @@ export function LecturePlayer({
         ) : null}
       </MediaProvider>
 
+      <PlayerWatermark />
       <PlayerBufferingSpinner />
       <PlayerControlsBar />
     </MediaPlayer>
