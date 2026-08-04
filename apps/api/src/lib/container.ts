@@ -179,7 +179,7 @@ const uploadService = new UploadService(uploadRepository);
 export const sitemapService = new SitemapService(seoRepository, redis);
 export const ogImageService = new OgImageService(courseRepository, profileRepository);
 const landingRepository = new LandingRepository();
-const landingService = new LandingService(landingRepository, redis);
+const landingService = new LandingService(landingRepository, courseRepository, redis);
 
 export const adminController = new AdminController(staffAccountService);
 export const adminDashboardController = new AdminDashboardController(adminDashboardService);

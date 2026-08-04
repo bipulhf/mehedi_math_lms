@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { optionalRichTextSchema, richTextSchema } from "./common";
+import { idSchema, optionalRichTextSchema, richTextSchema } from "./common";
 import { userRoleSchema } from "../types/roles";
 
 export const userListStatusValues = ["all", "active", "inactive"] as const;
@@ -73,4 +73,9 @@ export const adminUpdateBugSchema = z.object({
   adminNotes: optionalRichTextSchema(4000),
   priority: bugReportPrioritySchema.optional(),
   status: bugReportStatusSchema.optional()
+});
+
+/** Ordered list of course ids for the landing carousel. Empty resets to default. */
+export const featuredCoursesSchema = z.object({
+  courseIds: z.array(idSchema).max(6)
 });

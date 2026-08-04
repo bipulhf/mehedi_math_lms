@@ -6,6 +6,7 @@ import {
   bugsQuerySchema,
   createAdminUserSchema,
   createBugReportSchema,
+  featuredCoursesSchema,
   manageableUserRoleSchema,
   staffRoleSchema,
   updateAdminUserStatusSchema,
@@ -122,5 +123,25 @@ describe("bug reports", () => {
     expect(adminUpdateBugSchema.safeParse({ status: "WONTFIX" }).success).toBe(false);
     expect(adminUpdateBugSchema.safeParse({ priority: "URGENT" }).success).toBe(false);
     expect(bugsQuerySchema.parse({})).toMatchObject({ limit: 10, page: 1 });
+  });
+});
+
+describe("featuredCoursesSchema", () => {
+  test("accepts an empty list — resets the carousel to newest-first", () => {
+    expect(featuredCoursesSchema.parse({ courseIds: [] })).toEqual({ courseIds: [] });
+  });
+
+  test("accepts up to six uuids in order", () => {
+    const ids = Array.from({ length: 6 }, () => crypto.randomUUID());
+    expect(featuredCoursesSchema.parse({ courseIds: ids }).courseIds).toEqual(ids);
+  });
+
+  test("rejects a seventh course", () => {
+    const ids = Array.from({ length: 7 }, () => crypto.randomUUID());
+    expect(featuredCoursesSchema.safeParse({ courseIds: ids }).success).toBe(false);
+  });
+
+  test("rejects a non-uuid id", () => {
+    expect(featuredCoursesSchema.safeParse({ courseIds: ["not-a-uuid"] }).success).toBe(false);
   });
 });

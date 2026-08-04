@@ -1,6 +1,8 @@
 import type Redis from "ioredis";
 
+import type { CourseRepository } from "@/repositories/course-repository";
 import type { LandingCategoryRow, LandingRepository } from "@/repositories/landing-repository";
+import { ValidationError } from "@/utils/errors";
 
 export interface LandingCategory {
   courseCount: number;
@@ -87,6 +89,7 @@ export class LandingService {
 
   public constructor(
     private readonly landingRepository: LandingRepository,
+    private readonly courseRepository: CourseRepository,
     private readonly redis: Redis
   ) {}
 
@@ -106,6 +109,32 @@ export class LandingService {
     );
 
     return snapshot;
+  }
+
+  /** The admin-configured carousel order. Empty means "default: newest first". */
+  public async getFeaturedCourses(): Promise<readonly { id: string; slug: string; title: string }[]> {
+    return this.courseRepository.listFeaturedCourses();
+  }
+
+  /**
+   * Replaces the carousel order. Every id must be a published course and the
+   * list must be duplicate-free, or the whole write is refused.
+   */
+  public async updateFeaturedCourses(courseIds: readonly string[]): Promise<void> {
+    const uniqueIds = [...new Set(courseIds)];
+
+    if (uniqueIds.length !== courseIds.length) {
+      throw new ValidationError("Featured course list contains duplicates");
+    }
+
+    const publishedCount = await this.courseRepository.countPublishedCoursesByIds(uniqueIds);
+
+    if (publishedCount !== uniqueIds.length) {
+      throw new ValidationError("Every featured course must be published");
+    }
+
+    await this.courseRepository.replaceFeaturedOrder(uniqueIds);
+    await this.redis.del(LandingService.CACHE_KEY);
   }
 
   private async buildSnapshot(): Promise<LandingSnapshot> {

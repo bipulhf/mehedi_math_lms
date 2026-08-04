@@ -10,6 +10,7 @@ import {
   conversationMessagesQuerySchema,
   courseIdParamsSchema,
   createAdminUserSchema,
+  featuredCoursesSchema,
   idParamsSchema,
   messageConversationIdParamsSchema,
   profileIdParamsSchema,
@@ -23,6 +24,7 @@ import {
   adminUserController,
   bugReportController,
   courseController,
+  landingController,
   messageController,
   notificationController,
   profileController,
@@ -34,6 +36,19 @@ import type { AppBindings } from "@/types/app-bindings";
 export const adminRoutes = new Hono<AppBindings>();
 
 adminRoutes.get("/dashboard", requireAdmin(), (context) => adminDashboardController.getStats(context));
+
+// The landing carousel. Admin pins an ordered list of up to six published
+// courses; an empty list resets the carousel to newest-first. Writes bust the
+// landing snapshot cache.
+adminRoutes.get("/landing/featured", requireAdmin(), (context) => {
+  return landingController.getFeaturedCourses(context);
+});
+
+adminRoutes.put("/landing/featured", requireAdmin(), async (context) => {
+  const payload = featuredCoursesSchema.parse(await context.req.json());
+
+  return landingController.updateFeaturedCourses(context, payload.courseIds);
+});
 
 adminRoutes.get("/users", requireRole("ADMIN", "TEACHER"), (context) => {
   const query = adminUsersQuerySchema.parse(context.req.query());

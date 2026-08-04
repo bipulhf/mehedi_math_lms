@@ -12,4 +12,16 @@ export class LandingController {
 
     return success(context, snapshot);
   }
+
+  public async getFeaturedCourses(context: Context<AppBindings>): Promise<Response> {
+    const courses = await this.landingService.getFeaturedCourses();
+
+    return success(context, courses);
+  }
+
+  public async updateFeaturedCourses(context: Context<AppBindings>, courseIds: readonly string[]): Promise<Response> {
+    await this.landingService.updateFeaturedCourses(courseIds);
+
+    return success(context, null);
+  }
 }

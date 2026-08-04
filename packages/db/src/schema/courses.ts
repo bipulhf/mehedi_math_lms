@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   numeric,
   pgTable,
   primaryKey,
@@ -30,6 +31,10 @@ export const courses = pgTable(
     description: text("description").notNull(),
     reviewFeedback: text("review_feedback"),
     coverImageUrl: text("cover_image_url"),
+    // Admin-pinned position in the landing carousel. NULL means not featured;
+    // ascending order is the carousel order, pinned courses first and the
+    // newest published courses filling the remaining slots.
+    featuredOrder: integer("featured_order"),
     price: numeric("price", { precision: 10, scale: 2 }).default("0").notNull(),
     status: courseStatusEnum("status").default("DRAFT").notNull(),
     isExamOnly: boolean("is_exam_only").default(false).notNull(),
@@ -43,7 +48,8 @@ export const courses = pgTable(
     uniqueIndex("courses_slug_unique_idx").on(table.slug),
     index("courses_category_id_idx").on(table.categoryId),
     index("courses_creator_id_idx").on(table.creatorId),
-    index("courses_status_idx").on(table.status)
+    index("courses_status_idx").on(table.status),
+    index("courses_featured_order_idx").on(table.featuredOrder)
   ]
 );
 

@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/api/client";
+import { apiGet, apiPut } from "@/lib/api/client";
 
 export interface LandingRating {
   average: number;
@@ -52,8 +52,24 @@ export interface LandingSnapshot {
   teachers: readonly LandingTeacher[];
 }
 
+export interface FeaturedCourse {
+  id: string;
+  slug: string;
+  title: string;
+}
+
 export async function getLandingSnapshot(): Promise<LandingSnapshot> {
   const response = await apiGet<LandingSnapshot>("landing");
 
   return response.data;
+}
+
+export async function getFeaturedCourses(): Promise<readonly FeaturedCourse[]> {
+  const response = await apiGet<readonly FeaturedCourse[]>("admin/landing/featured");
+
+  return response.data;
+}
+
+export async function updateFeaturedCourses(courseIds: readonly string[]): Promise<void> {
+  await apiPut<{ courseIds: readonly string[] }, null>("admin/landing/featured", { courseIds });
 }

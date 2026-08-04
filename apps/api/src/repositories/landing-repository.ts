@@ -1,5 +1,6 @@
 import {
   and,
+  asc,
   categories,
   chapters,
   count,
@@ -160,7 +161,12 @@ export class LandingRepository {
       .leftJoin(users, eq(ownerTeacher.teacherId, users.id))
       .leftJoin(teacherProfiles, eq(teacherProfiles.userId, users.id))
       .where(eq(courses.status, "PUBLISHED"))
-      .orderBy(desc(courses.publishedAt), desc(courses.createdAt))
+      .orderBy(
+        sql`${courses.featuredOrder} IS NULL`,
+        asc(courses.featuredOrder),
+        desc(courses.publishedAt),
+        desc(courses.createdAt)
+      )
       .limit(limit);
 
     return rows.map((row) => ({

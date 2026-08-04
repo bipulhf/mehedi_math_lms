@@ -3,23 +3,17 @@ import type { JSX } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DiamondTrio, DotPatch, QuarterArc, RingedPlay, RingedWord } from "@/components/ui/doodles";
-import type { LandingStats } from "@/lib/api/landing";
-import { useFormat, useT } from "@/lib/i18n/locale-context";
+import type { LandingCourse } from "@/lib/api/landing";
+import { HeroCoursesCarousel } from "@/features/landing/components/hero-courses-carousel";
+import { useT } from "@/lib/i18n/locale-context";
 
 /**
  * The hero: a prominent, bold headline with doodle accents, lead paragraph,
- * high-impact CTA controls, ambient glow, and translucent stat cards.
+ * high-impact CTA controls, ambient glow, and a featured-courses carousel.
  */
-export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
+export function HeroSection({ courses }: { courses: readonly LandingCourse[] }): JSX.Element {
   const t = useT();
-  const format = useFormat();
   const [beforeRing = "", afterRing = ""] = t("home.heroTitle").split("{ring}");
-
-  const figures: readonly { label: string; value: string }[] = [
-    { label: t("common.students"), value: format.number(stats.students) },
-    { label: t("common.teachers"), value: format.number(stats.teachers) },
-    { label: t("common.courses"), value: format.number(stats.publishedCourses) }
-  ];
 
   return (
     <section className="relative overflow-hidden border-b border-hairline py-12 sm:py-20 lg:py-28">
@@ -68,22 +62,10 @@ export function HeroSection({ stats }: { stats: LandingStats }): JSX.Element {
               <span>{t("action.watchFreeClass")}</span>
             </Link>
           </div>
-
-          {/* Stat Cards Grid */}
-          <dl className="animate-fade-up-4 grid w-full max-w-3xl grid-cols-1 gap-4 pt-10 sm:grid-cols-3">
-            {figures.map((figure) => (
-              <div
-                className="group flex flex-col items-center justify-center rounded-xl border border-hairline bg-card/80 p-6 shadow-xs backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:bg-card hover:shadow-md"
-                key={figure.label}
-              >
-                <dd className="text-3xl font-bold tracking-tight text-ink transition-colors group-hover:text-accent sm:text-4xl">
-                  {figure.value}
-                </dd>
-                <dt className="mt-1 text-sm font-medium text-muted-light">{figure.label}</dt>
-              </div>
-            ))}
-          </dl>
         </div>
+
+        {/* Featured courses carousel */}
+        <HeroCoursesCarousel courses={courses} />
       </div>
     </section>
   );

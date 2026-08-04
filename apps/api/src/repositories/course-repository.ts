@@ -11,6 +11,7 @@ import {
   eq,
   ilike,
   inArray,
+  isNotNull,
   lectures,
   or,
   reviews,
@@ -620,6 +621,39 @@ export class CourseRepository {
     return teachersByCourseId.get(courseId) ?? [];
   }
 
+  /** Pinned courses in carousel order. Landing fills the rest with newest. */
+  public async listFeaturedCourses(): Promise<readonly { id: string; slug: string; title: string }[]> {
+    const rows = await db
+      .select({
+        id: courses.id,
+        slug: courses.slug,
+        title: courses.title
+      })
+      .from(courses)
+      .where(and(isNotNull(courses.featuredOrder), eq(courses.status, "PUBLISHED")))
+      .orderBy(asc(courses.featuredOrder));
+
+    return rows;
+  }
+
+  /**
+   * Replaces the featured carousel wholesale: clears every pinned position,
+   * then assigns 0..n in the given order. Runs in a transaction so a partial
+   * failure cannot leave the carousel half-rewritten.
+   */
+  public async replaceFeaturedOrder(courseIds: readonly string[]): Promise<void> {
+    await db.transaction(async (transaction) => {
+      await transaction
+        .update(courses)
+        .set({ featuredOrder: null })
+        .where(isNotNull(courses.featuredOrder));
+
+      for (const [index, courseId] of courseIds.entries()) {
+        await transaction.update(courses).set({ featuredOrder: index }).where(eq(courses.id, courseId));
+      }
+    });
+  }
+
   public async getAssignedCourseIds(teacherId: string): Promise<readonly string[]> {
     const rows = await db
       .select({ courseId: courseTeachers.courseId })
@@ -661,6 +695,20 @@ export class CourseRepository {
       .select({ value: count() })
       .from(users)
       .where(and(inArray(users.id, [...new Set(teacherIds)]), eq(users.role, "TEACHER"), eq(users.isActive, true)));
+
+    return rows[0]?.value ?? 0;
+  }
+
+  /** How many of the given ids belong to published courses, duplicates ignored. */
+  public async countPublishedCoursesByIds(courseIds: readonly string[]): Promise<number> {
+    if (courseIds.length === 0) {
+      return 0;
+    }
+
+    const rows = await db
+      .select({ value: count() })
+      .from(courses)
+      .where(and(inArray(courses.id, [...new Set(courseIds)]), eq(courses.status, "PUBLISHED")));
 
     return rows[0]?.value ?? 0;
   }

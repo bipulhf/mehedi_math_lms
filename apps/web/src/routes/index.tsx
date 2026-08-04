@@ -86,7 +86,7 @@ function HomePage(): JSX.Element {
 
   return (
     <PublicLayout>
-      <HeroSection stats={snapshot.stats} />
+      <HeroSection courses={snapshot.courses} />
       <LevelPickerSection
         categories={snapshot.categories}
         courses={snapshot.courses}

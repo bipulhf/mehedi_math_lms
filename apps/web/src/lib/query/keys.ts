@@ -12,6 +12,7 @@ export const queryKeys = {
     bugs: (filters: Record<string, unknown>) => ["admin", "bugs", filters] as const,
     courses: (filters: Record<string, unknown>) => ["admin", "courses", filters] as const,
     dashboard: () => ["admin", "dashboard"] as const,
+    featured: () => ["admin", "landing", "featured"] as const,
     smsHistory: (filters: Record<string, unknown>) => ["admin", "sms", filters] as const,
     user: (userId: string) => ["admin", "users", userId] as const,
     users: (filters: Record<string, unknown>) => ["admin", "users", filters] as const
