@@ -1,11 +1,13 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import type { InfiniteData, QueryKey } from "@tanstack/react-query";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 
 import { CourseBuyCard } from "@/components/courses/course-buy-card";
 import { CourseCurriculum } from "@/components/courses/course-curriculum";
 import { courseMetaParts } from "@/components/courses/course-meta";
+import { CourseReviews } from "@/components/courses/course-reviews";
 import { CourseDetailSkeleton } from "@/components/common/skeletons";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -18,6 +20,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseOutlineChapter } from "@/lib/api/content";
 import type { CourseDetail, CourseTeacherSummary } from "@/lib/api/courses";
+import type { PaginatedApiResponse } from "@/lib/api/client";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
@@ -29,6 +32,8 @@ import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
 import { siteConfig } from "@/lib/site";
 
 type DetailTab = "curriculum" | "teacher" | "reviews";
+
+const REVIEWS_PER_PAGE = 20;
 
 export const Route = createFileRoute("/courses/$slug")({
   loader: async ({ params }) => {
@@ -129,23 +134,35 @@ function CourseDetailPage(): JSX.Element {
     queryKey: queryKeys.enrollments.course(course.id)
   });
 
-  const { data: reviewData } = useQuery({
-    enabled: course.status === "PUBLISHED",
-    queryFn: async () => {
-      const [summary, page] = await Promise.all([
-        getCourseReviewSummary(course.id),
-        listCourseReviews(course.id, { limit: 20, page: 1 })
-      ]);
-
-      return { reviews: page.data, summary };
-    },
-    queryKey: queryKeys.reviews.course(course.id)
-  });
-
   // The loader already put a summary in the page for SEO; the query only
   // refines it, so a failed refresh falls back rather than blanking the rating.
-  const reviewSummary = reviewData?.summary ?? loaderReviewSummary;
-  const reviews: readonly CourseReviewPublic[] = reviewData?.reviews ?? [];
+  const summaryQuery = useQuery({
+    enabled: course.status === "PUBLISHED",
+    queryFn: async () => getCourseReviewSummary(course.id),
+    queryKey: queryKeys.reviews.courseSummary(course.id)
+  });
+  const reviewSummary = summaryQuery.data ?? loaderReviewSummary;
+
+  const reviewPageQuery = useInfiniteQuery<
+    PaginatedApiResponse<CourseReviewPublic>,
+    Error,
+    InfiniteData<PaginatedApiResponse<CourseReviewPublic>, number>,
+    QueryKey,
+    number
+  >({
+    enabled: course.status === "PUBLISHED",
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.pages
+        ? lastPage.pagination.page + 1
+        : undefined,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam }) =>
+      listCourseReviews(course.id, { limit: REVIEWS_PER_PAGE, page: pageParam }),
+    queryKey: queryKeys.reviews.courseList(course.id)
+  });
+
+  const reviews: readonly CourseReviewPublic[] =
+    reviewPageQuery.data?.pages.flatMap((page) => page.data) ?? [];
   const meta = courseMetaParts(course.stats, t, format);
 
   const handleEnroll = async (): Promise<void> => {
@@ -260,27 +277,14 @@ function CourseDetailPage(): JSX.Element {
           ) : null}
 
           {tab === "reviews" ? (
-            reviews.length === 0 ? (
-              <EmptyState message={t("detail.noReviews")} />
-            ) : (
-              <ul className="border-t border-hairline">
-                {reviews.map((review) => (
-                  <li className="space-y-2 border-b border-hairline-faint py-5" key={review.id}>
-                    <div className="flex items-center gap-3">
-                      <span className="text-base font-medium text-ink">{review.authorName}</span>
-                      <span className="text-sm text-muted-light">
-                        {format.rating(review.rating)}
-                      </span>
-                    </div>
-                    {review.comment === null ? null : (
-                      <p className="text-base font-light leading-relaxed text-muted">
-                        {review.comment}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )
+            <CourseReviews
+              hasNextPage={reviewPageQuery.hasNextPage}
+              isFetchingNextPage={reviewPageQuery.isFetchingNextPage}
+              isPending={reviewPageQuery.isPending}
+              onLoadMore={() => void reviewPageQuery.fetchNextPage()}
+              reviews={reviews}
+              summary={reviewSummary}
+            />
           ) : null}
         </div>
 

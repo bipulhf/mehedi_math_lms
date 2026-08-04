@@ -53,7 +53,7 @@ export function CourseFilterRail({
     : levels.flatMap((level) => level.children);
 
   return (
-    <aside className="space-y-9 border-hairline bg-card/50 lg:border-r lg:pr-8">
+    <aside className="space-y-9 lg:border-r lg:border-hairline lg:pr-8">
       <div className="space-y-3">
         <Input
           onChange={(event) => onSearchChange(event.target.value)}

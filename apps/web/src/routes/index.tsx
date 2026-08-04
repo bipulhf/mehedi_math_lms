@@ -14,7 +14,7 @@ import { FaqSection } from "@/features/landing/components/faq-section";
 import { HeroSection } from "@/features/landing/components/hero-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
-import { StepsSection } from "@/features/landing/components/steps-section";
+import { ReviewsSection } from "@/features/landing/components/reviews-section";
 
 const EMPTY_SNAPSHOT: LandingSnapshot = {
   categories: [],
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
             ]
           : [organizationJsonLd()],
       path: "/",
-      title: siteConfig.name
+      title: "Courses, Notes, Tests and Certificates in One Place"
     });
   },
   loader: async () => ssrApiGet<LandingSnapshot>("/landing"),
@@ -79,8 +79,8 @@ function HomePage(): JSX.Element {
         courses={snapshot.courses}
         publishedCourses={snapshot.stats.publishedCourses}
       />
-      <StepsSection />
       <InstructorsSection teachers={snapshot.teachers} />
+      <ReviewsSection />
       <FaqSection />
       <CtaSection />
     </PublicLayout>

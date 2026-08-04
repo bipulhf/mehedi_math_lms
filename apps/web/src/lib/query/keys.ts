@@ -85,7 +85,9 @@ export const queryKeys = {
   },
   reviews: {
     all: () => ["reviews"] as const,
-    course: (courseId: string) => ["reviews", "course", courseId] as const
+    course: (courseId: string) => ["reviews", "course", courseId] as const,
+    courseList: (courseId: string) => ["reviews", "course", courseId, "list"] as const,
+    courseSummary: (courseId: string) => ["reviews", "course", courseId, "summary"] as const
   },
   progress: {
     all: () => ["progress"] as const,

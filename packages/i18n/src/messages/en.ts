@@ -19,6 +19,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "action.edit": "Edit",
   "action.enroll": "Enrol",
   "action.expandAll": "Expand all",
+  "action.loadMore": "Load more",
   "action.next": "Next",
   "action.nextPage": "Next page",
   "action.previousPage": "Previous page",
@@ -141,6 +142,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
 
   "courses.activeFilters": "Active filters",
   "courses.allLevels": "All",
+  "courses.filters": "Filters",
   "courses.freeOnly": "Has a free class",
   "courses.lead":
     "From school and college to job skills — every course in one place. Pick a level and a subject.",

@@ -22,6 +22,7 @@ export const bn = {
   "action.edit": "এডিট",
   "action.enroll": "ভর্তি হও",
   "action.expandAll": "সব খুলে দাও",
+  "action.loadMore": "আরও দেখ",
   "action.next": "পরের ধাপ",
   "action.nextPage": "পরের পাতা",
   "action.previousPage": "আগের পাতা",
@@ -144,6 +145,7 @@ export const bn = {
 
   "courses.activeFilters": "সক্রিয় ফিল্টার",
   "courses.allLevels": "সবগুলো",
+  "courses.filters": "ফিল্টার",
   "courses.freeOnly": "ফ্রি ক্লাস আছে",
   "courses.lead": "স্কুল-কলেজ থেকে জব স্কিল — সব কোর্স এক জায়গায়। লেভেল আর বিষয় বেছে নাও।",
   "courses.level": "লেভেল",
