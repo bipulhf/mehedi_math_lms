@@ -1,0 +1,143 @@
+name: genex
+
+# Every service besides postgres/redis reads its secrets from .env (copy
+# .env.example to .env and fill in the real values) via env_file below.
+# DATABASE_URL and REDIS_URL are overridden per-service to the in-network
+# service names regardless of what .env has, since those are Docker's job
+# to wire up, not something to hand-edit per deployment.
+#
+# tooling/scripts and apps/api's worker:* package.json scripts hardcode
+# `bun --env-file ../../.env`, which expects a real file on disk -- since
+# secrets here come from the container's real environment (via env_file
+# below), not a file, every one-shot/worker command runs the underlying
+# bun/drizzle-kit command directly instead of through those scripts.
+
+x-api-image: &api-image
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-genex}
+    REDIS_URL: redis://redis:6379
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-genex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+    healthcheck:
+      interval: 5s
+      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      timeout: 5s
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      interval: 5s
+      retries: 10
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 5s
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  # One-shot: applies pending migrations, then exits. Everything else that
+  # touches the database waits for this to finish successfully.
+  migrate:
+    <<: *api-image
+    command: ["bun", "run", "db:migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /app/packages/db
+
+  # One-shot: idempotent admin bootstrap from ADMIN_EMAIL/ADMIN_PASSWORD in
+  # .env (see tooling/scripts/AGENTS.md) -- safe to leave in the normal
+  # startup chain, safe to re-run. Does NOT seed demo course content; that
+  # script refuses to run outside NODE_ENV=development on purpose.
+  seed:
+    <<: *api-image
+    command: ["bun", "seed.ts"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    working_dir: /app/tooling/scripts
+
+  api:
+    <<: *api-image
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  web:
+    build:
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001/api/v1}
+        VITE_FIREBASE_VAPID_KEY: ${VITE_FIREBASE_VAPID_KEY:-}
+        VITE_SSR_API_BASE_URL: http://api:3001/api/v1
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-genex}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  worker-notification:
+    <<: *api-image
+    command: ["bun", "src/workers/notification-worker.ts"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker-sms:
+    <<: *api-image
+    command: ["bun", "src/workers/sms-worker.ts"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker-file-processing:
+    <<: *api-image
+    command: ["bun", "src/workers/file-processing-worker.ts"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker-audit-log-cleanup:
+    <<: *api-image
+    command: ["bun", "src/workers/audit-log-cleanup-worker.ts"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      seed:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
