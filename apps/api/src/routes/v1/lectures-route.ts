@@ -6,6 +6,7 @@ import {
   lectureCommentsParamsSchema,
   lectureIdParamsSchema,
   materialIdParamsSchema,
+  setLectureVideoChaptersSchema,
   updateLectureSchema,
   updateMaterialSchema
 } from "@genex/shared";
@@ -82,6 +83,30 @@ lecturesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
     actorId: authUser!.id,
     entityId: params.id,
     entityType: "lecture"
+  });
+
+  return response;
+});
+
+lecturesRoutes.put("/:id/chapters", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = lectureIdParamsSchema.parse(context.req.param());
+  const payload = setLectureVideoChaptersSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+  const response = await contentController.setLectureVideoChapters(
+    context,
+    params.id,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "lecture.chapters_updated",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "lecture",
+    metadata: { chapterCount: payload.chapters.length }
   });
 
   return response;

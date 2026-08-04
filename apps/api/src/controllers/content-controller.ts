@@ -141,6 +141,23 @@ export class ContentController {
     return success(context, lecture, 200, "Lecture updated successfully");
   }
 
+  public async setLectureVideoChapters(
+    context: Context<AppBindings>,
+    lectureId: string,
+    input: Parameters<ContentService["setLectureVideoChapters"]>[1],
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<Response> {
+    const lecture = await this.contentService.setLectureVideoChapters(
+      lectureId,
+      input,
+      currentUserId,
+      currentUserRole
+    );
+
+    return success(context, lecture, 200, "Chapters updated successfully");
+  }
+
   public async deleteLecture(
     context: Context<AppBindings>,
     lectureId: string,

@@ -114,3 +114,14 @@ export const updateMaterialSchema = z
     title: z.string().trim().min(1).max(255).optional()
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
+
+/** A YouTube-style in-video marker: a timestamp and a name, nothing else. */
+export const videoChapterSchema = z.object({
+  timeSeconds: z.number().int().min(0).max(24 * 60 * 60),
+  title: z.string().trim().min(1).max(255)
+});
+
+/** Always the full set for one lecture -- see ContentService.setLectureVideoChapters. */
+export const setLectureVideoChaptersSchema = z.object({
+  chapters: z.array(videoChapterSchema).max(50)
+});

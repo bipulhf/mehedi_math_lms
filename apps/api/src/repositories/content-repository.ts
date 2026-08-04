@@ -6,7 +6,8 @@ import {
   eq,
   inArray,
   lectureMaterials,
-  lectures
+  lectures,
+  videoChapters
 } from "@genex/db";
 
 export interface ChapterRecord {
@@ -45,6 +46,13 @@ export interface MaterialRecord {
   parentId: string;
   title: string;
   updatedAt: Date;
+}
+
+/** A YouTube-style in-video marker. Always replaced as a whole set for one lecture. */
+export interface VideoChapterRecord {
+  lectureId: string;
+  timeSeconds: number;
+  title: string;
 }
 
 export interface CreateChapterInput {
@@ -238,6 +246,47 @@ export class ContentRepository {
       .orderBy(asc(lectureMaterials.createdAt));
 
     return rows.map(mapMaterialRecord);
+  }
+
+  public async listVideoChaptersByLectureIds(
+    lectureIds: readonly string[]
+  ): Promise<readonly VideoChapterRecord[]> {
+    if (lectureIds.length === 0) {
+      return [];
+    }
+
+    return db
+      .select({
+        lectureId: videoChapters.lectureId,
+        timeSeconds: videoChapters.timeSeconds,
+        title: videoChapters.title
+      })
+      .from(videoChapters)
+      .where(inArray(videoChapters.lectureId, [...lectureIds]))
+      .orderBy(asc(videoChapters.timeSeconds));
+  }
+
+  /** Deletes and re-inserts the full set for one lecture -- see ContentService.setLectureVideoChapters. */
+  public async replaceVideoChapters(
+    lectureId: string,
+    markers: readonly { timeSeconds: number; title: string }[]
+  ): Promise<readonly VideoChapterRecord[]> {
+    await db.delete(videoChapters).where(eq(videoChapters.lectureId, lectureId));
+
+    if (markers.length === 0) {
+      return [];
+    }
+
+    const rows = await db
+      .insert(videoChapters)
+      .values(markers.map((marker) => ({ ...marker, lectureId })))
+      .returning({
+        lectureId: videoChapters.lectureId,
+        timeSeconds: videoChapters.timeSeconds,
+        title: videoChapters.title
+      });
+
+    return rows.sort((first, second) => first.timeSeconds - second.timeSeconds);
   }
 
   public async findChapterById(id: string): Promise<ChapterRecord | null> {

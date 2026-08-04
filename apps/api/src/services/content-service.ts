@@ -6,6 +6,7 @@ import type {
   createMaterialSchema,
   reorderChaptersSchema,
   reorderLecturesSchema,
+  setLectureVideoChaptersSchema,
   updateChapterSchema,
   updateLectureSchema,
   updateMaterialSchema
@@ -18,7 +19,8 @@ import type {
 import {
   type ChapterRecord,
   type LectureRecord,
-  type MaterialRecord
+  type MaterialRecord,
+  type VideoChapterRecord
 } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
@@ -31,6 +33,7 @@ type UpdateLectureInput = z.infer<typeof updateLectureSchema>;
 type ReorderLecturesInput = z.infer<typeof reorderLecturesSchema>;
 type CreateMaterialInput = z.infer<typeof createMaterialSchema>;
 type UpdateMaterialInput = z.infer<typeof updateMaterialSchema>;
+type SetLectureVideoChaptersInput = z.infer<typeof setLectureVideoChaptersSchema>;
 
 export interface ContentMaterial {
   createdAt: string;
@@ -42,8 +45,15 @@ export interface ContentMaterial {
   updatedAt: string;
 }
 
+/** A YouTube-style in-video marker, ordered by `timeSeconds` ascending. */
+export interface VideoChapterMarker {
+  timeSeconds: number;
+  title: string;
+}
+
 export interface ContentLecture {
   chapterId: string;
+  chapters: readonly VideoChapterMarker[];
   content: string | null;
   createdAt: string;
   description: string | null;
@@ -94,9 +104,21 @@ function mapMaterial(record: MaterialRecord): ContentMaterial {
   };
 }
 
-function mapLecture(record: LectureRecord, materials: readonly ContentMaterial[]): ContentLecture {
+function mapVideoChapter(record: VideoChapterRecord): VideoChapterMarker {
+  return {
+    timeSeconds: record.timeSeconds,
+    title: record.title
+  };
+}
+
+function mapLecture(
+  record: LectureRecord,
+  materials: readonly ContentMaterial[],
+  chapters: readonly VideoChapterRecord[] = []
+): ContentLecture {
   return {
     chapterId: record.chapterId,
+    chapters: chapters.map(mapVideoChapter),
     content: record.content,
     createdAt: record.createdAt.toISOString(),
     description: record.description,
@@ -159,6 +181,7 @@ export interface CourseOutlineChapter {
  * else is a 404, so a guessed id cannot unlock a paid lesson.
  */
 export interface CourseLecturePreview {
+  chapters: readonly VideoChapterMarker[];
   content: string | null;
   description: string | null;
   durationSeconds: number | null;
@@ -372,9 +395,13 @@ export class ContentService {
       throw new NotFoundError("Lecture not found");
     }
 
-    const materials = await this.contentRepository.listLectureMaterialsByLectureIds([lecture.id]);
+    const [materials, chapters] = await Promise.all([
+      this.contentRepository.listLectureMaterialsByLectureIds([lecture.id]),
+      this.contentRepository.listVideoChaptersByLectureIds([lecture.id])
+    ]);
 
     return {
+      chapters: chapters.map(mapVideoChapter),
       content: lecture.content,
       description: lecture.description,
       durationSeconds: lecture.videoDuration,
@@ -404,10 +431,19 @@ export class ContentService {
       this.contentRepository.listChapterMaterialsByChapterIds(chapterIds)
     ]);
     const lectureIds = lectureRecords.map((lecture) => lecture.id);
-    const finalLectureMaterials =
+    const [finalLectureMaterials, videoChapters] =
       lectureIds.length > 0
-        ? await this.contentRepository.listLectureMaterialsByLectureIds(lectureIds)
-        : [];
+        ? await Promise.all([
+            this.contentRepository.listLectureMaterialsByLectureIds(lectureIds),
+            this.contentRepository.listVideoChaptersByLectureIds(lectureIds)
+          ])
+        : [[], []];
+
+    const videoChapterMap = new Map<string, readonly VideoChapterRecord[]>();
+    for (const marker of videoChapters) {
+      const current = videoChapterMap.get(marker.lectureId) ?? [];
+      videoChapterMap.set(marker.lectureId, [...current, marker]);
+    }
 
     const chapterMaterialMap = new Map<string, readonly ContentMaterial[]>();
     for (const material of chapterMaterials) {
@@ -430,7 +466,11 @@ export class ContentService {
       const currentLectures = lecturesByChapterId.get(lecture.chapterId) ?? [];
       lecturesByChapterId.set(lecture.chapterId, [
         ...currentLectures,
-        mapLecture(lecture, lectureMaterialMap.get(lecture.id) ?? [])
+        mapLecture(
+          lecture,
+          lectureMaterialMap.get(lecture.id) ?? [],
+          videoChapterMap.get(lecture.id) ?? []
+        )
       ]);
     }
 
@@ -610,6 +650,25 @@ export class ContentService {
     }
 
     return mapLecture(updatedLecture, []);
+  }
+
+  /**
+   * Always the full set for this lecture, not an incremental add/remove --
+   * simplest possible contract for a teacher's "here is the chapter list
+   * now" save, and it avoids ever having to reconcile client-side ids
+   * against rows that get deleted and recreated on every write anyway.
+   */
+  public async setLectureVideoChapters(
+    lectureId: string,
+    input: SetLectureVideoChaptersInput,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<ContentLecture> {
+    const lecture = await this.requireManageableLecture(lectureId, currentUserId, currentUserRole);
+    const markers = [...input.chapters].sort((first, second) => first.timeSeconds - second.timeSeconds);
+    const updatedChapters = await this.contentRepository.replaceVideoChapters(lectureId, markers);
+
+    return mapLecture(lecture, [], updatedChapters);
   }
 
   public async deleteLecture(
