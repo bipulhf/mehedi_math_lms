@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 
+import { auditLogs } from "./audit-logs";
 import { bugReports } from "./bug-reports";
 import { categories } from "./categories";
 import { chapterMaterials, chapters } from "./chapters";
@@ -48,6 +49,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   gradedSubmissions: many(testSubmissions, { relationName: "graded_by_user" }),
   notices: many(notices),
   smsBatchesCreated: many(smsBatches),
+  auditLogs: many(auditLogs),
   conversationOne: many(conversations, { relationName: "conversation_participant_one" }),
   conversationTwo: many(conversations, { relationName: "conversation_participant_two" })
 }));
@@ -369,6 +371,13 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 export const bugReportsRelations = relations(bugReports, ({ one }) => ({
   user: one(users, {
     fields: [bugReports.userId],
+    references: [users.id]
+  })
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  actor: one(users, {
+    fields: [auditLogs.actorId],
     references: [users.id]
   })
 }));
