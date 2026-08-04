@@ -9,7 +9,7 @@ import {
   varchar
 } from "drizzle-orm/pg-core";
 
-import { uploadKindEnum, uploadPurposeEnum, uploadStatusEnum } from "./enums";
+import { uploadKindEnum, uploadPurposeEnum, storageProviderEnum, uploadStatusEnum } from "./enums";
 import { users } from "./users";
 
 export const uploads = pgTable(
@@ -22,6 +22,7 @@ export const uploads = pgTable(
     purpose: uploadPurposeEnum("purpose").notNull(),
     kind: uploadKindEnum("kind").notNull(),
     status: uploadStatusEnum("status").default("PENDING").notNull(),
+    provider: storageProviderEnum("provider").notNull(),
     originalFileName: varchar("original_file_name", { length: 255 }).notNull(),
     contentType: varchar("content_type", { length: 255 }).notNull(),
     fileExtension: varchar("file_extension", { length: 32 }).notNull(),

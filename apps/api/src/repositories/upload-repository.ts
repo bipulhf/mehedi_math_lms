@@ -1,5 +1,5 @@
 import { and, asc, db, eq, isNull, uploads } from "@genex/db";
-import type { UploadKind, UploadPurpose, UploadStatus } from "@genex/shared";
+import type { StorageProvider, UploadKind, UploadPurpose, UploadStatus } from "@genex/shared";
 
 export interface UploadRecord {
   confirmedAt: Date | null;
@@ -14,6 +14,7 @@ export interface UploadRecord {
   id: string;
   kind: UploadKind;
   originalFileName: string;
+  provider: StorageProvider;
   purpose: UploadPurpose;
   status: UploadStatus;
   updatedAt: Date;
@@ -22,7 +23,7 @@ export interface UploadRecord {
   width: number | null;
 }
 
-interface CreatePendingUploadInput {
+interface CreateUploadInput {
   contentType: string;
   fileExtension: string;
   fileKey: string;
@@ -30,6 +31,7 @@ interface CreatePendingUploadInput {
   fileUrl: string;
   kind: UploadKind;
   originalFileName: string;
+  provider: StorageProvider;
   purpose: UploadPurpose;
   userId: string;
 }
@@ -69,6 +71,7 @@ function mapUploadRecord(record: typeof uploads.$inferSelect): UploadRecord {
     id: record.id,
     kind: record.kind,
     originalFileName: record.originalFileName,
+    provider: record.provider,
     purpose: record.purpose,
     status: record.status,
     updatedAt: record.updatedAt,
@@ -79,7 +82,7 @@ function mapUploadRecord(record: typeof uploads.$inferSelect): UploadRecord {
 }
 
 export class UploadRepository {
-  public async createPendingUpload(input: CreatePendingUploadInput): Promise<UploadRecord> {
+  public async createPendingUpload(input: CreateUploadInput): Promise<UploadRecord> {
     const [record] = await db
       .insert(uploads)
       .values({
@@ -90,6 +93,7 @@ export class UploadRepository {
         fileUrl: input.fileUrl,
         kind: input.kind,
         originalFileName: input.originalFileName,
+        provider: input.provider,
         purpose: input.purpose,
         userId: input.userId
       })
@@ -97,6 +101,32 @@ export class UploadRepository {
 
     if (!record) {
       throw new Error("Failed to create upload record");
+    }
+
+    return mapUploadRecord(record);
+  }
+
+  public async createReadyUpload(input: CreateUploadInput): Promise<UploadRecord> {
+    const [record] = await db
+      .insert(uploads)
+      .values({
+        confirmedAt: new Date(),
+        contentType: input.contentType,
+        fileExtension: input.fileExtension,
+        fileKey: input.fileKey,
+        fileSize: input.fileSize,
+        fileUrl: input.fileUrl,
+        kind: input.kind,
+        originalFileName: input.originalFileName,
+        provider: input.provider,
+        purpose: input.purpose,
+        status: "READY",
+        userId: input.userId
+      })
+      .returning();
+
+    if (!record) {
+      throw new Error("Failed to create ready upload record");
     }
 
     return mapUploadRecord(record);

@@ -5,7 +5,12 @@ import { createCourseNoticeSchema, updateCourseNoticeSchema } from "./noticeboar
 import { courseProgressParamsSchema, lectureProgressParamsSchema } from "./progress";
 import { courseReviewsQuerySchema, createCourseReviewSchema } from "./reviews";
 import { ogImageParamsSchema, slugParamsSchema } from "./seo";
-import { confirmUploadSchema, createPresignedUploadSchema, uploadPurposeSchema } from "./uploads";
+import {
+  confirmUploadSchema,
+  createPresignedUploadSchema,
+  storageProviderSchema,
+  uploadPurposeSchema
+} from "./uploads";
 
 const UUID = "11111111-1111-4111-8111-111111111111";
 
@@ -40,11 +45,21 @@ describe("uploads", () => {
     ]);
   });
 
+  test("storage provider list is closed", () => {
+    expect(storageProviderSchema.parse("s3")).toBe("s3");
+    expect(storageProviderSchema.parse("uploadthing")).toBe("uploadthing");
+    expect(storageProviderSchema.safeParse("gcs").success).toBe(false);
+  });
+
   test("confirming an upload needs the upload's id, and video metadata is optional", () => {
     expect(confirmUploadSchema.parse({ uploadId: UUID }).uploadId).toBe(UUID);
     expect(
-      confirmUploadSchema.safeParse({ durationInSeconds: 90, height: 720, uploadId: UUID, width: 1280 })
-        .success
+      confirmUploadSchema.safeParse({
+        durationInSeconds: 90,
+        height: 720,
+        uploadId: UUID,
+        width: 1280
+      }).success
     ).toBe(true);
     expect(confirmUploadSchema.safeParse({ uploadId: "upload-1" }).success).toBe(false);
     expect(confirmUploadSchema.safeParse({ height: 0, uploadId: UUID }).success).toBe(false);
@@ -87,9 +102,9 @@ describe("reviews", () => {
 
 describe("course notices", () => {
   test("a notice is unpinned unless asked for", () => {
-    expect(createCourseNoticeSchema.parse({ content: "Class moved.", title: "Schedule" })).toMatchObject(
-      { isPinned: false }
-    );
+    expect(
+      createCourseNoticeSchema.parse({ content: "Class moved.", title: "Schedule" })
+    ).toMatchObject({ isPinned: false });
   });
 
   test("both title and content are required, and content stops at 8000", () => {
@@ -118,6 +133,8 @@ describe("path parameters", () => {
 
   test("an OG image is for a course or a teacher, and nothing else", () => {
     expect(ogImageParamsSchema.safeParse({ slug: "a-course", type: "course" }).success).toBe(true);
-    expect(ogImageParamsSchema.safeParse({ slug: "a-course", type: "category" }).success).toBe(false);
+    expect(ogImageParamsSchema.safeParse({ slug: "a-course", type: "category" }).success).toBe(
+      false
+    );
   });
 });

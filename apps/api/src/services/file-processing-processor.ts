@@ -1,23 +1,22 @@
 import { logger } from "@/lib/logger";
-import { getStoredFileRange, getStoredFileSize } from "@/lib/s3";
+import { fetchObjectRange, fetchObjectSize } from "@/lib/object-url-fetch";
 import type { UploadRepository } from "@/repositories/upload-repository";
 import { readVideoMetadata, type VideoMetadata } from "@/services/video-metadata";
 
 export interface ExtractVideoMetadataJob {
   contentType: string;
-  fileKey: string;
   uploadId: string;
 }
 
 /** Injected so the processor can be tested without S3. */
 export interface StoredFileReader {
-  getSize: (key: string) => Promise<number | null>;
-  readRange: (key: string, start: number, endInclusive: number) => Promise<Uint8Array>;
+  getSize: (fileUrl: string) => Promise<number | null>;
+  readRange: (fileUrl: string, start: number, endInclusive: number) => Promise<Uint8Array>;
 }
 
-export const s3StoredFileReader: StoredFileReader = {
-  getSize: getStoredFileSize,
-  readRange: getStoredFileRange
+export const objectUrlStoredFileReader: StoredFileReader = {
+  getSize: fetchObjectSize,
+  readRange: fetchObjectRange
 };
 
 /**
@@ -53,21 +52,27 @@ export async function processVideoMetadataJob(
   const upload = await uploadRepository.findUploadById(job.uploadId);
 
   if (!upload) {
-    logger.warn({ uploadId: job.uploadId }, "Upload disappeared before metadata could be extracted");
+    logger.warn(
+      { uploadId: job.uploadId },
+      "Upload disappeared before metadata could be extracted"
+    );
 
     return null;
   }
 
-  const fileSize = await reader.getSize(job.fileKey);
+  const fileSize = await reader.getSize(upload.fileUrl);
 
   if (fileSize === null || fileSize <= 0) {
-    logger.warn({ fileKey: job.fileKey, uploadId: job.uploadId }, "Stored video has no readable size");
+    logger.warn(
+      { fileUrl: upload.fileUrl, uploadId: job.uploadId },
+      "Stored video has no readable size"
+    );
 
     return null;
   }
 
   const metadata = await readVideoMetadata(
-    (start, endInclusive) => reader.readRange(job.fileKey, start, endInclusive),
+    (start, endInclusive) => reader.readRange(upload.fileUrl, start, endInclusive),
     fileSize
   );
 

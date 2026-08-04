@@ -11,7 +11,10 @@ interface Calls {
   updates: { durationInSeconds: number | null; height: number | null; width: number | null }[];
 }
 
-function buildRepository(upload: UploadRecord | null): { calls: Calls; repository: UploadRepository } {
+function buildRepository(upload: UploadRecord | null): {
+  calls: Calls;
+  repository: UploadRepository;
+} {
   const calls: Calls = { updates: [] };
 
   const repository = {
@@ -36,7 +39,7 @@ function buildRepository(upload: UploadRecord | null): { calls: Calls; repositor
 
 const videoUpload = {
   contentType: "video/mp4",
-  fileKey: "development/lecture-videos/user-1/abc.mp4",
+  fileUrl: "https://cdn.example.com/development/lecture-videos/user-1/abc.mp4",
   id: "upload-1",
   kind: "VIDEO",
   status: "READY"
@@ -63,7 +66,9 @@ function buildVideoFile(): Uint8Array {
   new DataView(tkhd.buffer).setUint32(76, 1920 * 65536);
   new DataView(tkhd.buffer).setUint32(80, 1080 * 65536);
 
-  const moovPayload = new Uint8Array(box("mvhd", mvhd).byteLength + box("trak", box("tkhd", tkhd)).byteLength);
+  const moovPayload = new Uint8Array(
+    box("mvhd", mvhd).byteLength + box("trak", box("tkhd", tkhd)).byteLength
+  );
   moovPayload.set(box("mvhd", mvhd), 0);
   moovPayload.set(box("trak", box("tkhd", tkhd)), box("mvhd", mvhd).byteLength);
 
@@ -73,7 +78,7 @@ function buildVideoFile(): Uint8Array {
 function readerFor(file: Uint8Array): StoredFileReader {
   return {
     getSize: async () => file.byteLength,
-    readRange: async (_key, start, endInclusive) => file.slice(start, endInclusive + 1)
+    readRange: async (_fileUrl, start, endInclusive) => file.slice(start, endInclusive + 1)
   };
 }
 
@@ -93,7 +98,6 @@ describe("processVideoMetadataJob", () => {
     const { calls, repository } = buildRepository(videoUpload);
     const result = await processVideoMetadataJob(repository, readerFor(buildVideoFile()), {
       contentType: "video/mp4",
-      fileKey: videoUpload.fileKey,
       uploadId: videoUpload.id
     });
 
@@ -106,7 +110,6 @@ describe("processVideoMetadataJob", () => {
     const { calls, repository } = buildRepository(videoUpload);
     const result = await processVideoMetadataJob(repository, readerFor(buildVideoFile()), {
       contentType: "video/webm",
-      fileKey: videoUpload.fileKey,
       uploadId: videoUpload.id
     });
 
@@ -118,7 +121,6 @@ describe("processVideoMetadataJob", () => {
     const { calls, repository } = buildRepository(null);
     const result = await processVideoMetadataJob(repository, readerFor(buildVideoFile()), {
       contentType: "video/mp4",
-      fileKey: videoUpload.fileKey,
       uploadId: videoUpload.id
     });
 
@@ -131,7 +133,6 @@ describe("processVideoMetadataJob", () => {
     const empty = box("ftyp", new Uint8Array(16));
     const result = await processVideoMetadataJob(repository, readerFor(empty), {
       contentType: "video/mp4",
-      fileKey: videoUpload.fileKey,
       uploadId: videoUpload.id
     });
 

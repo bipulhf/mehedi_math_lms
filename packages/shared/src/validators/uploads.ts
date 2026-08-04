@@ -10,10 +10,12 @@ export const uploadPurposeValues = [
 
 export const uploadKindValues = ["IMAGE", "VIDEO", "DOCUMENT"] as const;
 export const uploadStatusValues = ["PENDING", "READY", "FAILED"] as const;
+export const storageProviderValues = ["s3", "uploadthing"] as const;
 
 export const uploadPurposeSchema = z.enum(uploadPurposeValues);
 export const uploadKindSchema = z.enum(uploadKindValues);
 export const uploadStatusSchema = z.enum(uploadStatusValues);
+export const storageProviderSchema = z.enum(storageProviderValues);
 
 export const createPresignedUploadSchema = z.object({
   contentType: z.string().trim().min(1).max(255),
@@ -32,3 +34,4 @@ export const confirmUploadSchema = z.object({
 export type UploadPurpose = z.infer<typeof uploadPurposeSchema>;
 export type UploadKind = z.infer<typeof uploadKindSchema>;
 export type UploadStatus = z.infer<typeof uploadStatusSchema>;
+export type StorageProvider = z.infer<typeof storageProviderSchema>;

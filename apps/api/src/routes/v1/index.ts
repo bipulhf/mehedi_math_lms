@@ -24,6 +24,7 @@ import { profilesRoutes } from "./profiles-route";
 import { questionsRoutes } from "./questions-route";
 import { testsRoutes } from "./tests-route";
 import { uploadRoutes } from "./upload-route";
+import { uploadthingRoutes } from "./uploadthing-route";
 
 export const v1Routes = new Hono<AppBindings>();
 
@@ -49,3 +50,4 @@ v1Routes.route("/og-image", ogImageRoutes);
 v1Routes.route("/admin", adminRoutes);
 v1Routes.route("/analytics", analyticsRoutes);
 v1Routes.route("/upload", uploadRoutes);
+v1Routes.route("/uploadthing", uploadthingRoutes);

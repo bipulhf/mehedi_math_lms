@@ -22,6 +22,7 @@ import { ProfileController } from "@/controllers/profile-controller";
 import { TestController } from "@/controllers/test-controller";
 import { UploadController } from "@/controllers/upload-controller";
 import { queues } from "@/lib/queues";
+import { env } from "@/lib/env";
 import { redis } from "@/lib/redis";
 import { AdminDashboardRepository } from "@/repositories/admin-dashboard-repository";
 import { AnalyticsRepository } from "@/repositories/analytics-repository";
@@ -78,6 +79,8 @@ import { SslCommerzService } from "@/services/sslcommerz-service";
 import { StaffAccountService } from "@/services/staff-account-service";
 import { TestService } from "@/services/test-service";
 import { UploadService } from "@/services/upload-service";
+import { S3StorageProvider } from "@/services/s3-storage-provider";
+import { UploadThingStorageProvider } from "@/services/uploadthing-storage-provider";
 
 const healthRepository = new HealthRepository(redis, queues);
 const adminDashboardRepository = new AdminDashboardRepository();
@@ -105,7 +108,9 @@ const uploadRepository = new UploadRepository();
 const adminDashboardService = new AdminDashboardService(adminDashboardRepository);
 const healthService = new HealthService(healthRepository);
 const authGuardService = new AuthGuardService(authSessionRepository);
-const messageRealtimeService = new MessageRealtimeService(process.env.REDIS_URL ?? "redis://localhost:6379");
+const messageRealtimeService = new MessageRealtimeService(
+  process.env.REDIS_URL ?? "redis://localhost:6379"
+);
 const notificationRealtimeService = new NotificationRealtimeService(
   process.env.REDIS_URL ?? "redis://localhost:6379"
 );
@@ -130,7 +135,11 @@ const noticeService = new NoticeService(
   notificationService
 );
 const staffAccountService = new StaffAccountService(staffAccountRepository);
-const adminUserService = new AdminUserService(adminUserRepository, authSessionRepository, staffAccountService);
+const adminUserService = new AdminUserService(
+  adminUserRepository,
+  authSessionRepository,
+  staffAccountService
+);
 const bugReportService = new BugReportService(bugReportRepository, notificationService);
 const categoryService = new CategoryService(categoryRepository);
 const commentService = new CommentService(
@@ -152,7 +161,11 @@ const commerceService = new CommerceService(
 const enrollmentPdfService = new EnrollmentPdfService(enrollmentRepository, paymentRepository);
 const reviewService = new ReviewService(reviewRepository, enrollmentRepository, courseRepository);
 const analyticsService = new AnalyticsService(analyticsRepository, courseRepository);
-const contentService = new ContentService(contentRepository, courseRepository, enrollmentRepository);
+const contentService = new ContentService(
+  contentRepository,
+  courseRepository,
+  enrollmentRepository
+);
 const courseService = new CourseService(courseRepository, categoryRepository, notificationService);
 const profileService = new ProfileService(profileRepository);
 const progressService = new ProgressService(
@@ -175,7 +188,14 @@ const testService = new TestService(
   assessmentAccessGuards,
   progressService
 );
-const uploadService = new UploadService(uploadRepository);
+const uploadService = new UploadService(
+  uploadRepository,
+  {
+    s3: new S3StorageProvider(),
+    uploadthing: new UploadThingStorageProvider()
+  },
+  env.STORAGE_PROVIDER
+);
 export const sitemapService = new SitemapService(seoRepository, redis);
 export const ogImageService = new OgImageService(courseRepository, profileRepository);
 const landingRepository = new LandingRepository();

@@ -1,6 +1,11 @@
-import type { UploadPurpose, UploadStatus } from "@genex/shared";
+import type { StorageProvider, UploadPurpose, UploadStatus } from "@genex/shared";
+import { genUploader } from "uploadthing/client";
+import type { FileRouter } from "uploadthing/server";
 
-import { apiDelete, apiPost } from "@/lib/api/client";
+import { apiDelete, apiGet, apiPost } from "@/lib/api/client";
+
+type UploadthingRouter = FileRouter;
+const uploadthingUploader = genUploader<UploadthingRouter>({ url: "/api/v1/uploadthing" });
 
 interface CreatePresignedUploadPayload {
   contentType: string;
@@ -38,6 +43,7 @@ export interface UploadRecord {
   id: string;
   kind: "IMAGE" | "VIDEO" | "DOCUMENT";
   originalFileName: string;
+  provider: StorageProvider;
   purpose: UploadPurpose;
   status: UploadStatus;
   updatedAt: string;
@@ -52,7 +58,88 @@ export interface UploadFileOptions {
   purpose: UploadPurpose;
 }
 
-function uploadFileToSignedUrl(
+async function readImageDimensions(
+  file: File
+): Promise<Pick<ConfirmUploadPayload, "height" | "width">> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        height: image.naturalHeight,
+        width: image.naturalWidth
+      });
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Unable to read image metadata"));
+    };
+
+    image.src = url;
+  });
+}
+
+async function readVideoMetadata(
+  file: File
+): Promise<Pick<ConfirmUploadPayload, "durationInSeconds">> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        durationInSeconds: Number.isFinite(video.duration) ? Math.round(video.duration) : undefined
+      });
+    };
+
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Unable to read video metadata"));
+    };
+
+    video.src = url;
+  });
+}
+
+async function buildConfirmPayload(uploadId: string, file: File): Promise<ConfirmUploadPayload> {
+  if (file.type.startsWith("image/")) {
+    const imageDimensions = await readImageDimensions(file);
+
+    return {
+      ...imageDimensions,
+      uploadId
+    };
+  }
+
+  if (file.type.startsWith("video/")) {
+    const metadata = await readVideoMetadata(file);
+
+    return {
+      ...metadata,
+      uploadId
+    };
+  }
+
+  return { uploadId };
+}
+
+async function prepareS3Upload(
+  options: CreatePresignedUploadPayload
+): Promise<PreparedUploadResponse> {
+  const response = await apiPost<CreatePresignedUploadPayload, PreparedUploadResponse>(
+    "upload/presigned",
+    options
+  );
+
+  return response.data;
+}
+
+async function putToS3(
   uploadUrl: string,
   file: File,
   onProgress?: (progress: number) => void
@@ -88,84 +175,57 @@ function uploadFileToSignedUrl(
   });
 }
 
-async function readImageDimensions(file: File): Promise<Pick<ConfirmUploadPayload, "height" | "width">> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
+let activeStorageProvider: Promise<StorageProvider> | undefined;
 
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({
-        height: image.naturalHeight,
-        width: image.naturalWidth
-      });
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Unable to read image metadata"));
-    };
-
-    image.src = url;
-  });
-}
-
-async function readVideoMetadata(file: File): Promise<Pick<ConfirmUploadPayload, "durationInSeconds">> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const video = document.createElement("video");
-    video.preload = "metadata";
-
-    video.onloadedmetadata = () => {
-      URL.revokeObjectURL(url);
-      resolve({
-        durationInSeconds: Number.isFinite(video.duration) ? Math.round(video.duration) : undefined
-      });
-    };
-
-    video.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Unable to read video metadata"));
-    };
-
-    video.src = url;
-  });
-}
-
-async function buildConfirmPayload(
-  uploadId: string,
-  file: File
-): Promise<ConfirmUploadPayload> {
-  if (file.type.startsWith("image/")) {
-    const imageDimensions = await readImageDimensions(file);
-
-    return {
-      ...imageDimensions,
-      uploadId
-    };
-  }
-
-  if (file.type.startsWith("video/")) {
-    const metadata = await readVideoMetadata(file);
-
-    return {
-      ...metadata,
-      uploadId
-    };
-  }
-
-  return { uploadId };
-}
-
-export async function requestPresignedUpload(
-  options: CreatePresignedUploadPayload
-): Promise<PreparedUploadResponse> {
-  const response = await apiPost<CreatePresignedUploadPayload, PreparedUploadResponse>(
-    "upload/presigned",
-    options
+async function getActiveStorageProvider(): Promise<StorageProvider> {
+  activeStorageProvider ??= apiGet<{ provider: StorageProvider }>("upload/provider").then(
+    (response) => response.data.provider
   );
 
-  return response.data;
+  return activeStorageProvider;
+}
+
+async function uploadViaUploadThing(file: File, options: UploadFileOptions): Promise<UploadRecord> {
+  const routeByPurpose: Record<UploadPurpose, string> = {
+    BUG_SCREENSHOT: "bugScreenshot",
+    COURSE_COVER: "courseCover",
+    COURSE_MATERIAL: "courseMaterial",
+    LECTURE_VIDEO: "lectureVideo",
+    PROFILE_PHOTO: "profilePhoto"
+  };
+  const [uploaded] = await uploadthingUploader.uploadFiles(routeByPurpose[options.purpose], {
+    files: [file],
+    onUploadProgress: ({ progress }) => options.onProgress?.(Math.round(progress))
+  });
+
+  if (!uploaded) {
+    throw new Error("UploadThing returned no uploaded file");
+  }
+
+  if (!uploaded.serverData) {
+    throw new Error("UploadThing returned no upload record");
+  }
+
+  return uploaded.serverData as unknown as UploadRecord;
+}
+
+async function uploadViaS3(file: File, options: UploadFileOptions): Promise<UploadRecord> {
+  const preparedUpload = await prepareS3Upload({
+    contentType: file.type,
+    fileName: file.name,
+    fileSize: file.size,
+    purpose: options.purpose
+  });
+
+  try {
+    await putToS3(preparedUpload.uploadUrl, file, options.onProgress);
+    const confirmPayload = await buildConfirmPayload(preparedUpload.id, file);
+
+    return await confirmUpload(confirmPayload);
+  } catch (error) {
+    await deleteUpload(preparedUpload.id).catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function confirmUpload(payload: ConfirmUploadPayload): Promise<UploadRecord> {
@@ -182,22 +242,11 @@ export async function uploadManagedFile(
   file: File,
   options: UploadFileOptions
 ): Promise<UploadRecord> {
-  const preparedUpload = await requestPresignedUpload({
-    contentType: file.type,
-    fileName: file.name,
-    fileSize: file.size,
-    purpose: options.purpose
-  });
+  const provider = await getActiveStorageProvider();
 
-  try {
-    await uploadFileToSignedUrl(preparedUpload.uploadUrl, file, options.onProgress);
-    const confirmPayload = await buildConfirmPayload(preparedUpload.id, file);
-
-    return await confirmUpload(confirmPayload);
-  } catch (error) {
-    await deleteUpload(preparedUpload.id).catch(() => undefined);
-    throw error;
-  }
+  return provider === "uploadthing"
+    ? uploadViaUploadThing(file, options)
+    : uploadViaS3(file, options);
 }
 
 export async function uploadBugScreenshot(

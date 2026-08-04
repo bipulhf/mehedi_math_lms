@@ -64,6 +64,13 @@
       "when": 1785859638429,
       "tag": "0008_nasty_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785862936006,
+      "tag": "0009_handy_talisman",
+      "breakpoints": true
     }
   ]
 }

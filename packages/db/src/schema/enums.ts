@@ -90,6 +90,8 @@ export const uploadStatusEnum = pgEnum("upload_status", [
   "FAILED"
 ]);
 
+export const storageProviderEnum = pgEnum("storage_provider", ["s3", "uploadthing"]);
+
 export const smsBatchStatusEnum = pgEnum("sms_batch_status", [
   "QUEUED",
   "SENDING",

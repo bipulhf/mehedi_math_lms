@@ -6,8 +6,8 @@ import { redis } from "@/lib/redis";
 import { UploadRepository } from "@/repositories/upload-repository";
 import {
   type ExtractVideoMetadataJob,
-  processVideoMetadataJob,
-  s3StoredFileReader
+  objectUrlStoredFileReader,
+  processVideoMetadataJob
 } from "@/services/file-processing-processor";
 
 const uploadRepository = new UploadRepository();
@@ -21,13 +21,7 @@ const worker = new Worker<ExtractVideoMetadataJob>(
       return;
     }
 
-    if (!env.isS3Configured) {
-      logger.warn({ jobId: job.id }, "S3 is not configured; file-processing job skipped");
-
-      return;
-    }
-
-    await processVideoMetadataJob(uploadRepository, s3StoredFileReader, job.data);
+    await processVideoMetadataJob(uploadRepository, objectUrlStoredFileReader, job.data);
   },
   {
     connection: redis,

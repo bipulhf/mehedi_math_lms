@@ -13,6 +13,8 @@ const apiEnvSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().default("replace-me"),
   AWS_S3_BUCKET: z.string().default("replace-me"),
   S3_PUBLIC_BASE_URL: z.url().optional(),
+  STORAGE_PROVIDER: z.enum(["s3", "uploadthing"]).default("s3"),
+  UPLOADTHING_TOKEN: z.string().default("replace-me"),
   SSLCOMMERZ_STORE_ID: z.string().default("replace-me"),
   SSLCOMMERZ_STORE_PASSWORD: z.string().default("replace-me"),
   // NOT z.coerce.boolean(): that is Boolean(input), so the string "false"
@@ -42,6 +44,20 @@ const apiEnvSchema = z.object({
 });
 
 const parsedEnv = apiEnvSchema.parse(process.env);
+const isS3Configured =
+  parsedEnv.AWS_ACCESS_KEY_ID !== "replace-me" &&
+  parsedEnv.AWS_SECRET_ACCESS_KEY !== "replace-me" &&
+  parsedEnv.AWS_S3_BUCKET !== "replace-me";
+
+if (parsedEnv.STORAGE_PROVIDER === "uploadthing" && parsedEnv.UPLOADTHING_TOKEN === "replace-me") {
+  throw new Error("STORAGE_PROVIDER=uploadthing requires UPLOADTHING_TOKEN to be set");
+}
+
+if (parsedEnv.STORAGE_PROVIDER === "s3" && !isS3Configured) {
+  throw new Error(
+    "STORAGE_PROVIDER=s3 requires AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_S3_BUCKET"
+  );
+}
 
 const defaultCorsOrigins = [
   parsedEnv.APP_URL,
@@ -64,10 +80,7 @@ export const env = {
     parsedEnv.FIREBASE_CLIENT_MESSAGING_SENDER_ID &&
     parsedEnv.FIREBASE_CLIENT_APP_ID
   ),
-  isS3Configured:
-    parsedEnv.AWS_ACCESS_KEY_ID !== "replace-me" &&
-    parsedEnv.AWS_SECRET_ACCESS_KEY !== "replace-me" &&
-    parsedEnv.AWS_S3_BUCKET !== "replace-me",
+  isS3Configured,
   isSslCommerzConfigured:
     parsedEnv.SSLCOMMERZ_STORE_ID !== "replace-me" &&
     parsedEnv.SSLCOMMERZ_STORE_PASSWORD !== "replace-me",

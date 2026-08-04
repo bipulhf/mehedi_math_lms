@@ -1,8 +1,7 @@
 import type { Context } from "hono";
 import type { AuthUser } from "@genex/auth/server";
 
-import type {
-  UploadService} from "@/services/upload-service";
+import type { UploadService } from "@/services/upload-service";
 import {
   type ConfirmUploadRequest,
   type CreatePresignedUploadRequest
@@ -13,12 +12,12 @@ import { success } from "@/utils/response";
 export class UploadController {
   public constructor(private readonly uploadService: UploadService) {}
 
-  public async createPresignedUpload(
+  public async prepareUpload(
     context: Context<AppBindings>,
     actor: AuthUser,
     input: CreatePresignedUploadRequest
   ): Promise<Response> {
-    const payload = await this.uploadService.createPresignedUpload(actor, input);
+    const payload = await this.uploadService.prepareUpload(actor, input);
 
     return success(context, payload, 201, "Upload prepared successfully");
   }

@@ -1,29 +1,25 @@
 import type { AuthUser } from "@genex/auth/server";
-import { buildImageVariantKey, type UploadKind, type UploadPurpose, withImageVariants } from "@genex/shared";
+import {
+  buildImageVariantKey,
+  type StorageProvider,
+  type UploadKind,
+  type UploadPurpose,
+  withImageVariants
+} from "@genex/shared";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { fetchObjectBytes } from "@/lib/object-url-fetch";
 import { queues } from "@/lib/queues";
-import {
-  createSignedUploadUrl,
-  deleteStoredFile,
-  getPublicFileUrl,
-  readStoredFile,
-  writeStoredFile
-} from "@/lib/s3";
-import type { UploadRepository} from "@/repositories/upload-repository";
-import { type UploadRecord } from "@/repositories/upload-repository";
+import { writeStoredFile } from "@/lib/s3";
+import type { UploadRepository, UploadRecord } from "@/repositories/upload-repository";
 import { generateImageVariants, isResizableImage } from "@/services/image-variants";
+import { S3StorageProvider } from "@/services/s3-storage-provider";
+import type { StorageProviderAdapter, StorageProviderAdapters } from "@/services/storage-provider";
+import { UploadThingStorageProvider } from "@/services/uploadthing-storage-provider";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
-/**
- * The bucket, behind an interface, so the confirm and delete paths can be tested
- * without one. Mirrors `StoredFileReader` in the file-processing processor --
- * this workspace injects its way around S3 rather than mocking the module.
- */
-export interface UploadFileStore {
-  delete: (key: string) => Promise<void>;
-  read: (key: string) => Promise<Uint8Array>;
+export interface VariantFileWriter {
   write: (key: string, body: Uint8Array, contentType: string) => Promise<void>;
 }
 
@@ -33,20 +29,7 @@ function requireS3Configuration(): void {
   }
 }
 
-/**
- * The configuration guard lives here rather than at each call site, so a new
- * path through the bucket cannot forget it and crash where it should 409.
- */
-export const s3UploadFileStore: UploadFileStore = {
-  delete: async (key: string) => {
-    requireS3Configuration();
-    await deleteStoredFile(key);
-  },
-  read: async (key: string) => {
-    requireS3Configuration();
-
-    return readStoredFile(key);
-  },
+export const s3VariantFileWriter: VariantFileWriter = {
   write: async (key: string, body: Uint8Array, contentType: string) => {
     requireS3Configuration();
     await writeStoredFile(key, body, contentType);
@@ -177,6 +160,7 @@ function formatUploadRecord(record: UploadRecord): UploadResponse {
     id: record.id,
     kind: record.kind,
     originalFileName: record.originalFileName,
+    provider: record.provider,
     purpose: record.purpose,
     status: record.status,
     updatedAt: record.updatedAt.toISOString(),
@@ -206,7 +190,12 @@ function getFileExtension(fileName: string, contentType: string): string {
 export class UploadService {
   public constructor(
     private readonly uploadRepository: UploadRepository,
-    private readonly fileStore: UploadFileStore = s3UploadFileStore
+    private readonly storageProviders: StorageProviderAdapters = {
+      s3: new S3StorageProvider(),
+      uploadthing: new UploadThingStorageProvider()
+    },
+    private readonly activeProvider: StorageProvider = env.STORAGE_PROVIDER,
+    private readonly variantWriter: VariantFileWriter = s3VariantFileWriter
   ) {}
 
   private validateUploadInput(input: CreatePresignedUploadRequest): UploadPurposeConfig {
@@ -259,12 +248,12 @@ export class UploadService {
    * the user just made still succeeds.
    */
   private async storeImageVariants(upload: UploadRecord): Promise<UploadRecord> {
-    if (!isResizableImage(upload.contentType)) {
+    if (upload.provider !== "s3" || !isResizableImage(upload.contentType)) {
       return upload;
     }
 
     try {
-      const original = await this.fileStore.read(upload.fileKey);
+      const original = await fetchObjectBytes(upload.fileUrl);
       const variants = await generateImageVariants(original, upload.contentType);
 
       if (variants.length === 0) {
@@ -273,7 +262,7 @@ export class UploadService {
 
       await Promise.all(
         variants.map(async (variant) =>
-          this.fileStore.write(
+          this.variantWriter.write(
             buildImageVariantKey(upload.fileKey, variant.width),
             variant.body,
             variant.contentType
@@ -298,17 +287,18 @@ export class UploadService {
     }
   }
 
-  public async createPresignedUpload(
+  public async prepareUpload(
     actor: AuthUser,
     input: CreatePresignedUploadRequest
   ): Promise<PreparedUploadResponse> {
-    requireS3Configuration();
-
     this.validateUploadInput(input);
     const extension = getFileExtension(input.fileName, input.contentType);
     const key = this.buildStorageKey(input.purpose, actor.id, extension);
-    const fileUrl = getPublicFileUrl(key);
-    const uploadUrl = await createSignedUploadUrl(key, input.contentType);
+    const storage = this.getStorageProvider(this.activeProvider);
+    const { fileUrl, uploadUrl } = await storage.prepareUpload({
+      contentType: input.contentType,
+      key
+    });
     const upload = await this.uploadRepository.createPendingUpload({
       contentType: input.contentType.toLowerCase(),
       fileExtension: extension,
@@ -317,6 +307,7 @@ export class UploadService {
       fileUrl,
       kind: resolveUploadKind(input.contentType.toLowerCase()),
       originalFileName: input.fileName.trim(),
+      provider: this.activeProvider,
       purpose: input.purpose,
       userId: actor.id
     });
@@ -358,7 +349,6 @@ export class UploadService {
     if (confirmedUpload.kind === "VIDEO") {
       await queues["file-processing"].add("extract-video-metadata", {
         contentType: confirmedUpload.contentType,
-        fileKey: confirmedUpload.fileKey,
         uploadId: confirmedUpload.id
       });
     }
@@ -378,16 +368,19 @@ export class UploadService {
     }
 
     this.assertUploadAccess(upload, actor);
-    // The store carries the "S3 is not configured" 409 now, so this reads as one
-    // delete of the original and then of its copies.
-    await this.fileStore.delete(upload.fileKey);
+    const storage = this.getStorageProvider(upload.provider);
+    await storage.delete(upload.fileKey);
     // The row is the only record of which copies exist. Guessing the widths
     // instead would orphan every variant the day that list changes.
     await Promise.all(
       (upload.variantWidths ?? []).map(async (width) =>
-        this.fileStore.delete(buildImageVariantKey(upload.fileKey, width))
+        storage.delete(buildImageVariantKey(upload.fileKey, width))
       )
     );
     await this.uploadRepository.deleteUpload(uploadId);
+  }
+
+  private getStorageProvider(provider: StorageProvider): StorageProviderAdapter {
+    return this.storageProviders[provider];
   }
 }
