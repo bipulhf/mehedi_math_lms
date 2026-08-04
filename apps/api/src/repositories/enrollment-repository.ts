@@ -9,6 +9,7 @@ import {
   inArray,
   isNull,
   lectures,
+  ne,
   payments,
   sql,
   users
@@ -237,7 +238,10 @@ export class EnrollmentRepository {
       })
       .from(enrollments)
       .innerJoin(courses, eq(courses.id, enrollments.courseId))
-      .where(eq(enrollments.userId, userId))
+      // A withdrawn course disappears from "my courses" entirely, not just
+      // from deeper content access -- there is nothing left here for the
+      // student to click into.
+      .where(and(eq(enrollments.userId, userId), ne(courses.status, "ARCHIVED")))
       .orderBy(sql`${enrollments.enrolledAt} desc`);
 
     return rows;
@@ -338,16 +342,24 @@ export class EnrollmentRepository {
    * enrols on payment success, never before. So presence is access, and the
    * only further question is whether it has since been cancelled by a refund.
    * No payment join, and no course-price special case. ADR-0001.
+   *
+   * The one further check that does matter: an ARCHIVED course. A withdrawn
+   * course is not just off the catalogue, it is off-limits to every student
+   * who was ever enrolled -- the enrolment row itself is untouched (a teacher
+   * restoring the course must not need to re-grant anything), but access
+   * through it is gated on the course still being live.
    */
   public async hasCourseAccess(userId: string, courseId: string): Promise<boolean> {
     const [row] = await db
       .select({ id: enrollments.id })
       .from(enrollments)
+      .innerJoin(courses, eq(courses.id, enrollments.courseId))
       .where(
         and(
           eq(enrollments.userId, userId),
           eq(enrollments.courseId, courseId),
-          isNull(enrollments.cancelledAt)
+          isNull(enrollments.cancelledAt),
+          ne(courses.status, "ARCHIVED")
         )
       )
       .limit(1);

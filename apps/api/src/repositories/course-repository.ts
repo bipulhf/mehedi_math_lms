@@ -13,6 +13,7 @@ import {
   inArray,
   isNotNull,
   lectures,
+  ne,
   or,
   reviews,
   sql,
@@ -100,6 +101,8 @@ export interface CourseListQuery {
   page: number;
   search?: string | undefined;
   status?: "DRAFT" | "PENDING" | "PUBLISHED" | "ARCHIVED" | undefined;
+  /** Used instead of `status` when a caller wants "everything but archived" rather than one exact status. */
+  excludeArchived?: boolean | undefined;
 }
 
 export interface CreateCourseInput {
@@ -154,6 +157,8 @@ export class CourseRepository {
 
     if (query.status) {
       clauses.push(eq(courses.status, query.status));
+    } else if (query.excludeArchived) {
+      clauses.push(ne(courses.status, "ARCHIVED"));
     }
 
     if (query.search) {

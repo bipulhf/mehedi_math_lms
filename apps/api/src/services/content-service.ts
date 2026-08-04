@@ -197,13 +197,19 @@ export class ContentService {
       return course;
     }
 
-    return this.requireManageableCourse(courseId, currentUserId, currentUserRole);
+    // Teachers and admins keep read access to an archived course's content
+    // (they need to see what's there to decide whether to restore it); only
+    // the mutation path below is closed off.
+    return this.requireManageableCourse(courseId, currentUserId, currentUserRole, {
+      allowArchived: true
+    });
   }
 
   private async requireManageableCourse(
     courseId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    options: { allowArchived?: boolean } = {}
   ): Promise<CourseRecord> {
     const course = await this.courseRepository.findById(courseId);
 
@@ -220,6 +226,12 @@ export class ContentService {
 
     if (!isAssignedTeacher && !isCreator) {
       throw new ForbiddenError("You do not have permission to manage this course content");
+    }
+
+    // An archived course is read-only for its teachers. Restore it (course
+    // owner or admin only) before editing chapters, lectures, or materials.
+    if (!options.allowArchived && course.status === "ARCHIVED") {
+      throw new ForbiddenError("This course is archived and read-only. Restore it to make changes.");
     }
 
     return course;

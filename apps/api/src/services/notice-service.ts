@@ -228,7 +228,14 @@ export class NoticeService {
     }
 
     if (userRole === "TEACHER") {
-      return this.ensureTeacherManagesCourse(course, userId);
+      const managedCourse = this.ensureTeacherManagesCourse(course, userId);
+
+      // An archived course's noticeboard is read-only for its teachers.
+      if (managedCourse.status === "ARCHIVED") {
+        throw new ForbiddenError("This course is archived and read-only. Restore it to make changes.");
+      }
+
+      return managedCourse;
     }
 
     throw new ForbiddenError("Only admins and teachers can manage notices");

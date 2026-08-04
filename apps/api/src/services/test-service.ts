@@ -132,7 +132,10 @@ export class TestService {
     currentUserRole: UserRole
   ): Promise<readonly AssessmentChapterSummary[]> {
     if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.access.requireManageableCourse(courseId, currentUserId, currentUserRole);
+      // Read-only path: a teacher may still browse assessments on an archived course.
+      await this.access.requireManageableCourse(courseId, currentUserId, currentUserRole, {
+        allowArchived: true
+      });
     } else {
       await this.access.requireStudentCourseAccess(courseId, currentUserId, currentUserRole);
     }

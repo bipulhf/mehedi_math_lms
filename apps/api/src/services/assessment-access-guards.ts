@@ -44,7 +44,8 @@ export class AssessmentAccessGuards {
   public async requireManageableCourse(
     courseId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    options: { allowArchived?: boolean } = {}
   ): Promise<CourseRecord> {
     const course = await this.courseRepository.findById(courseId);
 
@@ -64,13 +65,20 @@ export class AssessmentAccessGuards {
       throw new ForbiddenError("You do not have permission to manage course assessments");
     }
 
+    // An archived course is read-only for its teachers. Restore it (course
+    // owner or admin only) before editing tests or questions.
+    if (!options.allowArchived && course.status === "ARCHIVED") {
+      throw new ForbiddenError("This course is archived and read-only. Restore it to make changes.");
+    }
+
     return course;
   }
 
   public async requireManageableChapter(
     chapterId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    options: { allowArchived?: boolean } = {}
   ): Promise<ChapterRecord> {
     const chapter = await this.contentRepository.findChapterById(chapterId);
 
@@ -78,7 +86,7 @@ export class AssessmentAccessGuards {
       throw new NotFoundError("Chapter not found");
     }
 
-    await this.requireManageableCourse(chapter.courseId, currentUserId, currentUserRole);
+    await this.requireManageableCourse(chapter.courseId, currentUserId, currentUserRole, options);
 
     return chapter;
   }
@@ -86,7 +94,8 @@ export class AssessmentAccessGuards {
   public async requireManageableTest(
     testId: string,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    options: { allowArchived?: boolean } = {}
   ): Promise<TestRecord & { chapter: ChapterRecord }> {
     const test = await this.testRepository.findTestById(testId);
 
@@ -94,7 +103,12 @@ export class AssessmentAccessGuards {
       throw new NotFoundError("Test not found");
     }
 
-    const chapter = await this.requireManageableChapter(test.chapterId, currentUserId, currentUserRole);
+    const chapter = await this.requireManageableChapter(
+      test.chapterId,
+      currentUserId,
+      currentUserRole,
+      options
+    );
 
     return {
       ...test,
@@ -120,7 +134,10 @@ export class AssessmentAccessGuards {
     }
 
     if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.requireManageableChapter(chapter.id, currentUserId, currentUserRole);
+      // Read-only path: a teacher may still open a test on an archived course.
+      await this.requireManageableChapter(chapter.id, currentUserId, currentUserRole, {
+        allowArchived: true
+      });
       return {
         ...test,
         chapter

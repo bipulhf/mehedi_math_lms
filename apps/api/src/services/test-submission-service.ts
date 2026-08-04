@@ -278,7 +278,11 @@ export class TestSubmissionService {
     currentUserId: string,
     currentUserRole: UserRole
   ): Promise<readonly SubmissionSummary[]> {
-    const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
+    // Read-only path: a teacher may still see who submitted what on an
+    // archived course's test.
+    const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole, {
+      allowArchived: true
+    });
     const submissions = await this.testRepository.listSubmissionsByTestId(testId);
     const attemptNumbers = attachAttemptNumbers(submissions);
 
@@ -323,7 +327,9 @@ export class TestSubmissionService {
     }
 
     if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
-      await this.access.requireManageableTest(test.id, currentUserId, currentUserRole);
+      await this.access.requireManageableTest(test.id, currentUserId, currentUserRole, {
+        allowArchived: true
+      });
     } else if (submission.userId !== currentUserId) {
       throw new ForbiddenError("You do not have permission to view this submission");
     }

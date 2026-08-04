@@ -189,6 +189,21 @@ export class CourseService {
     }
   }
 
+  /**
+   * The course itself (title, price, roster) is read-only while archived,
+   * same as its content. Admins are exempt -- they're the ones who'd need to
+   * fix something before restoring it.
+   */
+  private ensureCourseIsEditable(course: CourseRecord, currentUserRole: UserRole): void {
+    if (currentUserRole === "ADMIN") {
+      return;
+    }
+
+    if (course.status === "ARCHIVED") {
+      throw new ForbiddenError("This course is archived and read-only. Restore it to make changes.");
+    }
+  }
+
   private ensureCanViewCourse(
     course: CourseRecord,
     currentUserId?: string | undefined,
@@ -290,6 +305,11 @@ export class CourseService {
 
     const repositoryQuery = {
       categoryId,
+      // A teacher's "my courses" list defaults to hiding archived courses --
+      // they're read-only leftovers, not something to manage day to day.
+      // Explicitly asking for status: "ARCHIVED" (or any other status) still
+      // works normally via the equality filter below.
+      excludeArchived: isMineRequest && effectiveStatus === undefined,
       hasFreeLesson: query.hasFreeLesson,
       limit: query.limit,
       maxPrice: query.maxPrice,
@@ -425,6 +445,7 @@ export class CourseService {
     }
 
     this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
+    this.ensureCourseIsEditable(course, currentUserRole);
 
     if (input.categoryId) {
       await this.validateCategory(input.categoryId);
@@ -669,6 +690,7 @@ export class CourseService {
     }
 
     this.ensureCanAdministerCourse(course, currentUserId, currentUserRole);
+    this.ensureCourseIsEditable(course, currentUserRole);
 
     const uniqueTeacherIds = [...new Set(teacherIds)];
 
