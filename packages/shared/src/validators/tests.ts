@@ -38,6 +38,8 @@ export const createTestSchema = z.object({
     .max(24 * 60)
     .optional(),
   isPublished: z.boolean().default(false),
+  lockAnswerOnSelect: z.boolean().default(false),
+  maxAttempts: z.number().int().positive().max(1000).nullable().optional(),
   passingScore: z.number().int().min(0).max(10000).optional(),
   title: z.string().trim().min(1).max(255),
   type: testTypeSchema
@@ -53,6 +55,8 @@ export const updateTestSchema = z
       .max(24 * 60)
       .optional(),
     isPublished: z.boolean().optional(),
+    lockAnswerOnSelect: z.boolean().optional(),
+    maxAttempts: z.number().int().positive().max(1000).nullable().optional(),
     passingScore: z.number().int().min(0).max(10000).optional(),
     title: z.string().trim().min(1).max(255).optional(),
     type: testTypeSchema.optional()
