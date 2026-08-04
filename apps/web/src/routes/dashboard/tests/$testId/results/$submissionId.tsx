@@ -5,7 +5,6 @@ import type { JSX } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
@@ -51,109 +50,182 @@ function SubmissionResultPage(): JSX.Element {
   }
 
   const answerMap = new Map(submission.answers.map((answer) => [answer.questionId, answer]));
+  const maxScore = submission.maxScore ?? test.totalMarks;
+  const percentage = maxScore > 0 ? Math.round(((submission.score ?? 0) / maxScore) * 100) : 0;
+  const isGraded = submission.status === "GRADED";
+  const headline = !isGraded
+    ? t("test.awaitingGrading")
+    : submission.passed
+      ? t("test.passed")
+      : t("test.failed");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{test.title}</CardTitle>
-          <CardDescription>
-            {submission.status === "GRADED" ? "Final result" : "Submission received"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-3">
-            <Badge tone="neutral">{t("test.attemptLabel", { number: String(submission.attemptNumber) })}</Badge>
-            <Badge tone="neutral">{submission.status}</Badge>
-            <Badge tone="neutral">
-              Score {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="quiet">
+              {t("test.attemptLabel", { number: String(submission.attemptNumber) })}
             </Badge>
-            {test.passingScore !== null ? (
-              <Badge tone="neutral">Passing score {test.passingScore}</Badge>
-            ) : null}
-            {submission.passed !== null ? (
-              <Badge tone={submission.passed ? "neutral" : "attention"}>
-                {submission.passed ? t("test.passed") : t("test.failed")}
-              </Badge>
-            ) : null}
+            <Badge tone="quiet">{submission.status}</Badge>
           </div>
-          <Button asChild variant="outline">
-            <Link to="/dashboard/tests/$testId/history" params={{ testId }}>
+          <CardTitle className="text-2xl">{test.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p
+                className={`font-display text-3xl font-semibold tracking-[-0.02em] ${
+                  isGraded && submission.passed === false ? "text-error" : "text-ink"
+                }`}
+              >
+                {headline}
+              </p>
+              <p className="mt-1 text-sm text-ink/62">
+                {t("test.score", { max: maxScore, score: submission.score ?? 0 })}
+              </p>
+            </div>
+            <Link
+              className="text-sm text-ink/62 underline-offset-4 hover:text-ink hover:underline"
+              params={{ testId }}
+              to="/dashboard/tests/$testId/history"
+            >
               {t("test.viewHistory")}
             </Link>
-          </Button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("test.scoreLabel")}</p>
+              <p className="mt-2 text-xl font-semibold text-ink">{percentage}%</p>
+            </div>
+            {test.passingScore !== null ? (
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                  {t("player.passing")}
+                </p>
+                <p className="mt-2 text-xl font-semibold text-ink">{test.passingScore}</p>
+              </div>
+            ) : null}
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
+                {t("ab.questions")}
+              </p>
+              <p className="mt-2 text-xl font-semibold text-ink">{test.questions.length}</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {test.questions.map((question) => {
-        const answer = answerMap.get(question.id);
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-ink/55">
+          {t("test.questionReview")}
+        </h2>
 
-        return (
-          <Card key={question.id}>
-            <CardHeader>
-              <CardTitle className="text-lg">
-                <RichTextContent html={question.questionText} />
-              </CardTitle>
-              <CardDescription>
-                {question.type} · {question.marks} marks
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {question.type === "MCQ" ? (
-                <div className="grid gap-2">
-                  {question.options.map((option) => {
-                    const isSelected = option.id === answer?.selectedOptionId;
-                    const isCorrectOption = option.isCorrect === true;
+        {test.questions.map((question, index) => {
+          const answer = answerMap.get(question.id);
 
-                    return (
-                      <div
-                        key={option.id}
-                        className={`flex flex-wrap items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-4 py-3 text-sm text-ink ${
-                          isCorrectOption ? "border-accent bg-accent/8" : "border-hairline bg-panel-warm"
-                        }`}
-                      >
-                        <span>{option.optionText}</span>
-                        <div className="flex flex-wrap gap-2">
-                          {isSelected ? (
-                            <Badge tone={isCorrectOption ? "neutral" : "attention"}>
-                              {t("test.yourAnswer")}
-                            </Badge>
-                          ) : null}
-                          {isCorrectOption ? (
-                            <Badge tone="neutral">{t("test.correctAnswer")}</Badge>
-                          ) : null}
+          return (
+            <Card key={question.id}>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-base">
+                    {t("test.question", { number: String(index + 1) })}
+                  </CardTitle>
+                  {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (
+                    <span
+                      className={`inline-flex items-center rounded-[var(--radius-pill)] border px-3 py-1 text-sm ${
+                        answer.isCorrect
+                          ? "border-correct text-correct"
+                          : "border-error text-error"
+                      }`}
+                    >
+                      {answer.isCorrect ? t("test.markedCorrect") : t("test.markedIncorrect")}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-ink/55">
+                      {t("test.awardedMarks", { count: String(answer?.awardedMarks ?? 0) })} /{" "}
+                      {question.marks}
+                    </span>
+                  )}
+                </div>
+                <CardDescription>
+                  <RichTextContent html={question.questionText} />
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {question.type === "MCQ" ? (
+                  <div className="grid gap-2">
+                    {question.options.map((option) => {
+                      const isSelected = option.id === answer?.selectedOptionId;
+                      const isCorrectOption = option.isCorrect === true;
+                      const isWrongPick = isSelected && !isCorrectOption;
+
+                      return (
+                        <div
+                          key={option.id}
+                          className={`flex flex-wrap items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-4 py-3 text-sm text-ink ${
+                            isCorrectOption
+                              ? "border-correct bg-correct/8"
+                              : isWrongPick
+                                ? "border-error bg-error/8"
+                                : "border-hairline bg-panel-warm"
+                          }`}
+                        >
+                          <span>{option.optionText}</span>
+                          <div className="flex flex-wrap gap-2">
+                            {isSelected ? (
+                              <span
+                                className={`inline-flex items-center rounded-[var(--radius-pill)] border px-3 py-1 text-sm ${
+                                  isCorrectOption
+                                    ? "border-correct text-correct"
+                                    : "border-error text-error"
+                                }`}
+                              >
+                                {t("test.yourAnswer")}
+                              </span>
+                            ) : null}
+                            {isCorrectOption ? (
+                              <span className="inline-flex items-center rounded-[var(--radius-pill)] border border-correct px-3 py-1 text-sm text-correct">
+                                {t("test.correctAnswer")}
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                  {!answer?.selectedOptionId ? (
-                    <p className="text-xs text-ink/55">{t("test.noOption")}</p>
-                  ) : null}
-                </div>
-              ) : (
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.yourAnswer")}</p>
-                  <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    {answer?.writtenAnswer || t("test.noAnswer")}
+                      );
+                    })}
+                    {!answer?.selectedOptionId ? (
+                      <p className="text-xs text-ink/55">{t("test.noOption")}</p>
+                    ) : null}
                   </div>
-                </div>
-              )}
-              {question.type === "WRITTEN" && question.expectedAnswer ? (
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.correctAnswer")}</p>
-                  <RichTextContent className="mt-2" html={question.expectedAnswer} />
-                </div>
-              ) : null}
-              <div className="flex flex-wrap gap-3 text-sm text-ink/70">
-                <span>{t("test.awardedMarks", { count: String(answer?.awardedMarks ?? 0) })}</span>
-                {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (
-                  <span>{answer.isCorrect ? t("test.markedCorrect") : t("test.markedIncorrect")}</span>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-ink/55">
+                        {t("test.yourAnswer")}
+                      </p>
+                      <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
+                        {answer?.writtenAnswer || t("test.noAnswer")}
+                      </div>
+                    </div>
+                    {question.expectedAnswer ? (
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-ink/55">
+                          {t("test.correctAnswer")}
+                        </p>
+                        <RichTextContent className="mt-2" html={question.expectedAnswer} />
+                      </div>
+                    ) : null}
+                    <p className="text-sm text-ink/70">
+                      {t("test.awardedMarks", { count: String(answer?.awardedMarks ?? 0) })}
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

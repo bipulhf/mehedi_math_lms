@@ -1,7 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
 import { Badge, Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
@@ -105,24 +105,45 @@ export default function SubmissionResultScreen(): JSX.Element {
                   {question.options.map((option) => {
                     const isSelected = option.id === answer?.selectedOptionId;
                     const isCorrectOption = option.isCorrect === true;
+                    const isWrongPick = isSelected && !isCorrectOption;
 
                     return (
                       <View
                         key={option.id}
                         style={[
                           styles.optionRow,
-                          isCorrectOption ? styles.optionRowCorrect : null
+                          isCorrectOption
+                            ? styles.optionRowCorrect
+                            : isWrongPick
+                              ? styles.optionRowWrong
+                              : null
                         ]}
                       >
                         <Body>{option.optionText}</Body>
                         <View style={styles.badgesRow}>
                           {isSelected ? (
-                            <Badge tone={isCorrectOption ? "neutral" : "attention"}>
-                              {t("test.yourAnswer")}
-                            </Badge>
+                            <View
+                              style={[
+                                styles.outcomePill,
+                                { borderColor: isCorrectOption ? colors.correct : colors.error }
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.outcomePillText,
+                                  { color: isCorrectOption ? colors.correct : colors.error }
+                                ]}
+                              >
+                                {t("test.yourAnswer")}
+                              </Text>
+                            </View>
                           ) : null}
                           {isCorrectOption ? (
-                            <Badge tone="neutral">{t("test.correctAnswer")}</Badge>
+                            <View style={[styles.outcomePill, { borderColor: colors.correct }]}>
+                              <Text style={[styles.outcomePillText, { color: colors.correct }]}>
+                                {t("test.correctAnswer")}
+                              </Text>
+                            </View>
                           ) : null}
                         </View>
                       </View>
@@ -141,12 +162,26 @@ export default function SubmissionResultScreen(): JSX.Element {
                   <HtmlContent html={question.expectedAnswer} />
                 </View>
               ) : null}
-              <Caption>
-                {t("test.awardedMarks", { count: answer?.awardedMarks ?? 0 })}
-                {answer?.isCorrect !== null && answer?.isCorrect !== undefined
-                  ? ` · ${answer.isCorrect ? t("test.markedCorrect") : t("test.markedIncorrect")}`
-                  : ""}
-              </Caption>
+              <View style={styles.badgesRow}>
+                <Caption>{t("test.awardedMarks", { count: answer?.awardedMarks ?? 0 })}</Caption>
+                {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (
+                  <View
+                    style={[
+                      styles.outcomePill,
+                      { borderColor: answer.isCorrect ? colors.correct : colors.error }
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.outcomePillText,
+                        { color: answer.isCorrect ? colors.correct : colors.error }
+                      ]}
+                    >
+                      {answer.isCorrect ? t("test.markedCorrect") : t("test.markedIncorrect")}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
             </Card>
           );
         })}
@@ -170,7 +205,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: spacing.md
   },
-  optionRowCorrect: { backgroundColor: colors.chipActive, borderColor: colors.accent }
+  optionRowCorrect: { backgroundColor: colors.chipActive, borderColor: colors.correct },
+  optionRowWrong: { borderColor: colors.error },
+  outcomePill: {
+    alignSelf: "flex-start",
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  outcomePillText: { fontSize: 13, fontWeight: "600" }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

@@ -56,6 +56,12 @@
    * else. */
   --color-online: #22c55e;
 
+  /* A second explicit exception: MCQ correctness on exam results screens
+   * (the correct option and a correct pick are green, a wrong pick is
+   * --color-error), and nothing else. Reuses one of the four approved accent
+   * alternates rather than introducing a new hue. */
+  --color-correct: #1f6f5c;
+
   /* ------------------------------------------------------------------
    * Type
    * ------------------------------------------------------------------ */

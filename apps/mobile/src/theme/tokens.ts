@@ -9,6 +9,8 @@ export const colors = {
   barTrack: "#f1eee9",
   card: "#ffffff",
   chipActive: "#efebe4",
+  /** MCQ correctness on exam results screens, and nothing else — see app.css. */
+  correct: "#1f6f5c",
   dotIdle: "#ddd8d1",
   error: "#ba1a1a",
   hairline: "#e8e4de",
