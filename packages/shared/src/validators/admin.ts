@@ -79,3 +79,10 @@ export const adminUpdateBugSchema = z.object({
 export const featuredCoursesSchema = z.object({
   courseIds: z.array(idSchema).max(6)
 });
+
+export const auditLogsQuerySchema = paginationQuerySchema.extend({
+  action: z.string().trim().min(1).optional(),
+  actorSearch: z.string().trim().min(1).optional(),
+  from: z.iso.datetime({ offset: true }).optional(),
+  to: z.iso.datetime({ offset: true }).optional()
+});

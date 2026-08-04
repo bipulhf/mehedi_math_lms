@@ -6,7 +6,7 @@ import {
   registerFcmDeviceSchema
 } from "@genex/shared";
 
-import { notificationController } from "@/lib/container";
+import { auditLogService, notificationController } from "@/lib/container";
 import { requireAuth } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -17,8 +17,17 @@ notificationsRoutes.use("*", requireAuth());
 notificationsRoutes.post("/register-device", async (context) => {
   const payload = registerFcmDeviceSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
+  const response = await notificationController.registerDevice(context, payload, authUser!.id);
 
-  return notificationController.registerDevice(context, payload, authUser!.id);
+  auditLogService.log({
+    action: "fcm_device.registered",
+    actorId: authUser!.id,
+    entityId: authUser!.id,
+    entityType: "fcm_device",
+    metadata: { deviceType: payload.deviceType }
+  });
+
+  return response;
 });
 
 notificationsRoutes.get("/", (context) => {
@@ -38,15 +47,31 @@ notificationsRoutes.get("/unread-count", (context) => {
   return notificationController.unreadCount(context, authUser!.id);
 });
 
-notificationsRoutes.put("/read-all", (context) => {
+notificationsRoutes.put("/read-all", async (context) => {
   const authUser = context.get("authUser");
+  const response = await notificationController.markAllRead(context, authUser!.id);
 
-  return notificationController.markAllRead(context, authUser!.id);
+  auditLogService.log({
+    action: "notification.read_all",
+    actorId: authUser!.id,
+    entityId: authUser!.id,
+    entityType: "notification"
+  });
+
+  return response;
 });
 
-notificationsRoutes.put("/:id/read", (context) => {
+notificationsRoutes.put("/:id/read", async (context) => {
   const params = notificationIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
+  const response = await notificationController.markRead(context, params.id, authUser!.id);
 
-  return notificationController.markRead(context, params.id, authUser!.id);
+  auditLogService.log({
+    action: "notification.read",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "notification"
+  });
+
+  return response;
 });

@@ -10,9 +10,10 @@ import {
   sendMessageSchema
 } from "@genex/shared";
 
-import { messageController } from "@/lib/container";
+import { auditLogService, messageController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
+import { extractCreatedId } from "@/utils/audit";
 
 export const messagesRoutes = new Hono<AppBindings>();
 
@@ -48,13 +49,21 @@ messagesRoutes.post("/conversations", async (context) => {
   const payload = createConversationSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return messageController.createConversation(
+  const response = await messageController.createConversation(
     context,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "conversation.opened",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "conversation"
+  });
+
+  return response;
 });
 
 messagesRoutes.get("/conversations/:id", (context) => {
@@ -77,14 +86,23 @@ messagesRoutes.post("/conversations/:id", async (context) => {
   const payload = sendMessageSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return messageController.sendMessage(
+  const response = await messageController.sendMessage(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "message.sent",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "message",
+    metadata: { conversationId: params.id }
+  });
+
+  return response;
 });
 
 // Reporting is what unlocks admin access to an otherwise private conversation,
@@ -94,25 +112,42 @@ messagesRoutes.post("/conversations/:id/report", async (context) => {
   const payload = reportConversationSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return messageController.reportConversation(
+  const response = await messageController.reportConversation(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "conversation.reported",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "conversation_report",
+    metadata: { conversationId: params.id }
+  });
+
+  return response;
 });
 
-messagesRoutes.post("/conversations/:id/read", (context) => {
+messagesRoutes.post("/conversations/:id/read", async (context) => {
   const params = messageConversationIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return messageController.markConversationRead(
+  const response = await messageController.markConversationRead(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "conversation.read",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "conversation"
+  });
+
+  return response;
 });

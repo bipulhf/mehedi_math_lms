@@ -13,9 +13,10 @@ import {
 } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
 
-import { testController } from "@/lib/container";
+import { auditLogService, testController } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
+import { extractCreatedId } from "@/utils/audit";
 
 export const testsRoutes = new Hono<AppBindings>();
 
@@ -40,21 +41,44 @@ testsRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.updateTest(
+  const response = await testController.updateTest(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test.updated",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test"
+  });
+
+  return response;
 });
 
-testsRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), (context) => {
+testsRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = testIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.deleteTest(context, params.id, authUser!.id, authSession!.role as UserRole);
+  const response = await testController.deleteTest(
+    context,
+    params.id,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "test.deleted",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test"
+  });
+
+  return response;
 });
 
 testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -63,13 +87,23 @@ testsRoutes.post("/:testId/questions", requireRole("ADMIN", "TEACHER"), async (c
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.createQuestion(
+  const response = await testController.createQuestion(
     context,
     params.testId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test_question.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "test_question",
+    metadata: { testId: params.testId }
+  });
+
+  return response;
 });
 
 testsRoutes.patch(
@@ -81,27 +115,46 @@ testsRoutes.patch(
     const authUser = context.get("authUser");
     const authSession = context.get("authSession");
 
-    return testController.reorderQuestions(
+    const response = await testController.reorderQuestions(
       context,
       params.testId,
       payload,
       authUser!.id,
       authSession!.role as UserRole
     );
+
+    auditLogService.log({
+      action: "test.questions_reordered",
+      actorId: authUser!.id,
+      entityId: params.testId,
+      entityType: "test"
+    });
+
+    return response;
   }
 );
 
-testsRoutes.post("/:id/submissions/start", requireAuth(), (context) => {
+testsRoutes.post("/:id/submissions/start", requireAuth(), async (context) => {
   const params = testIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.startSubmission(
+  const response = await testController.startSubmission(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test_submission.started",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "test_submission",
+    metadata: { testId: params.id }
+  });
+
+  return response;
 });
 
 testsRoutes.post("/:id/submit", requireAuth(), async (context) => {
@@ -110,13 +163,23 @@ testsRoutes.post("/:id/submit", requireAuth(), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.submitTest(
+  const response = await testController.submitTest(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test_submission.submitted",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "test_submission",
+    metadata: { testId: params.id }
+  });
+
+  return response;
 });
 
 testsRoutes.get("/:id/submissions", requireRole("ADMIN", "TEACHER"), (context) => {
@@ -151,13 +214,22 @@ testsRoutes.put("/submissions/:id/answers", requireAuth(), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.saveSubmissionAnswers(
+  const response = await testController.saveSubmissionAnswers(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test_submission.answers_saved",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test_submission"
+  });
+
+  return response;
 });
 
 testsRoutes.get("/submissions/:id", requireAuth(), (context) => {
@@ -179,11 +251,20 @@ testsRoutes.put("/submissions/:id/grade", requireRole("ADMIN", "TEACHER"), async
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return testController.gradeSubmission(
+  const response = await testController.gradeSubmission(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "test_submission.graded",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test_submission"
+  });
+
+  return response;
 });

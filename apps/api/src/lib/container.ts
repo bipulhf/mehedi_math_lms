@@ -1,5 +1,6 @@
 import { AdminController } from "@/controllers/admin-controller";
 import { AnalyticsController } from "@/controllers/analytics-controller";
+import { AuditLogController } from "@/controllers/audit-log-controller";
 import { AdminDashboardController } from "@/controllers/admin-dashboard-controller";
 import { AdminUserController } from "@/controllers/admin-user-controller";
 import { AuthController } from "@/controllers/auth-controller";
@@ -26,6 +27,7 @@ import { env } from "@/lib/env";
 import { redis } from "@/lib/redis";
 import { AdminDashboardRepository } from "@/repositories/admin-dashboard-repository";
 import { AnalyticsRepository } from "@/repositories/analytics-repository";
+import { AuditLogRepository } from "@/repositories/audit-log-repository";
 import { AdminUserRepository } from "@/repositories/admin-user-repository";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { BugReportRepository } from "@/repositories/bug-report-repository";
@@ -50,6 +52,7 @@ import { TestRepository } from "@/repositories/test-repository";
 import { UploadRepository } from "@/repositories/upload-repository";
 import { AdminDashboardService } from "@/services/admin-dashboard-service";
 import { AnalyticsService } from "@/services/analytics-service";
+import { AuditLogService } from "@/services/audit-log-service";
 import { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { AdminUserService } from "@/services/admin-user-service";
 import { AuthGuardService } from "@/services/auth-guard-service";
@@ -84,6 +87,8 @@ import { UploadThingStorageProvider } from "@/services/uploadthing-storage-provi
 
 const healthRepository = new HealthRepository(redis, queues);
 const adminDashboardRepository = new AdminDashboardRepository();
+const auditLogRepository = new AuditLogRepository();
+export const auditLogService = new AuditLogService(auditLogRepository);
 const adminUserRepository = new AdminUserRepository();
 const authSessionRepository = new AuthSessionRepository();
 const bugReportRepository = new BugReportRepository();
@@ -202,6 +207,7 @@ const landingRepository = new LandingRepository();
 const landingService = new LandingService(landingRepository, courseRepository, redis);
 
 export const adminController = new AdminController(staffAccountService);
+export const auditLogController = new AuditLogController(auditLogService);
 export const adminDashboardController = new AdminDashboardController(adminDashboardService);
 export const adminUserController = new AdminUserController(adminUserService);
 export const authController = new AuthController();

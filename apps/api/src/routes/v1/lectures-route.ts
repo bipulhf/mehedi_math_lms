@@ -11,9 +11,10 @@ import {
 } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
 
-import { commentController, contentController } from "@/lib/container";
+import { auditLogService, commentController, contentController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
+import { extractCreatedId } from "@/utils/audit";
 
 export const lecturesRoutes = new Hono<AppBindings>();
 
@@ -44,14 +45,23 @@ lecturesRoutes.post("/:lectureId/comments", requireRole("STUDENT", "TEACHER", "A
   const payload = createCommentSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return commentController.createComment(
+  const response = await commentController.createComment(
     context,
     params.lectureId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "comment.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "comment",
+    metadata: { lectureId: params.lectureId }
+  });
+
+  return response;
 });
 
 lecturesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -59,27 +69,43 @@ lecturesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   const payload = updateLectureSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return contentController.updateLecture(
+  const response = await contentController.updateLecture(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "lecture.updated",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "lecture"
+  });
+
+  return response;
 });
 
-lecturesRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), (context) => {
+lecturesRoutes.delete("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = lectureIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return contentController.deleteLecture(
+  const response = await contentController.deleteLecture(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "lecture.deleted",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "lecture"
+  });
+
+  return response;
 });
 
 lecturesRoutes.post("/:id/materials", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -87,14 +113,23 @@ lecturesRoutes.post("/:id/materials", requireRole("ADMIN", "TEACHER"), async (co
   const payload = createMaterialSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return contentController.createLectureMaterial(
+  const response = await contentController.createLectureMaterial(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "material.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "material",
+    metadata: { lectureId: params.id }
+  });
+
+  return response;
 });
 
 lecturesRoutes.put("/materials/:materialId", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -102,25 +137,41 @@ lecturesRoutes.put("/materials/:materialId", requireRole("ADMIN", "TEACHER"), as
   const payload = updateMaterialSchema.parse(await context.req.json());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return contentController.updateLectureMaterial(
+  const response = await contentController.updateLectureMaterial(
     context,
     params.materialId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "material.updated",
+    actorId: authUser!.id,
+    entityId: params.materialId,
+    entityType: "material"
+  });
+
+  return response;
 });
 
-lecturesRoutes.delete("/materials/:materialId", requireRole("ADMIN", "TEACHER"), (context) => {
+lecturesRoutes.delete("/materials/:materialId", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = materialIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
-
-  return contentController.deleteLectureMaterial(
+  const response = await contentController.deleteLectureMaterial(
     context,
     params.materialId,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "material.deleted",
+    actorId: authUser!.id,
+    entityId: params.materialId,
+    entityType: "material"
+  });
+
+  return response;
 });

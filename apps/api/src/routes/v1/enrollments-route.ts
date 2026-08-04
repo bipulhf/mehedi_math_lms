@@ -6,7 +6,7 @@ import {
 } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
 
-import { enrollmentController } from "@/lib/container";
+import { auditLogService, enrollmentController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -17,13 +17,34 @@ enrollmentsRoutes.post("/", requireRole("STUDENT"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return enrollmentController.createEnrollment(
+  const response = await enrollmentController.createEnrollment(
     context,
     payload.courseId,
     { origin: payload.callbackOrigin, path: payload.callbackPath },
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  // The response payload here isn't the extractCreatedId `data.id` shape —
+  // createEnrollment returns `{ enrollmentId, requiresPayment, ... }`, and
+  // enrollmentId is null when the flow only kicked off a payment (no
+  // enrollment exists yet, so the course is the closest identifiable entity).
+  const body = (await response.clone().json()) as {
+    data?: { enrollmentId?: string | null; requiresPayment?: boolean };
+  };
+
+  auditLogService.log({
+    action: "enrollment.created",
+    actorId: authUser!.id,
+    entityId: body.data?.enrollmentId ?? payload.courseId,
+    entityType: "enrollment",
+    metadata: {
+      courseId: payload.courseId,
+      requiresPayment: body.data?.requiresPayment ?? false
+    }
+  });
+
+  return response;
 });
 
 enrollmentsRoutes.get("/me", requireRole("STUDENT"), (context) => {

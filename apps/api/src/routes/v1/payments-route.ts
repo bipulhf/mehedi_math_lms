@@ -9,7 +9,7 @@ import {
 } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
 
-import { paymentController } from "@/lib/container";
+import { auditLogService, paymentController } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -42,13 +42,22 @@ paymentsRoutes.post("/init", requireRole("STUDENT"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return paymentController.initializePayment(
+  const response = await paymentController.initializePayment(
     context,
     payload.courseId,
     { origin: payload.callbackOrigin, path: payload.callbackPath },
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "payment.initiated",
+    actorId: authUser!.id,
+    entityId: payload.courseId,
+    entityType: "course"
+  });
+
+  return response;
 });
 
 paymentsRoutes.get("/me", requireRole("STUDENT"), (context) => {
@@ -72,8 +81,16 @@ paymentsRoutes.get("/success", async (context) => {
 
 paymentsRoutes.post("/success", async (context) => {
   const input = await readCallbackInput(context);
+  const response = await paymentController.handleSuccessCallback(context, input);
 
-  return paymentController.handleSuccessCallback(context, input);
+  auditLogService.log({
+    action: "payment.succeeded",
+    actorId: null,
+    entityId: input.paymentId ?? input.tranId ?? "unknown",
+    entityType: "payment"
+  });
+
+  return response;
 });
 
 paymentsRoutes.get("/fail", async (context) => {
@@ -84,8 +101,16 @@ paymentsRoutes.get("/fail", async (context) => {
 
 paymentsRoutes.post("/fail", async (context) => {
   const input = await readCallbackInput(context);
+  const response = await paymentController.handleFailCallback(context, input);
 
-  return paymentController.handleFailCallback(context, input);
+  auditLogService.log({
+    action: "payment.failed",
+    actorId: null,
+    entityId: input.paymentId ?? input.tranId ?? "unknown",
+    entityType: "payment"
+  });
+
+  return response;
 });
 
 paymentsRoutes.get("/cancel", async (context) => {
@@ -96,8 +121,16 @@ paymentsRoutes.get("/cancel", async (context) => {
 
 paymentsRoutes.post("/cancel", async (context) => {
   const input = await readCallbackInput(context);
+  const response = await paymentController.handleCancelCallback(context, input);
 
-  return paymentController.handleCancelCallback(context, input);
+  auditLogService.log({
+    action: "payment.cancelled",
+    actorId: null,
+    entityId: input.paymentId ?? input.tranId ?? "unknown",
+    entityType: "payment"
+  });
+
+  return response;
 });
 
 paymentsRoutes.get("/validate/:valId", async (context) => {
@@ -122,12 +155,22 @@ paymentsRoutes.get("/:id", requireAuth(), (context) => {
 paymentsRoutes.post("/:id/refund", requireRole("ACCOUNTANT", "ADMIN"), async (context) => {
   const params = paymentIdParamsSchema.parse(context.req.param());
   const payload = refundPaymentSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return paymentController.refundPayment(
+  const response = await paymentController.refundPayment(
     context,
     params.id,
     payload.remarks || undefined,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "payment.refunded",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "payment"
+  });
+
+  return response;
 });

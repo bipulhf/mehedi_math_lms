@@ -9,6 +9,7 @@ bun run lint
 bun run worker:notifications   # BullMQ notification worker (separate process)
 bun run worker:sms             # BullMQ SMS worker (separate process)
 bun run worker:file-processing # BullMQ video metadata worker (separate process)
+bun run worker:audit-log-cleanup # BullMQ audit log retention sweep (separate process)
 ```
 
 Listens on `env.API_PORT` (default `3001`) in development. The `PORT=3010` in the dev script is only consulted when `NODE_ENV=production` — see `resolveListenPort()` in `src/index.ts`. Do not "fix" one to match the other without checking both.
@@ -85,7 +86,7 @@ Ownership and resource-level authorization belongs in the **service**, not the r
 ## Infrastructure
 
 - `src/lib/env.ts` — Zod-validated env plus derived `isS3Configured` / `isFirebaseConfigured` / `isSslCommerzConfigured` / `isOnecodesoftSmsConfigured` flags. Integrations default to `"replace-me"` placeholders; guard optional integrations behind these flags rather than assuming credentials exist.
-- `src/lib/redis.ts`, `src/lib/queues.ts` — ioredis client and three BullMQ queues: `notification`, `sms`, `file-processing`. Queue names are typed as `QueueName` in `src/types/app-bindings.ts`; adding a queue means updating both. There is deliberately no `email` queue — the staff-invite producer was removed and no transport was ever wired, so the queue went with it (see `BLOCKERS.md`).
+- `src/lib/redis.ts`, `src/lib/queues.ts` — ioredis client and four BullMQ queues: `notification`, `sms`, `file-processing`, `audit-log-cleanup`. Queue names are typed as `QueueName` in `src/types/app-bindings.ts`; adding a queue means updating both. There is deliberately no `email` queue — the staff-invite producer was removed and no transport was ever wired, so the queue went with it (see `BLOCKERS.md`).
 - `src/lib/logger.ts` — pino. Inside a request use `context.get("logger")`, which is already bound to the request id.
 - `src/lib/s3.ts` — AWS S3 client for uploads: presigned PUT for the client, plus `readStoredFile` / `writeStoredFile` / `deleteStoredFile` for objects the server itself handles.
 - Workers in `src/workers/` run as **separate processes** and build their own dependencies — they deliberately do not import the container. Keep them that way.

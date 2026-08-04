@@ -8,7 +8,7 @@ import {
   teacherProfileInputSchema
 } from "@genex/shared";
 
-import { profileController } from "@/lib/container";
+import { auditLogService, profileController } from "@/lib/container";
 import { requireAuth } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 
@@ -28,16 +28,43 @@ profilesRoutes.put("/me", requireAuth(), async (context) => {
 
   if (role === "STUDENT") {
     const payload = studentProfileInputSchema.parse(rawPayload);
-    return profileController.updateStudentProfile(context, authUser!.id, payload);
+    const response = await profileController.updateStudentProfile(context, authUser!.id, payload);
+
+    auditLogService.log({
+      action: "profile.updated",
+      actorId: authUser!.id,
+      entityId: authUser!.id,
+      entityType: "profile"
+    });
+
+    return response;
   }
 
   if (role === "TEACHER") {
     const payload = teacherProfileInputSchema.parse(rawPayload);
-    return profileController.updateTeacherProfile(context, authUser!.id, payload);
+    const response = await profileController.updateTeacherProfile(context, authUser!.id, payload);
+
+    auditLogService.log({
+      action: "profile.updated",
+      actorId: authUser!.id,
+      entityId: authUser!.id,
+      entityType: "profile"
+    });
+
+    return response;
   }
 
   const payload = basicProfileInputSchema.parse(rawPayload);
-  return profileController.updateBasicProfile(context, authUser!.id, payload);
+  const response = await profileController.updateBasicProfile(context, authUser!.id, payload);
+
+  auditLogService.log({
+    action: "profile.updated",
+    actorId: authUser!.id,
+    entityId: authUser!.id,
+    entityType: "profile"
+  });
+
+  return response;
 });
 
 // Registered before "/teachers/:id", which would otherwise match "teachers"

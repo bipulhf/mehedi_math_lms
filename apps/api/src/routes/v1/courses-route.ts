@@ -18,6 +18,7 @@ import {
 import type { UserRole } from "@genex/shared";
 
 import {
+  auditLogService,
   contentController,
   courseController,
   noticeController,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
+import { extractCreatedId } from "@/utils/audit";
 
 export const coursesRoutes = new Hono<AppBindings>();
 
@@ -81,7 +83,23 @@ coursesRoutes.post("/:id/reviews", requireRole("STUDENT"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return reviewController.create(context, params.id, payload, authUser!.id, authSession!.role as UserRole);
+  const response = await reviewController.create(
+    context,
+    params.id,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "review.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "review",
+    metadata: { courseId: params.id, rating: payload.rating }
+  });
+
+  return response;
 });
 
 coursesRoutes.get("/:id", (context) => {
@@ -142,12 +160,22 @@ coursesRoutes.post("/", requireRole("ADMIN", "TEACHER"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.createCourse(
+  const response = await courseController.createCourse(
     context,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "course",
+    metadata: { title: payload.title }
+  });
+
+  return response;
 });
 
 coursesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -156,52 +184,89 @@ coursesRoutes.put("/:id", requireRole("ADMIN", "TEACHER"), async (context) => {
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.updateCourse(
+  const response = await courseController.updateCourse(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.updated",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "course",
+    metadata: { fields: Object.keys(payload).join(",") }
+  });
+
+  return response;
 });
 
-coursesRoutes.post("/:id/withdraw", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.post("/:id/withdraw", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = courseIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.withdrawCourse(
+  const response = await courseController.withdrawCourse(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.withdrawn",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "course"
+  });
+
+  return response;
 });
 
-coursesRoutes.post("/:id/restore", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.post("/:id/restore", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = courseIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.restoreCourse(
+  const response = await courseController.restoreCourse(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.restored",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "course"
+  });
+
+  return response;
 });
 
-coursesRoutes.post("/:id/submit", requireRole("ADMIN", "TEACHER"), (context) => {
+coursesRoutes.post("/:id/submit", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = courseIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.submitCourse(
+  const response = await courseController.submitCourse(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.submitted",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "course"
+  });
+
+  return response;
 });
 
 coursesRoutes.post("/:id/teachers", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -210,13 +275,23 @@ coursesRoutes.post("/:id/teachers", requireRole("ADMIN", "TEACHER"), async (cont
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return courseController.replaceTeachers(
+  const response = await courseController.replaceTeachers(
     context,
     params.id,
     payload.teacherIds,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.teachers_updated",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "course",
+    metadata: { teacherCount: payload.teacherIds.length }
+  });
+
+  return response;
 });
 
 coursesRoutes.post("/:courseId/chapters", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -225,13 +300,23 @@ coursesRoutes.post("/:courseId/chapters", requireRole("ADMIN", "TEACHER"), async
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return contentController.createChapter(
+  const response = await contentController.createChapter(
     context,
     params.courseId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "chapter.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "chapter",
+    metadata: { courseId: params.courseId, title: payload.title }
+  });
+
+  return response;
 });
 
 coursesRoutes.patch("/:courseId/chapters/reorder", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -240,13 +325,22 @@ coursesRoutes.patch("/:courseId/chapters/reorder", requireRole("ADMIN", "TEACHER
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return contentController.reorderChapters(
+  const response = await contentController.reorderChapters(
     context,
     params.courseId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "course.chapters_reordered",
+    actorId: authUser!.id,
+    entityId: params.courseId,
+    entityType: "course"
+  });
+
+  return response;
 });
 
 coursesRoutes.get("/:courseId/notices", requireAuth(), (context) => {
@@ -268,12 +362,22 @@ coursesRoutes.post("/:courseId/notices", requireRole("ADMIN", "TEACHER"), async 
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return noticeController.createForCourse(
+  const response = await noticeController.createForCourse(
     context,
     params.courseId,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "notice.created",
+    actorId: authUser!.id,
+    entityId: await extractCreatedId(response),
+    entityType: "notice",
+    metadata: { courseId: params.courseId, isPinned: payload.isPinned }
+  });
+
+  return response;
 });
 

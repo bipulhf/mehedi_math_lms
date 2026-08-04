@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "test": "bun test --env-file ../../.env src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "worker:audit-log-cleanup": "PORT=3010 bun --env-file ../../.env src/workers/audit-log-cleanup-worker.ts",
     "worker:file-processing": "PORT=3010 bun --env-file ../../.env src/workers/file-processing-worker.ts",
     "worker:notifications": "PORT=3010 bun --env-file ../../.env src/workers/notification-worker.ts",
     "worker:sms": "PORT=3010 bun --env-file ../../.env src/workers/sms-worker.ts"
