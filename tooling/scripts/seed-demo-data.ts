@@ -27,11 +27,12 @@ import {
   eq,
   lectures,
   payments,
+  questionOptions,
   reviews,
   studentProfiles,
   teacherProfiles,
-  tests,
   testQuestions,
+  tests,
   users
 } from "@genex/db";
 
@@ -46,6 +47,11 @@ import {
 
 if (process.env["NODE_ENV"] !== "development") {
   throw new Error("seed-demo-data refuses to run outside NODE_ENV=development");
+}
+
+/** Lorem Picsum serves real photographs; the seed just needs one per key. */
+function photoUrl(seed: string, width: number, height: number): string {
+  return `https://picsum.photos/seed/${seed}/${width}/${height}`;
 }
 
 async function upsertCategory(input: {
@@ -84,6 +90,7 @@ async function upsertCategory(input: {
 
 async function upsertUser(input: {
   email: string;
+  image?: string | undefined;
   name: string;
   role: "STUDENT" | "TEACHER";
   slug: string;
@@ -99,7 +106,13 @@ async function upsertUser(input: {
   if (userId) {
     await db
       .update(users)
-      .set({ name: input.name, profileCompleted: true, role: input.role, slug: input.slug })
+      .set({
+        image: input.image,
+        name: input.name,
+        profileCompleted: true,
+        role: input.role,
+        slug: input.slug
+      })
       .where(eq(users.id, userId));
   } else {
     const inserted = await db
@@ -107,6 +120,7 @@ async function upsertUser(input: {
       .values({
         email: input.email,
         emailVerified: true,
+        image: input.image,
         isActive: true,
         name: input.name,
         profileCompleted: true,
@@ -180,6 +194,7 @@ async function main(): Promise<void> {
   for (const teacher of demoTeachers) {
     const userId = await upsertUser({
       email: teacher.email,
+      image: photoUrl(teacher.imageSeed, 400, 400),
       name: teacher.name,
       role: "TEACHER",
       slug: teacher.slug
@@ -255,7 +270,7 @@ async function main(): Promise<void> {
 
     const values = {
       categoryId,
-      coverImageUrl: null,
+      coverImageUrl: photoUrl(course.imageSeed, 1200, 675),
       creatorId,
       description: course.description,
       isExamOnly: course.isExamOnly,
@@ -270,7 +285,8 @@ async function main(): Promise<void> {
     if (courseId) {
       await db.update(courses).set(values).where(eq(courses.id, courseId));
       // Content is rebuilt rather than diffed. Chapters cascade to lectures and
-      // tests, so one delete clears the lot and the fixtures stay the truth.
+      // tests (which cascade to questions and options), so one delete clears
+      // the lot and the fixtures stay the truth.
       await db.delete(chapters).where(eq(chapters.courseId, courseId));
     } else {
       const inserted = await db
@@ -316,7 +332,7 @@ async function main(): Promise<void> {
             title: lesson.title,
             type: "VIDEO_LINK",
             videoDuration: lesson.durationSeconds,
-            videoUrl: "https://cdn.genex.com.bd/demo/lesson.mp4"
+            videoUrl: `https://www.youtube.com/watch?v=${lesson.youtubeVideoId}`
           })
           .returning({ id: lectures.id });
 
@@ -343,15 +359,34 @@ async function main(): Promise<void> {
 
         const testId = insertedTest[0]?.id;
 
-        if (testId) {
-          await db.insert(testQuestions).values(
-            chapter.test.questions.map((question, questionIndex) => ({
-              correctAnswer: question.correctAnswer,
+        if (!testId) {
+          throw new Error(`Failed to create test for ${course.slug} / ${chapter.title}`);
+        }
+
+        for (const [questionIndex, question] of chapter.test.questions.entries()) {
+          const insertedQuestion = await db
+            .insert(testQuestions)
+            .values({
               marks: 5,
               questionText: question.text,
               sortOrder: questionIndex,
               testId,
-              type: "MCQ" as const
+              type: "MCQ"
+            })
+            .returning({ id: testQuestions.id });
+
+          const questionId = insertedQuestion[0]?.id;
+
+          if (!questionId) {
+            throw new Error(`Failed to create question for ${course.slug} / ${chapter.test.title}`);
+          }
+
+          await db.insert(questionOptions).values(
+            question.options.map((option, optionIndex) => ({
+              isCorrect: option.isCorrect,
+              optionText: option.text,
+              questionId,
+              sortOrder: optionIndex
             }))
           );
         }
@@ -419,19 +454,22 @@ async function main(): Promise<void> {
         })
         .onConflictDoNothing();
 
-      // Every other student leaves a review, alternating 5 and 4 so the
-      // averages are not all identical — a catalogue where every course scores
-      // exactly 4.0 tests nothing about how a rating renders.
-      if (enrolledIndex % 2 === 0) {
+      // Every other student leaves a review, cycling through a few distinct
+      // comments and ratings so the averages and the copy are not identical
+      // across every course. Upserted, not onConflictDoNothing: a re-run with
+      // new fixture text must actually replace the old review, not skip past
+      // a row that already satisfies the unique (course, user) index.
+      if (enrolledIndex % 2 === 0 && course.reviewComments.length > 0) {
+        const comment = course.reviewComments[enrolledIndex % course.reviewComments.length]!;
+        const rating = enrolledIndex % 4 === 0 ? 5 : 4;
+
         await db
           .insert(reviews)
-          .values({
-            comment: course.reviewComment,
-            courseId,
-            rating: enrolledIndex % 4 === 0 ? 5 : 4,
-            userId
-          })
-          .onConflictDoNothing();
+          .values({ comment, courseId, rating, userId })
+          .onConflictDoUpdate({
+            set: { comment, rating, updatedAt: new Date() },
+            target: [reviews.courseId, reviews.userId]
+          });
       }
     }
   }
