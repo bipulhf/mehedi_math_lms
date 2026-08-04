@@ -28,7 +28,7 @@ interface DraftAnswer {
   writtenAnswer?: string | undefined;
 }
 
-export const Route = createFileRoute("/dashboard/tests/$testId")({
+export const Route = createFileRoute("/dashboard/tests/$testId/")({
   head: () =>
     seo({
       description: "Answer the test's questions before time runs out.",
