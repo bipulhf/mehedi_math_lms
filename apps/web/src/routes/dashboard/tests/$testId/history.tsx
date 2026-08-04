@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AssessmentTestDetail, SubmissionSummary } from "@/lib/api/tests";
@@ -50,6 +51,7 @@ function TestHistoryPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
+      <BackButton params={{ testId }} to="/dashboard/tests/$testId" />
       <Card>
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>

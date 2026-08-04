@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { clientEnv } from "@/lib/env";
@@ -54,6 +55,7 @@ function MockPaymentPage(): JSX.Element {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
+      <BackButton to="/dashboard/payments" />
       <Card>
         <CardHeader>
           <CardTitle>{t("paymock.title")}</CardTitle>

@@ -6,6 +6,7 @@ import { useEffect, useMemo } from "react";
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackButton } from "@/components/ui/back-button";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
@@ -87,6 +88,7 @@ function CourseAnalyticsPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/dashboard/courses" />
       <Card>
         <CardHeader>
           <CardTitle>{t("an.courseTitle")}</CardTitle>

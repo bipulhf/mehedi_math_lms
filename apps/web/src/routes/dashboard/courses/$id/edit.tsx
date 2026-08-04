@@ -12,6 +12,7 @@ import {
 } from "@/components/courses/course-editor";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { RouteErrorView } from "@/components/common/route-error";
+import { BackButton } from "@/components/ui/back-button";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseDetail, CourseTeacherOption, UpdateCourseInput } from "@/lib/api/courses";
@@ -144,6 +145,7 @@ function EditCoursePage(): JSX.Element {
 
   return (
     <div className="w-full space-y-6 sm:space-y-8">
+      <BackButton to="/dashboard/courses" />
       <div className="border border-hairline bg-card p-2 sm:p-3">
         <CourseBuilderSteps courseId={id} current="info" />
       </div>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -82,6 +83,7 @@ function AdminBugDetailPage(): JSX.Element {
     <div className="space-y-4">
       <Card>
         <CardHeader>
+          <BackButton to="/dashboard/admin/bugs" />
           <CardTitle>{bug.title}</CardTitle>
           <CardDescription>
             Submitted by {bug.user.name} ({bug.user.role}) on {new Date(bug.createdAt).toLocaleString()}.

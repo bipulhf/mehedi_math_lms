@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -94,9 +95,7 @@ function AdminUserDetailPage(): JSX.Element {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="mb-1 flex items-center gap-3">
-              <Button asChild size="xs" variant="outline">
-                <Link to="/dashboard/admin/users">← {t("common.back")}</Link>
-              </Button>
+               <BackButton to="/dashboard/admin/users" />
               <Badge tone={user.isActive ? "neutral" : "attention"}>
                 {user.isActive ? "Active" : "Suspended"}
               </Badge>

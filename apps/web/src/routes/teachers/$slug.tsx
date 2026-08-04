@@ -5,6 +5,7 @@ import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Avatar } from "@/components/ui/avatar";
+import { BackButton } from "@/components/ui/back-button";
 import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PriceText } from "@/components/ui/price-text";
@@ -117,6 +118,7 @@ function TeacherProfilePage(): JSX.Element {
           />
 
           <div className="space-y-6">
+            <BackButton to="/teachers" />
             <h1 className="text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
               {beforeRing.length > 0 ? `${beforeRing} ` : ""}
               <RingedWord>{ringed}</RingedWord>

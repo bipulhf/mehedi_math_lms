@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { CourseManageTabs } from "@/components/courses/course-manage-tabs";
+import { BackButton } from "@/components/ui/back-button";
 import { CourseNoticeManager } from "@/components/courses/course-notice-manager";
 import { RouteErrorView } from "@/components/common/route-error";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -34,6 +35,7 @@ function CourseNoticesPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/dashboard/courses" />
       <CourseManageTabs courseId={id} current="notices" />
 
       {isPending || !course ? (

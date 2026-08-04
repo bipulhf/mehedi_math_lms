@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   Search,
   Users,
@@ -10,7 +10,7 @@ import {
   AlertCircle,
   Fingerprint
 } from "lucide-react";
-import type { JSX } from "react";
+import type { JSX, KeyboardEvent, MouseEvent } from "react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -40,9 +40,34 @@ export const Route = createFileRoute("/dashboard/students/")({
 
 function StudentsDirectoryPage(): JSX.Element {
   const t = useT();
+  const router = useRouter();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
+
+  const openStudent = (studentId: string): void => {
+    void router.navigate({ params: { id: studentId }, to: "/dashboard/students/$id" });
+  };
+
+  const activateStudentRow = (studentId: string, event: MouseEvent<HTMLElement>): void => {
+    if ((event.target as HTMLElement).closest("a,button,input,select,textarea")) {
+      return;
+    }
+
+    openStudent(studentId);
+  };
+
+  const activateStudentWithKeyboard = (
+    studentId: string,
+    event: KeyboardEvent<HTMLElement>
+  ): void => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    openStudent(studentId);
+  };
   const [page, setPage] = useState(1);
 
   const filters = { limit: 10, page, role: "STUDENT" as const, search, status };
@@ -143,9 +168,13 @@ function StudentsDirectoryPage(): JSX.Element {
                 <div
                   key={student.id}
                   className={cn(
-                    "p-5 rounded-3xl border border-hairline/30 flex flex-col gap-4 transition-all",
+                    "cursor-pointer p-5 rounded-3xl border border-hairline/30 flex flex-col gap-4 transition-all",
                     student.isActive ? "bg-panel-warm/20" : "bg-neutral-500/5 opacity-60"
                   )}
+                  onClick={(event) => activateStudentRow(student.id, event)}
+                  onKeyDown={(event) => activateStudentWithKeyboard(student.id, event)}
+                  role="link"
+                  tabIndex={0}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col">
@@ -223,9 +252,13 @@ function StudentsDirectoryPage(): JSX.Element {
                     <tr
                       key={student.id}
                       className={cn(
-                        "group transition-all duration-300 hover:bg-ink/[0.03]",
+                        "group cursor-pointer transition-all duration-300 hover:bg-ink/[0.03]",
                         !student.isActive && "opacity-60"
                       )}
+                      onClick={(event) => activateStudentRow(student.id, event)}
+                      onKeyDown={(event) => activateStudentWithKeyboard(student.id, event)}
+                      role="link"
+                      tabIndex={0}
                     >
                       <td className="px-6 py-3">
                         <Link

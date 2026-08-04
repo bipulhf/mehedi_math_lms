@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { createBugReportSchema } from "@genex/shared";
 
 import { BugScreenshotUploadField } from "@/components/bugs/bug-screenshot-upload-field";
+import { BackButton } from "@/components/ui/back-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ function ReportBugPage(): JSX.Element {
 
   return (
     <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+      <BackButton className="mb-6" to="/dashboard/bugs" />
       <div className="mb-8">
         <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("bugs.report")}</h3>
         <p className="mt-2 text-sm text-muted font-light max-w-2xl leading-relaxed">

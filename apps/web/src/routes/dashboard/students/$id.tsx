@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, User, Mail, Phone, GraduationCap, Calendar, MapPin, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { User, Mail, Phone, GraduationCap, Calendar, MapPin, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/ui/back-button";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { OwnProfileData } from "@/lib/api/profiles";
 import { getAdminStudentProfile } from "@/lib/api/profiles";
@@ -60,12 +60,7 @@ function AdminStudentProfilePage(): JSX.Element {
       <div className="border border-hairline bg-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="mb-2 flex items-center gap-3">
-            <Button asChild size="sm" variant="outline" className="h-8 px-2.5">
-              <Link to="/dashboard/students">
-                <ArrowLeft className="mr-1 size-3.5" />
-                {t("common.back")}
-              </Link>
-            </Button>
+             <BackButton to="/dashboard/students" />
             <h1 className="text-xl font-medium text-ink">{profile.user.name}</h1>
             <Badge tone="quiet" className="px-2.5 py-0.5 text-xs font-semibold">
               {profile.user.role}
@@ -199,4 +194,3 @@ function AdminStudentProfilePage(): JSX.Element {
     </div>
   );
 }
-

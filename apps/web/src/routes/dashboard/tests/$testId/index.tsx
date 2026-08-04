@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { BackButton } from "@/components/ui/back-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -202,7 +203,9 @@ function StudentTestPage(): JSX.Element {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[0.3fr_0.7fr]">
+    <div className="space-y-4">
+      <BackButton to="/dashboard" />
+      <div className="grid gap-4 xl:grid-cols-[0.3fr_0.7fr]">
       <Card>
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
@@ -371,6 +374,7 @@ function StudentTestPage(): JSX.Element {
         </CardContent>
       </Card>
 
+      </div>
       <ConfirmDialog
         cancelLabel={t("common.cancel")}
         confirmLabel={t("test.confirmSubmitAction")}

@@ -4,6 +4,7 @@ import { useState, type JSX } from "react";
 import { toast } from "sonner";
 
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
+import { BackButton } from "@/components/ui/back-button";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,7 @@ function PublishCoursePage(): JSX.Element {
 
   return (
     <div className="space-y-8">
+      <BackButton to="/dashboard/courses" />
       <CourseBuilderSteps courseId={id} current="review" />
 
       <SectionHeading

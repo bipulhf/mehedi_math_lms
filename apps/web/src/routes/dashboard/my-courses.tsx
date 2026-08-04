@@ -83,8 +83,8 @@ function MyCoursesPage(): JSX.Element {
           <div className="min-w-0 space-y-1">
             <Link
               className="block truncate text-base font-medium text-ink transition-colors hover:text-accent"
-              params={{ slug: enrollment.course.slug }}
-              to="/courses/$slug"
+              params={{ courseId: enrollment.course.id }}
+              to="/dashboard/learn/$courseId"
             >
               {enrollment.course.title}
             </Link>
@@ -291,6 +291,7 @@ function MyCoursesPage(): JSX.Element {
           />
         }
         rowKey={(enrollment) => enrollment.id}
+        rowHref={(enrollment) => `/dashboard/learn/${enrollment.course.id}`}
         rows={enrollments}
       />
     </div>

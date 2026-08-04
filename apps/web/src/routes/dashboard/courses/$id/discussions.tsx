@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { CourseManageTabs } from "@/components/courses/course-manage-tabs";
+import { BackButton } from "@/components/ui/back-button";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { RouteErrorView } from "@/components/common/route-error";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -52,6 +53,7 @@ function CourseDiscussionsPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/dashboard/courses" />
       <CourseManageTabs courseId={id} current="discussions" />
 
       {isLoading || !course ? (

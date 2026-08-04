@@ -7,6 +7,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { CourseChapterBuilder } from "@/components/courses/course-chapter-builder";
 import { CourseLectureBuilder } from "@/components/courses/course-lecture-builder";
+import { BackButton } from "@/components/ui/back-button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContentChapter } from "@/lib/api/content";
@@ -78,6 +79,7 @@ function CourseContentPage(): JSX.Element {
 
   return (
     <div className="w-full space-y-6 sm:space-y-8">
+      <BackButton to="/dashboard/courses" />
       <div className="border border-hairline bg-card p-2 sm:p-3">
         <CourseBuilderSteps courseId={id} current={stage} />
       </div>

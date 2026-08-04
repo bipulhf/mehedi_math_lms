@@ -1,4 +1,5 @@
-import type { JSX, ReactNode } from "react";
+import { useRouter } from "@tanstack/react-router";
+import type { JSX, KeyboardEvent, MouseEvent, ReactNode } from "react";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { useT } from "@/lib/i18n/locale-context";
@@ -24,6 +25,7 @@ export interface DataTableProps<TRow> {
   readonly emptyState?: ReactNode;
   readonly rowKey: (row: TRow) => string;
   readonly rows: readonly TRow[];
+  readonly rowHref?: ((row: TRow) => string) | undefined;
 }
 
 /**
@@ -40,9 +42,36 @@ export function DataTable<TRow>({
   columns,
   emptyState,
   rowKey,
-  rows
+  rows,
+  rowHref
 }: DataTableProps<TRow>): JSX.Element {
   const t = useT();
+  const router = useRouter();
+
+  const activateRow = (row: TRow): void => {
+    const href = rowHref?.(row);
+
+    if (href) {
+      void router.navigate({ to: href as never });
+    }
+  };
+
+  const handleRowClick = (row: TRow, event: MouseEvent<HTMLElement>): void => {
+    if ((event.target as HTMLElement).closest("a,button,input,select,textarea")) {
+      return;
+    }
+
+    activateRow(row);
+  };
+
+  const handleRowKeyDown = (row: TRow, event: KeyboardEvent<HTMLElement>): void => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    activateRow(row);
+  };
 
   if (rows.length === 0) {
     return <>{emptyState ?? <EmptyState className="my-6" message={t("empty.generic")} />}</>;
@@ -71,8 +100,15 @@ export function DataTable<TRow>({
           <tbody>
             {rows.map((row) => (
               <tr
-                className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover"
+                className={cn(
+                  "border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover",
+                  rowHref && "cursor-pointer"
+                )}
                 key={rowKey(row)}
+                onClick={rowHref ? (event) => handleRowClick(row, event) : undefined}
+                onKeyDown={rowHref ? (event) => handleRowKeyDown(row, event) : undefined}
+                role={rowHref ? "link" : undefined}
+                tabIndex={rowHref ? 0 : undefined}
               >
                 {columns.map((column) => (
                   <td
@@ -93,7 +129,17 @@ export function DataTable<TRow>({
 
       <div className="space-y-3 md:hidden">
         {rows.map((row) => (
-          <div className="border border-hairline bg-card p-4" key={rowKey(row)}>
+          <div
+            className={cn(
+              "border border-hairline bg-card p-4",
+              rowHref && "cursor-pointer"
+            )}
+            key={rowKey(row)}
+            onClick={rowHref ? (event) => handleRowClick(row, event) : undefined}
+            onKeyDown={rowHref ? (event) => handleRowKeyDown(row, event) : undefined}
+            role={rowHref ? "link" : undefined}
+            tabIndex={rowHref ? 0 : undefined}
+          >
             {columns
               .filter((column) => column.hideWhenStacked !== true)
               .map((column) => (

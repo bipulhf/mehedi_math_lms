@@ -5,6 +5,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BackButton } from "@/components/ui/back-button";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { CategoryNode } from "@/lib/api/categories";
@@ -130,6 +131,7 @@ function CategoryCoursesPage(): JSX.Element {
     >
       {/* Same gutter as the page head above it. */}
       <PublicSection className="space-y-6">
+        <BackButton to="/categories" />
         {category.children.length > 0 ? (
           <div>
             <Card>

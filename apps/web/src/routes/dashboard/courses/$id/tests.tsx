@@ -4,6 +4,7 @@ import type { JSX } from "react";
 
 import { TestBuilderSkeleton } from "@/components/common/skeletons";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
+import { BackButton } from "@/components/ui/back-button";
 import { RouteErrorView } from "@/components/common/route-error";
 import { AssessmentBuilder } from "@/components/tests/assessment-builder";
 import type { CourseDetail } from "@/lib/api/courses";
@@ -47,6 +48,7 @@ function CourseAssessmentsPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
+      <BackButton to="/dashboard/courses" />
       <CourseBuilderSteps courseId={id} current="lectures" />
       <AssessmentBuilder assessments={assessments} course={course} onRefresh={loadData} />
     </div>

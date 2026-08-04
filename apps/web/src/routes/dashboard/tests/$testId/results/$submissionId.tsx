@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
@@ -61,6 +62,7 @@ function SubmissionResultPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton params={{ testId }} to="/dashboard/tests/$testId/history" />
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center gap-2">

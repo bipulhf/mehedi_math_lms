@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import type { JSX } from "react";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
+import type { JSX, KeyboardEvent, MouseEvent } from "react";
 import { useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
@@ -58,6 +58,7 @@ function priorityTone(priority: AdminBugRecord["priority"]): "attention" | "neut
 
 function AdminBugsPage(): JSX.Element {
   const t = useT();
+  const router = useRouter();
 
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
@@ -74,6 +75,27 @@ function AdminBugsPage(): JSX.Element {
   });
   const bugs = data?.data ?? [];
   const totalPages = data?.pagination.pages ?? 1;
+
+  const openBug = (bugId: string): void => {
+    void router.navigate({ params: { id: bugId }, to: "/dashboard/admin/bugs/$id" });
+  };
+
+  const activateBugRow = (bugId: string, event: MouseEvent<HTMLElement>): void => {
+    if ((event.target as HTMLElement).closest("a,button,input,select,textarea")) {
+      return;
+    }
+
+    openBug(bugId);
+  };
+
+  const activateBugWithKeyboard = (bugId: string, event: KeyboardEvent<HTMLElement>): void => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    openBug(bugId);
+  };
 
   if (isLoading) {
     return (
@@ -161,7 +183,14 @@ function AdminBugsPage(): JSX.Element {
               </thead>
               <tbody>
                 {bugs.map((bug) => (
-                  <tr key={bug.id} className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover">
+                  <tr
+                    className="cursor-pointer border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover"
+                    key={bug.id}
+                    onClick={(event) => activateBugRow(bug.id, event)}
+                    onKeyDown={(event) => activateBugWithKeyboard(bug.id, event)}
+                    role="link"
+                    tabIndex={0}
+                  >
                     <td className="px-4 py-3 min-w-64">
                       <div className="flex flex-col max-w-sm">
                         <span className="text-sm font-medium text-ink truncate">{bug.title}</span>

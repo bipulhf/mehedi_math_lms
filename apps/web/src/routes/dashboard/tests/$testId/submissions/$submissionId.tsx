@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -116,6 +117,7 @@ function GradeSubmissionPage(): JSX.Element {
 
   return (
     <div className="space-y-4">
+      <BackButton params={{ testId }} to="/dashboard/tests/$testId/submissions" />
       <Card>
         <CardHeader>
           <CardTitle>{submission.user.name}</CardTitle>

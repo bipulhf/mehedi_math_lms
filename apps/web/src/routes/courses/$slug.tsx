@@ -12,6 +12,7 @@ import { CourseDetailSkeleton } from "@/components/common/skeletons";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Avatar } from "@/components/ui/avatar";
+import { BackButton } from "@/components/ui/back-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
@@ -191,6 +192,7 @@ function CourseDetailPage(): JSX.Element {
     <PublicLayout>
       <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[1fr_380px] lg:gap-14 lg:px-14 lg:py-14">
         <div className="min-w-0 space-y-8">
+          <BackButton to="/courses" />
           <div className="space-y-5">
             <p className="label-mono text-xs uppercase text-muted-faint">{course.category.name}</p>
             <h1 className="max-w-[22ch] text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PaymentHistoryItem } from "@/lib/api/payments";
@@ -54,6 +55,7 @@ function PaymentReturnPage(): JSX.Element {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-10">
+      <BackButton to="/dashboard/payments" />
       <Card>
         <CardHeader>
           <CardTitle>Payment {status}</CardTitle>

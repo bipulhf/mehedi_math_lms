@@ -14,6 +14,7 @@ import {
 } from "@/components/courses/course-player-parts";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
@@ -186,6 +187,7 @@ export function CoursePlayer({
 
   return (
     <div className="space-y-4">
+      <BackButton to="/dashboard/my-courses" />
       <div>
         <Card className="overflow-hidden border-hairline/60 bg-panel-warm/80">
           <CardContent className="space-y-5 p-5 md:p-6">

@@ -15,6 +15,7 @@ import { BellRing, GraduationCap, Send, Shield, Users } from "lucide-react";
 import { adminSendNotification } from "@/lib/api/admin";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -134,6 +135,7 @@ function SendNotificationPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/dashboard" />
       {/* Top Header Card */}
       <div className="border border-hairline bg-card p-6">
         <div className="flex items-center gap-3">

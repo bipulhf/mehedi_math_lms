@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import type { JSX } from "react";
+import type { JSX, KeyboardEvent, MouseEvent } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ import { listAccountingPayments, listMyPayments, refundPayment } from "@/lib/api
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/payments/")({
   head: () =>
@@ -89,6 +90,32 @@ function PaymentsPage(): JSX.Element {
 
   const [refundTarget, setRefundTarget] = useState<PaymentHistoryItem | null>(null);
   const [isRefunding, setIsRefunding] = useState(false);
+
+  const activateRefund = (item: PaymentHistoryItem): void => {
+    if (canManagePayments && item.status === "SUCCESS") {
+      setRefundTarget(item);
+    }
+  };
+
+  const activatePaymentRow = (item: PaymentHistoryItem, event: MouseEvent<HTMLElement>): void => {
+    if ((event.target as HTMLElement).closest("a,button,input,select,textarea")) {
+      return;
+    }
+
+    activateRefund(item);
+  };
+
+  const activatePaymentWithKeyboard = (
+    item: PaymentHistoryItem,
+    event: KeyboardEvent<HTMLElement>
+  ): void => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    activateRefund(item);
+  };
 
   const executeRefund = async (): Promise<void> => {
     if (!refundTarget) {
@@ -211,7 +238,17 @@ function PaymentsPage(): JSX.Element {
                 </thead>
                 <tbody>
                   {items.map((item) => (
-                    <tr key={item.id} className="border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover">
+                    <tr
+                      className={cn(
+                        "border-b border-hairline-fainter transition-colors last:border-b-0 hover:bg-row-hover",
+                        canManagePayments && item.status === "SUCCESS" && "cursor-pointer"
+                      )}
+                      key={item.id}
+                      onClick={(event) => activatePaymentRow(item, event)}
+                      onKeyDown={(event) => activatePaymentWithKeyboard(item, event)}
+                      role={canManagePayments && item.status === "SUCCESS" ? "button" : undefined}
+                      tabIndex={canManagePayments && item.status === "SUCCESS" ? 0 : undefined}
+                    >
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
                           <span className="font-medium text-ink">{item.course.title}</span>
