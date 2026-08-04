@@ -6,6 +6,7 @@ import { StyleSheet, View } from "react-native";
 
 import { Body, Button, Caption, ErrorNotice } from "@/src/components/ui";
 import { resolveLectureVideo } from "@/src/lib/lecture-video";
+import { useT } from "@/src/lib/locale";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 /**
@@ -30,6 +31,7 @@ function StreamPlayer({
   onWatched: () => void;
   uri: string;
 }): JSX.Element {
+  const t = useT();
   const [hasFailed, setHasFailed] = useState(false);
   // Ref rather than state: this fires from a player event once a second, and
   // the screen has no reason to re-render for it.
@@ -72,9 +74,7 @@ function StreamPlayer({
   }, [player]);
 
   if (hasFailed) {
-    return (
-      <ErrorNotice message="This video could not be loaded. Its link may have expired — reopen the course to get a fresh one." />
-    );
+    return <ErrorNotice message={t("player.videoBroken")} />;
   }
 
   return (
@@ -103,21 +103,19 @@ export function LecturePlayer({
   onWatched: () => void;
   videoUrl: string | null;
 }): JSX.Element {
+  const t = useT();
   const source = resolveLectureVideo(videoUrl);
 
   if (source === null) {
-    return <Caption>This lecture has no video attached.</Caption>;
+    return <Caption>{t("player.noVideo")}</Caption>;
   }
 
   if (source.kind === "external") {
     return (
       <View style={styles.external}>
-        <Body muted>
-          This lecture is hosted on a video site, so it opens in the browser rather than in the
-          player.
-        </Body>
+        <Body muted>{t("player.externalVideoLead")}</Body>
         <Button
-          label="Open the video"
+          label={t("player.openVideo")}
           onPress={() => {
             void WebBrowser.openBrowserAsync(source.url);
           }}
@@ -133,8 +131,8 @@ export function LecturePlayer({
 const styles = StyleSheet.create({
   external: { gap: spacing.md },
   stage: {
-    backgroundColor: colors.onSurface,
-    borderRadius: radius.lg,
+    backgroundColor: colors.ink,
+    borderRadius: radius.sm,
     overflow: "hidden"
   },
   video: { aspectRatio: 16 / 9, width: "100%" }

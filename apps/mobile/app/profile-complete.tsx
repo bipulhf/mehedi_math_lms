@@ -17,6 +17,7 @@ import {
   ScreenSkeleton
 } from "@/src/components/ui";
 import { getOwnProfile, updateOwnProfile } from "@/src/lib/api";
+import { useT } from "@/src/lib/locale";
 import { profileFormShape, profileFormValues, validateProfileForm } from "@/src/lib/profile-form";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
@@ -36,6 +37,7 @@ import { spacing } from "@/src/theme/tokens";
  * this screen sends the shape that matches the role it was rendered for.
  */
 export default function ProfileCompleteScreen(): JSX.Element {
+  const t = useT();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isPending: isSessionPending, session } = useSession();
@@ -102,16 +104,14 @@ export default function ProfileCompleteScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: "Complete your profile" }} />
+      <Stack.Screen options={{ title: t("profc.title") }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>Complete your profile</Heading>
-          <Body muted>
-            Fill this in once. Enrolment and most of the dashboard stay locked until it is done.
-          </Body>
+          <Heading>{t("profc.title")}</Heading>
+          <Body muted>{t("profile.completeLead")}</Body>
 
           {submitError ? <ErrorNotice message={submitError} /> : null}
 
@@ -139,8 +139,8 @@ export default function ProfileCompleteScreen(): JSX.Element {
             ))}
           </Card>
 
-          <Button isBusy={save.isPending} label="Save profile" onPress={handleSubmit} />
-          <Caption>Only your full name is required. Everything else can wait.</Caption>
+          <Button isBusy={save.isPending} label={t("action.save")} onPress={handleSubmit} />
+          <Caption>{t("profile.completeFormLead")}</Caption>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>

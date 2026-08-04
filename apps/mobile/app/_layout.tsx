@@ -14,7 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
-import { LocaleProvider } from "@/src/lib/locale";
+import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
 import { colors, fonts } from "@/src/theme/tokens";
 
@@ -28,6 +28,51 @@ export const unstable_settings = {
 // for an unresolved family without warning, so a first frame drawn before the
 // fonts land is a frame in the wrong typeface.
 void SplashScreen.preventAutoHideAsync();
+
+/**
+ * The `Stack` and its screen titles, split out from `RootLayout` because
+ * `useT` needs a descendant of `LocaleProvider` — the provider itself renders
+ * one level up, so this cannot be inlined into the component that mounts it.
+ */
+function AppStack(): JSX.Element {
+  const t = useT();
+
+  return (
+    <>
+      <StatusBar style="dark" />
+      <Stack
+        screenOptions={{
+          contentStyle: { backgroundColor: colors.paper },
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: colors.paper },
+          headerTintColor: colors.ink,
+          headerTitleStyle: { fontFamily: fonts.displayBold }
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="sign-in" options={{ title: t("auth.signIn") }} />
+        <Stack.Screen name="sign-up" options={{ title: t("auth.signUp") }} />
+        <Stack.Screen name="courses/[courseId]" options={{ title: t("mine.colCourse") }} />
+        <Stack.Screen name="learn/[courseId]" options={{ title: t("player.playerTitle") }} />
+        <Stack.Screen name="tests/[testId]" options={{ title: t("player.assessment") }} />
+        <Stack.Screen
+          name="messages/[conversationId]"
+          options={{ title: t("msg.conversationTitle") }}
+        />
+        <Stack.Screen name="messages/new" options={{ title: t("messages.newTitle") }} />
+        <Stack.Screen name="payments" options={{ title: t("profile.paymentTitle") }} />
+        <Stack.Screen name="change-password" options={{ title: t("password.title") }} />
+        <Stack.Screen name="profile-complete" options={{ title: t("profc.title") }} />
+        <Stack.Screen name="bug-report" options={{ title: t("bug.title") }} />
+        {/* Deep-link landing pads. Android delivers `genex://…` through Linking
+          as well as resolving the browser session, and Expo Router would
+          otherwise route that to +not-found. */}
+        <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+        <Stack.Screen name="payment-callback" options={{ headerShown: false }} />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout(): JSX.Element | null {
   // Created in state, not at module scope: a fast refresh would otherwise keep
@@ -61,31 +106,7 @@ export default function RootLayout(): JSX.Element | null {
       persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
     >
       <LocaleProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            contentStyle: { backgroundColor: colors.paper },
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: colors.paper },
-            headerTintColor: colors.ink,
-            headerTitleStyle: { fontFamily: fonts.displayBold }
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="sign-in" options={{ title: "Sign in" }} />
-          <Stack.Screen name="sign-up" options={{ title: "Create account" }} />
-          <Stack.Screen name="courses/[courseId]" options={{ title: "Course" }} />
-          <Stack.Screen name="learn/[courseId]" options={{ title: "Course player" }} />
-          <Stack.Screen name="tests/[testId]" options={{ title: "Test" }} />
-          <Stack.Screen name="messages/[conversationId]" options={{ title: "Conversation" }} />
-          <Stack.Screen name="profile-complete" options={{ title: "Complete your profile" }} />
-          <Stack.Screen name="bug-report" options={{ title: "Report a bug" }} />
-          {/* Deep-link landing pads. Android delivers `genex://…` through Linking
-            as well as resolving the browser session, and Expo Router would
-            otherwise route that to +not-found. */}
-          <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
-          <Stack.Screen name="payment-callback" options={{ headerShown: false }} />
-        </Stack>
+        <AppStack />
       </LocaleProvider>
     </PersistQueryClientProvider>
   );

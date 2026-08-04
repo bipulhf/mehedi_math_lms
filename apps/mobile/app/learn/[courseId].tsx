@@ -1,13 +1,14 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { HtmlContent } from "@/src/components/html-content";
 import { LectureComments } from "@/src/components/lecture-comments";
 import { LecturePlayer } from "@/src/components/lecture-player";
 import {
+  AccordionRow,
   Badge,
   Body,
   Button,
@@ -17,6 +18,8 @@ import {
   Heading,
   Screen,
   SkeletonBlock,
+  StatCard,
+  Tabs,
   Title
 } from "@/src/components/ui";
 import {
@@ -26,15 +29,83 @@ import {
   getCourseProgress,
   listCourseNotices,
   markLectureComplete,
+  type AssessmentTestSummary,
   type ContentLecture
 } from "@/src/lib/api";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 /**
- * The chunked tracker from DESIGN.md: one block per lecture, `secondary` for
- * done and `surface-container-highest` for the track. A single thin bar is
- * explicitly not what this design asks for.
+ * The course player. Lectures and tests are unified into one `sortOrder`-ordered
+ * navigator so a class and its chapter's test are a single sequence you move
+ * through with prev/next, mirroring the web `course-player.tsx`. Notices are a
+ * mode toggle rather than an inline card, and the stats row is `StatCard`s.
+ */
+
+interface NavigationLectureItem {
+  chapterId: string;
+  id: string;
+  kind: "lecture";
+  lecture: ContentLecture;
+  sortOrder: number;
+  title: string;
+}
+
+interface NavigationTestItem {
+  chapterId: string;
+  id: string;
+  kind: "test";
+  sortOrder: number;
+  test: AssessmentTestSummary;
+  title: string;
+}
+
+type NavigationItem = NavigationLectureItem | NavigationTestItem;
+
+function getPdfMaterial(lecture: ContentLecture) {
+  return lecture.materials.find((material) => material.fileType === "application/pdf") ?? null;
+}
+
+function ChapterItem({
+  isCompleted,
+  isSelected,
+  item,
+  onSelect
+}: {
+  isCompleted: boolean;
+  isSelected: boolean;
+  item: NavigationItem;
+  onSelect: () => void;
+}): JSX.Element {
+  const t = useT();
+
+  return (
+    <Pressable onPress={onSelect} style={[styles.itemRow, isSelected ? styles.itemRowActive : null]}>
+      <View style={styles.itemRowText}>
+        <Body numberOfLines={1}>{item.title}</Body>
+        <Caption>
+          {item.kind === "lecture"
+            ? `${item.lecture.type === "TEXT" ? "" : "▶ "}${
+                item.lecture.videoDuration
+                  ? t("course.minutes", { count: item.lecture.videoDuration })
+                  : t("player.selfPaced")
+              }`
+            : `${t("player.questionCount", { count: item.test.questionCount })} · ${t(
+                "player.totalMarks",
+                { count: item.test.totalMarks }
+              )}`}
+        </Caption>
+      </View>
+      <Caption>{item.kind === "test" ? "✦" : isCompleted ? "✓" : "○"}</Caption>
+    </Pressable>
+  );
+}
+
+/**
+ * The chunked tracker from DESIGN.md: one block per lecture, `accent` for done
+ * and `chip-active` for the track, with the current lecture a third colour.
+ * A single thin bar is explicitly not what this design asks for.
  */
 function ChunkedProgress({
   completedIds,
@@ -61,31 +132,75 @@ function ChunkedProgress({
   );
 }
 
+function MaterialRow({
+  fileType,
+  fileUrl,
+  title
+}: {
+  fileType: string;
+  fileUrl: string;
+  title: string;
+}): JSX.Element {
+  return (
+    <Pressable
+      onPress={() => {
+        void WebBrowser.openBrowserAsync(fileUrl);
+      }}
+      style={styles.materialRow}
+    >
+      <View style={styles.materialText}>
+        <Body numberOfLines={1}>{title}</Body>
+        <Caption>{fileType}</Caption>
+      </View>
+      <Caption>↓</Caption>
+    </Pressable>
+  );
+}
+
+function MaterialLinks({
+  materials,
+  title
+}: {
+  materials: ContentLecture["materials"];
+  title: string;
+}): JSX.Element | null {
+  if (materials.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card>
+      <Title>{title}</Title>
+      <View style={{ height: spacing.sm }} />
+      {materials.map((material) => (
+        <MaterialRow
+          fileType={material.fileType}
+          fileUrl={material.fileUrl}
+          key={material.id}
+          title={material.title}
+        />
+      ))}
+    </Card>
+  );
+}
+
 export default function CoursePlayerScreen(): JSX.Element {
   const { courseId } = useLocalSearchParams<{ courseId: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [selectedLectureId, setSelectedLectureId] = useState<string | null>(null);
+  const t = useT();
+  const format = useFormat();
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [openChapterId, setOpenChapterId] = useState<string | null>(null);
+  const [playerMode, setPlayerMode] = useState<"learn" | "notices">("learn");
 
   const [courseQuery, contentQuery, progressQuery, testsQuery, noticesQuery] = useQueries({
     queries: [
-      { queryFn: async () => getCourse(courseId), queryKey: queryKeys.course(courseId) },
-      {
-        queryFn: async () => getCourseContent(courseId),
-        queryKey: queryKeys.courseContent(courseId)
-      },
-      {
-        queryFn: async () => getCourseProgress(courseId),
-        queryKey: queryKeys.courseProgress(courseId)
-      },
-      {
-        queryFn: async () => getCourseAssessments(courseId),
-        queryKey: queryKeys.courseTests(courseId)
-      },
-      {
-        queryFn: async () => listCourseNotices(courseId),
-        queryKey: queryKeys.courseNotices(courseId)
-      }
+      { queryFn: () => getCourse(courseId), queryKey: queryKeys.course(courseId) },
+      { queryFn: () => getCourseContent(courseId), queryKey: queryKeys.courseContent(courseId) },
+      { queryFn: () => getCourseProgress(courseId), queryKey: queryKeys.courseProgress(courseId) },
+      { queryFn: () => getCourseAssessments(courseId), queryKey: queryKeys.courseTests(courseId) },
+      { queryFn: () => listCourseNotices(courseId), queryKey: queryKeys.courseNotices(courseId) }
     ]
   });
 
@@ -93,8 +208,6 @@ export default function CoursePlayerScreen(): JSX.Element {
   const chapters = contentQuery?.data ?? [];
   const progress = progressQuery?.data ?? null;
   const assessments = testsQuery?.data ?? [];
-  // Teachers post these; before this screen showed them, a mobile student only
-  // learned about one if a push notification happened to fire.
   const notices = noticesQuery?.data ?? [];
   const isLoading =
     Boolean(courseQuery?.isPending) ||
@@ -111,23 +224,87 @@ export default function CoursePlayerScreen(): JSX.Element {
       ),
     [progress?.lectures]
   );
-  const activeLectureId = selectedLectureId ?? progress?.nextLectureId ?? lectures[0]?.id ?? null;
-  const activeLecture = lectures.find((lecture) => lecture.id === activeLectureId) ?? null;
+
+  const testsByChapterId = useMemo(
+    () => new Map(assessments.map((chapter) => [chapter.chapterId, chapter.tests] as const)),
+    [assessments]
+  );
+
+  const navigationItems = useMemo(() => {
+    const items: NavigationItem[] = [];
+
+    for (const chapter of chapters) {
+      const chapterItems: NavigationItem[] = chapter.lectures.map((lecture) => ({
+        chapterId: chapter.id,
+        id: `lecture:${lecture.id}`,
+        kind: "lecture",
+        lecture,
+        sortOrder: lecture.sortOrder,
+        title: lecture.title
+      }));
+
+      chapterItems.push(
+        ...(testsByChapterId.get(chapter.id) ?? []).map((test) => ({
+          chapterId: chapter.id,
+          id: `test:${test.id}`,
+          kind: "test" as const,
+          sortOrder: test.sortOrder,
+          test,
+          title: test.title
+        }))
+      );
+      chapterItems.sort((first, second) => first.sortOrder - second.sortOrder);
+      items.push(...chapterItems);
+    }
+
+    return items;
+  }, [chapters, testsByChapterId]);
+
+  const selectedItem = navigationItems.find((item) => item.id === selectedItemId) ?? null;
+  const selectedLecture = selectedItem?.kind === "lecture" ? selectedItem.lecture : null;
+  const selectedChapter = selectedItem
+    ? (chapters.find((chapter) => chapter.id === selectedItem.chapterId) ?? null)
+    : null;
+  const selectedIndex = navigationItems.findIndex((item) => item.id === selectedItemId);
+
+  useEffect(() => {
+    if (navigationItems.length === 0 || selectedItemId !== null) {
+      return;
+    }
+
+    const firstId =
+      progress?.nextLectureId && navigationItems.some((item) => item.id === `lecture:${progress.nextLectureId}`)
+        ? `lecture:${progress.nextLectureId}`
+        : (navigationItems[0]?.id ?? null);
+
+    setSelectedItemId(firstId);
+  }, [navigationItems, progress?.nextLectureId, selectedItemId]);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setOpenChapterId(selectedItem.chapterId);
+    }
+  }, [selectedItem]);
 
   const complete = useMutation({
     mutationFn: markLectureComplete,
     onSuccess: async () => {
-      // Completion latches on the server; the client only re-reads it. ADR-0005.
       await queryClient.invalidateQueries({ queryKey: queryKeys.courseProgress(courseId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments() });
     }
   });
 
+  const goToIndex = (index: number): void => {
+    setSelectedItemId(navigationItems[index]?.id ?? null);
+  };
+
   if (isLoading) {
     return (
       <Screen>
         <ScrollView contentContainerStyle={styles.content}>
-          <SkeletonBlock height={24} width="60%" />
+          <SkeletonBlock height={28} width="60%" />
+          <SkeletonBlock height={14} />
+          <SkeletonBlock height={90} />
           <SkeletonBlock height={10} />
           <SkeletonBlock height={120} />
           <SkeletonBlock height={60} />
@@ -138,149 +315,306 @@ export default function CoursePlayerScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: course?.title ?? "Course" }} />
+      <Stack.Screen options={{ title: course?.title ?? t("player.navigator") }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Heading>{course?.title ?? "Course"}</Heading>
-
-        {lectures.length > 0 ? (
-          <>
+        <Card>
+          <View style={styles.badgesRow}>
+            {course?.category ? <Badge>{course.category.name}</Badge> : null}
+            <Badge tone={progress?.isCourseCompleted ? "neutral" : "quiet"}>
+              {progress?.isCourseCompleted ? t("player.courseCompleted") : t("player.inProgress")}
+            </Badge>
+          </View>
+          <View style={{ height: spacing.md }} />
+          <Heading>{course?.title}</Heading>
+          {course?.description ? (
+            <View style={{ height: spacing.sm }} />
+          ) : null}
+          {course?.description ? <Body muted>{course.description}</Body> : null}
+          <View style={[styles.statsRow, { paddingTop: spacing.lg }]}>
+            <StatCard label={t("player.completed")} value={progress?.completedLectures ?? 0} />
+            <StatCard label={t("player.lectures")} value={progress?.totalLectures ?? lectures.length} />
+            <StatCard
+              label={t("mine.progress")}
+              value={format.percent(progress?.progressPercentage ?? 0)}
+            />
+            <StatCard
+              label={t("player.assessments")}
+              value={assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
+            />
+          </View>
+          {lectures.length > 0 ? (
             <ChunkedProgress
               completedIds={completedIds}
-              currentLectureId={activeLectureId}
+              currentLectureId={selectedLecture?.id ?? null}
               lectures={lectures}
             />
+          ) : null}
+          <View style={{ height: spacing.lg }} />
+          <Tabs
+            label={t("player.navigator")}
+            onChange={setPlayerMode}
+            tabs={[
+              { isActive: playerMode === "learn", label: t("player.lessonsAndTests"), value: "learn" },
+              { isActive: playerMode === "notices", label: t("player.notices"), value: "notices" }
+            ]}
+            value={playerMode}
+          />
+        </Card>
+
+        {playerMode === "notices" ? (
+          notices.length === 0 ? (
+            <EmptyState message={t("player.noNotices")} title="" />
+          ) : (
+            notices.map((notice) => (
+              <Card key={notice.id} style={{ gap: spacing.sm }}>
+                <View style={styles.noticeHeader}>
+                  <Body>{notice.title}</Body>
+                  {notice.isPinned ? <Badge tone="attention">{t("player.pinned")}</Badge> : null}
+                </View>
+                <Body muted>{notice.content}</Body>
+                <Caption>
+                  {notice.author.name} · {format.date(notice.createdAt)}
+                </Caption>
+              </Card>
+            ))
+          )
+        ) : null}
+
+        {playerMode === "learn" ? (
+          <Card>
+            <Title>{t("player.navigator")}</Title>
+            <View style={{ height: spacing.sm }} />
+            {chapters.map((chapter) => {
+              const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
+
+              return (
+                <AccordionRow
+                  isOpen={openChapterId === chapter.id}
+                  key={chapter.id}
+                  meta={chapterItems.length}
+                  onToggle={() =>
+                    setOpenChapterId((current) =>
+                      current === chapter.id && selectedItem?.chapterId !== chapter.id
+                        ? null
+                        : chapter.id
+                    )
+                  }
+                  title={chapter.title}
+                >
+                  <View style={{ gap: spacing.xs }}>
+                    {chapterItems.map((item) => (
+                      <ChapterItem
+                        isCompleted={
+                          item.kind === "lecture" &&
+                          Boolean(completedIds.has(item.lecture.id))
+                        }
+                        isSelected={selectedItemId === item.id}
+                        item={item}
+                        key={item.id}
+                        onSelect={() => setSelectedItemId(item.id)}
+                      />
+                    ))}
+                  </View>
+                </AccordionRow>
+              );
+            })}
+          </Card>
+        ) : null}
+
+        {playerMode === "learn" && selectedLecture !== null && selectedChapter !== null ? (
+          <Card style={{ gap: spacing.md }}>
+            <View style={styles.badgesRow}>
+              <Badge>{completedIds.has(selectedLecture.id) ? t("player.watchedDone") : t("player.activeLecture")}</Badge>
+              <Badge tone="quiet">
+                {getPdfMaterial(selectedLecture) !== null
+                  ? "PDF"
+                  : selectedLecture.type === "TEXT"
+                    ? "TEXT"
+                    : "▶"}
+              </Badge>
+            </View>
+            <Title>{selectedLecture.title}</Title>
             <Caption>
-              {progress?.completedLectures ?? 0} of {progress?.totalLectures ?? lectures.length}{" "}
-              lectures watched
+              {selectedChapter.title}
+              {selectedLecture.videoDuration ? ` · ${t("course.minutes", { count: selectedLecture.videoDuration })}` : ""}
             </Caption>
+            <LectureBody
+              isCompleted={completedIds.has(selectedLecture.id)}
+              isMarking={complete.isPending}
+              lecture={selectedLecture}
+              onMarkComplete={() => complete.mutate(selectedLecture.id)}
+            />
+          </Card>
+        ) : null}
+
+        {playerMode === "learn" && selectedItem?.kind === "test" ? (
+          <Card style={{ gap: spacing.md }}>
+            <View style={styles.badgesRow}>
+              <Badge>{t("player.assessment")}</Badge>
+              <Badge tone="quiet">{selectedItem.test.type}</Badge>
+            </View>
+            <Title>{selectedItem.test.title}</Title>
+            <Caption>
+              {t("player.questionCount", { count: selectedItem.test.questionCount })} ·{" "}
+              {t("player.totalMarks", { count: selectedItem.test.totalMarks })} ·{" "}
+              {selectedItem.test.durationInMinutes
+                ? t("course.minutes", { count: selectedItem.test.durationInMinutes })
+                : t("player.untimed")}
+            </Caption>
+            <Button
+              label={t("player.openTest")}
+              onPress={() =>
+                router.push({ params: { testId: selectedItem.test.id }, pathname: "/tests/[testId]" })
+              }
+            />
+          </Card>
+        ) : null}
+
+        {navigationItems.length === 0 ? (
+          <EmptyState
+            message={course?.isExamOnly ? t("player.examOnlyLead") : t("player.noLecturesLead")}
+            title={t("player.noLectures")}
+          />
+        ) : null}
+
+        {playerMode === "learn" && selectedLecture !== null && selectedChapter !== null ? (
+          <>
+            <MaterialLinks
+              materials={selectedLecture.materials}
+              title={t("player.lectureMaterials")}
+            />
+            <MaterialLinks
+              materials={selectedChapter.materials}
+              title={t("player.chapterMaterials")}
+            />
           </>
         ) : null}
 
-        {progress?.isCourseCompleted ? <Badge tone="positive">Course completed</Badge> : null}
+        {selectedLecture !== null ? <LectureComments lectureId={selectedLecture.id} /> : null}
 
-        {notices.length > 0 ? (
-          <Card>
-            <Title>Notices</Title>
-            <View style={{ height: spacing.sm }} />
-            {notices.map((notice) => (
-              <View key={notice.id} style={styles.notice}>
-                <View style={styles.noticeHeader}>
-                  <Body>{notice.title}</Body>
-                  {notice.isPinned ? <Badge>Pinned</Badge> : null}
-                </View>
-                <HtmlContent html={notice.content} muted />
-                <Caption>
-                  {notice.author.name} · {new Date(notice.createdAt).toLocaleDateString()}
-                </Caption>
-              </View>
-            ))}
-          </Card>
-        ) : null}
-
-        {activeLecture ? (
-          <Card>
-            <Title>{activeLecture.title}</Title>
-            <View style={{ height: spacing.sm }} />
-            {activeLecture.description ? <HtmlContent html={activeLecture.description} muted /> : null}
-            <View style={{ height: spacing.md }} />
-            <LecturePlayer
-              isCompleted={completedIds.has(activeLecture.id)}
-              onWatched={() => complete.mutate(activeLecture.id)}
-              videoUrl={activeLecture.videoUrl}
-            />
-            <View style={{ height: spacing.lg }} />
-            {/* Still here even though playback marks the lecture itself: a
-                reading, an external video, or a lecture the student skimmed
-                all need a way to say "done", and completion latches on the
-                server either way. ADR-0005. */}
+        {selectedItem !== null ? (
+          <View style={styles.prevNext}>
             <Button
-              disabled={completedIds.has(activeLecture.id)}
-              isBusy={complete.isPending}
-              label={completedIds.has(activeLecture.id) ? "Watched" : "Mark as watched"}
-              onPress={() => complete.mutate(activeLecture.id)}
+              disabled={selectedIndex <= 0}
+              label={t("common.previous")}
+              onPress={() => goToIndex(selectedIndex - 1)}
+              variant="outline"
             />
-          </Card>
-        ) : (
-          <EmptyState
-            message={
-              course?.isExamOnly
-                ? "This is an exam-only course. Complete its tests below."
-                : "The teacher has not published lectures yet."
-            }
-            title="No lectures"
-          />
-        )}
-
-        {activeLecture ? <LectureComments lectureId={activeLecture.id} /> : null}
-
-        {chapters.map((chapter) => (
-          <Card key={chapter.id}>
-            <Title>{chapter.title}</Title>
-            <View style={{ height: spacing.sm }} />
-            {chapter.lectures.map((lecture) => (
-              <Pressable
-                key={lecture.id}
-                onPress={() => setSelectedLectureId(lecture.id)}
-                style={[
-                  styles.lectureRow,
-                  lecture.id === activeLectureId ? styles.lectureRowActive : null
-                ]}
-              >
-                <Body numberOfLines={1}>{lecture.title}</Body>
-                {completedIds.has(lecture.id) ? <Caption>Watched</Caption> : null}
-              </Pressable>
-            ))}
-          </Card>
-        ))}
-
-        {assessments.map((chapter) => (
-          <Card key={chapter.chapterId}>
-            <Title>{chapter.chapterTitle} — tests</Title>
-            <View style={{ height: spacing.sm }} />
-            {chapter.tests
-              .filter((test) => test.isPublished)
-              .map((test) => (
-                <Pressable
-                  key={test.id}
-                  onPress={() =>
-                    router.push({ params: { testId: test.id }, pathname: "/tests/[testId]" })
-                  }
-                  style={styles.lectureRow}
-                >
-                  <Body>{test.title}</Body>
-                  <Caption>Open</Caption>
-                </Pressable>
-              ))}
-          </Card>
-        ))}
+            <Button
+              disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
+              label={t("common.next")}
+              onPress={() => goToIndex(selectedIndex + 1)}
+            />
+          </View>
+        ) : null}
       </ScrollView>
     </Screen>
   );
 }
 
+function LectureBody({
+  isCompleted,
+  isMarking,
+  lecture,
+  onMarkComplete
+}: {
+  isCompleted: boolean;
+  isMarking: boolean;
+  lecture: ContentLecture;
+  onMarkComplete: () => void;
+}): JSX.Element {
+  const t = useT();
+  const pdf = getPdfMaterial(lecture);
+
+  return (
+    <View style={styles.bodyStack}>
+      {lecture.description ? (
+        <View style={styles.panel}>
+          <Body muted>{lecture.description}</Body>
+        </View>
+      ) : null}
+
+      {pdf !== null ? (
+        <View style={styles.panel}>
+          <Body muted>{t("player.pdfLead")}</Body>
+          <View style={{ height: spacing.md }} />
+          <Button
+            label={t("player.openPdf")}
+            onPress={() => {
+              void WebBrowser.openBrowserAsync(pdf.fileUrl);
+            }}
+            variant="outline"
+          />
+        </View>
+      ) : lecture.type === "TEXT" ? (
+        <Text style={styles.textContent}>{lecture.content ?? ""}</Text>
+      ) : (
+        <LecturePlayer
+          isCompleted={isCompleted}
+          onWatched={onMarkComplete}
+          videoUrl={lecture.videoUrl}
+        />
+      )}
+
+      <Button
+        disabled={isCompleted}
+        isBusy={isMarking}
+        label={isCompleted ? t("player.watchedDone") : isMarking ? t("player.savingProgress") : t("player.watched")}
+        onPress={onMarkComplete}
+        variant={isCompleted ? "outline" : "ink"}
+      />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  badgesRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
+  bodyStack: { gap: spacing.md },
   chunk: {
-    backgroundColor: colors.surfaceContainerHighest,
+    backgroundColor: colors.chipActive,
     borderRadius: radius.full,
     flex: 1,
     height: 8,
     minWidth: 6
   },
-  chunkCurrent: { backgroundColor: colors.primary },
-  chunkDone: { backgroundColor: colors.secondary },
+  chunkCurrent: { backgroundColor: colors.ink },
+  chunkDone: { backgroundColor: colors.accent },
   chunkRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   content: { gap: spacing.md, padding: spacing.lg },
-  lectureRow: {
+  itemRow: {
     alignItems: "center",
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     flexDirection: "row",
+    gap: spacing.md,
     justifyContent: "space-between",
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.md
   },
-  lectureRowActive: { backgroundColor: colors.secondaryContainer },
-  notice: { gap: spacing.xs, paddingVertical: spacing.sm },
-  noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
+  itemRowActive: { backgroundColor: colors.chipActive },
+  itemRowText: { flex: 1, gap: 2 },
+  materialRow: {
+    alignItems: "center",
+    borderColor: colors.hairline,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: spacing.md
+  },
+  materialText: { flex: 1, gap: 2 },
+  noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  panel: {
+    backgroundColor: colors.panelWarm,
+    padding: spacing.lg
+  },
+  prevNext: { flexDirection: "row", gap: spacing.md },
+  statsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  textContent: {
+    color: colors.ink,
+    fontFamily: "HindSiliguri_400Regular",
+    fontSize: 16,
+    lineHeight: 28,
+    padding: spacing.lg
+  }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

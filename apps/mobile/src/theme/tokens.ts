@@ -2,9 +2,6 @@
  * The Genex palette, transcribed from `apps/web/src/styles/app.css` into plain
  * values React Native can use. `DESIGN.md` is the authority; this file only
  * restates it in a form Metro can bundle.
- *
- * The Material token names are kept as aliases at the bottom so screens that
- * have not been rebuilt still resolve. They go when those screens do.
  */
 export const colors = {
   accent: "#ee5622",
@@ -26,47 +23,18 @@ export const colors = {
   paper: "#fcfbf9",
   placeholder: "#b4aea6",
   placeholderFill: "#f1eee9",
-  rowHover: "#fbf9f6",
-
-  // Compatibility aliases for screens not yet rebuilt. Remove with them.
-  background: "#fcfbf9",
-  errorContainer: "#ffdad6",
-  onBackground: "#23211e",
-  onError: "#ffffff",
-  onPrimary: "#fcfbf9",
-  onPrimaryContainer: "#23211e",
-  onSecondaryContainer: "#fcfbf9",
-  onSurface: "#23211e",
-  onSurfaceVariant: "#6b6763",
-  outline: "#c9c3bb",
-  outlineVariant: "#e8e4de",
-  primary: "#23211e",
-  primaryContainer: "#efebe4",
-  secondary: "#ee5622",
-  secondaryContainer: "#ee5622",
-  success: "#6b6763",
-  surface: "#fcfbf9",
-  surfaceContainer: "#f7f5f1",
-  surfaceContainerHigh: "#efebe4",
-  surfaceContainerHighest: "#efebe4",
-  surfaceContainerLow: "#f7f5f1",
-  surfaceContainerLowest: "#ffffff",
-  warning: "#ee5622"
+  rowHover: "#fbf9f6"
 } as const;
 
 /**
- * Cards are square and buttons are 4px. `full` survives for dots, avatars and
- * pills — the only round things in the design.
+ * Cards are square and buttons are 4px. `pill` is for pills and chips, `full`
+ * for dots and avatars — the only round things in the design.
  */
 export const radius = {
-  full: 999,
-  lg: 4,
-  md: 4,
   pill: 100,
   sm: 4,
   square: 0,
-  xl: 4,
-  xxl: 4
+  full: 999
 } as const;
 
 /** A 4pt scale; every gap and padding in the app comes from here. */
@@ -100,19 +68,24 @@ export const fonts = {
   monoLabel: "Archivo_500Medium"
 } as const;
 
+/**
+ * The small-screen type scale from DESIGN.md §4/§8: a 26px weight-500 h1, 20px
+ * section titles, 17px body at a generous line height for Bangla, and 15px
+ * labels. Bangla runs ~20% longer than English, so nothing here is
+ * width-constrained.
+ */
 export const typography = {
-  body: { fontFamily: fonts.body, fontSize: 16, lineHeight: 26 },
-  caption: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18 },
-  display: { fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 38 },
-  heading: { fontFamily: fonts.displayBold, fontSize: 22, lineHeight: 30 },
-  label: { fontFamily: fonts.monoLabel, fontSize: 12, letterSpacing: 0.6, lineHeight: 16 },
-  title: { fontFamily: fonts.displayBold, fontSize: 17, lineHeight: 24 }
+  body: { fontFamily: fonts.body, fontSize: 17, lineHeight: 31 },
+  caption: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
+  display: { fontFamily: fonts.displaySemiBold, fontSize: 26, lineHeight: 36 },
+  heading: { fontFamily: fonts.displaySemiBold, fontSize: 22, lineHeight: 30 },
+  label: { fontFamily: fonts.monoLabel, fontSize: 12, letterSpacing: 0.72, lineHeight: 16 },
+  title: { fontFamily: fonts.displaySemiBold, fontSize: 20, lineHeight: 27 }
 } as const;
 
 /**
  * No shadows. DESIGN.md §1 — depth comes from hairlines, and a card is a
- * hairline border on white. Kept as an exported empty style so the screens
- * that spread it keep compiling until they are rebuilt.
+ * hairline border on white.
  */
 export const shadow = {
   card: {}

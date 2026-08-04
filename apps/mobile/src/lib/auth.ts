@@ -184,3 +184,13 @@ export async function signOut(): Promise<void> {
     await clearSessionCookie();
   }
 }
+
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  await authRequest("change-password", {
+    body: JSON.stringify(input),
+    method: "POST"
+  });
+}

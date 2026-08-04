@@ -4,12 +4,14 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
-import { Body, Button, Card, Field, Heading, Screen, Title } from "@/src/components/ui";
+import { Body, Button, Caption, Card, Field, Heading, Screen, Title } from "@/src/components/ui";
+import { useT } from "@/src/lib/locale";
 import { useSignIn } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
 
 export default function SignInScreen(): JSX.Element {
   const router = useRouter();
+  const t = useT();
   const signIn = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,16 +41,24 @@ export default function SignInScreen(): JSX.Element {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>Welcome back</Heading>
-          <Body muted>Sign in to reach your courses, tests and messages.</Body>
+          <Heading>{t("auth.welcomeBack")}</Heading>
+          <Body muted>{t("auth.signInLead")}</Body>
 
           <Card>
             <View style={styles.form}>
+              <GoogleSignInButton />
+
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Caption>{t("auth.orEmail")}</Caption>
+                <View style={styles.dividerLine} />
+              </View>
+
               <Field
                 autoCapitalize="none"
                 autoComplete="email"
                 keyboardType="email-address"
-                label="Email"
+                label={t("auth.email")}
                 onChangeText={setEmail}
                 placeholder="you@example.com"
                 value={email}
@@ -56,9 +66,9 @@ export default function SignInScreen(): JSX.Element {
               <Field
                 autoCapitalize="none"
                 autoComplete="current-password"
-                label="Password"
+                label={t("auth.password")}
                 onChangeText={setPassword}
-                placeholder="Your password"
+                placeholder={t("auth.passwordPlaceholder")}
                 secureTextEntry
                 value={password}
               />
@@ -68,22 +78,20 @@ export default function SignInScreen(): JSX.Element {
               <Button
                 disabled={!canSubmit}
                 isBusy={signIn.isPending}
-                label="Sign in"
+                label={t("auth.signIn")}
                 onPress={handleSubmit}
               />
-
-              <GoogleSignInButton />
             </View>
           </Card>
 
           <Card>
-            <Title>New here?</Title>
+            <Title>{t("auth.newHere")}</Title>
             <View style={{ height: spacing.sm }} />
-            <Body muted>Student accounts can be created from the app.</Body>
+            <Body muted>{t("auth.signUpLead")}</Body>
             <View style={{ height: spacing.lg }} />
             <Link asChild href="/sign-up">
               <Button
-                label="Create a student account"
+                label={t("auth.signUp")}
                 onPress={() => undefined}
                 variant="outline"
               />
@@ -97,7 +105,9 @@ export default function SignInScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
-  flex: { backgroundColor: colors.background, flex: 1 },
+  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
+  dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  flex: { backgroundColor: colors.paper, flex: 1 },
   form: { gap: spacing.lg }
 });
 

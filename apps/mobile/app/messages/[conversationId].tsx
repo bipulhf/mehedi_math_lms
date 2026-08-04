@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   View
 } from "react-native";
@@ -19,6 +20,7 @@ import {
   Caption,
   Card,
   Heading,
+  PresenceDot,
   Screen,
   SkeletonBlock
 } from "@/src/components/ui";
@@ -28,10 +30,11 @@ import {
   reportConversation,
   sendMessage
 } from "@/src/lib/api";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useMessagingSocket } from "@/src/lib/use-messaging-socket";
 import { useSession } from "@/src/lib/use-session";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 const MINIMUM_REPORT_LENGTH = 10;
 const POLL_INTERVAL_MS = 10_000;
@@ -39,6 +42,8 @@ const POLL_INTERVAL_MS = 10_000;
 const TYPING_IDLE_MS = 2_000;
 
 export default function ConversationScreen(): JSX.Element {
+  const t = useT();
+  const format = useFormat();
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
@@ -113,7 +118,7 @@ export default function ConversationScreen(): JSX.Element {
     onSuccess: () => {
       setIsReporting(false);
       setReportReason("");
-      setNotice("Reported. An administrator will review this conversation.");
+      setNotice(t("msg.reportSent"));
     }
   });
 
@@ -131,14 +136,33 @@ export default function ConversationScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: thread?.conversation.user.name ?? "Conversation" }} />
+      <Stack.Screen
+        options={{
+          headerTitle: () =>
+            thread ? (
+              <View style={styles.headerTitle}>
+                <Text numberOfLines={1} style={styles.headerName}>
+                  {thread.conversation.user.name}
+                </Text>
+                <View style={styles.headerPresence}>
+                  <PresenceDot isOnline={thread.conversation.user.isOnline} />
+                  <Caption>
+                    {thread.conversation.user.isOnline ? t("msg.online") : t("msg.offline")}
+                  </Caption>
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.headerName}>{t("msg.conversationTitle")}</Text>
+            )
+        }}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={90}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content}>
-          {notice ? <Badge tone="positive">{notice}</Badge> : null}
+          {notice ? <Badge tone="faded">{notice}</Badge> : null}
 
           {(thread?.items ?? []).map((message) => (
             <View
@@ -152,24 +176,21 @@ export default function ConversationScreen(): JSX.Element {
               {/* A hidden message keeps its place in the thread as a tombstone.
                   The original is retained server-side for admin review. ADR-0004. */}
               <Body muted={message.isHidden}>{message.content}</Body>
-              <Caption>{new Date(message.createdAt).toLocaleTimeString()}</Caption>
+              <Caption>{format.dateTime(message.createdAt)}</Caption>
             </View>
           ))}
 
           {isReporting ? (
             <Card>
-              <Heading>Report this conversation</Heading>
+              <Heading>{t("msg.reportTitle")}</Heading>
               <View style={{ height: spacing.sm }} />
-              <Body muted>
-                An administrator will be able to read this conversation while the report is open.
-                Every time they do, it is recorded.
-              </Body>
+              <Body muted>{t("msg.reportDisclaimer")}</Body>
               <View style={{ height: spacing.md }} />
               <TextInput
                 multiline
                 onChangeText={setReportReason}
-                placeholder="Describe what you are reporting"
-                placeholderTextColor={colors.outline}
+                placeholder={t("msg.whatHappened")}
+                placeholderTextColor={colors.placeholder}
                 style={styles.reportInput}
                 value={reportReason}
               />
@@ -177,33 +198,35 @@ export default function ConversationScreen(): JSX.Element {
               <Button
                 disabled={reportReason.trim().length < MINIMUM_REPORT_LENGTH}
                 isBusy={report.isPending}
-                label="Submit report"
+                label={t("msg.submitReport")}
                 onPress={() => report.mutate(reportReason.trim())}
               />
               <View style={{ height: spacing.sm }} />
-              <Button label="Cancel" onPress={() => setIsReporting(false)} variant="ghost" />
+              <Button label={t("action.cancel")} onPress={() => setIsReporting(false)} variant="ghost" />
             </Card>
           ) : (
             <Pressable onPress={() => setIsReporting(true)} style={styles.reportLink}>
-              <Caption>Report this conversation</Caption>
+              <Caption>{t("msg.reportTitle")}</Caption>
             </Pressable>
           )}
         </ScrollView>
 
         <View style={styles.composer}>
-          {isPeerTyping ? <Caption>Typing…</Caption> : null}
+          {isPeerTyping ? (
+            <Caption>{t("msg.typing", { name: thread?.conversation.user.name ?? "" })}</Caption>
+          ) : null}
           <TextInput
             multiline
             onChangeText={handleDraftChange}
-            placeholder="Write a message"
-            placeholderTextColor={colors.outline}
+            placeholder={t("msg.placeholder")}
+            placeholderTextColor={colors.placeholder}
             style={styles.composerInput}
             value={draft}
           />
           <Button
             disabled={draft.trim().length === 0}
             isBusy={send.isPending}
-            label="Send"
+            label={t("msg.send")}
             onPress={() => send.mutate(draft.trim())}
           />
         </View>
@@ -214,40 +237,43 @@ export default function ConversationScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   bubble: {
-    borderRadius: radius.lg,
+    borderRadius: radius.sm,
     gap: spacing.xs,
     maxWidth: "85%",
     padding: spacing.md
   },
   bubbleHidden: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
+    backgroundColor: colors.panelWarm,
+    borderColor: colors.hairline,
     borderStyle: "dashed",
     borderWidth: 1
   },
-  bubbleOther: { alignSelf: "flex-start", backgroundColor: colors.surfaceContainerLowest },
-  bubbleOwn: { alignSelf: "flex-end", backgroundColor: colors.secondaryContainer },
+  bubbleOther: { alignSelf: "flex-start", backgroundColor: colors.card },
+  bubbleOwn: { alignSelf: "flex-end", backgroundColor: colors.chipActive },
   composer: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderTopColor: colors.outlineVariant,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colors.card,
+    borderTopColor: colors.hairline,
+    borderTopWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
   },
   composerInput: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderRadius: radius.md,
-    color: colors.onSurface,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.sm,
+    color: colors.ink,
     maxHeight: 120,
     minHeight: 48,
     padding: spacing.md
   },
   content: { gap: spacing.md, padding: spacing.lg },
   flex: { flex: 1 },
+  headerName: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 17 },
+  headerPresence: { alignItems: "center", flexDirection: "row", gap: spacing.xs, marginTop: 2 },
+  headerTitle: { maxWidth: 220 },
   reportInput: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderRadius: radius.md,
-    color: colors.onSurface,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.sm,
+    color: colors.ink,
     minHeight: 96,
     padding: spacing.md,
     textAlignVertical: "top"

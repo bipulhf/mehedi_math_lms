@@ -15,6 +15,7 @@ import {
   Title
 } from "@/src/components/ui";
 import { getCourseReviewSummary, listCourseReviews, submitCourseReview } from "@/src/lib/api";
+import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
@@ -70,6 +71,7 @@ export function CourseReviews({
   canReview: boolean;
   courseId: string;
 }): JSX.Element {
+  const t = useT();
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
@@ -122,10 +124,10 @@ export function CourseReviews({
   return (
     <Card>
       <View style={styles.header}>
-        <Title>Reviews</Title>
+        <Title>{t("detail.tabReviews")}</Title>
         {summary.count > 0 ? (
           <Caption>
-            {summary.average.toFixed(1)} from {summary.count}
+            {t("detail.reviewSummary", { average: summary.average.toFixed(1), count: summary.count })}
           </Caption>
         ) : null}
       </View>
@@ -143,23 +145,23 @@ export function CourseReviews({
           <View style={styles.form}>
             <RatingPicker onChange={setRating} value={rating} />
             <Field
-              label="Your review"
+              label={t("review.yourReviewLabel")}
               multiline
               onChangeText={setComment}
-              placeholder="What was it like to study this?"
+              placeholder={t("review.placeholder")}
               style={styles.multiline}
               value={comment}
             />
-            <Button isBusy={submit.isPending} label="Post review" onPress={() => submit.mutate()} />
-            <Button label="Cancel" onPress={() => setIsWriting(false)} variant="ghost" />
+            <Button isBusy={submit.isPending} label={t("review.post")} onPress={() => submit.mutate()} />
+            <Button label={t("action.cancel")} onPress={() => setIsWriting(false)} variant="ghost" />
           </View>
         ) : (
-          <Button label="Write a review" onPress={() => setIsWriting(true)} variant="outline" />
+          <Button label={t("review.write")} onPress={() => setIsWriting(true)} variant="outline" />
         )
       ) : null}
 
       {reviews.length === 0 ? (
-        <Body muted>No reviews yet.</Body>
+        <Body muted>{t("detail.noReviews")}</Body>
       ) : (
         reviews.map((review) => (
           <View key={review.id} style={styles.review}>
@@ -185,15 +187,15 @@ const styles = StyleSheet.create({
   },
   multiline: { minHeight: 96, paddingTop: spacing.md, textAlignVertical: "top" },
   ratingChip: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
     borderRadius: radius.full,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     minWidth: 44,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm
   },
-  ratingChipActive: { backgroundColor: colors.secondaryContainer, borderColor: colors.primary },
+  ratingChipActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   ratingRow: { flexDirection: "row", gap: spacing.sm },
   review: { gap: spacing.xs, paddingVertical: spacing.sm }
 });

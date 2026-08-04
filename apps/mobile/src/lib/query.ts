@@ -21,12 +21,16 @@ export const queryKeys = {
   enrollment: (courseId: string) => ["enrollments", courseId] as const,
   enrollments: () => ["enrollments", "mine"] as const,
   lectureComments: (lectureId: string) => ["comments", lectureId] as const,
+  lecturePreview: (lectureId: string) => ["content", "preview", lectureId] as const,
   notifications: () => ["notifications"] as const,
+  payments: () => ["payments", "mine"] as const,
+  participantSearch: (search: string) => ["messages", "participants", search] as const,
   profile: () => ["profile"] as const,
   // Owned by `use-session.ts`, but named here because completing a profile
   // changes the session's `profileCompleted` flag and has to invalidate it.
   session: () => ["session"] as const,
   test: (testId: string) => ["tests", testId] as const,
+  testSubmission: (submissionId: string) => ["tests", "submission", submissionId] as const,
   unreadNotifications: () => ["notifications", "unread"] as const
 } as const;
 

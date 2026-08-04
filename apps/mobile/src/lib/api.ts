@@ -1,6 +1,6 @@
 import type { BasicProfileInput, StudentProfileInput, TeacherProfileInput } from "@genex/shared";
 
-import { apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
+import { apiDelete, apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
 
 /**
  * One module for the endpoints the app uses. The response shapes mirror the
@@ -23,19 +23,28 @@ export interface CourseSummary {
   isExamOnly: boolean;
   price: string;
   slug: string;
+  stats: {
+    freeLessonCount: number;
+    lectureCount: number;
+    reviewAverage: number | null;
+    reviewCount: number;
+    totalDurationSeconds: number;
+  };
   status: "DRAFT" | "PENDING" | "PUBLISHED" | "ARCHIVED";
+  teachers: readonly CourseTeacher[];
   title: string;
 }
 
 export interface CourseTeacher {
   id: string;
   name: string;
+  profilePhoto: string | null;
   role?: "OWNER" | "TEACHER";
+  slug: string | null;
 }
 
 export interface CourseDetail extends CourseSummary {
   creator: { id: string; name: string };
-  teachers: readonly CourseTeacher[];
 }
 
 export interface StudentEnrollment {
@@ -51,6 +60,7 @@ export interface StudentEnrollment {
   };
   enrolledAt: string;
   id: string;
+  latestPaymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED" | null;
   progressPercentage: number;
   status: "ACTIVE" | "COMPLETED";
 }
@@ -62,18 +72,68 @@ export interface EnrollmentActionResponse {
   requiresPayment: boolean;
 }
 
-export interface ContentLecture {
-  description: string | null;
-  durationInSeconds: number | null;
+export interface ContentMaterial {
+  createdAt: string;
+  fileSize: number;
+  fileType: string;
+  fileUrl: string;
   id: string;
   title: string;
+  updatedAt: string;
+}
+
+export interface ContentLecture {
+  chapterId: string;
+  content: string | null;
+  createdAt: string;
+  description: string | null;
+  id: string;
+  isPreview: boolean;
+  materials: readonly ContentMaterial[];
+  sortOrder: number;
+  title: string;
+  type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
+  updatedAt: string;
+  videoDuration: number | null;
   videoUrl: string | null;
 }
 
 export interface ContentChapter {
+  courseId: string;
+  createdAt: string;
+  description: string | null;
   id: string;
   lectures: readonly ContentLecture[];
+  materials: readonly ContentMaterial[];
+  sortOrder: number;
   title: string;
+  updatedAt: string;
+}
+
+/** The public outline — titles and lengths, no video and no materials. */
+export interface CourseOutlineLesson {
+  durationSeconds: number | null;
+  id: string;
+  isPreview: boolean;
+  title: string;
+}
+
+export interface CourseOutlineChapter {
+  id: string;
+  lessons: readonly CourseOutlineLesson[];
+  title: string;
+}
+
+/** A free lesson's playable body — served to anyone, no session needed. */
+export interface CourseLecturePreview {
+  content: string | null;
+  description: string | null;
+  durationSeconds: number | null;
+  id: string;
+  materials: readonly ContentMaterial[];
+  title: string;
+  type: "VIDEO_UPLOAD" | "VIDEO_LINK" | "TEXT";
+  videoUrl: string | null;
 }
 
 export interface CourseProgressResponse {
@@ -87,46 +147,70 @@ export interface CourseProgressResponse {
 
 export interface TestQuestionOption {
   id: string;
-  text: string;
+  isCorrect: boolean | null;
+  optionText: string;
+  sortOrder: number;
 }
 
 export interface TestQuestion {
+  expectedAnswer: string | null;
   id: string;
   marks: number;
   options: readonly TestQuestionOption[];
-  prompt: string;
+  questionText: string;
+  sortOrder: number;
   type: "MCQ" | "WRITTEN";
 }
 
-export interface AssessmentTestDetail {
+export interface AssessmentTestSummary {
+  chapterId: string;
+  description: string | null;
   durationInMinutes: number | null;
   id: string;
   isPublished: boolean;
   passingScore: number | null;
-  questions: readonly TestQuestion[];
+  questionCount: number;
+  sortOrder: number;
   title: string;
+  totalMarks: number;
   type: "MCQ" | "WRITTEN" | "MIXED";
 }
 
 export interface AssessmentChapterSummary {
   chapterId: string;
   chapterTitle: string;
-  tests: readonly { id: string; isPublished: boolean; title: string }[];
+  tests: readonly AssessmentTestSummary[];
 }
 
-export interface SubmissionAnswer {
+export interface AssessmentTestDetail extends AssessmentTestSummary {
+  questions: readonly TestQuestion[];
+}
+
+export interface SubmissionAnswerView {
+  awardedMarks: number | null;
   id: string;
+  isCorrect: boolean | null;
   questionId: string;
   selectedOptionId: string | null;
   writtenAnswer: string | null;
 }
 
-export interface SubmissionDetail {
-  answers: readonly SubmissionAnswer[];
+export interface SubmissionSummary {
+  createdAt: string;
+  feedback: string | null;
+  gradedAt: string | null;
   id: string;
+  maxScore: number | null;
+  score: number | null;
   startedAt: string | null;
-  status: "IN_PROGRESS" | "SUBMITTED" | "GRADED";
-  totalMarks: number | null;
+  status: "STARTED" | "SUBMITTED" | "GRADED";
+  submittedAt: string | null;
+}
+
+export interface SubmissionDetail extends SubmissionSummary {
+  answers: readonly SubmissionAnswerView[];
+  gradedById: string | null;
+  testId: string;
 }
 
 export interface MessageParticipant {
@@ -203,10 +287,12 @@ export interface CourseNotice {
 }
 
 export interface BugReportRecord {
+  adminNotes: string | null;
   createdAt: string;
   description: string;
   id: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
+  screenshotUrl: string | null;
   status: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
   title: string;
   updatedAt: string;
@@ -215,10 +301,24 @@ export interface BugReportRecord {
 export interface NotificationRecord {
   body: string;
   createdAt: string;
+  data: Record<string, string | number | boolean | null> | null;
   id: string;
   readAt: string | null;
   title: string;
   type: "NOTICE" | "PAYMENT" | "COURSE" | "MESSAGE" | "BUG_REPORT" | "SYSTEM";
+}
+
+export interface PaymentHistoryItem {
+  amount: string;
+  course: { id: string; title: string };
+  createdAt: string;
+  currency: string;
+  enrollmentId: string | null;
+  id: string;
+  paidAt: string | null;
+  refundedAt: string | null;
+  status: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+  transactionId: string;
 }
 
 export interface StudentProfileFields {
@@ -266,6 +366,7 @@ export async function listCategories(): Promise<readonly CategoryNode[]> {
 
 export async function listCourses(query: {
   categoryId?: string | undefined;
+  hasFreeLesson?: boolean | undefined;
   limit?: number;
   maxPrice?: number | undefined;
   minPrice?: number | undefined;
@@ -275,6 +376,7 @@ export async function listCourses(query: {
   const response = await apiGetPaginated<CourseSummary>(
     `courses${buildQueryString({
       categoryId: query.categoryId,
+      hasFreeLesson: query.hasFreeLesson,
       limit: query.limit ?? 20,
       maxPrice: query.maxPrice,
       minPrice: query.minPrice,
@@ -292,6 +394,16 @@ export async function getCourse(courseId: string): Promise<CourseDetail> {
 
 export async function getCourseContent(courseId: string): Promise<readonly ContentChapter[]> {
   return apiGet<readonly ContentChapter[]>(`courses/${courseId}/content`);
+}
+
+/** The public outline — titles and lengths, no video and no materials. */
+export async function getCourseOutline(courseId: string): Promise<readonly CourseOutlineChapter[]> {
+  return apiGet<readonly CourseOutlineChapter[]>(`courses/${courseId}/outline`);
+}
+
+/** A single free lesson, playable without an account. */
+export async function getLecturePreview(lectureId: string): Promise<CourseLecturePreview> {
+  return apiGet<CourseLecturePreview>(`lectures/${lectureId}/preview`);
 }
 
 export async function getCourseProgress(courseId: string): Promise<CourseProgressResponse> {
@@ -360,6 +472,11 @@ export async function submitTest(
   return apiPost<typeof input, SubmissionDetail>(`tests/${testId}/submit`, input);
 }
 
+/** The results screen. Returns the graded submission with per-answer marks. */
+export async function getSubmissionDetail(submissionId: string): Promise<SubmissionDetail> {
+  return apiGet<SubmissionDetail>(`tests/submissions/${submissionId}`);
+}
+
 export async function listLectureComments(lectureId: string): Promise<readonly LectureComment[]> {
   const response = await apiGetPaginated<LectureComment>(
     `lectures/${lectureId}/comments${buildQueryString({ limit: 50, page: 1 })}`
@@ -377,6 +494,14 @@ export async function createLectureComment(input: {
     `lectures/${input.lectureId}/comments`,
     { content: input.content, parentId: input.parentId }
   );
+}
+
+export async function updateLectureComment(id: string, content: string): Promise<LectureComment> {
+  return apiPut<{ content: string }, LectureComment>(`comments/${id}`, { content });
+}
+
+export async function deleteLectureComment(id: string): Promise<{ id: string }> {
+  return apiDelete<{ id: string }>(`comments/${id}`);
 }
 
 export async function getCourseReviewSummary(courseId: string): Promise<CourseReviewSummary> {
@@ -417,6 +542,20 @@ export async function listMyBugReports(): Promise<readonly BugReportRecord[]> {
 
 export async function listConversations(): Promise<readonly MessageConversation[]> {
   return apiGet<readonly MessageConversation[]>("messages/conversations");
+}
+
+export async function searchMessageParticipants(
+  search: string
+): Promise<readonly MessageParticipant[]> {
+  return apiGet<readonly MessageParticipant[]>(
+    `messages/participants${buildQueryString({ limit: 20, search })}`
+  );
+}
+
+export async function createConversation(input: {
+  participantId: string;
+}): Promise<MessageConversation> {
+  return apiPost<{ participantId: string }, MessageConversation>("messages/conversations", input);
 }
 
 export async function getConversation(conversationId: string): Promise<ConversationThread> {
@@ -463,6 +602,14 @@ export async function getNotificationUnreadCount(): Promise<number> {
 
 export async function markNotificationRead(notificationId: string): Promise<void> {
   await apiPut(`notifications/${notificationId}/read`, {});
+}
+
+export async function markAllNotificationsRead(): Promise<{ updated: number }> {
+  return apiPut<Record<string, never>, { updated: number }>("notifications/read-all", {});
+}
+
+export async function listMyPayments(): Promise<readonly PaymentHistoryItem[]> {
+  return apiGet<readonly PaymentHistoryItem[]>("payments/me");
 }
 
 export async function registerPushToken(input: {

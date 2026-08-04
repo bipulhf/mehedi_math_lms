@@ -46,6 +46,20 @@ jest.mock("expo-web-browser", () => ({
 }));
 
 /**
+ * `expo-image` 57.0.2 wires itself into the `expo-observe` oversized-image
+ * integration at import time. jest-expo's stub for the `ExpoObserve` native
+ * module predates it and does not expose `getIntegrations`, so the wiring
+ * throws before any component renders. Add the member it calls. This runs at
+ * setup, before any test module — and therefore before `expo-image` evaluates.
+ */
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.setup.ts is CJS-style setup, no import form is evaluated before expo-image
+const observeModule = require("expo-modules-core").NativeModulesProxy
+  .ExpoObserve as Record<string, unknown> | undefined;
+if (observeModule) {
+  observeModule.getIntegrations = jest.fn(() => ({}));
+}
+
+/**
  * Reanimated's UI-thread runtime does not exist under Jest, and its own
  * `mock` entry point still loads the native worklets initialiser. Only the
  * handful of members `SkeletonBlock` uses are stubbed, each reduced to the

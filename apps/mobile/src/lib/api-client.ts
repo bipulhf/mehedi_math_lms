@@ -133,3 +133,18 @@ export async function apiPut<TBody, TData>(path: string, body: TBody): Promise<T
 
   return envelope.data;
 }
+
+export async function apiPatch<TBody, TData>(path: string, body: TBody): Promise<TData> {
+  const envelope = await request<ApiEnvelope<TData>>(path, {
+    body: JSON.stringify(body),
+    method: "PATCH"
+  });
+
+  return envelope.data;
+}
+
+export async function apiDelete<TData>(path: string): Promise<TData> {
+  const envelope = await request<ApiEnvelope<TData>>(path, { method: "DELETE" });
+
+  return envelope.data;
+}

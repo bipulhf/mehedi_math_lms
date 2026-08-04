@@ -5,6 +5,7 @@ import { StyleSheet, View } from "react-native";
 
 import { Body, Button } from "@/src/components/ui";
 import { useGoogleSignIn } from "@/src/lib/use-session";
+import { useT } from "@/src/lib/locale";
 import { spacing } from "@/src/theme/tokens";
 
 /**
@@ -13,6 +14,7 @@ import { spacing } from "@/src/theme/tokens";
  */
 export function GoogleSignInButton(): JSX.Element {
   const router = useRouter();
+  const t = useT();
   const googleSignIn = useGoogleSignIn();
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function GoogleSignInButton(): JSX.Element {
     <View style={styles.container}>
       <Button
         isBusy={googleSignIn.isPending}
-        label="Continue with Google"
+        label={t("auth.google")}
         onPress={handlePress}
         variant="outline"
       />

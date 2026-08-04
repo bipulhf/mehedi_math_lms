@@ -4,7 +4,8 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
-import { Body, Button, Card, Field, Heading, Screen } from "@/src/components/ui";
+import { Body, Button, Caption, Card, Field, Heading, Screen } from "@/src/components/ui";
+import { useT } from "@/src/lib/locale";
 import { useSignUp } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
 
@@ -12,6 +13,7 @@ const MINIMUM_PASSWORD_LENGTH = 8;
 
 export default function SignUpScreen(): JSX.Element {
   const router = useRouter();
+  const t = useT();
   const signUp = useSignUp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,26 +48,31 @@ export default function SignUpScreen(): JSX.Element {
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>Create your account</Heading>
-          <Body muted>
-            Sign-up here creates a student account. Teacher and staff accounts are created by an
-            administrator.
-          </Body>
+          <Heading>{t("auth.signUp")}</Heading>
+          <Body muted>{t("auth.signUpLead")}</Body>
 
           <Card>
             <View style={styles.form}>
+              <GoogleSignInButton />
+
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Caption>{t("auth.orEmail")}</Caption>
+                <View style={styles.dividerLine} />
+              </View>
+
               <Field
                 autoComplete="name"
-                label="Full name"
+                label={t("auth.name")}
                 onChangeText={setName}
-                placeholder="Your name"
+                placeholder={t("auth.namePlaceholder")}
                 value={name}
               />
               <Field
                 autoCapitalize="none"
                 autoComplete="email"
                 keyboardType="email-address"
-                label="Email"
+                label={t("auth.email")}
                 onChangeText={setEmail}
                 placeholder="you@example.com"
                 value={email}
@@ -73,26 +80,24 @@ export default function SignUpScreen(): JSX.Element {
               <Field
                 autoCapitalize="none"
                 autoComplete="new-password"
-                label="Password"
+                label={t("auth.password")}
                 onChangeText={setPassword}
-                placeholder={`At least ${MINIMUM_PASSWORD_LENGTH} characters`}
+                placeholder={t("password.placeholderNew", { count: MINIMUM_PASSWORD_LENGTH })}
                 secureTextEntry
                 value={password}
               />
 
               {passwordTooShort ? (
-                <Body muted>Passwords must be at least {MINIMUM_PASSWORD_LENGTH} characters.</Body>
+                <Body muted>{t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}</Body>
               ) : null}
               {error ? <Body>{error}</Body> : null}
 
               <Button
                 disabled={!canSubmit}
                 isBusy={signUp.isPending}
-                label="Create account"
+                label={t("auth.signUp")}
                 onPress={handleSubmit}
               />
-
-              <GoogleSignInButton />
             </View>
           </Card>
         </ScrollView>
@@ -103,7 +108,9 @@ export default function SignUpScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
-  flex: { backgroundColor: colors.background, flex: 1 },
+  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
+  dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  flex: { backgroundColor: colors.paper, flex: 1 },
   form: { gap: spacing.lg }
 });
 

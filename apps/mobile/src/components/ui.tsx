@@ -1,7 +1,6 @@
 import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@genex/shared";
 import { Image } from "expo-image";
 import type { JSX, ReactNode } from "react";
-import { useEffect } from "react";
 import {
   PixelRatio,
   Pressable,
@@ -14,14 +13,8 @@ import {
   type TextInputProps,
   type ViewStyle
 } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming
-} from "react-native-reanimated";
 
+import { useFormat } from "@/src/lib/locale";
 import { colors, fonts, radius, shadow, spacing, typography } from "@/src/theme/tokens";
 
 /**
@@ -50,10 +43,12 @@ export function Card({
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
+/** The screen's h1 — 26px at weight 500 (DESIGN.md §4/§8). */
 export function Heading({ children }: { children: ReactNode }): JSX.Element {
   return <Text style={styles.heading}>{children}</Text>;
 }
 
+/** A card or section title — 20px at weight 500. */
 export function Title({ children }: { children: ReactNode }): JSX.Element {
   return <Text style={styles.title}>{children}</Text>;
 }
@@ -79,29 +74,46 @@ export function Caption({
   tone = "muted"
 }: {
   children: ReactNode;
-  tone?: "muted" | "error";
+  tone?: "muted" | "faint" | "error";
 }): JSX.Element {
-  return (
-    <Text style={[styles.caption, tone === "error" ? styles.captionError : null]}>{children}</Text>
-  );
+  const toneStyle = tone === "error" ? styles.captionError : tone === "faint" ? styles.captionFaint : null;
+
+  return <Text style={[styles.caption, toneStyle]}>{children}</Text>;
 }
 
+/**
+ * Status marks, drawn in the muted scale rather than a red/green/amber
+ * palette. DESIGN.md §2. The tone names and colours match the web app exactly.
+ */
 export function Badge({
   children,
   tone = "neutral"
 }: {
   children: ReactNode;
-  tone?: "neutral" | "positive" | "warning";
+  tone?: "attention" | "faded" | "neutral" | "quiet";
 }): JSX.Element {
+  const isNeutral = tone === "neutral";
+
   return (
     <View
       style={[
         styles.badge,
-        tone === "positive" ? styles.badgePositive : null,
-        tone === "warning" ? styles.badgeWarning : null
+        isNeutral ? null : styles.badgeBordered,
+        tone === "attention" ? styles.badgeAttention : null,
+        tone === "faded" ? styles.badgeFaded : null,
+        tone === "quiet" ? styles.badgeQuiet : null
       ]}
     >
-      <Text style={styles.badgeText}>{children}</Text>
+      <Text
+        style={[
+          styles.badgeText,
+          tone === "attention" ? styles.badgeTextAttention : null,
+          tone === "faded" ? styles.badgeTextFaded : null,
+          tone === "quiet" ? styles.badgeTextQuiet : null
+        ]}
+      >
+        {children}
+      </Text>
     </View>
   );
 }
@@ -111,13 +123,15 @@ export function Button({
   isBusy = false,
   label,
   onPress,
-  variant = "primary"
+  size = "default",
+  variant = "ink"
 }: {
   disabled?: boolean;
   isBusy?: boolean;
   label: string;
   onPress: () => void;
-  variant?: "primary" | "outline" | "ghost";
+  size?: "lg" | "default" | "sm" | "xs";
+  variant?: "accent" | "accentLink" | "ghost" | "ink" | "outline";
 }): JSX.Element {
   const isDisabled = disabled || isBusy;
 
@@ -128,17 +142,28 @@ export function Button({
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.button,
+        styles.buttonBase,
+        styles[`buttonSize${size === "default" ? "Default" : size === "lg" ? "Lg" : size === "sm" ? "Sm" : "Xs"}`],
+        variant === "ink" ? styles.buttonInk : null,
+        variant === "accent" ? styles.buttonAccent : null,
         variant === "outline" ? styles.buttonOutline : null,
         variant === "ghost" ? styles.buttonGhost : null,
+        variant === "accentLink" ? styles.buttonAccentLink : null,
         isDisabled ? styles.buttonDisabled : null,
         pressed && !isDisabled ? styles.buttonPressed : null
       ]}
     >
       <Text
-        style={[styles.buttonLabel, variant === "primary" ? null : styles.buttonLabelOnSurface]}
+        style={[
+          styles.buttonLabel,
+          variant === "ink" || variant === "accent" ? null : styles.buttonLabelOnSurface,
+          variant === "outline" ? styles.buttonLabelInk : null,
+          variant === "ghost" ? styles.buttonLabelGhost : null,
+          variant === "accentLink" ? styles.buttonLabelAccentLink : null,
+          styles[`buttonLabelSize${size === "default" ? "Default" : size === "lg" ? "Lg" : size === "sm" ? "Sm" : "Xs"}`]
+        ]}
       >
-        {isBusy ? `${label}…` : label}
+        {isBusy ? `${label}…` : variant === "accentLink" ? `${label} →` : label}
       </Text>
     </Pressable>
   );
@@ -156,7 +181,7 @@ export function Field({
           through `inputProps` would replace the base input style entirely, and
           a caller adding a min-height would silently lose the border. */}
       <TextInput
-        placeholderTextColor={colors.outline}
+        placeholderTextColor={colors.placeholder}
         style={[styles.input, style]}
         {...inputProps}
       />
@@ -195,20 +220,19 @@ export function CoverImage({
 }
 
 /**
- * The chunked progress tracker from DESIGN.md, in the one shape the phone needs:
- * `completed` out of `total`, where a caller holding only a percentage passes
- * 100 as the total.
- *
- * The course player draws its own, because there each chunk is a named lecture
- * and the one being watched gets a third colour. This is the version for a row
- * in a list, where the only question is how far along the student is.
+ * The chunked progress tracker: accent for what is done, `bar-track` for what
+ * is not, square chunks, no thin line. A finished course fills in
+ * `line-strong` rather than accent — the design spends accent on what still
+ * needs doing.
  */
 export function ProgressTrack({
   completed,
+  isComplete = false,
   label,
   total
 }: {
   completed: number;
+  isComplete?: boolean;
   label: string;
   total: number;
 }): JSX.Element {
@@ -224,7 +248,10 @@ export function ProgressTrack({
       {Array.from({ length: chunks.total }, (_, index) => (
         <View
           key={index}
-          style={[styles.trackChunk, index < chunks.filled ? styles.trackChunkFilled : null]}
+          style={[
+            styles.trackChunk,
+            index < chunks.filled ? (isComplete ? styles.trackChunkComplete : styles.trackChunkFilled) : null
+          ]}
         />
       ))}
     </View>
@@ -233,8 +260,8 @@ export function ProgressTrack({
 
 /**
  * A failure the user can read. Distinct from `EmptyState`, which describes a
- * screen with nothing in it — this one says something went wrong, and it looks
- * different because those two are not the same news.
+ * screen with nothing in it. A hairline card with the validation-red text —
+ * there is no red surface in the design. DESIGN.md §2.
  */
 export function ErrorNotice({ message }: { message: string }): JSX.Element {
   return (
@@ -244,20 +271,28 @@ export function ErrorNotice({ message }: { message: string }): JSX.Element {
   );
 }
 
-export function EmptyState({ message, title }: { message: string; title: string }): JSX.Element {
+/** A dashed box with one muted sentence and an optional way out. DESIGN.md §6. */
+export function EmptyState({
+  action,
+  message,
+  title
+}: {
+  action?: ReactNode;
+  message: string;
+  title?: string;
+}): JSX.Element {
   return (
-    <Card style={styles.emptyState}>
-      <Title>{title}</Title>
-      <View style={{ height: spacing.sm }} />
-      <Body muted>{message}</Body>
-    </Card>
+    <View style={styles.emptyState}>
+      {title === undefined ? null : <Title>{title}</Title>}
+      <Text style={[styles.body, styles.emptyMessage]}>{message}</Text>
+      {action === undefined ? null : <View style={styles.emptyAction}>{action}</View>}
+    </View>
   );
 }
 
 /**
- * The shape a screen shows before its session resolves. Standards §12 admits
- * no spinners on any data-fetching boundary, web or mobile, so even the boot
- * state is a skeleton of the screen that is about to arrive.
+ * The shape a screen shows before its session resolves. Even the boot state is
+ * a skeleton of the screen that is about to arrive, never a spinner.
  */
 export function ScreenSkeleton({ rows = 3 }: { rows?: number }): JSX.Element {
   return (
@@ -275,10 +310,8 @@ export function ScreenSkeleton({ rows = 3 }: { rows?: number }): JSX.Element {
 }
 
 /**
- * Skeleton block. Every list and detail screen builds its own shape from these.
- *
- * The pulse runs on Reanimated's UI thread, so it keeps its 60fps while the
- * JS thread is busy doing the very work the skeleton is standing in for.
+ * A still block, not a shimmer. DESIGN.md §1 forbids animation outright, so
+ * there is nothing to sweep across it.
  */
 export function SkeletonBlock({
   height,
@@ -289,89 +322,321 @@ export function SkeletonBlock({
   style?: StyleProp<ViewStyle>;
   width?: number | `${number}%`;
 }): JSX.Element {
-  const pulse = useSharedValue(0.45);
+  return <View style={[styles.skeleton, { height, width: width ?? "100%" }, style]} />;
+}
 
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(1, { duration: 750, easing: Easing.inOut(Easing.quad) }),
-      -1,
-      true
-    );
-  }, [pulse]);
-
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
-
+/** A dot in the muted scale — DESIGN.md §2 has no green/red status palette. */
+export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
   return (
-    <Animated.View
-      style={[styles.skeleton, { height, width: width ?? "100%" }, animatedStyle, style]}
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+      style={[styles.presenceDot, isOnline ? styles.presenceDotOnline : null]}
     />
   );
 }
 
+/**
+ * A filter chip: `chip-active` fill and border when selected, a hairline card
+ * otherwise. The one shape behind every horizontal filter strip — level,
+ * subject, free-only, sort — so each stops keeping its own copy of the style.
+ */
+export function FilterPill({
+  isSelected,
+  label,
+  onPress
+}: {
+  isSelected: boolean;
+  label: string;
+  onPress: () => void;
+}): JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
+      onPress={onPress}
+      style={[styles.filterPill, isSelected ? styles.filterPillActive : null]}
+    >
+      <Caption>{label}</Caption>
+    </Pressable>
+  );
+}
+
+/**
+ * A 2px accent underline on the active tab, muted labels on the rest. The strip
+ * scrolls sideways rather than wrapping. DESIGN.md §6.
+ */
+export function Tabs<TValue extends string>({
+  label,
+  onChange,
+  tabs,
+  value
+}: {
+  label: string;
+  onChange: (value: TValue) => void;
+  tabs: readonly { isActive: boolean; label: string; value: TValue }[];
+  value: TValue;
+}): JSX.Element {
+  return (
+    <View
+      accessibilityRole="tablist"
+      accessibilityLabel={label}
+      style={styles.tabs}
+    >
+      {tabs.map((tab) => {
+        const isActive = tab.value === value;
+
+        return (
+          <Pressable
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
+            key={tab.value}
+            onPress={() => onChange(tab.value)}
+            style={styles.tab}
+          >
+            <Text style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}>{tab.label}</Text>
+            <View style={[styles.tabUnderline, isActive ? styles.tabUnderlineActive : null]} />
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/**
+ * One accordion row. Rows are independent — opening one never closes another,
+ * which is why open state is the caller's and not held here. The marker is a
+ * text `+` / `–`, not icon motion.
+ */
+export function AccordionRow({
+  children,
+  isOpen,
+  meta,
+  onToggle,
+  title
+}: {
+  children: ReactNode;
+  isOpen: boolean;
+  meta?: ReactNode;
+  onToggle: () => void;
+  title: string;
+}): JSX.Element {
+  return (
+    <View style={styles.accordionRow}>
+      <Pressable accessibilityState={{ expanded: isOpen }} onPress={onToggle} style={styles.accordionHeader}>
+        <Text style={styles.accordionTitle} numberOfLines={2}>
+          {title}
+        </Text>
+        {meta === undefined ? null : <Text style={styles.accordionMeta}>{meta}</Text>}
+        <Text style={[styles.accordionMarker, isOpen ? styles.accordionMarkerOpen : null]}>
+          {isOpen ? "–" : "+"}
+        </Text>
+      </Pressable>
+      {isOpen ? <View style={styles.accordionBody}>{children}</View> : null}
+    </View>
+  );
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter((part) => part.length > 0)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+/**
+ * Someone without an uploaded photo gets their initials on the placeholder
+ * fill, not a stock portrait. The fallback is the same quiet grey every
+ * missing image uses. DESIGN.md §9.
+ */
+export function Avatar({
+  name,
+  photo,
+  size = 40
+}: {
+  name: string;
+  photo: string | null;
+  size?: number;
+}): JSX.Element {
+  if (photo !== null && photo.length > 0) {
+    const source = readImageVariants(photo);
+    const variantUri = pickImageVariant(source, Math.round(size * PixelRatio.get()));
+
+    if (variantUri !== null) {
+      return (
+        <Image
+          source={{ uri: variantUri }}
+          style={[styles.avatar, { borderRadius: size / 2, height: size, width: size }]}
+        />
+      );
+    }
+  }
+
+  return (
+    <View style={[styles.avatar, styles.avatarFallback, { borderRadius: size / 2, height: size, width: size }]}>
+      <Text style={[styles.avatarText, { fontSize: size * 0.35 }]}>{initials(name)}</Text>
+    </View>
+  );
+}
+
+/** The heading block that opens a section: eyebrow, title, description, action. */
+export function SectionHeading({
+  action,
+  description,
+  eyebrow,
+  title
+}: {
+  action?: ReactNode;
+  description?: ReactNode;
+  eyebrow?: string;
+  title: ReactNode;
+}): JSX.Element {
+  return (
+    <View style={styles.sectionHeading}>
+      {eyebrow === undefined ? null : <Text style={styles.eyebrow}>{eyebrow}</Text>}
+      <Title>{title}</Title>
+      {description === undefined ? null : <Body muted>{description}</Body>}
+      {action === undefined ? null : action}
+    </View>
+  );
+}
+
+/** The KPI tile — a muted label over a large number. DESIGN.md §4. */
+export function StatCard({ label, value }: { label: string; value: ReactNode }): JSX.Element {
+  return (
+    <View style={styles.statCard}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
+  );
+}
+
+/** A price, formatted for the reader's locale. ৳৫,৯০০ in Bangla. */
+export function PriceText({ amount }: { amount: number | string }): JSX.Element {
+  const format = useFormat();
+
+  return <Text style={styles.price}>{format.currency(amount)}</Text>;
+}
+
 const styles = StyleSheet.create({
+  accordionBody: { paddingBottom: spacing.lg, paddingHorizontal: spacing.sm },
+  accordionHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 44,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.md
+  },
+  accordionMarker: { color: colors.muted, fontFamily: fonts.body, fontSize: 22, fontStyle: "italic", width: 20 },
+  accordionMarkerOpen: { color: colors.accent },
+  accordionMeta: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 14 },
+  accordionRow: { borderBottomColor: colors.hairline, borderBottomWidth: 1 },
+  accordionTitle: {
+    color: colors.ink,
+    flex: 1,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: 17
+  },
+  avatar: {
+    backgroundColor: colors.placeholderFill,
+    overflow: "hidden"
+  },
+  avatarFallback: { alignItems: "center", justifyContent: "center" },
+  avatarText: { color: colors.mutedLight, fontFamily: fonts.displaySemiBold },
   badge: {
     alignSelf: "flex-start",
-    backgroundColor: colors.secondaryContainer,
-    borderRadius: radius.full,
+    backgroundColor: colors.chipActive,
+    borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
-  badgePositive: { backgroundColor: "#d7f0e2" },
+  badgeAttention: { backgroundColor: colors.card },
+  badgeBordered: { borderColor: colors.hairline, borderWidth: 1 },
+  badgeFaded: { backgroundColor: colors.card },
+  badgeQuiet: { backgroundColor: colors.card },
   badgeText: {
-    color: colors.onSecondaryContainer,
-    fontFamily: fonts.displayBold,
+    color: colors.ink,
+    fontFamily: fonts.displaySemiBold,
     fontSize: typography.caption.fontSize
   },
-  badgeWarning: { backgroundColor: "#ffe6bf" },
+  badgeTextAttention: { color: colors.accent },
+  badgeTextFaded: { color: colors.mutedFaint },
+  badgeTextQuiet: { color: colors.muted },
   body: {
-    color: colors.onSurface,
+    color: colors.ink,
     fontFamily: fonts.body,
     fontSize: typography.body.fontSize,
     lineHeight: typography.body.lineHeight
   },
-  bodyMuted: { color: colors.onSurfaceVariant },
-  button: {
+  bodyMuted: { color: colors.muted },
+  buttonAccent: { backgroundColor: colors.accent },
+  buttonAccentLink: {
     alignItems: "center",
-    backgroundColor: colors.primary,
-    borderRadius: radius.full,
-    minHeight: 48,
-    justifyContent: "center",
-    paddingHorizontal: spacing.xl
+    backgroundColor: "transparent",
+    minHeight: 0,
+    paddingHorizontal: 0
+  },
+  buttonBase: {
+    alignItems: "center",
+    borderRadius: radius.sm,
+    justifyContent: "center"
   },
   buttonDisabled: { opacity: 0.5 },
   buttonGhost: { backgroundColor: "transparent" },
-  buttonLabel: { color: colors.onPrimary, fontFamily: fonts.displayBold, fontSize: 15 },
-  buttonLabelOnSurface: { color: colors.onSurface },
+  buttonInk: { backgroundColor: colors.ink },
+  buttonLabel: { fontFamily: fonts.displaySemiBold },
+  buttonLabelAccentLink: { color: colors.accent },
+  buttonLabelGhost: { color: colors.muted },
+  buttonLabelInk: { color: colors.ink },
+  buttonLabelOnSurface: { color: colors.paper },
+  buttonLabelSizeDefault: { fontSize: 15 },
+  buttonLabelSizeLg: { fontSize: 16 },
+  buttonLabelSizeSm: { fontSize: 13 },
+  buttonLabelSizeXs: { fontSize: 12 },
   buttonOutline: {
     backgroundColor: "transparent",
-    borderColor: colors.outlineVariant,
+    borderColor: colors.lineStrong,
     borderWidth: 1
   },
   buttonPressed: { opacity: 0.85 },
+  buttonSizeDefault: { minHeight: 48, paddingHorizontal: spacing.xl },
+  buttonSizeLg: { minHeight: 52, paddingHorizontal: spacing.xl },
+  buttonSizeSm: { minHeight: 40, paddingHorizontal: spacing.lg },
+  buttonSizeXs: { minHeight: 32, paddingHorizontal: spacing.md },
   caption: {
-    color: colors.onSurfaceVariant,
+    color: colors.muted,
     fontFamily: fonts.body,
-    fontSize: typography.caption.fontSize
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight
   },
   captionError: { color: colors.error },
+  captionFaint: { color: colors.mutedFaint },
   card: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderColor: colors.outlineVariant,
-    borderRadius: radius.xl,
-    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderWidth: 1,
     padding: spacing.lg,
     ...shadow.card
   },
-  cover: { borderRadius: radius.lg, width: "100%" },
-  coverFallback: {
-    backgroundColor: colors.surfaceContainerHigh,
-    borderRadius: radius.lg,
-    width: "100%"
+  cover: { width: "100%" },
+  coverFallback: { backgroundColor: colors.placeholderFill, width: "100%" },
+  emptyAction: { paddingTop: spacing.sm },
+  emptyMessage: { textAlign: "center" },
+  emptyState: {
+    alignItems: "center",
+    borderColor: colors.dotIdle,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xxl
   },
-  emptyState: { alignItems: "center", paddingVertical: spacing.xxl },
   errorNotice: {
-    backgroundColor: colors.errorContainer,
-    borderRadius: radius.md,
+    borderColor: colors.hairline,
+    borderWidth: 1,
     padding: spacing.lg
   },
   errorNoticeText: {
@@ -380,47 +645,97 @@ const styles = StyleSheet.create({
     fontSize: typography.body.fontSize,
     lineHeight: typography.body.lineHeight
   },
-  field: { gap: spacing.xs },
-  fieldLabel: {
-    color: colors.onSurfaceVariant,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: typography.caption.fontSize,
-    letterSpacing: 0.6,
+  eyebrow: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
     textTransform: "uppercase"
   },
+  field: { gap: spacing.xs },
+  fieldLabel: {
+    color: colors.mutedLight,
+    fontFamily: fonts.monoLabel,
+    fontSize: 12,
+    letterSpacing: 0.72,
+    textTransform: "uppercase"
+  },
+  filterPill: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
+  filterPillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   heading: {
-    color: colors.onSurface,
-    fontFamily: fonts.displayExtraBold,
-    fontSize: typography.display.fontSize
+    color: colors.ink,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: typography.display.fontSize,
+    lineHeight: typography.display.lineHeight
   },
   input: {
-    backgroundColor: colors.surfaceContainerLow,
-    borderColor: colors.outlineVariant,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    color: colors.onSurface,
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: colors.ink,
     fontFamily: fonts.body,
-    fontSize: 15,
+    fontSize: 16,
     minHeight: 48,
     paddingHorizontal: spacing.lg
   },
-  screen: { backgroundColor: colors.background, flex: 1 },
+  presenceDot: { backgroundColor: colors.dotIdle, borderRadius: radius.full, height: 8, width: 8 },
+  presenceDotOnline: { backgroundColor: colors.accent },
+  price: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: typography.title.fontSize },
+  screen: { backgroundColor: colors.paper, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
-  skeleton: { backgroundColor: colors.surfaceContainerHigh, borderRadius: radius.md },
+  sectionHeading: { gap: spacing.sm },
+  skeleton: { backgroundColor: colors.placeholderFill, borderRadius: radius.sm },
+  statCard: { borderColor: colors.hairline, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
+  statLabel: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    textTransform: "uppercase"
+  },
+  statValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 26 },
+  tab: { alignItems: "center", gap: 0 },
+  tabLabel: {
+    color: colors.muted,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: 16,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.md
+  },
+  tabLabelActive: { color: colors.ink },
+  tabUnderline: { backgroundColor: "transparent", height: 2, width: "100%" },
+  tabUnderlineActive: { backgroundColor: colors.accent },
+  tabs: {
+    borderBottomColor: colors.hairline,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: spacing.xl
+  },
   title: {
-    color: colors.onSurface,
-    fontFamily: fonts.displayBold,
-    fontSize: typography.title.fontSize
+    color: colors.ink,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: typography.title.fontSize,
+    lineHeight: typography.title.lineHeight
   },
   trackChunk: {
-    backgroundColor: colors.surfaceContainerHighest,
-    borderRadius: radius.full,
+    backgroundColor: colors.barTrack,
     flex: 1,
-    height: 8,
-    // Below this a chunk stops reading as a block and starts reading as a line,
-    // which is the thing DESIGN.md is avoiding.
-    minWidth: 6
+    height: 6,
+    // Square chunks with a small gap — the design is explicit that this is not
+    // a thin rounded bar. The smallest faint-boundary keeps the chunk from
+    // reading as a hairline.
+    minWidth: 4
   },
-  trackChunkFilled: { backgroundColor: colors.secondary },
-  trackRow: { flexDirection: "row", gap: 4 }
+  trackChunkComplete: { backgroundColor: colors.lineStrong },
+  trackChunkFilled: { backgroundColor: colors.accent },
+  trackRow: { flexDirection: "row", gap: 3 }
 });

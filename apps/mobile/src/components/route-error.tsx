@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 
 import { Body, Button, Card, Heading, Screen } from "@/src/components/ui";
 import { ApiError } from "@/src/lib/api-client";
+import { useT } from "@/src/lib/locale";
 import { spacing } from "@/src/theme/tokens";
 
 /**
@@ -22,21 +23,18 @@ import { spacing } from "@/src/theme/tokens";
  * ```
  */
 export function ScreenErrorBoundary({ error, retry }: ErrorBoundaryProps): JSX.Element {
+  const t = useT();
   const isOffline = error instanceof ApiError && error.isOffline;
 
   return (
     <Screen style={styles.screen}>
       <Card>
-        <Heading>{isOffline ? "No connection" : "This screen stopped"}</Heading>
+        <Heading>{isOffline ? t("error.offlineTitle") : t("error.screenTitle")}</Heading>
         <View style={{ height: spacing.md }} />
-        <Body muted>
-          {isOffline
-            ? "The app could not reach the server. Anything already downloaded is still available."
-            : error.message}
-        </Body>
+        <Body muted>{isOffline ? t("error.offlineBody") : error.message}</Body>
         <View style={{ height: spacing.xl }} />
         <Button
-          label="Try again"
+          label={t("action.retry")}
           onPress={() => {
             void retry();
           }}

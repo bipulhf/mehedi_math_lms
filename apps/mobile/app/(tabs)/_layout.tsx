@@ -1,27 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { Tabs } from "expo-router";
 import type { JSX } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import {
+  CatalogIcon,
+  LearningIcon,
+  MessagesIcon,
+  NotificationsIcon,
+  ProfileIcon
+} from "@/src/components/tab-icons";
 import { getNotificationUnreadCount, listConversations } from "@/src/lib/api";
+import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { colors, fonts, radius, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius } from "@/src/theme/tokens";
 
 /**
- * Text glyphs rather than an icon pack: the tab bar is the only place the app
- * needs icons, and pulling in a font for five of them is not worth the bundle.
+ * SVG line icons (react-native-svg) rather than Unicode glyphs: the previous
+ * five characters rendered differently on every Android OEM font.
  */
-const tabGlyphs = {
-  catalog: "◎",
-  learning: "▤",
-  messages: "✉",
-  notifications: "◉",
-  profile: "☺"
-} as const;
 
-function TabIcon({ focused, glyph }: { focused: boolean; glyph: string }): JSX.Element {
-  return <Text style={[styles.glyph, focused ? styles.glyphFocused : null]}>{glyph}</Text>;
+/** The Genex mark and wordmark from the shared brand set, as in the web shell. */
+function BrandLockup(): JSX.Element {
+  return (
+    <View style={styles.brand}>
+      {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
+      <Image source={require("@/assets/images/genex-mark.png")} style={styles.brandMark} />
+      {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
+      <Image source={require("@/assets/images/genex-wordmark.png")} style={styles.brandWordmark} />
+    </View>
+  );
 }
 
 function Badge({ count }: { count: number }): JSX.Element | null {
@@ -37,6 +47,7 @@ function Badge({ count }: { count: number }): JSX.Element | null {
 }
 
 export default function TabsLayout(): JSX.Element {
+  const t = useT();
   const { session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
 
@@ -59,28 +70,29 @@ export default function TabsLayout(): JSX.Element {
     <Tabs
       screenOptions={{
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.background },
+        headerStyle: { backgroundColor: colors.paper },
         headerTitleStyle: { fontFamily: fonts.displayBold },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.onSurfaceVariant,
+        tabBarActiveTintColor: colors.ink,
+        tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
-          backgroundColor: colors.surfaceContainerLowest,
-          borderTopColor: colors.outlineVariant
+          backgroundColor: colors.card,
+          borderTopColor: colors.hairline
         }
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} glyph={tabGlyphs.catalog} />,
-          title: "Catalog"
+          headerTitle: () => <BrandLockup />,
+          tabBarIcon: ({ focused }) => <CatalogIcon focused={focused} />,
+          title: t("nav.courses")
         }}
       />
       <Tabs.Screen
         name="learning"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} glyph={tabGlyphs.learning} />,
-          title: "My courses"
+          tabBarIcon: ({ focused }) => <LearningIcon focused={focused} />,
+          title: t("nav.myCourses")
         }}
       />
       <Tabs.Screen
@@ -88,11 +100,11 @@ export default function TabsLayout(): JSX.Element {
         options={{
           tabBarIcon: ({ focused }) => (
             <View>
-              <TabIcon focused={focused} glyph={tabGlyphs.messages} />
+              <MessagesIcon focused={focused} />
               <Badge count={unreadMessages} />
             </View>
           ),
-          title: "Messages"
+          title: t("nav.messages")
         }}
       />
       <Tabs.Screen
@@ -100,18 +112,18 @@ export default function TabsLayout(): JSX.Element {
         options={{
           tabBarIcon: ({ focused }) => (
             <View>
-              <TabIcon focused={focused} glyph={tabGlyphs.notifications} />
+              <NotificationsIcon focused={focused} />
               <Badge count={unreadNotifications} />
             </View>
           ),
-          title: "Notifications"
+          title: t("nav.notify")
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} glyph={tabGlyphs.profile} />,
-          title: "Profile"
+          tabBarIcon: ({ focused }) => <ProfileIcon focused={focused} />,
+          title: t("nav.profile")
         }}
       />
     </Tabs>
@@ -121,7 +133,7 @@ export default function TabsLayout(): JSX.Element {
 const styles = StyleSheet.create({
   badge: {
     alignItems: "center",
-    backgroundColor: colors.error,
+    backgroundColor: colors.accent,
     borderRadius: radius.full,
     minWidth: 18,
     paddingHorizontal: 4,
@@ -129,7 +141,8 @@ const styles = StyleSheet.create({
     right: -12,
     top: -4
   },
-  badgeText: { color: colors.onError, fontFamily: fonts.displayBold, fontSize: 10 },
-  glyph: { color: colors.onSurfaceVariant, fontSize: typography.title.fontSize },
-  glyphFocused: { color: colors.primary }
+  badgeText: { color: colors.card, fontFamily: fonts.displayBold, fontSize: 10 },
+  brand: { alignItems: "center", flexDirection: "row", gap: 6 },
+  brandMark: { height: 24, width: 24 },
+  brandWordmark: { height: 15, width: 72 }
 });

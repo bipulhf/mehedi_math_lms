@@ -5,6 +5,7 @@ import type { JSX, ReactNode } from "react";
 import * as api from "@/src/lib/api";
 import type { CourseSummary, StudentEnrollment } from "@/src/lib/api";
 import * as auth from "@/src/lib/auth";
+import { LocaleProvider } from "@/src/lib/locale";
 
 import CatalogScreen from "@/app/(tabs)/index";
 import LearningScreen from "@/app/(tabs)/learning";
@@ -56,7 +57,15 @@ const COURSE: CourseSummary = {
   isExamOnly: false,
   price: "1200.00",
   slug: "higher-maths",
+  stats: {
+    freeLessonCount: 1,
+    lectureCount: 12,
+    reviewAverage: 4.5,
+    reviewCount: 8,
+    totalDurationSeconds: 5400
+  },
   status: "PUBLISHED",
+  teachers: [],
   title: "Higher Mathematics"
 };
 
@@ -73,6 +82,7 @@ const ENROLLMENT: StudentEnrollment = {
   },
   enrolledAt: "2026-01-01T00:00:00.000Z",
   id: "enrol-1",
+  latestPaymentStatus: "SUCCESS",
   progressPercentage: 40,
   status: "ACTIVE"
 };
@@ -83,7 +93,11 @@ function renderScreen(node: JSX.Element): void {
     defaultOptions: { queries: { gcTime: 0, retry: false } }
   });
 
-  render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+  render(
+    <LocaleProvider>
+      <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+    </LocaleProvider>
+  );
 }
 
 beforeEach(() => {
@@ -101,7 +115,7 @@ describe("catalogue", () => {
     await waitFor(() => {
       expect(screen.getByText("Higher Mathematics")).toBeTruthy();
     });
-    expect(screen.getByText("Catalog")).toBeTruthy();
+    expect(screen.getByText("সব কোর্স")).toBeTruthy();
   });
 
   test("says so when nothing matches, rather than showing an empty list", async () => {
@@ -111,7 +125,7 @@ describe("catalogue", () => {
     renderScreen(<CatalogScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("No courses match")).toBeTruthy();
+      expect(screen.getByText("এই নামে কোনো কোর্স পাওয়া যায়নি")).toBeTruthy();
     });
   });
 });
@@ -123,9 +137,9 @@ describe("learning", () => {
     renderScreen(<LearningScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("Higher Mathematics")).toBeTruthy();
+      expect(screen.getAllByText("Higher Mathematics").length).toBeGreaterThan(0);
     });
-    expect(screen.getByText("40% complete")).toBeTruthy();
+    expect(screen.getByText("৪০%")).toBeTruthy();
   });
 
   test("an account with nothing enrolled is told where to start", async () => {
@@ -134,7 +148,7 @@ describe("learning", () => {
     renderScreen(<LearningScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("No enrolments yet")).toBeTruthy();
+      expect(screen.getByText("এখনো কোনো কোর্সে ভর্তি হওনি। ক্যাটালগ ঘুরে দেখ।")).toBeTruthy();
     });
   });
 
@@ -148,7 +162,7 @@ describe("learning", () => {
     renderScreen(<LearningScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("Save certificate")).toBeTruthy();
+      expect(screen.getByText("সার্টিফিকেট নামাও")).toBeTruthy();
     });
   });
 });
@@ -177,8 +191,8 @@ describe("profile", () => {
     renderScreen(<ProfileScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("Finish your profile")).toBeTruthy();
+      expect(screen.getByText("প্রোফাইল শেষ করো")).toBeTruthy();
     });
-    expect(screen.getByText("Complete profile")).toBeTruthy();
+    expect(screen.getByText("প্রোফাইল সম্পূর্ণ করো")).toBeTruthy();
   });
 });

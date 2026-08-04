@@ -1,7 +1,8 @@
+import { locales, localeNames, type Locale } from "@genex/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import {
   Badge,
@@ -16,12 +17,43 @@ import {
   Title
 } from "@/src/components/ui";
 import { getOwnProfile } from "@/src/lib/api";
+import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession, useSignOut } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
+import { colors, radius, spacing } from "@/src/theme/tokens";
+
+/**
+ * Two pills, both always visible, mirroring the web switcher. A single toggle
+ * that names only the language you are not in is a puzzle for readers who may
+ * not read the label.
+ */
+function LanguageSwitcher(): JSX.Element {
+  const { locale, setLocale } = useLocale();
+
+  return (
+    <View style={styles.languageRow}>
+      {locales.map((option: Locale) => {
+        const isActive = option === locale;
+
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isActive }}
+            onPress={() => setLocale(option)}
+            style={[styles.languagePill, isActive ? styles.languagePillActive : null]}
+          >
+            <Caption>{localeNames[option]}</Caption>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
+  const t = useT();
   const { isPending: isSessionPending, session } = useSession();
   const signOut = useSignOut();
   const { data: profile, isPending } = useQuery({
@@ -47,7 +79,7 @@ export default function ProfileScreen(): JSX.Element {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Heading>Profile</Heading>
+        <Heading>{t("nav.profile")}</Heading>
 
         {isPending ? (
           <Card>
@@ -72,44 +104,81 @@ export default function ProfileScreen(): JSX.Element {
         )}
 
         <Card>
-          <Title>{isProfileComplete ? "Your details" : "Finish your profile"}</Title>
+          <Title>{isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}</Title>
           <View style={{ height: spacing.sm }} />
           <Body muted>
-            {isProfileComplete
-              ? "Keep your contact details current so a teacher can reach you."
-              : "Enrolment and most of the dashboard stay locked until this is done."}
+            {isProfileComplete ? t("profile.detailsLead") : t("profile.completeLead")}
           </Body>
           <View style={{ height: spacing.lg }} />
           <Button
-            label={isProfileComplete ? "Edit profile" : "Complete profile"}
+            label={isProfileComplete ? t("profile.editProfile") : t("profile.completeProfile")}
             onPress={() => router.push("/profile-complete")}
-            variant={isProfileComplete ? "outline" : "primary"}
+            variant={isProfileComplete ? "outline" : "ink"}
           />
         </Card>
 
         <Card>
-          <Title>Report a problem</Title>
+          <Title>{t("locale.label")}</Title>
+          <View style={{ height: spacing.md }} />
+          <LanguageSwitcher />
+        </Card>
+
+        <Card>
+          <Title>{t("profile.reportTitle")}</Title>
           <View style={{ height: spacing.sm }} />
-          <Body muted>
-            Something broken, missing or confusing? Tell us and it reaches the same queue the web
-            app's reports do.
-          </Body>
+          <Body muted>{t("profile.reportLead")}</Body>
           <View style={{ height: spacing.lg }} />
           <Button
-            label="Report a bug"
+            label={t("profile.reportBug")}
             onPress={() => router.push("/bug-report")}
             variant="outline"
           />
         </Card>
 
         <Card>
-          <Title>Session</Title>
+          <Title>{t("profile.security")}</Title>
           <View style={{ height: spacing.sm }} />
-          <Caption>Signed in on this device. Signing out clears the cached data too.</Caption>
+          <Body muted>{t("profile.securityLead")}</Body>
+          <View style={{ height: spacing.lg }} />
+          <Button
+            label={t("profile.changePassword")}
+            onPress={() => router.push("/change-password")}
+            variant="outline"
+          />
+        </Card>
+
+        <Card>
+          <Title>{t("profile.paymentTitle")}</Title>
+          <View style={{ height: spacing.sm }} />
+          <Body muted>{t("profile.paymentLead")}</Body>
+          <View style={{ height: spacing.lg }} />
+          <Button
+            label={t("profile.viewPayments")}
+            onPress={() => router.push("/payments")}
+            variant="outline"
+          />
+        </Card>
+
+        <Card>
+          <Title>{t("nav.messages")}</Title>
+          <View style={{ height: spacing.sm }} />
+          <Body muted>{t("messages.unavailableLead")}</Body>
+          <View style={{ height: spacing.lg }} />
+          <Button
+            label={t("messages.new")}
+            onPress={() => router.push("/messages/new")}
+            variant="outline"
+          />
+        </Card>
+
+        <Card>
+          <Title>{t("profile.session")}</Title>
+          <View style={{ height: spacing.sm }} />
+          <Caption>{t("profile.signedInOn")}</Caption>
           <View style={{ height: spacing.lg }} />
           <Button
             isBusy={signOut.isPending}
-            label="Sign out"
+            label={t("profile.signOut")}
             onPress={() => {
               signOut.mutate(undefined, {
                 onSuccess: () => {
@@ -126,7 +195,17 @@ export default function ProfileScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg }
+  content: { gap: spacing.lg, padding: spacing.lg },
+  languagePill: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
+  languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
+  languageRow: { flexDirection: "row", gap: spacing.sm }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

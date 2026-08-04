@@ -14,6 +14,10 @@ bunx expo-doctor   # 20/20 as of this writing — keep it that way
 
 The staged plan for this workspace — what is verified, what is not, and the order to close it in — is [`docs/mobile-plan.md`](../../docs/mobile-plan.md). Read it before starting anything larger than a fix.
 
+The gap between this app and the current web app — tokens, primitives, screens, data, and the
+change list that closes it — is [`docs/web-mobile-parity.md`](../../docs/web-mobile-parity.md).
+Read it before any parity or redesign work.
+
 ## Layout
 
 ```

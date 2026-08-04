@@ -14,6 +14,7 @@ import {
   Title
 } from "@/src/components/ui";
 import { createLectureComment, listLectureComments, type LectureComment } from "@/src/lib/api";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";
 
@@ -26,8 +27,10 @@ import { colors, spacing } from "@/src/theme/tokens";
  */
 
 function CommentBody({ comment }: { comment: LectureComment }): JSX.Element {
+  const t = useT();
+
   if (comment.isDeleted) {
-    return <Body muted>This comment was removed.</Body>;
+    return <Body muted>{t("comment.removed")}</Body>;
   }
 
   return <Body>{comment.content}</Body>;
@@ -40,23 +43,26 @@ function CommentThread({
   comment: LectureComment;
   onReply: (parentId: string) => void;
 }): JSX.Element {
+  const t = useT();
+  const format = useFormat();
+
   return (
     <View style={styles.thread}>
       <View style={styles.comment}>
         <View style={styles.commentHeader}>
           <Caption>{comment.user.name}</Caption>
-          <Caption>{new Date(comment.createdAt).toLocaleDateString()}</Caption>
+          <Caption>{format.date(comment.createdAt)}</Caption>
         </View>
         <CommentBody comment={comment} />
         {comment.isDeleted ? null : (
-          <Button label="Reply" onPress={() => onReply(comment.id)} variant="ghost" />
+          <Button label={t("disc.reply")} onPress={() => onReply(comment.id)} variant="ghost" />
         )}
       </View>
       {comment.replies.map((reply) => (
         <View key={reply.id} style={styles.reply}>
           <View style={styles.commentHeader}>
             <Caption>{reply.user.name}</Caption>
-            <Caption>{new Date(reply.createdAt).toLocaleDateString()}</Caption>
+            <Caption>{format.date(reply.createdAt)}</Caption>
           </View>
           <CommentBody comment={reply} />
         </View>
@@ -66,6 +72,7 @@ function CommentThread({
 }
 
 export function LectureComments({ lectureId }: { lectureId: string }): JSX.Element {
+  const t = useT();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -95,7 +102,7 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
 
   return (
     <Card>
-      <Title>Discussion</Title>
+      <Title>{t("disc.title")}</Title>
       <View style={{ height: spacing.md }} />
 
       {error ? (
@@ -108,22 +115,22 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
       <View style={styles.composer}>
         {replyTo === null ? null : (
           <View style={styles.replyBanner}>
-            <Caption>Replying to a comment</Caption>
-            <Button label="Cancel" onPress={() => setReplyTo(null)} variant="ghost" />
+            <Caption>{t("comment.replyingTo")}</Caption>
+            <Button label={t("action.cancel")} onPress={() => setReplyTo(null)} variant="ghost" />
           </View>
         )}
         <Field
-          label={replyTo === null ? "Ask a question" : "Your reply"}
+          label={replyTo === null ? t("comment.askLabel") : t("comment.replyLabel")}
           multiline
           onChangeText={setDraft}
-          placeholder="What is not clear?"
+          placeholder={t("comment.placeholder")}
           style={styles.multiline}
           value={draft}
         />
         <Button
           disabled={draft.trim().length === 0}
           isBusy={post.isPending}
-          label="Post"
+          label={t("comment.post")}
           onPress={() => {
             setError(null);
             post.mutate();
@@ -137,7 +144,7 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
           <SkeletonBlock height={14} />
         </View>
       ) : comments.length === 0 ? (
-        <Body muted>No questions on this lecture yet.</Body>
+        <Body muted>{t("comment.empty")}</Body>
       ) : (
         comments.map((comment) => (
           <CommentThread comment={comment} key={comment.id} onReply={setReplyTo} />
@@ -153,7 +160,7 @@ const styles = StyleSheet.create({
   composer: { gap: spacing.md, paddingBottom: spacing.lg },
   multiline: { minHeight: 80, paddingTop: spacing.md, textAlignVertical: "top" },
   reply: {
-    borderLeftColor: colors.outlineVariant,
+    borderLeftColor: colors.hairline,
     borderLeftWidth: 2,
     gap: spacing.xs,
     marginLeft: spacing.md,

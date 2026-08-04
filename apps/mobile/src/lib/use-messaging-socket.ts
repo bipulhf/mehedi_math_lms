@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 
+import type { ConversationThread, MessageConversation } from "@/src/lib/api";
 import { mobileEnv } from "@/src/lib/env";
 import { queryKeys } from "@/src/lib/query";
 import { readSessionCookie } from "@/src/lib/session-store";
@@ -75,6 +76,34 @@ export function useMessagingSocket({
 
     let socket: WebSocket | null = null;
     let isCancelled = false;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    // Exponential backoff on a dropped socket: a phone regains signal on its
+    // own, so reconnect rather than wait for the next foreground event. The
+    // base doubles up to the cap and resets on a successful open.
+    let backoffMs = 1_000;
+    const RECONNECT_CAP_MS = 30_000;
+
+    const clearReconnect = (): void => {
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+    };
+
+    const scheduleReconnect = (): void => {
+      if (isCancelled) {
+        return;
+      }
+
+      clearReconnect();
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        void connect().catch(() => {
+          setIsConnected(false);
+        });
+      }, backoffMs);
+      backoffMs = Math.min(backoffMs * 2, RECONNECT_CAP_MS);
+    };
 
     const connect = async (): Promise<void> => {
       const cookie = await readSessionCookie().catch(() => null);
@@ -87,6 +116,7 @@ export function useMessagingSocket({
         return;
       }
 
+      socket?.close();
       socket = new (WebSocket as unknown as NativeWebSocket)(socketUrl(), undefined, {
         headers: { Cookie: cookie }
       });
@@ -94,9 +124,11 @@ export function useMessagingSocket({
 
       socket.onopen = () => {
         setIsConnected(true);
+        backoffMs = 1_000;
       };
       socket.onclose = () => {
         setIsConnected(false);
+        scheduleReconnect();
       };
       // Not surfaced. A socket that will not open degrades to the poll, and a
       // student reading a thread does not need to be told which transport
@@ -106,6 +138,40 @@ export function useMessagingSocket({
       };
       socket.onmessage = (event: { data: unknown }) => {
         const payload = JSON.parse(String(event.data)) as WebsocketServerEvent;
+
+        // Presence is a global broadcast, not scoped to a conversation — the
+        // server always sends it with `conversationId: ""`. Handling it before
+        // the conversation-scoping check below matters: that check would
+        // otherwise drop every presence event, since "" never equals the id of
+        // the conversation this screen has open.
+        if (payload.type === "presence:update") {
+          const { isOnline, userId } = payload.data;
+
+          queryClient.setQueryData<readonly MessageConversation[]>(
+            queryKeys.conversations(),
+            (current) =>
+              current?.map((conversation) =>
+                conversation.user.id === userId
+                  ? { ...conversation, user: { ...conversation.user, isOnline } }
+                  : conversation
+              )
+          );
+          queryClient.setQueryData<ConversationThread>(
+            queryKeys.conversation(conversationId),
+            (current) =>
+              current === undefined || current.conversation.user.id !== userId
+                ? current
+                : {
+                    ...current,
+                    conversation: {
+                      ...current.conversation,
+                      user: { ...current.conversation.user, isOnline }
+                    }
+                  }
+          );
+
+          return;
+        }
 
         if (payload.conversationId !== conversationId) {
           // Another thread moved. The list owns that, and it is refetched when
@@ -122,10 +188,6 @@ export function useMessagingSocket({
             onTypingChangeRef.current(payload.type === "typing:start");
           }
 
-          return;
-        }
-
-        if (payload.type === "presence:update") {
           return;
         }
 
@@ -147,6 +209,7 @@ export function useMessagingSocket({
 
     return () => {
       isCancelled = true;
+      clearReconnect();
       setIsConnected(false);
       socket?.close();
       socketRef.current = null;

@@ -180,7 +180,7 @@ export function NotificationBell(): JSX.Element | null {
       >
         <Bell className="size-4" />
         {unread > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-violet-600 px-1 text-[0.6rem] font-bold leading-4 text-white">
+          <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-accent px-1 text-[0.6rem] font-bold leading-4 text-ink">
             {unread > 99 ? "99+" : unread}
           </span>
         ) : null}

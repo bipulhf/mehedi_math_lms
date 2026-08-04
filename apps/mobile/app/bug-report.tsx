@@ -19,10 +19,11 @@ import {
   Title
 } from "@/src/components/ui";
 import { createBugReport, listMyBugReports } from "@/src/lib/api";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { HtmlContent } from "@/src/components/html-content";
 import { useSession } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
+import { colors, spacing } from "@/src/theme/tokens";
 
 /**
  * The app had no way to report the app. Everything a student hits on a phone —
@@ -42,6 +43,8 @@ const DESCRIPTION_FLOOR = 20;
 
 export default function BugReportScreen(): JSX.Element {
   const queryClient = useQueryClient();
+  const t = useT();
+  const format = useFormat();
   const { isPending: isSessionPending, session } = useSession();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -79,45 +82,42 @@ export default function BugReportScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: "Report a bug" }} />
+      <Stack.Screen options={{ title: t("bug.title") }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.flex}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>Report a bug</Heading>
-          <Body muted>
-            Say what you were doing and what happened instead. Reports reach the same queue as the
-            ones sent from the web.
-          </Body>
+          <Heading>{t("bug.title")}</Heading>
+          <Body muted>{t("bug.lead")}</Body>
 
           {error ? <ErrorNotice message={error} /> : null}
-          {hasSubmitted ? <Badge tone="positive">Report sent. Thank you.</Badge> : null}
+          {hasSubmitted ? <Badge tone="faded">{t("bug.sent")}</Badge> : null}
 
           <Card style={styles.form}>
             <Field
-              label="What went wrong"
+              label={t("bug.whatTitle")}
               onChangeText={(text) => {
                 setTitle(text);
                 setHasSubmitted(false);
               }}
-              placeholder="Enrolling did nothing"
+              placeholder={t("bug.whatPlaceholder")}
               value={title}
             />
             <View>
               <Field
-                label="What you did, and what happened"
+                label={t("bug.doTitle")}
                 multiline
                 onChangeText={(text) => {
                   setDescription(text);
                   setHasSubmitted(false);
                 }}
-                placeholder="I tapped Enrol on the Higher Maths course and the browser opened, then…"
+                placeholder={t("bug.doPlaceholder")}
                 style={styles.multiline}
                 value={description}
               />
               <View style={styles.hint}>
-                <Caption>At least {DESCRIPTION_FLOOR} characters.</Caption>
+                <Caption>{t("bug.charFloor", { count: DESCRIPTION_FLOOR })}</Caption>
               </View>
             </View>
           </Card>
@@ -125,34 +125,45 @@ export default function BugReportScreen(): JSX.Element {
           <Button
             disabled={!canSubmit}
             isBusy={submit.isPending}
-            label="Send report"
+            label={t("bug.send")}
             onPress={() => {
               setError(null);
               submit.mutate({ description: description.trim(), title: title.trim() });
             }}
           />
 
-          <Title>Your reports</Title>
+          <Title>{t("bug.yourReports")}</Title>
           {isPending ? (
             <ScreenSkeleton rows={2} />
           ) : reports.length === 0 ? (
-            <EmptyState
-              message="Anything you send will be listed here with its status."
-              title="Nothing reported yet"
-            />
+            <EmptyState message={t("bug.emptyLead")} title={t("bug.emptyTitle")} />
           ) : (
             reports.map((report) => (
               <Card key={report.id}>
                 <View style={styles.reportHeader}>
                   <Title>{report.title}</Title>
-                  <Badge tone={report.status === "RESOLVED" ? "positive" : "neutral"}>
-                    {report.status}
+                  <Badge tone={report.priority === "HIGH" ? "attention" : "neutral"}>
+                    {report.priority}
                   </Badge>
                 </View>
                 <View style={{ height: spacing.sm }} />
                 <HtmlContent html={report.description} muted />
                 <View style={{ height: spacing.sm }} />
-                <Caption>{new Date(report.createdAt).toLocaleDateString()}</Caption>
+                <View style={styles.reportMeta}>
+                  <Badge tone={report.status === "RESOLVED" ? "faded" : "neutral"}>
+                    {report.status}
+                  </Badge>
+                  <Caption>{format.date(report.createdAt)}</Caption>
+                </View>
+                {report.adminNotes ? (
+                  <>
+                    <View style={{ height: spacing.md }} />
+                    <View style={styles.adminNote}>
+                      <Caption>{t("bug.fromTeam")}</Caption>
+                      <HtmlContent html={report.adminNotes} />
+                    </View>
+                  </>
+                ) : null}
               </Card>
             ))
           )}
@@ -167,13 +178,15 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   form: { gap: spacing.lg },
   hint: { paddingTop: spacing.xs },
+  adminNote: { backgroundColor: colors.panelWarm, gap: spacing.xs, padding: spacing.md },
   multiline: { minHeight: 120, paddingTop: spacing.md, textAlignVertical: "top" },
   reportHeader: {
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.sm,
     justifyContent: "space-between"
-  }
+  },
+  reportMeta: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

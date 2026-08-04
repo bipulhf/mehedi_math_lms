@@ -1,6 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { Link, Redirect } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -8,16 +8,19 @@ import { Pressable, StyleSheet, View } from "react-native";
 import {
   Badge,
   Body,
+  Button,
   Caption,
   Card,
   EmptyState,
   Heading,
+  PresenceDot,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
 import { listConversations, type MessageConversation } from "@/src/lib/api";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
@@ -27,6 +30,9 @@ const ConversationRow = memo(function ConversationRow({
 }: {
   conversation: MessageConversation;
 }): JSX.Element {
+  const t = useT();
+  const format = useFormat();
+
   return (
     <Link
       asChild
@@ -38,14 +44,17 @@ const ConversationRow = memo(function ConversationRow({
       <Pressable style={styles.row}>
         <Card>
           <View style={styles.rowHeader}>
-            <Title>{conversation.user.name}</Title>
+            <View style={styles.rowName}>
+              <PresenceDot isOnline={conversation.user.isOnline} />
+              <Title>{conversation.user.name}</Title>
+            </View>
             {conversation.unreadCount > 0 ? <Badge>{conversation.unreadCount}</Badge> : null}
           </View>
           <Body muted numberOfLines={1}>
-            {conversation.lastMessage?.content ?? "No messages yet"}
+            {conversation.lastMessage?.content ?? t("messages.noMessages")}
           </Body>
           {conversation.lastMessageAt ? (
-            <Caption>{new Date(conversation.lastMessageAt).toLocaleDateString()}</Caption>
+            <Caption>{format.date(conversation.lastMessageAt)}</Caption>
           ) : null}
         </Card>
       </Pressable>
@@ -54,6 +63,8 @@ const ConversationRow = memo(function ConversationRow({
 });
 
 export default function MessagesScreen(): JSX.Element {
+  const router = useRouter();
+  const t = useT();
   const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
   const { data: conversations = [], isPending } = useQuery({
@@ -79,10 +90,7 @@ export default function MessagesScreen(): JSX.Element {
   if (!canMessage) {
     return (
       <Screen style={styles.padded}>
-        <EmptyState
-          message="Messaging is between students and teachers."
-          title="Messaging unavailable"
-        />
+        <EmptyState message={t("messages.unavailableLead")} title={t("messages.unavailable")} />
       </Screen>
     );
   }
@@ -90,7 +98,12 @@ export default function MessagesScreen(): JSX.Element {
   return (
     <Screen>
       <View style={styles.header}>
-        <Heading>Messages</Heading>
+        <Heading>{t("nav.messages")}</Heading>
+        <Button
+          label={t("messages.new")}
+          onPress={() => router.push("/messages/new")}
+          size="sm"
+        />
       </View>
 
       {isPending ? (
@@ -104,10 +117,7 @@ export default function MessagesScreen(): JSX.Element {
           ))}
         </View>
       ) : conversations.length === 0 ? (
-        <EmptyState
-          message="Start one from a course page on the web, and it will appear here."
-          title="No conversations"
-        />
+        <EmptyState message={t("messages.emptyLead")} title={t("messages.emptyTitle")} />
       ) : (
         <FlashList
           contentContainerStyle={styles.list}
@@ -121,7 +131,7 @@ export default function MessagesScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  header: { padding: spacing.lg },
+  header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", padding: spacing.lg },
   list: { padding: spacing.lg },
   padded: { padding: spacing.lg },
   row: { marginBottom: spacing.md },
@@ -131,6 +141,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: spacing.xs
   },
+  rowName: { alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.sm },
   skeletonList: { gap: spacing.md, padding: spacing.lg }
 });
 
