@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import { HtmlContent } from "@/src/components/html-content";
 import { LectureComments } from "@/src/components/lecture-comments";
 import { LecturePlayer } from "@/src/components/lecture-player";
 import {
@@ -167,7 +168,7 @@ export default function CoursePlayerScreen(): JSX.Element {
                   <Body>{notice.title}</Body>
                   {notice.isPinned ? <Badge>Pinned</Badge> : null}
                 </View>
-                <Body muted>{notice.content}</Body>
+                <HtmlContent html={notice.content} muted />
                 <Caption>
                   {notice.author.name} · {new Date(notice.createdAt).toLocaleDateString()}
                 </Caption>
@@ -180,7 +181,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           <Card>
             <Title>{activeLecture.title}</Title>
             <View style={{ height: spacing.sm }} />
-            {activeLecture.description ? <Body muted>{activeLecture.description}</Body> : null}
+            {activeLecture.description ? <HtmlContent html={activeLecture.description} muted /> : null}
             <View style={{ height: spacing.md }} />
             <LecturePlayer
               isCompleted={completedIds.has(activeLecture.id)}

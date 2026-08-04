@@ -10,6 +10,7 @@ import {
 } from "@genex/shared";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
+import { normalizeOptionalHtml } from "@/lib/html";
 import type { CategoryRepository} from "@/repositories/category-repository";
 import { type CategoryRecord } from "@/repositories/category-repository";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
@@ -157,7 +158,7 @@ export class CategoryService {
     }
 
     const createdCategory = await this.categoryRepository.create({
-      description: normalizeOptionalString(input.description),
+      description: normalizeOptionalHtml(input.description),
       icon: normalizeOptionalString(input.icon),
       isActive: input.isActive,
       name,
@@ -230,7 +231,7 @@ export class CategoryService {
       description:
         input.description === undefined
           ? currentCategory.description
-          : normalizeOptionalString(input.description),
+          : normalizeOptionalHtml(input.description),
       icon: input.icon === undefined ? currentCategory.icon : normalizeOptionalString(input.icon),
       isActive: input.isActive ?? currentCategory.isActive,
       name: nextName,

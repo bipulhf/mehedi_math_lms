@@ -8,6 +8,32 @@ export const paginationSchema = z.object({
   limit: z.number().int().positive().max(100).default(10)
 });
 
+export function stripHtmlTags(value: string): string {
+  return value.replace(/<[^>]*>/g, "");
+}
+
+export function isEmptyRichText(value: string): boolean {
+  return stripHtmlTags(value).trim().length === 0;
+}
+
+export function richTextLength(value: string): number {
+  return stripHtmlTags(value).trim().length;
+}
+
+export function richTextSchema({ max, min = 0 }: { max: number; min?: number }) {
+  return z.string().trim().refine(
+    (value) => richTextLength(value) >= min,
+    { message: `Must be at least ${min} characters` }
+  ).refine(
+    (value) => richTextLength(value) <= max,
+    { message: `Must be at most ${max} characters` }
+  );
+}
+
+export function optionalRichTextSchema(max: number) {
+  return richTextSchema({ max, min: 0 }).optional().or(z.literal(""));
+}
+
 /**
  * A boolean carried in a query string.
  *

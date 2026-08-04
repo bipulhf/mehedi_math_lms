@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { CourseReviews } from "@/src/components/course-reviews";
+import { HtmlContent } from "@/src/components/html-content";
 import {
   Badge,
   Body,
@@ -113,7 +114,7 @@ export default function CourseDetailScreen(): JSX.Element {
           {course.isExamOnly ? <Badge tone="warning">Exam only</Badge> : null}
           {course.category ? <Caption>{course.category.name}</Caption> : null}
         </View>
-        <Body muted>{course.description}</Body>
+        <HtmlContent html={course.description} muted />
 
         <Card>
           <Title>Taught by</Title>

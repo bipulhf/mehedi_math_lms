@@ -9,6 +9,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
@@ -241,9 +242,10 @@ function StudentTestPage(): JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink">
-            {currentQuestion.questionText}
-          </div>
+          <RichTextContent
+            className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink"
+            html={currentQuestion.questionText}
+          />
           {currentQuestion.type === "MCQ" ? (
             <div className="grid gap-3">
               {currentQuestion.options.map((option) => (

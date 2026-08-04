@@ -11,6 +11,7 @@ import {
 import { courses, eq, inArray, or, type SQL } from "@genex/db";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
+import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type { CategoryRepository } from "@/repositories/category-repository";
 import type {
   CourseRepository} from "@/repositories/course-repository";
@@ -394,7 +395,7 @@ export class CourseService {
       categoryId: input.categoryId,
       coverImageUrl: normalizeOptionalUrl(input.coverImageUrl),
       creatorId: currentUserId,
-      description: input.description.trim(),
+      description: sanitizeHtml(input.description.trim()),
       isExamOnly: input.isExamOnly,
       price: formatPrice(input.price),
       reviewFeedback: null,
@@ -451,7 +452,7 @@ export class CourseService {
       categoryId: input.categoryId,
       coverImageUrl:
         input.coverImageUrl === undefined ? undefined : normalizeOptionalUrl(input.coverImageUrl),
-      description: input.description?.trim(),
+      description: input.description === undefined ? undefined : sanitizeHtml(input.description.trim()),
       isExamOnly: input.isExamOnly,
       price: input.price === undefined ? undefined : formatPrice(input.price),
       reviewFeedback: course.status === "PENDING" ? null : undefined,
@@ -626,10 +627,12 @@ export class CourseService {
       throw new ConflictError("Only pending courses can be rejected");
     }
 
+    const feedback = normalizeOptionalHtml(input.feedback) ?? "";
+
     const rejectedCourse = await this.courseRepository.update(id, {
       publishedAt: null,
       rejectedAt: new Date(),
-      reviewFeedback: input.feedback.trim(),
+      reviewFeedback: feedback,
       status: "DRAFT",
       submittedAt: null
     });
@@ -643,7 +646,7 @@ export class CourseService {
     await this.notificationService.notifyUsers(
       rejectedCourse.teachers.map((teacher) => teacher.id),
       {
-        body: input.feedback.trim(),
+        body: feedback,
         data: { courseId: rejectedCourse.id },
         title: `${rejectedCourse.title} needs changes`,
         type: "COURSE"

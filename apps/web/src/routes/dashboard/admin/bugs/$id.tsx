@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { getAdminBug, updateAdminBug } from "@/lib/api/admin";
 import { queryKeys } from "@/lib/query/keys";
@@ -81,9 +82,10 @@ function AdminBugDetailPage(): JSX.Element {
         </CardHeader>
         <CardContent className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70">
-              {bug.description}
-            </div>
+            <RichTextContent
+              className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/70"
+              html={bug.description}
+            />
             {bug.screenshotUrl ? (
               <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
                 <ResponsiveImage
@@ -133,7 +135,11 @@ function AdminBugDetailPage(): JSX.Element {
 
             <div className="space-y-2">
               <Label htmlFor="bug-admin-notes">{t("abug.notes")}</Label>
-              <Textarea id="bug-admin-notes" value={adminNotes} onChange={(event) => setAdminNotes(event.target.value)} />
+              <RichTextEditor
+                id="bug-admin-notes"
+                value={adminNotes}
+                onChange={(value) => setAdminNotes(value)}
+              />
             </div>
 
             <Button type="button" disabled={isSaving} onClick={() => void handleSave()}>

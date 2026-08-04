@@ -6,11 +6,13 @@ import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { CategoryNode } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
 import { findCategoryBySlug } from "@/lib/category-tree";
 import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet, ssrApiGetCourses } from "@/lib/ssr-api";
+import { stripHtml } from "@/lib/html";
 import { siteConfig } from "@/lib/site";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -56,7 +58,7 @@ export const Route = createFileRoute("/categories/$slug")({
 
     return seo({
       description:
-        category.description?.trim() ??
+        (category.description ? stripHtml(category.description).trim() : undefined) ??
         `Browse published courses tagged under ${category.name} at Genex.`,
       jsonLd: [
         catalogItemListFromCourses(courses),
@@ -100,7 +102,9 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
       </div>
       <CardContent className="space-y-3 p-4">
         <CardTitle className="text-lg">{course.title}</CardTitle>
-        <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+        <CardDescription className="line-clamp-2">
+          <RichTextContent html={course.description} />
+        </CardDescription>
         <Link className="text-sm font-semibold text-accent" to="/courses/$slug" params={{ slug: course.slug }}>{t("cat.viewCourse")}</Link>
       </CardContent>
     </Card>
@@ -115,7 +119,13 @@ function CategoryCoursesPage(): JSX.Element {
   return (
     <PublicLayout
       eyebrow={t("nav.categories")}
-      subtitle={category.description ?? t("cat.deeperLead")}
+      subtitle={
+        category.description ? (
+          <RichTextContent className="text-muted" html={category.description} />
+        ) : (
+          t("cat.deeperLead")
+        )
+      }
       title={category.name}
     >
       {/* Same gutter as the page head above it. */}

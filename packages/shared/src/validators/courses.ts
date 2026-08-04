@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { booleanQueryParamSchema } from "./common";
+import { booleanQueryParamSchema, richTextSchema } from "./common";
 
 const idSchema = z.string().uuid();
 
@@ -11,7 +11,7 @@ export const courseIdParamsSchema = z.object({
 });
 
 const courseTitleSchema = z.string().trim().min(3).max(255);
-const courseDescriptionSchema = z.string().trim().min(24).max(10000);
+const courseDescriptionSchema = richTextSchema({ min: 24, max: 10000 });
 const coursePriceSchema = z.coerce.number().min(0).max(999999);
 const optionalUrlSchema = z
   .union([z.string().url(), z.literal("")])
@@ -47,7 +47,7 @@ export const courseTeacherIdsSchema = z.object({
 });
 
 export const rejectCourseSchema = z.object({
-  feedback: z.string().trim().min(8).max(2000)
+  feedback: richTextSchema({ max: 2000, min: 8 })
 });
 
 export const listCoursesQuerySchema = z.object({

@@ -18,6 +18,7 @@ import {
 } from "@/src/components/ui";
 import { listNotifications, markNotificationRead, type NotificationRecord } from "@/src/lib/api";
 import { queryKeys } from "@/src/lib/query";
+import { stripHtml } from "@/src/lib/html";
 import { usePushRegistration } from "@/src/lib/use-push-registration";
 import { useSession } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -53,7 +54,7 @@ export default function NotificationsScreen(): JSX.Element {
         <Card style={item.readAt ? styles.cardRead : undefined}>
           <Title>{item.title}</Title>
           <View style={{ height: spacing.xs }} />
-          <Body muted>{item.body}</Body>
+          <Body muted>{stripHtml(item.body)}</Body>
           <View style={{ height: spacing.sm }} />
           <Caption>{new Date(item.createdAt).toLocaleString()}</Caption>
         </Card>

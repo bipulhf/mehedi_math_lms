@@ -20,6 +20,7 @@ import {
 } from "@/src/components/ui";
 import { createBugReport, listMyBugReports } from "@/src/lib/api";
 import { queryKeys } from "@/src/lib/query";
+import { HtmlContent } from "@/src/components/html-content";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
 
@@ -149,9 +150,7 @@ export default function BugReportScreen(): JSX.Element {
                   </Badge>
                 </View>
                 <View style={{ height: spacing.sm }} />
-                <Body muted numberOfLines={3}>
-                  {report.description}
-                </Body>
+                <HtmlContent html={report.description} muted />
                 <View style={{ height: spacing.sm }} />
                 <Caption>{new Date(report.createdAt).toLocaleDateString()}</Caption>
               </Card>

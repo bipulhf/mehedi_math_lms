@@ -8,11 +8,13 @@ import { Avatar } from "@/components/ui/avatar";
 import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PriceText } from "@/components/ui/price-text";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { PublicTeacherProfileData, TeacherCourseSummary } from "@/lib/api/profiles";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { breadcrumbJsonLd, seo, teacherPersonJsonLd } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
+import { stripHtml } from "@/lib/html";
 import { siteConfig } from "@/lib/site";
 
 export const Route = createFileRoute("/teachers/$slug")({
@@ -45,7 +47,7 @@ export const Route = createFileRoute("/teachers/$slug")({
 
     return seo({
       description:
-        profile.teacherProfile?.bio?.trim() ??
+        (profile.teacherProfile?.bio ? stripHtml(profile.teacherProfile.bio).trim() : undefined) ??
         `Courses and teaching profile for ${profile.user.name}.`,
       jsonLd: [
         teacherPersonJsonLd({
@@ -121,12 +123,22 @@ function TeacherProfilePage(): JSX.Element {
             </h1>
 
             {teacherProfile?.specializations ? (
-              <p className="text-lg text-muted">{teacherProfile.specializations}</p>
+              <RichTextContent
+                className="text-lg text-muted"
+                html={teacherProfile.specializations}
+              />
             ) : null}
 
-            <p className="max-w-[56ch] text-lg font-light leading-relaxed text-muted">
-              {teacherProfile?.bio ?? t("teacher.noBio")}
-            </p>
+            {teacherProfile?.bio ? (
+              <RichTextContent
+                className="max-w-[56ch] text-lg font-light leading-relaxed text-muted"
+                html={teacherProfile.bio}
+              />
+            ) : (
+              <p className="max-w-[56ch] text-lg font-light leading-relaxed text-muted">
+                {t("teacher.noBio")}
+              </p>
+            )}
 
             <dl className="flex flex-wrap gap-x-11 gap-y-6 border-t border-hairline pt-7">
               {figures.map((figure) => (
@@ -203,9 +215,10 @@ function TeacherCourseCard({ course }: { course: TeacherCourseSummary }): JSX.El
       to="/courses/$slug"
     >
       <p className="text-lg font-medium leading-snug text-ink">{course.title}</p>
-      <p className="line-clamp-3 text-base font-light leading-relaxed text-muted">
-        {course.description}
-      </p>
+      <RichTextContent
+        className="line-clamp-3 text-base font-light leading-relaxed text-muted"
+        html={course.description}
+      />
       <div className="mt-auto flex items-end justify-between border-t border-hairline-faint pt-4">
         <PriceText amount={course.price} />
         <span className="text-sm text-muted-light">

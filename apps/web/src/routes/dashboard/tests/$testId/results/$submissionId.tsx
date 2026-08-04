@@ -6,6 +6,7 @@ import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
@@ -66,7 +67,9 @@ function SubmissionResultPage(): JSX.Element {
         return (
           <Card key={question.id}>
             <CardHeader>
-              <CardTitle className="text-lg">{question.questionText}</CardTitle>
+              <CardTitle className="text-lg">
+                <RichTextContent html={question.questionText} />
+              </CardTitle>
               <CardDescription>
                 {question.type} · {question.marks} marks
               </CardDescription>

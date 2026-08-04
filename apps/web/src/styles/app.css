@@ -284,4 +284,92 @@
   }
 }
 
+/* ------------------------------------------------------------------
+ * Rich text content rendering. Matches DESIGN.md typography.
+ * ------------------------------------------------------------------ */
+.rich-text-content p {
+  margin-bottom: 0.75rem;
+}
+
+.rich-text-content p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-content h1,
+.rich-text-content h2,
+.rich-text-content h3 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.rich-text-content h1 {
+  font-size: 1.5rem;
+  line-height: 1.35;
+}
+
+.rich-text-content h2 {
+  font-size: 1.25rem;
+  line-height: 1.35;
+}
+
+.rich-text-content h3 {
+  font-size: 1.125rem;
+  line-height: 1.35;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.rich-text-content li {
+  margin-bottom: 0.25rem;
+}
+
+.rich-text-content ul {
+  list-style-type: disc;
+}
+
+.rich-text-content ol {
+  list-style-type: decimal;
+}
+
+.rich-text-content blockquote {
+  margin-bottom: 0.75rem;
+  border-left: 2px solid var(--color-line-strong);
+  padding-left: 1rem;
+  color: var(--color-muted);
+}
+
+.rich-text-content a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.rich-text-content a:hover {
+  color: var(--color-ink);
+}
+
+.rich-text-content strong,
+.rich-text-content b {
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+/* TipTap editor placeholder. */
+.ProseMirror.is-editor-empty::before {
+  content: attr(data-placeholder);
+  pointer-events: none;
+  float: left;
+  height: 0;
+  color: var(--color-placeholder);
+}
+
+/* TipTap editor focus outline is handled by the parent focus-within. */
+.ProseMirror:focus-visible {
+  outline: none;
+}
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { booleanQueryParamSchema } from "./common";
+import { booleanQueryParamSchema, optionalRichTextSchema } from "./common";
 
 export const categoryIdParamsSchema = z.object({
   id: z.string().uuid()
@@ -12,7 +12,7 @@ export const categoriesQuerySchema = z.object({
 });
 
 export const createCategorySchema = z.object({
-  description: z.string().trim().max(4000).optional().or(z.literal("")),
+  description: optionalRichTextSchema(4000),
   icon: z.string().trim().max(128).optional().or(z.literal("")),
   isActive: z.boolean().default(true),
   name: z.string().trim().min(1).max(255),
@@ -21,7 +21,7 @@ export const createCategorySchema = z.object({
 });
 
 export const updateCategorySchema = z.object({
-  description: z.string().trim().max(4000).optional().or(z.literal("")),
+  description: optionalRichTextSchema(4000).optional(),
   icon: z.string().trim().max(128).optional().or(z.literal("")),
   isActive: z.boolean().optional(),
   name: z.string().trim().min(1).max(255).optional(),

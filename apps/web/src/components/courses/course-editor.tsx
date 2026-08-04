@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CategoryNode } from "@/lib/api/categories";
 import type { CourseTeacherOption, CreateCourseInput } from "@/lib/api/courses";
@@ -237,14 +237,12 @@ export function CourseEditor({
               {t("editor.description")}
               <Required />
             </Label>
-            <Textarea
+            <RichTextEditor
               id="course-description"
               error={touched.description ? errors.description : undefined}
               placeholder={t("author.courseDescriptionPlaceholder")}
-              className="min-h-32 p-4"
               value={values.description}
-              onBlur={() => markTouched("description")}
-              onChange={(e) => setValues((cv) => ({ ...cv, description: e.target.value }))}
+              onChange={(value) => setValues((cv) => ({ ...cv, description: value }))}
             />
           </div>
         </section>

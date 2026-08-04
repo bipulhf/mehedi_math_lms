@@ -19,9 +19,10 @@ import { useZodForm } from "@/lib/forms/use-zod-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
 interface StudentProfileFormProps {
@@ -142,12 +143,14 @@ function StepRail({
 }
 
 function StudentStepFields({
+  control,
   errors,
   onPhotoChange,
   photoValue,
   register,
   step
 }: {
+  control: ReturnType<typeof useZodForm<StudentProfileInput>>["control"];
   errors: FieldErrors<StudentProfileInput>;
   onPhotoChange: (value: string) => void;
   photoValue: string;
@@ -225,19 +228,32 @@ function StudentStepFields({
       </div>
       <div className="space-y-2 md:col-span-2">
         <Label htmlFor="student-address">{t("profile.address")}</Label>
-        <Textarea id="student-address" error={errors.address?.message} {...register("address")} />
+        <Controller
+          control={control}
+          name="address"
+          render={({ field }) => (
+            <RichTextEditor
+              id="student-address"
+              error={errors.address?.message}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+            />
+          )}
+        />
       </div>
     </div>
   );
 }
 
 function TeacherStepFields({
+  control,
   errors,
   onPhotoChange,
   photoValue,
   register,
   step
 }: {
+  control: ReturnType<typeof useZodForm<TeacherProfileInput>>["control"];
   errors: FieldErrors<TeacherProfileInput>;
   onPhotoChange: (value: string) => void;
   photoValue: string;
@@ -275,22 +291,47 @@ function TeacherStepFields({
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="teacher-bio">{t("profile.bio")}</Label>
-          <Textarea id="teacher-bio" error={errors.bio?.message} {...register("bio")} />
+          <Controller
+            control={control}
+            name="bio"
+            render={({ field }) => (
+              <RichTextEditor
+                id="teacher-bio"
+                error={errors.bio?.message}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="teacher-qualifications">{t("profile.qualifications")}</Label>
-          <Textarea
-            id="teacher-qualifications"
-            error={errors.qualifications?.message}
-            {...register("qualifications")}
+          <Controller
+            control={control}
+            name="qualifications"
+            render={({ field }) => (
+              <RichTextEditor
+                id="teacher-qualifications"
+                error={errors.qualifications?.message}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="teacher-specializations">{t("profile.specializations")}</Label>
-          <Textarea
-            id="teacher-specializations"
-            error={errors.specializations?.message}
-            {...register("specializations")}
+          <Controller
+            control={control}
+            name="specializations"
+            render={({ field }) => (
+              <RichTextEditor
+                id="teacher-specializations"
+                error={errors.specializations?.message}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
+            )}
           />
         </div>
       </div>
@@ -300,11 +341,18 @@ function TeacherStepFields({
   return (
     <div className="space-y-2">
       <Label htmlFor="teacher-social-links">{t("profile.socialLinks")}</Label>
-      <Textarea
-        id="teacher-social-links"
-        placeholder={t("profile.socialLinksHint")}
-        error={errors.socialLinks?.message}
-        {...register("socialLinks")}
+      <Controller
+        control={control}
+        name="socialLinks"
+        render={({ field }) => (
+          <RichTextEditor
+            id="teacher-social-links"
+            placeholder={t("profile.socialLinksHint")}
+            error={errors.socialLinks?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+          />
+        )}
       />
     </div>
   );
@@ -335,6 +383,7 @@ export function StudentProfileForm({
     schema: studentProfileInputSchema
   });
   const {
+    control,
     formState: { errors },
     getValues,
     handleSubmit,
@@ -396,6 +445,7 @@ export function StudentProfileForm({
         <StepRail activeStep={step} steps={studentSteps} />
         <form className="space-y-8" onSubmit={handleStudentFormSubmit}>
           <StudentStepFields
+            control={control}
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}
             photoValue={profilePhotoValue ?? ""}
@@ -452,6 +502,7 @@ export function TeacherProfileForm({
     schema: teacherProfileInputSchema
   });
   const {
+    control,
     formState: { errors },
     getValues,
     handleSubmit,
@@ -513,6 +564,7 @@ export function TeacherProfileForm({
         <StepRail activeStep={step} steps={teacherSteps} />
         <form className="space-y-8" onSubmit={handleTeacherFormSubmit}>
           <TeacherStepFields
+            control={control}
             errors={errors}
             onPhotoChange={(value) => setValue("profilePhoto", value, { shouldDirty: true, shouldValidate: true })}
             photoValue={profilePhotoValue ?? ""}

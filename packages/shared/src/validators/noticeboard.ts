@@ -1,15 +1,15 @@
 import { z } from "zod";
 
-import { idSchema } from "./common";
+import { idSchema, richTextSchema } from "./common";
 
 export const createCourseNoticeSchema = z.object({
-  content: z.string().trim().min(1).max(8000),
+  content: richTextSchema({ min: 1, max: 8000 }),
   isPinned: z.boolean().default(false),
   title: z.string().trim().min(1).max(255)
 });
 
 export const updateCourseNoticeSchema = z.object({
-  content: z.string().trim().min(1).max(8000).optional(),
+  content: richTextSchema({ min: 1, max: 8000 }).optional(),
   isPinned: z.boolean().optional(),
   title: z.string().trim().min(1).max(255).optional()
 });

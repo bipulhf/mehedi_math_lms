@@ -1,3 +1,4 @@
+import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type {
   BugReportRepository} from "@/repositories/bug-report-repository";
 import {
@@ -27,7 +28,7 @@ export class BugReportService {
 
   public async createBugReport(userId: string, input: CreateBugReportRequest): Promise<BugReportRecord> {
     return this.bugReportRepository.create({
-      description: input.description,
+      description: sanitizeHtml(input.description.trim()),
       screenshotUrl: input.screenshotUrl,
       title: input.title,
       userId
@@ -57,7 +58,7 @@ export class BugReportService {
   public async updateBug(id: string, input: UpdateBugReportRequest): Promise<BugReportRecord> {
     const nextStatus = input.status;
     const updatedBug = await this.bugReportRepository.update(id, {
-      adminNotes: input.adminNotes,
+      adminNotes: input.adminNotes === undefined ? undefined : normalizeOptionalHtml(input.adminNotes),
       priority: input.priority,
       resolvedAt:
         nextStatus === "RESOLVED" || nextStatus === "CLOSED"

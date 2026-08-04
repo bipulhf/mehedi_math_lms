@@ -19,6 +19,7 @@ import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseDetail } from "@/lib/api/courses";
 import type { ContentChapter, ContentLecture, ContentMaterial } from "@/lib/api/content";
@@ -658,7 +659,10 @@ export function CoursePlayer({
                   <CardContent className="space-y-4">
                     {selectedItem.test.description ? (
                       <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3 text-sm leading-7 text-ink/72">
-                        {selectedItem.test.description}
+                        <RichTextContent
+                          className="text-sm leading-7 text-ink/72"
+                          html={selectedItem.test.description}
+                        />
                       </div>
                     ) : null}
                     <div className="grid gap-3 md:grid-cols-3">

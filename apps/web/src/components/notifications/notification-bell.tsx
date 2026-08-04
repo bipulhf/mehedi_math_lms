@@ -21,6 +21,7 @@ import {
 import { queryKeys } from "@/lib/query/keys";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 import { cn } from "@/lib/utils";
+import { stripHtml } from "@/lib/html";
 import { useT } from "@/lib/i18n/locale-context";
 
 interface NotificationSocketMessage {
@@ -217,7 +218,7 @@ export function NotificationBell(): JSX.Element | null {
                 >
                   <p className="text-sm font-semibold text-ink">{record.title}</p>
                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink/62">
-                    {record.body}
+                    {record.body ? stripHtml(record.body).trim() : ""}
                   </p>
                   <p className="mt-2 text-[0.65rem] text-ink/45">{record.type}</p>
                 </button>

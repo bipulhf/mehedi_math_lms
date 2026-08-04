@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Search, Sparkles, X } from "lucide-react";
 import type { JSX } from "react";
 import { useMemo, useState } from "react";
-import { FormProvider } from "react-hook-form";
+import { FormProvider, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { createCategorySchema } from "@genex/shared";
 
@@ -18,7 +18,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { CategoryNode, CreateCategoryInput } from "@/lib/api/categories";
 import {
   createCategory,
@@ -172,6 +172,7 @@ function AdminCategoriesPage(): JSX.Element {
   });
 
   const {
+    control,
     formState: { errors },
     handleSubmit,
     register,
@@ -431,11 +432,17 @@ function AdminCategoriesPage(): JSX.Element {
 
                 <div className="space-y-2">
                   <Label htmlFor="cat-description">{t("common.description")}</Label>
-                  <Textarea
-                    error={errors.description?.message}
-                    id="cat-description"
-                    rows={2}
-                    {...register("description")}
+                  <Controller
+                    control={control}
+                    name="description"
+                    render={({ field }) => (
+                      <RichTextEditor
+                        error={errors.description?.message}
+                        id="cat-description"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                      />
+                    )}
                   />
                 </div>
 

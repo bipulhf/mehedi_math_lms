@@ -20,7 +20,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { cn } from "@/lib/utils";
+import { stripHtml } from "@/lib/html";
 import { RouteErrorView } from "@/components/common/route-error";
 import genexMark from "@/assets/genex-mark.png";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -161,17 +164,13 @@ function SendNotificationPage(): JSX.Element {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="n-body">{t("notify.body")}</Label>
-                <span className="text-xs text-muted-faint">{body.length} / 4000</span>
+                <span className="text-xs text-muted-faint">{stripHtml(body).trim().length} / 4000</span>
               </div>
-              <textarea
-                className="w-full border border-hairline bg-card p-4 text-base font-light text-ink transition-colors focus:border-accent focus:outline-none"
+              <RichTextEditor
                 id="n-body"
-                maxLength={4000}
-                onChange={(e) => setBody(e.target.value)}
                 placeholder={t("notify.placeholder")}
-                required
-                rows={4}
                 value={body}
+                onChange={(value) => setBody(value)}
               />
             </div>
 
@@ -320,9 +319,16 @@ function SendNotificationPage(): JSX.Element {
                     </p>
                     <span className="shrink-0 text-xs text-muted-faint">Just now</span>
                   </div>
-                  <p className="text-sm font-light leading-relaxed text-muted">
-                    {body.trim() || "Message preview will appear here as you type..."}
-                  </p>
+                  {body.trim() ? (
+                    <RichTextContent
+                      className="text-sm font-light leading-relaxed text-muted"
+                      html={body}
+                    />
+                  ) : (
+                    <p className="text-sm font-light leading-relaxed text-muted">
+                      Message preview will appear here as you type...
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -10,7 +10,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   type CourseNotice,
   createCourseNotice,
@@ -119,13 +120,11 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
 
         <div className="space-y-2">
           <Label htmlFor="notice-body">{t("notice.message")}</Label>
-          <Textarea
+          <RichTextEditor
             id="notice-body"
-            maxLength={8000}
-            onChange={(event) => setContent(event.target.value)}
-            required
-            rows={5}
+            placeholder={t("notice.message")}
             value={content}
+            onChange={(value) => setContent(value)}
           />
         </div>
 
@@ -174,9 +173,10 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
                   <p className="text-sm text-muted-light">
                     {notice.author.name} · {format.date(notice.createdAt)}
                   </p>
-                  <p className="whitespace-pre-wrap text-base font-light leading-relaxed text-muted">
-                    {notice.content}
-                  </p>
+                  <RichTextContent
+                    className="text-base font-light leading-relaxed text-muted"
+                    html={notice.content}
+                  />
                 </div>
 
                 <div className="flex shrink-0 gap-2">

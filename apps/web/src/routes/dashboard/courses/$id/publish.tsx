@@ -7,6 +7,7 @@ import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { CourseStatusBadge } from "@/components/courses/course-status-badge";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContentChapter } from "@/lib/api/content";
@@ -16,6 +17,7 @@ import { getCourse, submitCourse } from "@/lib/api/courses";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +69,7 @@ function PublishCoursePage(): JSX.Element {
   // is here so a teacher knows what a reviewer will look at.
   const checks: readonly Check[] = [
     { isSatisfied: course.title.trim().length >= 8, label: t("builder.checkTitle") },
-    { isSatisfied: course.description.trim().length >= 40, label: t("builder.checkDescription") },
+    { isSatisfied: stripHtml(course.description).trim().length >= 40, label: t("builder.checkDescription") },
     { isSatisfied: chapters.length >= 1, label: t("builder.checkModules") },
     { isSatisfied: contentItemCount >= 3, label: t("builder.checkLessons") },
     {
@@ -104,7 +106,10 @@ function PublishCoursePage(): JSX.Element {
 
       <section className="border border-hairline bg-card p-6">
         <h3 className="text-xl font-medium text-ink">{course.title}</h3>
-        <p className="mt-2 text-base font-light leading-relaxed text-muted">{course.description}</p>
+        <RichTextContent
+          className="mt-2 text-base font-light leading-relaxed text-muted"
+          html={course.description}
+        />
         <dl className="mt-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
           <div className="bg-card p-4">
             <dt className="text-sm text-muted">{t("editor.category")}</dt>

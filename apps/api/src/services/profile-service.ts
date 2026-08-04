@@ -8,6 +8,7 @@ import {
 } from "@genex/shared";
 import type { z } from "zod";
 
+import { normalizeOptionalHtml } from "@/lib/html";
 import type {
   ProfileRepository} from "@/repositories/profile-repository";
 import {
@@ -220,7 +221,7 @@ export class ProfileService {
 
     const updatedProfile = await this.profileRepository.saveStudentProfile(userId, {
       markComplete: input.isComplete !== false,
-      address: normalizeOptionalString(input.address),
+      address: normalizeOptionalHtml(input.address),
       classOrGrade: normalizeOptionalString(input.classOrGrade),
       dateOfBirth: normalizeOptionalDate(input.dateOfBirth),
       guardianName: normalizeOptionalString(input.guardianName),
@@ -257,14 +258,14 @@ export class ProfileService {
 
     const updatedProfile = await this.profileRepository.saveTeacherProfile(userId, {
       markComplete: input.isComplete !== false,
-      bio: normalizeOptionalString(input.bio),
+      bio: normalizeOptionalHtml(input.bio),
       name: nextName,
       phone: normalizeOptionalString(input.phone),
       profilePhoto: normalizeOptionalString(input.profilePhoto),
-      qualifications: normalizeOptionalString(input.qualifications),
+      qualifications: normalizeOptionalHtml(input.qualifications),
       slug: nextSlug,
-      socialLinks: normalizeOptionalString(input.socialLinks),
-      specializations: normalizeOptionalString(input.specializations)
+      socialLinks: normalizeOptionalHtml(input.socialLinks),
+      specializations: normalizeOptionalHtml(input.specializations)
     });
 
     if (!updatedProfile) {

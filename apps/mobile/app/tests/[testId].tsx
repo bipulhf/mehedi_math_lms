@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 
+import { HtmlContent } from "@/src/components/html-content";
 import {
   Badge,
   Body,
@@ -191,7 +192,7 @@ export default function TestScreen(): JSX.Element {
               Question {index + 1} · {question.marks} marks
             </Caption>
             <View style={{ height: spacing.sm }} />
-            <Body>{question.prompt}</Body>
+            <HtmlContent html={question.prompt} />
             <View style={{ height: spacing.md }} />
 
             {question.type === "MCQ" ? (

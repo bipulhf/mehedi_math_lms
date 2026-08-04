@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { ContentChapter, CreateChapterInput } from "@/lib/api/content";
 import { createChapter, deleteChapter, reorderChapters, updateChapter } from "@/lib/api/content";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -174,13 +175,11 @@ export function CourseChapterBuilder({
           </div>
           <div className="space-y-2">
             <Label htmlFor="chapter-description">{t("author.chapterDescription")}</Label>
-            <Input
+            <RichTextEditor
               id="chapter-description"
               placeholder={t("author.chapterDescriptionPlaceholder")}
-              value={draft.description}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, description: event.target.value }))
-              }
+              value={draft.description ?? ""}
+              onChange={(value) => setDraft((current) => ({ ...current, description: value }))}
             />
           </div>
           <Button
@@ -234,13 +233,12 @@ export function CourseChapterBuilder({
                       </div>
                       <div className="space-y-2">
                         <Label>{t("author.chapterDescription")}</Label>
-                        <Textarea
-                          className="min-h-24"
-                          value={editDraft.description}
-                          onChange={(event) =>
+                        <RichTextEditor
+                          value={editDraft.description ?? ""}
+                          onChange={(value) =>
                             setEditDraft((current) => ({
                               ...current,
-                              description: event.target.value
+                              description: value
                             }))
                           }
                         />
@@ -274,9 +272,10 @@ export function CourseChapterBuilder({
                     <div className="min-w-0 flex-1">
                       <h3 className="text-lg font-medium text-ink">{chapter.title}</h3>
                       {chapter.description ? (
-                        <p className="mt-1 text-base font-light leading-relaxed text-muted">
-                          {chapter.description}
-                        </p>
+                        <RichTextContent
+                          className="mt-1 text-base font-light leading-relaxed text-muted"
+                          html={chapter.description}
+                        />
                       ) : null}
                     </div>
                     <div className="flex items-center gap-1 self-end sm:self-center">

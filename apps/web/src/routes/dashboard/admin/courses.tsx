@@ -25,8 +25,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { stripHtml } from "@/lib/html";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import {
@@ -110,8 +111,9 @@ function AdminCoursesPage(): JSX.Element {
 
   const submitReject = async (): Promise<void> => {
     const feedback = rejectFeedback.trim();
+    const textLength = stripHtml(feedback).trim().length;
 
-    if (feedback.length < 8) {
+    if (textLength < 8) {
       toast.error(t("admin.approve.needFeedback"));
       return;
     }
@@ -475,24 +477,21 @@ function AdminCoursesPage(): JSX.Element {
             >
               <div className="space-y-2">
                 <Label htmlFor="reject-feedback">{t("admin.approve.feedback")}</Label>
-                <Textarea
-                  autoFocus
+                <RichTextEditor
                   className="text-sm"
                   id="reject-feedback"
-                  maxLength={2000}
-                  onChange={(event) => setRejectFeedback(event.target.value)}
+                  onChange={(value) => setRejectFeedback(value)}
                   placeholder={t("admin.approve.feedbackPlaceholder")}
-                  required
-                  rows={4}
                   value={rejectFeedback}
                 />
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-faint">
-                    {rejectFeedback.length} / 2000
+                    {stripHtml(rejectFeedback).trim().length} / 2000
                   </span>
-                  {rejectFeedback.trim().length > 0 && rejectFeedback.trim().length < 8 && (
-                    <span className="text-xs text-error">{t("admin.approve.needFeedback")}</span>
-                  )}
+                  {stripHtml(rejectFeedback).trim().length > 0 &&
+                    stripHtml(rejectFeedback).trim().length < 8 && (
+                      <span className="text-xs text-error">{t("admin.approve.needFeedback")}</span>
+                    )}
                 </div>
               </div>
 

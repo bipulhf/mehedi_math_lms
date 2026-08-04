@@ -1,6 +1,7 @@
 import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@genex/shared";
 import type { UserRole } from "@genex/shared";
 
+import { sanitizeHtml } from "@/lib/html";
 import { logger } from "@/lib/logger";
 import { queues } from "@/lib/queues";
 import {
@@ -213,7 +214,7 @@ export class NotificationService {
     payload: NotificationPayload
   ): Promise<number> {
     const records = await this.notificationRepository.insertForUsers([...userIds], {
-      body: payload.body,
+      body: sanitizeHtml(payload.body),
       data: payload.data,
       title: payload.title,
       type: payload.type

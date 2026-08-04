@@ -7,6 +7,7 @@ import type {
 import type { CourseRecord } from "@/repositories/course-repository";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import { sanitizeHtml } from "@/lib/html";
 import type { NotificationService } from "@/services/notification-service";
 import type { NoticeRepository} from "@/repositories/notice-repository";
 import { type NoticeWithAuthor } from "@/repositories/notice-repository";
@@ -63,7 +64,7 @@ export class NoticeService {
     }
 
     const row = await this.noticeRepository.create({
-      content: input.content,
+      content: sanitizeHtml(input.content),
       courseId,
       isPinned: input.isPinned,
       teacherId: userId,
@@ -124,7 +125,7 @@ export class NoticeService {
     }
 
     if (input.content !== undefined) {
-      patch.content = input.content;
+      patch.content = sanitizeHtml(input.content);
     }
 
     if (input.isPinned !== undefined) {

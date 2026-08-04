@@ -17,7 +17,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { CourseDetail } from "@/lib/api/courses";
 import type {
   AssessmentChapterSummary,
@@ -36,6 +37,7 @@ import {
   updateQuestion,
   updateTest
 } from "@/lib/api/tests";
+import { isEmptyHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -183,7 +185,7 @@ export function AssessmentBuilder({
       return;
     }
 
-    if (!questionDraft.questionText.trim()) {
+    if (isEmptyHtml(questionDraft.questionText)) {
       toast.error(t("ab.needPrompt"));
       return;
     }
@@ -429,16 +431,15 @@ export function AssessmentBuilder({
                         }
                       />
                     </div>
-                    <Textarea
-                      className="min-h-20"
+                    <RichTextEditor
                       placeholder={t("ab.instruction")}
                       value={testDrafts[chapter.chapterId]?.description ?? ""}
-                      onChange={(event) =>
+                      onChange={(value) =>
                         setTestDrafts((currentValues) => ({
                           ...currentValues,
                           [chapter.chapterId]: {
                             ...(currentValues[chapter.chapterId] ?? initialTestDraft),
-                            description: event.target.value
+                            description: value
                           }
                         }))
                       }
@@ -592,15 +593,14 @@ export function AssessmentBuilder({
                       />{t("ab.published")}</label>
                   </div>
                   <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("common.description")}</Label>
-                  <Textarea
-                    className="min-h-20"
+                  <RichTextEditor
                     value={selectedTest.description ?? ""}
-                    onChange={(event) =>
+                    onChange={(value) =>
                       setSelectedTest((currentValue) =>
                         currentValue
                           ? {
                               ...currentValue,
-                              description: event.target.value
+                              description: value
                             }
                           : currentValue
                       )
@@ -646,10 +646,14 @@ export function AssessmentBuilder({
                       ) : (
                         <div className="space-y-2.5">
                           <div className="flex flex-wrap items-start justify-between gap-2.5">
-                            <div>
-                              <p className="font-semibold text-ink">
-                                Q{questionIndex + 1}. {question.questionText}
-                              </p>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-semibold text-ink">
+                                <span>Q{questionIndex + 1}. </span>
+                                <RichTextContent
+                                  className="inline align-baseline font-semibold [&_p]:mb-0 [&_p]:inline"
+                                  html={question.questionText}
+                                />
+                              </div>
                               <p className="text-xs text-ink/62">
                                 {question.type} · {question.marks} marks
                               </p>

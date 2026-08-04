@@ -9,7 +9,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { CreateBugReportInput } from "@/lib/api/bugs";
 import { createBugReport } from "@/lib/api/bugs";
 import { useZodForm } from "@/lib/forms/use-zod-form";
@@ -63,7 +63,13 @@ function ReportBugPage(): JSX.Element {
           </div>
           <div className="space-y-3">
              <Label htmlFor="bug-description" className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("bugs.fieldDescription")}</Label>
-             <Textarea id="bug-description" className="min-h-32 bg-panel-warm/50 border-hairline/30 text-base" error={errors.description?.message} {...register("description")} />
+             <RichTextEditor
+               id="bug-description"
+               className="bg-panel-warm/50 border-hairline/30"
+               error={errors.description?.message}
+               value={watch("description") ?? ""}
+               onChange={(value) => setValue("description", value, { shouldDirty: true, shouldValidate: true })}
+             />
           </div>
           <div className="space-y-3">
              <Label className="text-[0.65rem] font-bold uppercase tracking-widest text-ink/60 pl-1">{t("bugs.fieldScreenshot")}</Label>

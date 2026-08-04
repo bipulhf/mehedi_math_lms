@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useT } from "@/lib/i18n/locale-context";
 
 /**
@@ -64,14 +64,13 @@ export function QuestionEditor({
           />
         </div>
       </div>
-      <Textarea
-        className="min-h-20"
+      <RichTextEditor
         placeholder={t("qe.prompt")}
         value={draft.questionText}
-        onChange={(event) =>
+        onChange={(value) =>
           onChange({
             ...draft,
-            questionText: event.target.value
+            questionText: value
           })
         }
       />
@@ -151,14 +150,13 @@ export function QuestionEditor({
       ) : (
         <div className="space-y-2">
           <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.referenceAnswer")}</Label>
-          <Textarea
-            className="min-h-20"
+          <RichTextEditor
             placeholder={t("qe.expected")}
             value={draft.expectedAnswer}
-            onChange={(event) =>
+            onChange={(value) =>
               onChange({
                 ...draft,
-                expectedAnswer: event.target.value
+                expectedAnswer: value
               })
             }
           />

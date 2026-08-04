@@ -1,10 +1,12 @@
 import { z } from "zod";
 
+import { optionalRichTextSchema } from "./common";
+
 const idSchema = z.string().uuid();
 const nonEmptyStringSchema = z.string().trim().min(1);
 const optionalShortTextSchema = z.string().trim().max(255).optional().or(z.literal(""));
 const optionalPhoneSchema = z.string().trim().max(32).optional().or(z.literal(""));
-const optionalLongTextSchema = z.string().trim().max(4000).optional().or(z.literal(""));
+const optionalLongTextSchema = optionalRichTextSchema(4000);
 const optionalUrlSchema = z.string().trim().url().optional().or(z.literal(""));
 const optionalDateSchema = z.string().trim().date().optional().or(z.literal(""));
 

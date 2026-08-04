@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import type { AssessmentQuestion } from "@/lib/api/tests";
 import {
   createQuestion,
@@ -19,6 +20,7 @@ import {
   updateTest
 } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { isEmptyHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 
 interface McqDraft {
@@ -62,7 +64,7 @@ function mapQuestionToDraft(question: AssessmentQuestion): McqDraft {
 
 function isValidQuestion(draft: McqDraft): boolean {
   return (
-    draft.questionText.trim().length > 0 &&
+    !isEmptyHtml(draft.questionText) &&
     draft.options.length >= 2 &&
     draft.options.every((option) => option.optionText.trim().length > 0) &&
     draft.options.some((option) => option.isCorrect)
@@ -201,12 +203,10 @@ export function CourseExamEditor({
         </div>
         <div className="space-y-2">
           <Label htmlFor={`exam-description-${examId}`}>{t("author.descriptionOptional")}</Label>
-          <Input
+          <RichTextEditor
             id={`exam-description-${examId}`}
             value={settings.description}
-            onChange={(event) =>
-              setSettings((current) => ({ ...current, description: event.target.value }))
-            }
+            onChange={(value) => setSettings((current) => ({ ...current, description: value }))}
           />
         </div>
       </div>
@@ -227,7 +227,7 @@ export function CourseExamEditor({
                 {format.digits(String(index + 1).padStart(2, "0"))}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-ink">{question.questionText}</p>
+                <RichTextContent className="font-medium text-ink" html={question.questionText} />
                 <ul className="mt-2 grid gap-1 text-sm font-light text-muted sm:grid-cols-2">
                   {question.options.map((option) => (
                     <li className={option.isCorrect ? "text-ink" : undefined} key={option.id}>
@@ -313,11 +313,10 @@ function McqQuestionForm({
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_8rem]">
         <div className="space-y-2">
           <Label>{t("author.mcqQuestion")}</Label>
-          <Textarea
-            className="min-h-24"
+          <RichTextEditor
             placeholder={t("author.mcqQuestionPlaceholder")}
             value={draft.questionText}
-            onChange={(event) => onChange({ ...draft, questionText: event.target.value })}
+            onChange={(value) => onChange({ ...draft, questionText: value })}
           />
         </div>
         <div className="space-y-2">

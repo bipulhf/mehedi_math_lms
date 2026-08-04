@@ -9,7 +9,8 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
@@ -124,7 +125,9 @@ function GradeSubmissionPage(): JSX.Element {
         return (
           <Card key={question.id}>
             <CardHeader>
-              <CardTitle className="text-lg">{question.questionText}</CardTitle>
+              <CardTitle className="text-lg">
+                <RichTextContent html={question.questionText} />
+              </CardTitle>
               <CardDescription>
                 {question.type} · {question.marks} marks
               </CardDescription>
@@ -149,7 +152,15 @@ function GradeSubmissionPage(): JSX.Element {
                     {answer?.writtenAnswer || "No written answer submitted"}
                   </div>
                   <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    Reference answer: {question.expectedAnswer || "Not provided"}
+                    <span className="font-medium">Reference answer:</span>{" "}
+                    {question.expectedAnswer ? (
+                      <RichTextContent
+                        className="inline text-sm leading-6 text-ink [&_p]:mb-0 [&_p]:inline"
+                        html={question.expectedAnswer}
+                      />
+                    ) : (
+                      "Not provided"
+                    )}
                   </div>
                   {answer ? (
                     <Input
@@ -177,7 +188,7 @@ function GradeSubmissionPage(): JSX.Element {
           <CardTitle>{t("grade.feedback")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea value={feedback} onChange={(event) => setFeedback(event.target.value)} />
+          <RichTextEditor value={feedback} onChange={(value) => setFeedback(value)} />
           <Button type="button" disabled={isSaving} onClick={() => void handleSave()}>
             {isSaving ? "Saving..." : "Finalize grading"}
           </Button>

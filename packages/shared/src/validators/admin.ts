@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { optionalRichTextSchema, richTextSchema } from "./common";
 import { userRoleSchema } from "../types/roles";
 
 export const userListStatusValues = ["all", "active", "inactive"] as const;
@@ -58,7 +59,7 @@ export const updateAdminUserStatusSchema = z.object({
 });
 
 export const createBugReportSchema = z.object({
-  description: z.string().trim().min(1).max(4000),
+  description: richTextSchema({ min: 1, max: 4000 }),
   screenshotUrl: z.string().trim().url().optional().or(z.literal("")),
   title: z.string().trim().min(1).max(255)
 });
@@ -69,7 +70,7 @@ export const bugsQuerySchema = paginationQuerySchema.extend({
 });
 
 export const adminUpdateBugSchema = z.object({
-  adminNotes: z.string().trim().max(4000).optional().or(z.literal("")),
+  adminNotes: optionalRichTextSchema(4000),
   priority: bugReportPrioritySchema.optional(),
   status: bugReportStatusSchema.optional()
 });

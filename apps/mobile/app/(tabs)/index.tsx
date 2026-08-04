@@ -19,6 +19,7 @@ import {
 } from "@/src/components/ui";
 import { listCategories, listCourses, type CategoryNode, type CourseSummary } from "@/src/lib/api";
 import { queryKeys } from "@/src/lib/query";
+import { stripHtml } from "@/src/lib/html";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 function flatten(categories: readonly CategoryNode[]): readonly CategoryNode[] {
@@ -42,7 +43,7 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
           <View style={styles.rowBody}>
             <Title>{course.title}</Title>
             <Body muted numberOfLines={2}>
-              {course.description}
+              {stripHtml(course.description)}
             </Body>
             <View style={styles.rowMeta}>
               <Badge>{formatPrice(course.price)}</Badge>

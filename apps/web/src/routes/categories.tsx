@@ -6,6 +6,7 @@ import type { JSX } from "react";
 import { RouteErrorView } from "@/components/common/route-error";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import type { CategoryNode } from "@/lib/api/categories";
@@ -72,7 +73,13 @@ function PublicCategoryTree({
                   </div>
                   <div>
                     <CardTitle className="text-xl">{category.name}</CardTitle>
-                    <CardDescription>{category.description ?? "Structured academic grouping for focused course discovery."}</CardDescription>
+                    <CardDescription>
+                      {category.description ? (
+                        <RichTextContent html={category.description} />
+                      ) : (
+                        "Structured academic grouping for focused course discovery."
+                      )}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>

@@ -24,7 +24,6 @@ import {
 import {
   mapSubmissionDetail,
   mapSubmissionSummary,
-  normalizeOptionalString,
   type AssessmentOption,
   type AssessmentQuestion,
   type AssessmentTestDetail,
@@ -33,6 +32,7 @@ import {
   type SubmissionDetail,
   type SubmissionSummary
 } from "@/services/assessment-views";
+import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type { ProgressService } from "@/services/progress-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -196,7 +196,7 @@ export class TestService {
     const existingTests = await this.testRepository.listTestsByChapterId(chapterId);
     const record = await this.testRepository.createTest({
       chapterId,
-      description: normalizeOptionalString(input.description),
+      description: normalizeOptionalHtml(input.description),
       durationInMinutes: input.durationInMinutes ?? null,
       isPublished: input.isPublished,
       passingScore: input.passingScore ?? null,
@@ -236,7 +236,7 @@ export class TestService {
 
     const record = await this.testRepository.updateTest(testId, {
       description:
-        input.description !== undefined ? normalizeOptionalString(input.description) : undefined,
+        input.description !== undefined ? normalizeOptionalHtml(input.description) : undefined,
       durationInMinutes: input.durationInMinutes ?? undefined,
       isPublished: input.isPublished,
       passingScore: input.passingScore ?? undefined,
@@ -307,13 +307,13 @@ export class TestService {
 
     const existingQuestions = await this.testRepository.listQuestionsByTestId(testId);
     const question = await this.testRepository.createQuestion({
-      expectedAnswer: normalizeOptionalString(input.expectedAnswer),
+      expectedAnswer: normalizeOptionalHtml(input.expectedAnswer),
       marks: input.marks,
       options: (input.options ?? []).map((option) => ({
         isCorrect: option.isCorrect,
         optionText: option.optionText.trim()
       })),
-      questionText: input.questionText.trim(),
+      questionText: sanitizeHtml(input.questionText.trim()),
       sortOrder: existingQuestions.length,
       testId,
       type: input.type
@@ -365,14 +365,14 @@ export class TestService {
     const updatedQuestion = await this.testRepository.updateQuestion(questionId, {
       expectedAnswer:
         input.expectedAnswer !== undefined
-          ? normalizeOptionalString(input.expectedAnswer)
+          ? normalizeOptionalHtml(input.expectedAnswer)
           : undefined,
       marks: input.marks,
       options: input.options?.map((option) => ({
         isCorrect: option.isCorrect,
         optionText: option.optionText.trim()
       })),
-      questionText: input.questionText?.trim(),
+      questionText: input.questionText === undefined ? undefined : sanitizeHtml(input.questionText.trim()),
       type: input.type
     });
     const optionRecords = await this.testRepository.listOptionsByQuestionIds([questionId]);
@@ -748,7 +748,7 @@ export class TestService {
     const score = refreshedAnswers.reduce((sum, answer) => sum + (answer.awardedMarks ?? 0), 0);
     const maxScore = questions.reduce((sum, question) => sum + question.marks, 0);
     const updatedSubmission = await this.testRepository.updateSubmission(submissionId, {
-      feedback: input.feedback !== undefined ? normalizeOptionalString(input.feedback) : undefined,
+      feedback: input.feedback !== undefined ? normalizeOptionalHtml(input.feedback) : undefined,
       gradedAt: new Date(),
       gradedById: currentUserId,
       maxScore,

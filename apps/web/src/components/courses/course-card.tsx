@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PriceText } from "@/components/ui/price-text";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -79,9 +80,10 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
           <h3 className="text-xl font-medium leading-snug text-ink">{course.title}</h3>
         </Link>
 
-        <p className="line-clamp-2 text-base font-light leading-relaxed text-muted">
-          {course.description}
-        </p>
+        <RichTextContent
+          className="line-clamp-2 text-base font-light leading-relaxed text-muted"
+          html={course.description}
+        />
 
         {teacher ? (
           <div className="flex items-center gap-2.5 text-sm text-muted">

@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { HtmlContent } from "@/src/components/html-content";
 import {
   Body,
   Button,
@@ -166,7 +167,7 @@ export function CourseReviews({
               <Body>{review.authorName}</Body>
               <Stars rating={review.rating} />
             </View>
-            {review.comment ? <Body muted>{review.comment}</Body> : null}
+            {review.comment ? <HtmlContent html={review.comment} muted /> : null}
           </View>
         ))
       )}

@@ -1,7 +1,9 @@
 import { z } from "zod";
 
+import { optionalRichTextSchema, richTextSchema } from "./common";
+
 const idSchema = z.string().uuid();
-const optionalTextSchema = z.string().trim().optional().or(z.literal(""));
+const optionalTextSchema = optionalRichTextSchema(6000);
 
 export const testTypeSchema = z.enum(["MCQ", "WRITTEN", "MIXED"]);
 export const questionTypeSchema = z.enum(["MCQ", "WRITTEN"]);
@@ -68,7 +70,7 @@ export const createQuestionSchema = z
     expectedAnswer: optionalTextSchema,
     marks: z.number().int().positive().max(100),
     options: z.array(questionOptionSchema).max(8).optional(),
-    questionText: z.string().trim().min(1).max(6000),
+    questionText: richTextSchema({ min: 1, max: 6000 }),
     type: questionTypeSchema
   })
   .superRefine((value, context) => {
@@ -98,7 +100,7 @@ export const updateQuestionSchema = z
     expectedAnswer: optionalTextSchema.optional(),
     marks: z.number().int().positive().max(100).optional(),
     options: z.array(questionOptionSchema).max(8).optional(),
-    questionText: z.string().trim().min(1).max(6000).optional(),
+    questionText: richTextSchema({ min: 1, max: 6000 }).optional(),
     type: questionTypeSchema.optional()
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");

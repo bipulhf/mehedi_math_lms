@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { idSchema } from "./common";
+import { idSchema, richTextSchema } from "./common";
 import { userRoleSchema } from "../types/roles";
 
 export const notificationTypeValues = [
@@ -48,7 +48,7 @@ export const adminSendNotificationTargetSchema = z.discriminatedUnion("kind", [
 ]);
 
 export const adminSendNotificationSchema = z.object({
-  body: z.string().trim().min(1).max(4000),
+  body: richTextSchema({ min: 1, max: 4000 }),
   data: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
   target: adminSendNotificationTargetSchema,
   title: z.string().trim().min(1).max(255),

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BugReportRecord } from "@/lib/api/bugs";
 import { listMyBugReports } from "@/lib/api/bugs";
+import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -90,7 +91,7 @@ function MyBugReportsPage(): JSX.Element {
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between relative z-10">
                 <div className="space-y-3 flex-1">
                   <p className="font-body text-xl font-medium text-ink group-hover:text-ink transition-colors">{bug.title}</p>
-                  <p className="text-sm leading-7 text-muted font-light">{bug.description}</p>
+                  <p className="text-sm leading-7 text-muted font-light">{stripHtml(bug.description)}</p>
                   {bug.adminNotes ? (
                     <div className="mt-4 bg-panel-warm/50 border border-hairline/10 p-4">
                        <p className="text-[0.65rem] font-bold uppercase tracking-widest text-ink mb-1">{t("bugs.adminResponse")}</p>

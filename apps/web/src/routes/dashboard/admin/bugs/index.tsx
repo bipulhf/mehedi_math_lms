@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import type { AdminBugRecord } from "@/lib/api/admin";
 import { listAdminBugs } from "@/lib/api/admin";
+import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -157,7 +158,7 @@ function AdminBugsPage(): JSX.Element {
                     <td className="px-4 py-3 min-w-64">
                       <div className="flex flex-col max-w-sm">
                         <span className="text-sm font-medium text-ink truncate">{bug.title}</span>
-                        <span className="text-xs font-light text-muted truncate">{bug.description}</span>
+                        <span className="text-xs font-light text-muted truncate">{stripHtml(bug.description)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

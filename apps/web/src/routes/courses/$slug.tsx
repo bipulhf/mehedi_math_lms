@@ -13,6 +13,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Pill } from "@/components/ui/pill";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Tabs } from "@/components/ui/tabs";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseOutlineChapter } from "@/lib/api/content";
@@ -178,9 +179,10 @@ function CourseDetailPage(): JSX.Element {
             <h1 className="max-w-[22ch] text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
               {course.title}
             </h1>
-            <p className="max-w-[56ch] text-lg font-light leading-relaxed text-muted">
-              {course.description}
-            </p>
+            <RichTextContent
+              className="max-w-[56ch] text-lg font-light leading-relaxed text-muted"
+              html={course.description}
+            />
 
             <div className="flex flex-wrap gap-2.5">
               {meta.map((part) => (
