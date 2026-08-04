@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { ArchivedCourseBanner } from "@/components/courses/archived-course-banner";
 import { CourseManageTabs } from "@/components/courses/course-manage-tabs";
 import { BackButton } from "@/components/ui/back-button";
 import { CourseNoticeManager } from "@/components/courses/course-notice-manager";
@@ -36,6 +37,7 @@ function CourseNoticesPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <BackButton to="/dashboard/courses" />
+      {course?.status === "ARCHIVED" ? <ArchivedCourseBanner /> : null}
       <CourseManageTabs courseId={id} current="notices" />
 
       {isPending || !course ? (

@@ -101,6 +101,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "common.tests": "tests",
 
   "common.close": "Close",
+  "course.archivedBannerTitle": "This course is archived",
+  "course.archivedBannerLead": "It's read-only and hidden from students. Restore it from My Courses to make changes.",
   "course.enroll": "Enrol",
   "course.examOnly": "Exam batch",
   "course.freeLessons": "{count} free classes",

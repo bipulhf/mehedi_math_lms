@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { z } from "zod";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { ArchivedCourseBanner } from "@/components/courses/archived-course-banner";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { CourseChapterBuilder } from "@/components/courses/course-chapter-builder";
 import { CourseLectureBuilder } from "@/components/courses/course-lecture-builder";
@@ -80,6 +81,7 @@ function CourseContentPage(): JSX.Element {
   return (
     <div className="w-full space-y-6 sm:space-y-8">
       <BackButton to="/dashboard/courses" />
+      {course.status === "ARCHIVED" ? <ArchivedCourseBanner /> : null}
       <div className="border border-hairline bg-card p-2 sm:p-3">
         <CourseBuilderSteps courseId={id} current={stage} />
       </div>

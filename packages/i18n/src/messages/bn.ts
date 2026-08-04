@@ -104,6 +104,8 @@ export const bn = {
   "common.tests": "পরীক্ষা",
 
   "common.close": "বন্ধ কর",
+  "course.archivedBannerTitle": "এই কোর্সটি আর্কাইভ করা হয়েছে",
+  "course.archivedBannerLead": "এটি শুধু দেখার জন্য এবং শিক্ষার্থীদের কাছে অদৃশ্য। পরিবর্তন করতে আমার কোর্স থেকে এটি পুনরুদ্ধার কর।",
   "course.enroll": "ভর্তি হও",
   "course.examOnly": "পরীক্ষা ব্যাচ",
   "course.freeLessons": "{count}টি ফ্রি ক্লাস",

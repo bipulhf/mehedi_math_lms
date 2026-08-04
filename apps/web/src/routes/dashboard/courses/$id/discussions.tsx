@@ -2,6 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { ArchivedCourseBanner } from "@/components/courses/archived-course-banner";
 import { CourseManageTabs } from "@/components/courses/course-manage-tabs";
 import { BackButton } from "@/components/ui/back-button";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
@@ -54,6 +55,7 @@ function CourseDiscussionsPage(): JSX.Element {
   return (
     <div className="space-y-6">
       <BackButton to="/dashboard/courses" />
+      {course?.status === "ARCHIVED" ? <ArchivedCourseBanner /> : null}
       <CourseManageTabs courseId={id} current="discussions" />
 
       {isLoading || !course ? (

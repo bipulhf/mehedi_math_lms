@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ArchivedCourseBanner } from "@/components/courses/archived-course-banner";
 import {
   CourseEditor,
   CourseEditorSkeleton,
@@ -146,6 +147,7 @@ function EditCoursePage(): JSX.Element {
   return (
     <div className="w-full space-y-6 sm:space-y-8">
       <BackButton to="/dashboard/courses" />
+      {course.status === "ARCHIVED" ? <ArchivedCourseBanner /> : null}
       <div className="border border-hairline bg-card p-2 sm:p-3">
         <CourseBuilderSteps courseId={id} current="info" />
       </div>

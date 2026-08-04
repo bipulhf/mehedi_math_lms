@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { TestBuilderSkeleton } from "@/components/common/skeletons";
+import { ArchivedCourseBanner } from "@/components/courses/archived-course-banner";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { BackButton } from "@/components/ui/back-button";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -49,6 +50,7 @@ function CourseAssessmentsPage(): JSX.Element {
   return (
     <div className="space-y-8">
       <BackButton to="/dashboard/courses" />
+      {course.status === "ARCHIVED" ? <ArchivedCourseBanner /> : null}
       <CourseBuilderSteps courseId={id} current="lectures" />
       <AssessmentBuilder assessments={assessments} course={course} onRefresh={loadData} />
     </div>
