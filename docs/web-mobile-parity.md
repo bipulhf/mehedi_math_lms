@@ -377,6 +377,16 @@ Submit-button gating (last question only), a per-test attempt cap (`maxAttempts`
 overhaul and should be re-verified for web/mobile parity once QA'd end to end — this section's ✅
 predates that work.
 
+**Attempt history.** Every submission row already survives a retake (`maxAttempts` just gates
+whether a new one can start), so a per-user attempt history was exposed on top of existing data:
+`GET /tests/:id/submissions/mine` (student's own attempts) alongside the existing teacher/admin
+`GET /tests/:id/submissions` (every student's attempts). Both responses now carry `attemptNumber`
+(oldest attempt = 1, computed server-side per student, never globally). Web:
+`/dashboard/tests/$testId/history` (student) plus attempt badges on the existing teacher submissions
+list and both grading/results detail pages. Mobile: `app/tests/[testId]/history.tsx`, linked from
+`learn/[courseId].tsx` and the results screen. Needs the same end-to-end re-verification as the rest
+of this section.
+
 ### 6.5 Messages — ✅ all three gaps closed, plus a presence bug neither edition had found
 
 - **Starting a conversation** — `app/messages/new.tsx` (126 lines), debounced
