@@ -11,6 +11,7 @@ import {
   Button,
   Caption,
   Card,
+  ErrorNotice,
   Screen,
   SkeletonBlock,
   Title
@@ -205,6 +206,16 @@ export default function TestScreen(): JSX.Element {
   };
 
   const isLoading = isPending || isStartingSubmission;
+
+  if (error && !submission) {
+    return (
+      <Screen>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ErrorNotice message={error} />
+        </ScrollView>
+      </Screen>
+    );
+  }
 
   if (isLoading || !test || !submission || !currentQuestion) {
     return (

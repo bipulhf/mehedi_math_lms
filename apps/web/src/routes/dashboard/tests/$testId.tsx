@@ -54,6 +54,7 @@ function StudentTestPage(): JSX.Element {
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmingSubmit, setIsConfirmingSubmit] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
   const isHydratingAnswersRef = useRef(true);
   const isLoading = isLoadingTest || isStartingSubmission;
@@ -65,6 +66,7 @@ function StudentTestPage(): JSX.Element {
    */
   useEffect(() => {
     setIsStartingSubmission(true);
+    setError(null);
 
     void (async () => {
       try {
@@ -83,6 +85,8 @@ function StudentTestPage(): JSX.Element {
           )
         );
         isHydratingAnswersRef.current = true;
+      } catch (startError) {
+        setError(startError instanceof Error ? startError.message : "Could not start this test");
       } finally {
         setIsStartingSubmission(false);
       }
@@ -159,6 +163,7 @@ function StudentTestPage(): JSX.Element {
     }
 
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const result = await submitTest(test.id, {
@@ -176,10 +181,19 @@ function StudentTestPage(): JSX.Element {
         },
         to: "/dashboard/tests/$testId/results/$submissionId"
       });
-    } finally {
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "Could not submit this test");
       setIsSubmitting(false);
     }
   };
+
+  if (error && !submission) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-sm text-error">{error}</CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading || !test || !submission || !currentQuestion) {
     return (
@@ -329,6 +343,7 @@ function StudentTestPage(): JSX.Element {
               }
             />
           )}
+          {error ? <p className="text-sm text-error">{error}</p> : null}
           <div className="flex justify-between gap-3">
             <Button
               type="button"
