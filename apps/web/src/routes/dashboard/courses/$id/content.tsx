@@ -77,8 +77,10 @@ function CourseContentPage(): JSX.Element {
   const examCount = assessments.reduce((total, chapter) => total + chapter.tests.length, 0);
 
   return (
-    <div className="space-y-8">
-      <CourseBuilderSteps courseId={id} current={stage} />
+    <div className="w-full space-y-6 sm:space-y-8">
+      <div className="border border-hairline bg-card p-2 sm:p-3">
+        <CourseBuilderSteps courseId={id} current={stage} />
+      </div>
 
       <SectionHeading
         action={

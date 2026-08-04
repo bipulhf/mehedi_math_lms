@@ -112,6 +112,7 @@ export const authoringEn: Readonly<Record<keyof typeof authoringBn, string>> = {
   "builder.checkPrice": "A price is set",
   "builder.checkTitle": "Title is at least 8 characters",
   "builder.checklistDone": "{done} of {total} ready",
+  "builder.navigation": "Course setup steps",
   "builder.publishLead":
     "Check the information, chapters, lectures and exams before sending the course for approval.",
   "builder.publishTitle": "Review",

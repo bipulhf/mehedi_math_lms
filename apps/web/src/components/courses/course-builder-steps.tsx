@@ -46,7 +46,10 @@ export function CourseBuilderSteps({
   const format = useFormat();
 
   return (
-    <nav className="no-scrollbar -mx-4 flex gap-6 overflow-x-auto border-b border-hairline px-4 sm:mx-0 sm:px-0">
+    <nav
+      aria-label={t("builder.navigation")}
+      className="no-scrollbar flex gap-4 overflow-x-auto px-1 sm:gap-6 sm:px-2"
+    >
       {steps.map((definition, index) => {
         const isCurrent = definition.step === current;
 

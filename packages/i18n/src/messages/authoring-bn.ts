@@ -104,6 +104,7 @@ export const authoringBn = {
   "builder.checkPrice": "দাম বসানো হয়েছে",
   "builder.checkTitle": "নাম অন্তত ৮ অক্ষরের",
   "builder.checklistDone": "{done}/{total}টি ঠিক আছে",
+  "builder.navigation": "কোর্স তৈরির ধাপ",
   "builder.publishLead": "তথ্য, অধ্যায়, ক্লাস ও পরীক্ষা একবার দেখে অনুমোদনের জন্য পাঠাও।",
   "builder.publishTitle": "রিভিউ",
   "builder.stepContent": "অধ্যায়",
