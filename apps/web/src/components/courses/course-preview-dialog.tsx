@@ -45,7 +45,7 @@ function LectureBody({ lecture }: { lecture: CourseLecturePreview }): JSX.Elemen
   }
 
   if (lecture.videoUrl) {
-    return <LecturePlayer src={lecture.videoUrl} title={lecture.title} />;
+    return <LecturePlayer chapters={lecture.chapters} src={lecture.videoUrl} title={lecture.title} />;
   }
 
   return <EmptyState message={t("detail.previewUnavailable")} />;

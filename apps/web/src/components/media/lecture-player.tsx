@@ -1,4 +1,5 @@
 import {
+  ChapterTitle,
   FullscreenButton,
   MediaPlayer,
   MediaProvider,
@@ -7,21 +8,63 @@ import {
   Poster,
   Time,
   TimeSlider,
+  Track,
   VolumeSlider,
   useMediaState
 } from "@vidstack/react";
 import { Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import type { JSX } from "react";
+import { useMemo } from "react";
 
 import genexMark from "@/assets/genex-mark.png";
 import { cn } from "@/lib/utils";
 
+export interface LectureChapterMarker {
+  timeSeconds: number;
+  title: string;
+}
+
 export interface LecturePlayerProps {
+  chapters?: readonly LectureChapterMarker[] | undefined;
   className?: string;
   onEnded?: () => void;
+  /** Fires continuously during playback -- store it in a ref, not state, unless you want a render per tick. */
+  onTimeUpdate?: ((seconds: number) => void) | undefined;
   poster?: string | null | undefined;
   src: string;
   title: string;
+}
+
+function escapeVttText(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
+}
+
+function formatVttTimestamp(totalSeconds: number): string {
+  const wholeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(wholeSeconds / 3600);
+  const minutes = Math.floor((wholeSeconds % 3600) / 60);
+  const seconds = wholeSeconds % 60;
+  const pad = (value: number): string => String(value).padStart(2, "0");
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.000`;
+}
+
+/**
+ * YouTube-style chapters are just timestamps with a name -- there's no
+ * stored end time, so each chapter is treated as running until the next
+ * one starts (and the last one runs for a generous, arbitrary hour past
+ * its start; the player clips playback at the real duration regardless).
+ */
+function buildChaptersVtt(chapters: readonly LectureChapterMarker[]): string {
+  const sorted = [...chapters].sort((first, second) => first.timeSeconds - second.timeSeconds);
+  const cues = sorted.map((chapter, index) => {
+    const nextStart = sorted[index + 1]?.timeSeconds;
+    const end = nextStart ?? chapter.timeSeconds + 3600;
+
+    return `${formatVttTimestamp(chapter.timeSeconds)} --> ${formatVttTimestamp(end)}\n${escapeVttText(chapter.title)}`;
+  });
+
+  return ["WEBVTT", "", ...cues].join("\n\n");
 }
 
 const controlButtonClassName =
@@ -105,7 +148,11 @@ function PlayerBufferingSpinner(): JSX.Element | null {
  * after a few seconds of inactivity (vidstack's built-in idle timer, exposed
  * as `controlsVisible`) rather than staying pinned on screen.
  */
-function PlayerControlsBar(): JSX.Element {
+/** The segment styling shared by both the plain seek bar and each chapter slice. */
+const trackFillClassName = "absolute h-full w-[var(--slider-fill)] bg-accent";
+const trackProgressClassName = "absolute h-full w-[var(--slider-progress)] bg-paper/40";
+
+function PlayerControlsBar({ hasChapters }: { hasChapters: boolean }): JSX.Element {
   const visible = useMediaState("controlsVisible");
 
   return (
@@ -123,15 +170,37 @@ function PlayerControlsBar(): JSX.Element {
       )}
     >
       <TimeSlider.Root className="group/slider relative flex h-4 w-full items-center">
-        <TimeSlider.Track className="relative h-[3px] w-full bg-paper/25">
-          {/* Vidstack drives fill width via the --slider-fill/--slider-progress
-              CSS vars it sets on the root, not an inline style -- these have
-              to be consumed explicitly or the bar never visibly fills. */}
-          <TimeSlider.Progress className="absolute h-full w-[var(--slider-progress)] bg-paper/40" />
-          <TimeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-accent" />
-        </TimeSlider.Track>
+        {hasChapters ? (
+          // One segment per chapter, each a tiny gap apart -- vidstack scopes
+          // --slider-fill/--slider-progress to each ref'd wrapper on its own,
+          // so the same fill/progress classes as the plain track below work
+          // unchanged per segment.
+          <TimeSlider.Chapters className="flex h-[3px] w-full items-center gap-0.5">
+            {(cues, forwardRef) =>
+              cues.map((cue) => (
+                <div className="h-full flex-1" key={cue.startTime} ref={forwardRef}>
+                  <TimeSlider.Track className="relative h-full w-full bg-paper/25">
+                    <TimeSlider.Progress className={trackProgressClassName} />
+                    <TimeSlider.TrackFill className={trackFillClassName} />
+                  </TimeSlider.Track>
+                </div>
+              ))
+            }
+          </TimeSlider.Chapters>
+        ) : (
+          <TimeSlider.Track className="relative h-[3px] w-full bg-paper/25">
+            {/* Vidstack drives fill width via the --slider-fill/--slider-progress
+                CSS vars it sets on the root, not an inline style -- these have
+                to be consumed explicitly or the bar never visibly fills. */}
+            <TimeSlider.Progress className={trackProgressClassName} />
+            <TimeSlider.TrackFill className={trackFillClassName} />
+          </TimeSlider.Track>
+        )}
         <TimeSlider.Thumb className="absolute left-[var(--slider-fill)] size-2.5 -translate-x-1/2 bg-accent opacity-0 transition-opacity group-hover/slider:opacity-100" />
         <TimeSlider.Preview className="flex flex-col items-center opacity-0 transition-opacity group-hover/slider:opacity-100">
+          {hasChapters ? (
+            <ChapterTitle className="label-mono mb-1 max-w-40 truncate border border-hairline bg-card px-1.5 py-0.5 text-[0.6rem] text-ink" />
+          ) : null}
           <TimeSlider.Value className="label-mono border border-hairline bg-card px-1.5 py-0.5 text-[0.65rem] text-ink" />
         </TimeSlider.Preview>
       </TimeSlider.Root>
@@ -144,6 +213,10 @@ function PlayerControlsBar(): JSX.Element {
           <span aria-hidden="true">/</span>
           <Time className="tabular-nums" type="duration" />
         </div>
+
+        {hasChapters ? (
+          <ChapterTitle className="label-mono ml-1 min-w-0 truncate text-[0.7rem] text-paper/50" />
+        ) : null}
 
         <div className="flex-1" />
 
@@ -177,17 +250,25 @@ function PlayerControlsBar(): JSX.Element {
  * Archivo mark (`label-mono`) for the numeral time display.
  */
 export function LecturePlayer({
+  chapters,
   className,
   onEnded,
+  onTimeUpdate,
   poster,
   src,
   title
 }: LecturePlayerProps): JSX.Element {
+  const chaptersVtt = useMemo(
+    () => (chapters && chapters.length > 0 ? buildChaptersVtt(chapters) : null),
+    [chapters]
+  );
+
   return (
     <MediaPlayer
       className={cn("overflow-hidden border border-hairline bg-ink outline-none", className)}
       hideControlsOnMouseLeave
       onEnded={onEnded}
+      onTimeUpdate={onTimeUpdate ? (detail) => onTimeUpdate(detail.currentTime) : undefined}
       playsInline
       src={src}
       title={title}
@@ -196,11 +277,12 @@ export function LecturePlayer({
         {poster ? (
           <Poster alt={title} className="h-full w-full object-cover" src={poster} />
         ) : null}
+        {chaptersVtt ? <Track content={chaptersVtt} default kind="chapters" label="Chapters" /> : null}
       </MediaProvider>
 
       <PlayerWatermark />
       <PlayerBufferingSpinner />
-      <PlayerControlsBar />
+      <PlayerControlsBar hasChapters={chaptersVtt !== null} />
     </MediaPlayer>
   );
 }

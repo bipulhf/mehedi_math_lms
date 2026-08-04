@@ -5,12 +5,19 @@ import type {
   createMaterialSchema,
   reorderChaptersSchema,
   reorderLecturesSchema,
+  setLectureVideoChaptersSchema,
   updateChapterSchema,
   updateLectureSchema,
   updateMaterialSchema
 } from "@genex/shared";
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
+
+/** A YouTube-style in-video marker, ordered by `timeSeconds` ascending. */
+export interface VideoChapterMarker {
+  timeSeconds: number;
+  title: string;
+}
 
 export interface ContentMaterial {
   createdAt: string;
@@ -24,6 +31,7 @@ export interface ContentMaterial {
 
 export interface ContentLecture {
   chapterId: string;
+  chapters: readonly VideoChapterMarker[];
   content: string | null;
   createdAt: string;
   description: string | null;
@@ -68,6 +76,7 @@ export interface CourseOutlineChapter {
 
 /** A free lesson's playable body — served to anyone, no session needed. */
 export interface CourseLecturePreview {
+  chapters: readonly VideoChapterMarker[];
   content: string | null;
   description: string | null;
   durationSeconds: number | null;
@@ -86,6 +95,7 @@ export type UpdateLectureInput = z.infer<typeof updateLectureSchema>;
 export type ReorderLecturesInput = z.infer<typeof reorderLecturesSchema>;
 export type CreateMaterialInput = z.infer<typeof createMaterialSchema>;
 export type UpdateMaterialInput = z.infer<typeof updateMaterialSchema>;
+export type SetLectureVideoChaptersInput = z.infer<typeof setLectureVideoChaptersSchema>;
 
 export async function getCourseContent(courseId: string): Promise<readonly ContentChapter[]> {
   const response = await apiGet<readonly ContentChapter[]>(`courses/${courseId}/content`);
@@ -159,6 +169,18 @@ export async function updateLecture(
 ): Promise<ContentLecture> {
   const response = await apiPut<UpdateLectureInput, ContentLecture>(
     `lectures/${lectureId}`,
+    values
+  );
+
+  return response.data;
+}
+
+export async function setLectureVideoChapters(
+  lectureId: string,
+  values: SetLectureVideoChaptersInput
+): Promise<ContentLecture> {
+  const response = await apiPut<SetLectureVideoChaptersInput, ContentLecture>(
+    `lectures/${lectureId}/chapters`,
     values
   );
 

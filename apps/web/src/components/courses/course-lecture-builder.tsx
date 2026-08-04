@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, FileText, Plus } from "lucide-react";
 import type { ChangeEvent, DragEvent, JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -13,6 +13,10 @@ import {
   isPdfLecture,
   LectureOutlineRow
 } from "@/components/courses/course-lecture-outline-item";
+import {
+  LectureChaptersEditor,
+  type DraftVideoChapter
+} from "@/components/courses/lecture-chapters-editor";
 import { VideoUploader } from "@/components/uploads/video-uploader";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -26,6 +30,7 @@ import {
   createLectureMaterial,
   deleteLecture,
   deleteLectureMaterial,
+  setLectureVideoChapters,
   updateLecture
 } from "@/lib/api/content";
 import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/tests";
@@ -37,6 +42,7 @@ type AuthoringLectureType = "EXAM" | "PDF" | "VIDEO";
 type VideoMode = "VIDEO_LINK" | "VIDEO_UPLOAD";
 
 interface LectureDraft {
+  chapters: readonly DraftVideoChapter[];
   description: string;
   existingPdfUrl: string;
   isPreview: boolean;
@@ -69,6 +75,7 @@ type CourseOutlineItem =
 
 function createEmptyDraft(): LectureDraft {
   return {
+    chapters: [],
     description: "",
     existingPdfUrl: "",
     isPreview: false,
@@ -235,6 +242,12 @@ export function CourseLectureBuilder({
         });
       }
 
+      if (draft.type === "VIDEO" && draft.chapters.length > 0) {
+        await setLectureVideoChapters(lecture.id, {
+          chapters: draft.chapters.map(({ timeSeconds, title }) => ({ timeSeconds, title }))
+        });
+      }
+
       await appendCourseItem(activeChapter.id, {
         id: lecture.id,
         kind: "LECTURE",
@@ -292,6 +305,9 @@ export function CourseLectureBuilder({
 
       if (draft.type === "VIDEO") {
         await Promise.all(existingPdfs.map(async (material) => deleteLectureMaterial(material.id)));
+        await setLectureVideoChapters(editingLectureId, {
+          chapters: draft.chapters.map(({ timeSeconds, title }) => ({ timeSeconds, title }))
+        });
       }
 
       resetComposer();
@@ -321,6 +337,7 @@ export function CourseLectureBuilder({
     setActiveChapterId(chapterId);
     setEditingLectureId(lecture.id);
     setDraft({
+      chapters: lecture.chapters.map((chapter) => ({ ...chapter, key: crypto.randomUUID() })),
       description: lecture.description ?? "",
       existingPdfUrl: pdfMaterial?.fileUrl ?? "",
       isPreview: lecture.isPreview,
@@ -653,6 +670,10 @@ function LectureComposer({
   onSave: () => void;
 }): JSX.Element {
   const t = useT();
+  // Read by the "add chapter at current time" button, updated on every
+  // preview tick -- a ref rather than state so scrubbing the preview
+  // doesn't re-render this whole form on every frame.
+  const previewTimeRef = useRef(0);
   const availableTypes: readonly AuthoringLectureType[] = isEditing
     ? ["VIDEO", "PDF"]
     : ["VIDEO", "PDF", "EXAM"];
@@ -718,7 +739,18 @@ function LectureComposer({
               onChange({ ...draft, videoMode: value.mode, videoUrl: value.videoUrl })
             }
           />
-          <VideoLecturePreview url={draft.videoUrl} />
+          <VideoLecturePreview
+            chapters={draft.chapters}
+            onTimeUpdate={(seconds) => {
+              previewTimeRef.current = seconds;
+            }}
+            url={draft.videoUrl}
+          />
+          <LectureChaptersEditor
+            chapters={draft.chapters}
+            currentTimeSeconds={() => previewTimeRef.current}
+            onChange={(next) => onChange({ ...draft, chapters: next })}
+          />
         </div>
       ) : null}
 

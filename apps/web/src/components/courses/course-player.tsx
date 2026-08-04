@@ -382,6 +382,7 @@ export function CoursePlayer({
                       </div>
                     ) : selectedLecture.videoUrl ? (
                       <LecturePlayer
+                        chapters={selectedLecture.chapters}
                         onEnded={() => void handleMarkComplete(true)}
                         src={selectedLecture.videoUrl}
                         title={selectedLecture.title}

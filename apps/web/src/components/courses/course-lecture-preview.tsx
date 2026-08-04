@@ -2,6 +2,7 @@ import { FileText, Video } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
+import type { LectureChapterMarker } from "@/components/media/lecture-player";
 import { LecturePlayer } from "@/components/media/lecture-player";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -11,10 +12,16 @@ interface PdfLecturePreviewProps {
 }
 
 interface VideoLecturePreviewProps {
+  chapters?: readonly LectureChapterMarker[] | undefined;
+  onTimeUpdate?: ((seconds: number) => void) | undefined;
   url: string;
 }
 
-export function VideoLecturePreview({ url }: VideoLecturePreviewProps): JSX.Element | null {
+export function VideoLecturePreview({
+  chapters,
+  onTimeUpdate,
+  url
+}: VideoLecturePreviewProps): JSX.Element | null {
   const t = useT();
   const trimmedUrl = url.trim();
 
@@ -28,7 +35,12 @@ export function VideoLecturePreview({ url }: VideoLecturePreviewProps): JSX.Elem
         <Video className="size-4" />
         {t("author.previewTitle")}
       </div>
-      <LecturePlayer src={trimmedUrl} title={t("author.video")} />
+      <LecturePlayer
+        chapters={chapters}
+        onTimeUpdate={onTimeUpdate}
+        src={trimmedUrl}
+        title={t("author.video")}
+      />
     </div>
   );
 }
