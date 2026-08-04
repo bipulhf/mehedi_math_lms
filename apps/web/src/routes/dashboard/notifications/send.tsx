@@ -7,12 +7,14 @@ import {
   type UserRole,
   userRoleValues
 } from "@genex/shared";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent, type JSX } from "react";
 import { toast } from "sonner";
-import { BellRing, GraduationCap, Send, Shield, Users } from "lucide-react";
+import { BellRing, GraduationCap, Search, Send, Shield, Users, X } from "lucide-react";
+import { z } from "zod";
 
-import { adminSendNotification } from "@/lib/api/admin";
+import { adminSendNotification, getAdminUser, listAdminUsers } from "@/lib/api/admin";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
@@ -27,8 +29,19 @@ import { cn } from "@/lib/utils";
 import { stripHtml } from "@/lib/html";
 import { RouteErrorView } from "@/components/common/route-error";
 import genexMark from "@/assets/genex-mark.png";
+import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+
+interface PickedUser {
+  email: string;
+  id: string;
+  name: string;
+}
+
+const notifySearchSchema = z.object({
+  userId: z.string().uuid().optional()
+});
 
 export const Route = createFileRoute("/dashboard/notifications/send")({
   head: () =>
@@ -37,6 +50,7 @@ export const Route = createFileRoute("/dashboard/notifications/send")({
       path: "/dashboard/notifications/send",
       title: "Send Notification"
     }),
+  validateSearch: (search) => notifySearchSchema.parse(search),
   component: SendNotificationPage,
   errorComponent: RouteErrorView
 });
@@ -46,6 +60,7 @@ function SendNotificationPage(): JSX.Element {
   const format = useFormat();
 
   const router = useRouter();
+  const search = Route.useSearch();
   const { isPending, session } = useAuthSession();
   const role = session?.session.role as UserRole | undefined;
   const isAdmin = role === "ADMIN";
@@ -57,7 +72,8 @@ function SendNotificationPage(): JSX.Element {
   const [targetMode, setTargetMode] = useState<"role" | "course" | "users">("course");
   const [targetRole, setTargetRole] = useState<UserRole>("STUDENT");
   const [courseId, setCourseId] = useState("");
-  const [userIdsText, setUserIdsText] = useState("");
+  const [pickedUsers, setPickedUsers] = useState<readonly PickedUser[]>([]);
+  const [userSearch, setUserSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -78,19 +94,55 @@ function SendNotificationPage(): JSX.Element {
     }
   }, [isPending, role, router, session]);
 
+  // A "Send notice" shortcut from a user's profile page arrives here with
+  // ?userId=... — preselect that person and switch straight to users mode.
+  useEffect(() => {
+    if (!search.userId) {
+      return;
+    }
+
+    setTargetMode("users");
+    getAdminUser(search.userId)
+      .then((user) => {
+        setPickedUsers((current) =>
+          current.some((picked) => picked.id === user.id)
+            ? current
+            : [...current, { email: user.email, id: user.id, name: user.name }]
+        );
+      })
+      .catch(() => {
+        toast.error("Could not load the preselected user");
+      });
+  }, [search.userId]);
+
+  const { data: userSearchResults } = useQuery({
+    enabled: targetMode === "users" && userSearch.trim().length > 0,
+    queryFn: async () => listAdminUsers({ limit: 6, search: userSearch.trim() }),
+    queryKey: queryKeys.admin.users({ limit: 6, search: userSearch.trim() })
+  });
+
+  const userSearchMatches = (userSearchResults?.data ?? []).filter(
+    (user) => !pickedUsers.some((picked) => picked.id === user.id)
+  );
+
+  function pickUser(user: PickedUser): void {
+    setPickedUsers((current) => [...current, user]);
+    setUserSearch("");
+  }
+
+  function removePickedUser(userId: string): void {
+    setPickedUsers((current) => current.filter((user) => user.id !== userId));
+  }
+
   async function handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
-    const userIds = userIdsText
-      .split(/[\s,;]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
 
     const target =
       targetMode === "role"
         ? { kind: "role" as const, role: targetRole }
         : targetMode === "course"
           ? { kind: "course" as const, courseId: courseId.trim() }
-          : { kind: "users" as const, userIds };
+          : { kind: "users" as const, userIds: pickedUsers.map((user) => user.id) };
 
     const parsed = adminSendNotificationSchema.safeParse({
       body: body.trim(),
@@ -111,7 +163,8 @@ function SendNotificationPage(): JSX.Element {
       toast.success(t("notify.delivered", { count: format.digits(String(result.delivered)) }));
       setTitle("");
       setBody("");
-      setUserIdsText("");
+      setPickedUsers([]);
+      setUserSearch("");
       if (!isAdmin) {
         setCourseId("");
       }
@@ -283,16 +336,63 @@ function SendNotificationPage(): JSX.Element {
 
             {targetMode === "users" && (
               <div className="space-y-2">
-                <Label htmlFor="n-users">{t("notify.userIds")}</Label>
-                <textarea
-                  className="w-full border border-hairline bg-card p-4 font-mono text-sm text-ink focus:border-accent focus:outline-none"
-                  id="n-users"
-                  onChange={(e) => setUserIdsText(e.target.value)}
-                  placeholder="user_123, user_456..."
-                  required
-                  rows={3}
-                  value={userIdsText}
-                />
+                <Label htmlFor="n-users">{t("notify.targetUsers")}</Label>
+
+                {pickedUsers.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {pickedUsers.map((user) => (
+                      <span
+                        className="inline-flex items-center gap-1.5 border border-hairline bg-chip-active px-2.5 py-1 text-xs text-ink"
+                        key={user.id}
+                      >
+                        {user.name}
+                        <button
+                          aria-label={t("notify.removeUser", { name: user.name })}
+                          onClick={() => removePickedUser(user.id)}
+                          type="button"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-faint" />
+                  <Input
+                    className="pl-9"
+                    id="n-users"
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    placeholder={t("notify.searchUsers")}
+                    value={userSearch}
+                  />
+                  {userSearch.trim().length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full border border-hairline bg-card shadow-md">
+                      {userSearchMatches.length > 0 ? (
+                        userSearchMatches.map((user) => (
+                          <button
+                            className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-panel-warm"
+                            key={user.id}
+                            onClick={() => pickUser(user)}
+                            type="button"
+                          >
+                            <span className="text-sm text-ink">{user.name}</span>
+                            <span className="text-xs text-muted-faint">{user.email}</span>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="px-3 py-2 text-xs text-muted-faint">{t("notify.noUsersFound")}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {pickedUsers.length > 0 && (
+                  <p className="text-xs text-muted-faint">
+                    {t("notify.selectedCount", { count: format.digits(String(pickedUsers.length)) })}
+                  </p>
+                )}
               </div>
             )}
 

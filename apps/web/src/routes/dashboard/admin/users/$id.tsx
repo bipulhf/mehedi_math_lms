@@ -4,6 +4,8 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { Send } from "lucide-react";
+
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -103,13 +105,21 @@ function AdminUserDetailPage(): JSX.Element {
             <h1 className="text-xl font-medium text-ink">{user.name}</h1>
             <p className="mt-0.5 text-sm font-light text-muted">{t("auser.lead")}</p>
           </div>
-          {user.role === "STUDENT" ? (
+          <div className="flex flex-wrap gap-2">
+            {user.role === "STUDENT" ? (
+              <Button asChild size="sm" variant="outline">
+                <Link params={{ id: user.id }} to="/dashboard/students/$id">
+                  {t("auser.viewStudent")}
+                </Link>
+              </Button>
+            ) : null}
             <Button asChild size="sm" variant="outline">
-              <Link params={{ id: user.id }} to="/dashboard/students/$id">
-                {t("auser.viewStudent")}
+              <Link search={{ userId: user.id }} to="/dashboard/notifications/send">
+                <Send className="mr-1.5 size-3.5" />
+                {t("auser.sendNotice")}
               </Link>
             </Button>
-          ) : null}
+          </div>
         </div>
       </div>
 
