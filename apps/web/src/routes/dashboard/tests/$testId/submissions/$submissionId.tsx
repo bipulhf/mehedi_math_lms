@@ -120,7 +120,8 @@ function GradeSubmissionPage(): JSX.Element {
         <CardHeader>
           <CardTitle>{submission.user.name}</CardTitle>
           <CardDescription>
-            {test.title} · {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
+            {test.title} · {t("test.attemptLabel", { number: String(submission.attemptNumber) })} ·{" "}
+            {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
           </CardDescription>
         </CardHeader>
       </Card>

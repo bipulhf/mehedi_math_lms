@@ -67,6 +67,7 @@ import { Route as DashboardCoursesIdExamRouteImport } from './routes/dashboard/c
 import { Route as DashboardCoursesIdNoticesRouteImport } from './routes/dashboard/courses/$id/notices'
 import { Route as DashboardCoursesIdPublishRouteImport } from './routes/dashboard/courses/$id/publish'
 import { Route as DashboardCoursesIdTestsRouteImport } from './routes/dashboard/courses/$id/tests'
+import { Route as DashboardTestsTestIdHistoryRouteImport } from './routes/dashboard/tests/$testId/history'
 import { Route as DashboardTestsTestIdSubmissionsRouteImport } from './routes/dashboard/tests/$testId/submissions'
 import { Route as DashboardTestsTestIdResultsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/results/$submissionId'
 import { Route as DashboardTestsTestIdSubmissionsSubmissionIdRouteImport } from './routes/dashboard/tests/$testId/submissions/$submissionId'
@@ -373,6 +374,12 @@ const DashboardCoursesIdTestsRoute = DashboardCoursesIdTestsRouteImport.update({
   path: '/courses/$id/tests',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardTestsTestIdHistoryRoute =
+  DashboardTestsTestIdHistoryRouteImport.update({
+    id: '/history',
+    path: '/history',
+    getParentRoute: () => DashboardTestsTestIdRoute,
+  } as any)
 const DashboardTestsTestIdSubmissionsRoute =
   DashboardTestsTestIdSubmissionsRouteImport.update({
     id: '/submissions',
@@ -449,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
+  '/dashboard/tests/$testId/history': typeof DashboardTestsTestIdHistoryRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
   '/dashboard/admin/bugs/': typeof DashboardAdminBugsIndexRoute
   '/dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
@@ -511,6 +519,7 @@ export interface FileRoutesByTo {
   '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
+  '/dashboard/tests/$testId/history': typeof DashboardTestsTestIdHistoryRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
   '/dashboard/admin/bugs': typeof DashboardAdminBugsIndexRoute
   '/dashboard/admin/users': typeof DashboardAdminUsersIndexRoute
@@ -575,6 +584,7 @@ export interface FileRoutesById {
   '/dashboard/courses/$id/notices': typeof DashboardCoursesIdNoticesRoute
   '/dashboard/courses/$id/publish': typeof DashboardCoursesIdPublishRoute
   '/dashboard/courses/$id/tests': typeof DashboardCoursesIdTestsRoute
+  '/dashboard/tests/$testId/history': typeof DashboardTestsTestIdHistoryRoute
   '/dashboard/tests/$testId/submissions': typeof DashboardTestsTestIdSubmissionsRouteWithChildren
   '/dashboard/admin/bugs/': typeof DashboardAdminBugsIndexRoute
   '/dashboard/admin/users/': typeof DashboardAdminUsersIndexRoute
@@ -640,6 +650,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
+    | '/dashboard/tests/$testId/history'
     | '/dashboard/tests/$testId/submissions'
     | '/dashboard/admin/bugs/'
     | '/dashboard/admin/users/'
@@ -702,6 +713,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
+    | '/dashboard/tests/$testId/history'
     | '/dashboard/tests/$testId/submissions'
     | '/dashboard/admin/bugs'
     | '/dashboard/admin/users'
@@ -765,6 +777,7 @@ export interface FileRouteTypes {
     | '/dashboard/courses/$id/notices'
     | '/dashboard/courses/$id/publish'
     | '/dashboard/courses/$id/tests'
+    | '/dashboard/tests/$testId/history'
     | '/dashboard/tests/$testId/submissions'
     | '/dashboard/admin/bugs/'
     | '/dashboard/admin/users/'
@@ -1201,6 +1214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCoursesIdTestsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/tests/$testId/history': {
+      id: '/dashboard/tests/$testId/history'
+      path: '/history'
+      fullPath: '/dashboard/tests/$testId/history'
+      preLoaderRoute: typeof DashboardTestsTestIdHistoryRouteImport
+      parentRoute: typeof DashboardTestsTestIdRoute
+    }
     '/dashboard/tests/$testId/submissions': {
       id: '/dashboard/tests/$testId/submissions'
       path: '/submissions'
@@ -1265,11 +1285,13 @@ const DashboardTestsTestIdSubmissionsRouteWithChildren =
   )
 
 interface DashboardTestsTestIdRouteChildren {
+  DashboardTestsTestIdHistoryRoute: typeof DashboardTestsTestIdHistoryRoute
   DashboardTestsTestIdSubmissionsRoute: typeof DashboardTestsTestIdSubmissionsRouteWithChildren
   DashboardTestsTestIdResultsSubmissionIdRoute: typeof DashboardTestsTestIdResultsSubmissionIdRoute
 }
 
 const DashboardTestsTestIdRouteChildren: DashboardTestsTestIdRouteChildren = {
+  DashboardTestsTestIdHistoryRoute: DashboardTestsTestIdHistoryRoute,
   DashboardTestsTestIdSubmissionsRoute:
     DashboardTestsTestIdSubmissionsRouteWithChildren,
   DashboardTestsTestIdResultsSubmissionIdRoute:

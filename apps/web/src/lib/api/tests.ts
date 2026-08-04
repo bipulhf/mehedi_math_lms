@@ -68,6 +68,7 @@ export interface SubmissionAnswerView {
 }
 
 export interface SubmissionSummary {
+  attemptNumber: number;
   createdAt: string;
   feedback: string | null;
   gradedAt: string | null;
@@ -236,6 +237,14 @@ export async function submitTest(
 
 export async function listTestSubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
   const response = await apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions`);
+
+  return response.data;
+}
+
+export async function listMyTestSubmissions(
+  testId: string
+): Promise<readonly SubmissionSummary[]> {
+  const response = await apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);
 
   return response.data;
 }

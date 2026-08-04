@@ -1,10 +1,11 @@
 import { useQueries } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
@@ -60,17 +61,27 @@ function SubmissionResultPage(): JSX.Element {
             {submission.status === "GRADED" ? "Final result" : "Submission received"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
-          <Badge tone="neutral">{submission.status}</Badge>
-          <Badge tone="neutral">
-            Score {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
-          </Badge>
-          {test.passingScore !== null ? <Badge tone="neutral">Passing score {test.passingScore}</Badge> : null}
-          {submission.passed !== null ? (
-            <Badge tone={submission.passed ? "neutral" : "attention"}>
-              {submission.passed ? t("test.passed") : t("test.failed")}
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Badge tone="neutral">{t("test.attemptLabel", { number: String(submission.attemptNumber) })}</Badge>
+            <Badge tone="neutral">{submission.status}</Badge>
+            <Badge tone="neutral">
+              Score {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
             </Badge>
-          ) : null}
+            {test.passingScore !== null ? (
+              <Badge tone="neutral">Passing score {test.passingScore}</Badge>
+            ) : null}
+            {submission.passed !== null ? (
+              <Badge tone={submission.passed ? "neutral" : "attention"}>
+                {submission.passed ? t("test.passed") : t("test.failed")}
+              </Badge>
+            ) : null}
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/dashboard/tests/$testId/history" params={{ testId }}>
+              {t("test.viewHistory")}
+            </Link>
+          </Button>
         </CardContent>
       </Card>
 
