@@ -31,6 +31,7 @@ export const queryKeys = {
   session: () => ["session"] as const,
   test: (testId: string) => ["tests", testId] as const,
   testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
+  myTestSubmissions: (testId: string) => ["tests", testId, "my-attempts"] as const,
   testSubmission: (submissionId: string) => ["tests", "submission", submissionId] as const,
   unreadNotifications: () => ["notifications", "unread"] as const
 } as const;

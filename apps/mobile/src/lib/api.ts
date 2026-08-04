@@ -200,6 +200,7 @@ export interface SubmissionAnswerView {
 }
 
 export interface SubmissionSummary {
+  attemptNumber: number;
   createdAt: string;
   feedback: string | null;
   gradedAt: string | null;
@@ -485,6 +486,11 @@ export async function submitTest(
 /** The results screen. Returns the graded submission with per-answer marks. */
 export async function getSubmissionDetail(submissionId: string): Promise<SubmissionDetail> {
   return apiGet<SubmissionDetail>(`tests/submissions/${submissionId}`);
+}
+
+/** Every attempt the current student has made on this test, oldest first. */
+export async function listMySubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
+  return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);
 }
 
 export async function listLectureComments(lectureId: string): Promise<readonly LectureComment[]> {

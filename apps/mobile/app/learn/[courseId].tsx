@@ -467,13 +467,27 @@ export default function CoursePlayerScreen(): JSX.Element {
             {selectedItem.test.attemptsRemaining === 0 ? (
               <Caption tone="error">{t("test.attemptsExhausted")}</Caption>
             ) : null}
-            <Button
-              disabled={selectedItem.test.attemptsRemaining === 0}
-              label={t("player.openTest")}
-              onPress={() =>
-                router.push({ params: { testId: selectedItem.test.id }, pathname: "/tests/[testId]" })
-              }
-            />
+            <View style={styles.badgesRow}>
+              <Button
+                disabled={selectedItem.test.attemptsRemaining === 0}
+                label={t("player.openTest")}
+                onPress={() =>
+                  router.push({ params: { testId: selectedItem.test.id }, pathname: "/tests/[testId]" })
+                }
+              />
+              {selectedItem.test.attemptsUsed ? (
+                <Button
+                  label={t("test.viewHistory")}
+                  variant="outline"
+                  onPress={() =>
+                    router.push({
+                      params: { testId: selectedItem.test.id },
+                      pathname: "/tests/[testId]/history"
+                    })
+                  }
+                />
+              ) : null}
+            </View>
           </Card>
         ) : null}
 

@@ -1,10 +1,10 @@
 import { useQueries } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
-import { Badge, Body, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
+import { Badge, Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -19,6 +19,7 @@ export default function SubmissionResultScreen(): JSX.Element {
     submissionId: string;
     testId: string;
   }>();
+  const router = useRouter();
   const t = useT();
 
   const [testQuery, submissionQuery] = useQueries({
@@ -62,6 +63,9 @@ export default function SubmissionResultScreen(): JSX.Element {
             {submission.status === "GRADED" ? t("test.finalResult") : t("test.submissionReceived")}
           </Caption>
           <View style={styles.badgesRow}>
+            <Badge tone="quiet">
+              {t("test.attemptLabel", { number: submission.attemptNumber })}
+            </Badge>
             <Badge>{submission.status}</Badge>
             <Badge>
               {t("test.score", {
@@ -78,6 +82,13 @@ export default function SubmissionResultScreen(): JSX.Element {
               </Badge>
             ) : null}
           </View>
+          <Button
+            label={t("test.viewHistory")}
+            variant="outline"
+            onPress={() =>
+              router.push({ params: { testId }, pathname: "/tests/[testId]/history" })
+            }
+          />
         </Card>
 
         {test.questions.map((question) => {
