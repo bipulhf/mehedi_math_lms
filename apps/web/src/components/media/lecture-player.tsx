@@ -147,9 +147,9 @@ function PlayerControlsBar(): JSX.Element {
 
         <div className="flex-1" />
 
-        <div className="group/volume flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <PlayerMuteButton />
-          <VolumeSlider.Root className="relative hidden h-4 w-16 items-center pointer-events-none opacity-0 transition-opacity group-hover/volume:pointer-events-auto group-hover/volume:opacity-100 sm:flex">
+          <VolumeSlider.Root className="relative hidden h-4 w-16 items-center sm:flex">
             <VolumeSlider.Track className="relative h-[3px] w-full bg-paper/25">
               <VolumeSlider.TrackFill className="absolute h-full w-[var(--slider-fill)] bg-paper/80" />
             </VolumeSlider.Track>
