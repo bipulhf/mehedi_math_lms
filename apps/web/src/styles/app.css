@@ -88,6 +88,42 @@
 @layer base {
   * {
     box-sizing: border-box;
+    /* Firefox + modern Chromium's standard scrollbar properties. Every
+     * scrollable element inherits this -- there is no per-container opt-in
+     * the way there is for the webkit pseudo-elements below. `.no-scrollbar`
+     * (a class selector) still wins on specificity where it's used. */
+    scrollbar-color: var(--color-line-strong) transparent;
+    scrollbar-width: thin;
+  }
+
+  /* Safari + older Chromium don't support scrollbar-color/-width, and don't
+   * inherit ::-webkit-scrollbar rules to descendants either -- every
+   * scrollable box needs the selector to actually match it, hence `*`
+   * rather than just `html`/`body`. Square-ish (the shared --radius, same as
+   * buttons and inputs) rather than a full square or a pill; the transparent
+   * border + padding-box clip insets the thumb off the track edge. */
+  ::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-clip: padding-box;
+    background-color: var(--color-line-strong);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   html {
