@@ -87,8 +87,6 @@ function SubmissionResultPage(): JSX.Element {
 
       {test.questions.map((question) => {
         const answer = answerMap.get(question.id);
-        const selectedOption = question.options.find((option) => option.id === answer?.selectedOptionId);
-        const correctOptions = question.options.filter((option) => option.isCorrect);
 
         return (
           <Card key={question.id}>
@@ -101,22 +99,45 @@ function SubmissionResultPage(): JSX.Element {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.yourAnswer")}</p>
-                <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                  {question.type === "MCQ"
-                    ? (selectedOption?.optionText ?? t("test.noOption"))
-                    : (answer?.writtenAnswer || t("test.noAnswer"))}
+              {question.type === "MCQ" ? (
+                <div className="grid gap-2">
+                  {question.options.map((option) => {
+                    const isSelected = option.id === answer?.selectedOptionId;
+                    const isCorrectOption = option.isCorrect === true;
+
+                    return (
+                      <div
+                        key={option.id}
+                        className={`flex flex-wrap items-center justify-between gap-3 rounded-[calc(var(--radius)-0.125rem)] border px-4 py-3 text-sm text-ink ${
+                          isCorrectOption ? "border-accent bg-accent/8" : "border-hairline bg-panel-warm"
+                        }`}
+                      >
+                        <span>{option.optionText}</span>
+                        <div className="flex flex-wrap gap-2">
+                          {isSelected ? (
+                            <Badge tone={isCorrectOption ? "neutral" : "attention"}>
+                              {t("test.yourAnswer")}
+                            </Badge>
+                          ) : null}
+                          {isCorrectOption ? (
+                            <Badge tone="neutral">{t("test.correctAnswer")}</Badge>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {!answer?.selectedOptionId ? (
+                    <p className="text-xs text-ink/55">{t("test.noOption")}</p>
+                  ) : null}
                 </div>
-              </div>
-              {question.type === "MCQ" && correctOptions.length > 0 ? (
+              ) : (
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.correctAnswer")}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.yourAnswer")}</p>
                   <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    {correctOptions.map((option) => option.optionText).join(", ")}
+                    {answer?.writtenAnswer || t("test.noAnswer")}
                   </div>
                 </div>
-              ) : null}
+              )}
               {question.type === "WRITTEN" && question.expectedAnswer ? (
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-ink/55">{t("test.correctAnswer")}</p>

@@ -8,7 +8,7 @@ import { Badge, Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
+import { colors, radius, spacing } from "@/src/theme/tokens";
 
 /**
  * What a submitted attempt shows: the headline score while the attempt is
@@ -93,10 +93,6 @@ export default function SubmissionResultScreen(): JSX.Element {
 
         {test.questions.map((question) => {
           const answer = answerMap.get(question.id);
-          const selectedOption = question.options.find(
-            (option) => option.id === answer?.selectedOptionId
-          );
-          const correctOptions = question.options.filter((option) => option.isCorrect);
 
           return (
             <Card key={question.id} style={{ gap: spacing.sm }}>
@@ -104,17 +100,41 @@ export default function SubmissionResultScreen(): JSX.Element {
                 {question.type} · {question.marks}
               </Caption>
               <HtmlContent html={question.questionText} />
-              <Caption>
-                {t("test.yourAnswer")}:{" "}
-                {question.type === "MCQ"
-                  ? (selectedOption?.optionText ?? t("test.noOption"))
-                  : (answer?.writtenAnswer ?? t("test.noAnswer"))}
-              </Caption>
-              {question.type === "MCQ" && correctOptions.length > 0 ? (
-                <Body>
-                  {t("test.correctAnswer")}: {correctOptions.map((option) => option.optionText).join(", ")}
-                </Body>
-              ) : null}
+              {question.type === "MCQ" ? (
+                <View style={{ gap: spacing.xs }}>
+                  {question.options.map((option) => {
+                    const isSelected = option.id === answer?.selectedOptionId;
+                    const isCorrectOption = option.isCorrect === true;
+
+                    return (
+                      <View
+                        key={option.id}
+                        style={[
+                          styles.optionRow,
+                          isCorrectOption ? styles.optionRowCorrect : null
+                        ]}
+                      >
+                        <Body>{option.optionText}</Body>
+                        <View style={styles.badgesRow}>
+                          {isSelected ? (
+                            <Badge tone={isCorrectOption ? "neutral" : "attention"}>
+                              {t("test.yourAnswer")}
+                            </Badge>
+                          ) : null}
+                          {isCorrectOption ? (
+                            <Badge tone="neutral">{t("test.correctAnswer")}</Badge>
+                          ) : null}
+                        </View>
+                      </View>
+                    );
+                  })}
+                  {!answer?.selectedOptionId ? <Caption>{t("test.noOption")}</Caption> : null}
+                </View>
+              ) : (
+                <Caption>
+                  {t("test.yourAnswer")}: {answer?.writtenAnswer ?? t("test.noAnswer")}
+                </Caption>
+              )}
               {question.type === "WRITTEN" && question.expectedAnswer ? (
                 <View style={{ gap: spacing.xs }}>
                   <Caption>{t("test.correctAnswer")}</Caption>
@@ -137,7 +157,20 @@ export default function SubmissionResultScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  content: { gap: spacing.md, padding: spacing.lg }
+  content: { gap: spacing.md, padding: spacing.lg },
+  optionRow: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    padding: spacing.md
+  },
+  optionRowCorrect: { backgroundColor: colors.chipActive, borderColor: colors.accent }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";
