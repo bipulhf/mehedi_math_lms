@@ -54,8 +54,9 @@ Packages are consumed as **TypeScript source**, not built output — `exports` i
 - Web: `http://localhost:3000` (Vite)
 - API: `http://localhost:3001` (`API_PORT`, default 3001)
 - Env lives in **one root `.env`**. Apps load it explicitly: the API via `bun --env-file ../../.env`, the web app via Vite's `envDir: repoRoot`. Do not add per-workspace `.env` files.
-- `.env.example` is the contract. When you add a variable, add it there and to the matching Zod env schema.
+- `.env.example` is the contract. When you add a variable, add it there and to the matching Zod env schema — and to `.env.docker.example` too, unless it's one of the three (`DATABASE_URL`, `REDIS_URL`, `VITE_SSR_API_BASE_URL`) that `docker-compose.yml` overrides itself.
 - Env is validated with Zod at module load: `apps/api/src/lib/env.ts`, `apps/web/src/lib/env.ts`, and inline schemas in `packages/db/src/client.ts` and `packages/auth/src/*.ts`. Never read `process.env` directly in feature code.
+- Docker: `docker-compose.yml` + `apps/api/Dockerfile` + `apps/web/Dockerfile` run the whole stack in containers — see the README's "Running with Docker" section. `docker compose config` echoes real `env_file` contents; never run it (or `up`/`run`) against the real `.env` in a way whose output could leak into a shared transcript or log — swap in a placeholder file first if you need to validate the compose file itself.
 
 ### Auth topology (easy to get wrong)
 

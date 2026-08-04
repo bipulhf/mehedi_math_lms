@@ -99,9 +99,9 @@ Based on the current schema and route structure, the platform includes support f
 ```text
 genex/
 ├── apps/
-│   ├── api/
+│   ├── api/         (Dockerfile)
 │   ├── mobile/
-│   └── web/
+│   └── web/         (Dockerfile)
 ├── packages/
 │   ├── auth/
 │   ├── config/
@@ -109,6 +109,9 @@ genex/
 │   └── shared/
 ├── tooling/
 │   └── scripts/
+├── docker-compose.yml
+├── .env.example         (host dev)
+├── .env.docker.example  (docker compose)
 ├── DESIGN.md
 ├── PLAN.md
 ├── package.json
@@ -137,9 +140,7 @@ bun install
 
 ### 2. Configure environment variables
 
-Create a local `.env` file in the repository root.
-
-If you have an example environment file available, copy it first and then fill in your actual values.
+Create a local `.env` file in the repository root by copying `.env.example` and filling in your actual values. (Running via Docker instead? Use `.env.docker.example` — see [Running with Docker](#running-with-docker).)
 
 Typical services used by this repo include:
 
@@ -173,6 +174,60 @@ bun run dev
 ```
 
 This uses Turborepo to start all package/app development tasks that define a `dev` script.
+
+## Running with Docker
+
+The whole stack (Postgres, Redis, API, web, and all four background workers)
+runs from a single `docker-compose.yml` in the repository root — no local
+Bun/Postgres/Redis install needed.
+
+### 1. Configure environment variables
+
+```bash
+cp .env.docker.example .env
+```
+
+Fill in the `replace-me` values — at minimum `BETTER_AUTH_SECRET` and either
+S3 (`AWS_*`) or `UPLOADTHING_TOKEN` credentials, since the API container
+refuses to start without a working storage provider. Everything else is
+feature-gated and can stay as `replace-me` until you need that integration.
+
+### 2. Build and start
+
+```bash
+docker compose up --build
+```
+
+This starts Postgres and Redis, waits for Postgres to be healthy, runs
+migrations, runs the idempotent admin bootstrap (`ADMIN_EMAIL`/
+`ADMIN_PASSWORD`), then starts the API, the web app, and the four workers
+(notification, SMS, file-processing, audit-log-cleanup).
+
+- Web: `http://localhost:3000`
+- API: `http://localhost:3001`
+
+### 3. Subsequent runs
+
+```bash
+docker compose up
+```
+
+Add `--build` again whenever you change a `Dockerfile`, `bun.lock`, or any
+`VITE_*` variable (those are baked into the web image at build time — see
+`apps/web/Dockerfile`). Everything else in `.env` is read at container
+start, so a plain `docker compose up` (or `restart`) picks it up.
+
+### Notes
+
+- `.env.docker.example` differs from `.env.example` only in host names —
+  services talk to each other as `postgres`/`redis`/`api` on the Docker
+  network rather than `localhost`. `docker-compose.yml` overrides
+  `DATABASE_URL`, `REDIS_URL`, and the SSR-side `VITE_SSR_API_BASE_URL`
+  itself either way, so those three values in `.env` aren't actually load-bearing for the compose path — only kept there for consistency if you inspect the file.
+- There's no bundled self-hosted object storage (e.g. MinIO) — a real S3
+  bucket or UploadThing token is required.
+- To reset the database: `docker compose down -v` (this deletes the
+  `postgres-data` volume).
 
 ## App-Specific Commands
 
