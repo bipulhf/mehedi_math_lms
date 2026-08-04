@@ -325,7 +325,10 @@ export function SkeletonBlock({
   return <View style={[styles.skeleton, { height, width: width ?? "100%" }, style]} />;
 }
 
-/** A dot in the muted scale — DESIGN.md §2 has no green/red status palette. */
+/**
+ * Green when online, muted when not — an explicit exception to DESIGN.md §2's
+ * "no red/green/amber status palette", requested for this one affordance.
+ */
 export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
   return (
     <View
@@ -687,7 +690,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg
   },
   presenceDot: { backgroundColor: colors.dotIdle, borderRadius: radius.full, height: 8, width: 8 },
-  presenceDotOnline: { backgroundColor: colors.accent },
+  presenceDotOnline: { backgroundColor: colors.online },
   price: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: typography.title.fontSize },
   screen: { backgroundColor: colors.paper, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },

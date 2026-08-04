@@ -2,6 +2,7 @@ import "./load-root-env";
 
 import { app } from "@/app";
 import { env } from "@/lib/env";
+import { messageRealtimeService } from "@/lib/container";
 import { logger } from "@/lib/logger";
 import { messagesWsApp } from "@/websocket/messages-ws-app";
 import { notificationsWsApp } from "@/websocket/notifications-ws-app";
@@ -51,6 +52,18 @@ if (import.meta.main) {
     host: env.API_HOST,
     port: listenPort
   });
+
+  // A restart or redeploy sends SIGTERM, not a close frame on every open
+  // socket — without this, everyone connected at the moment of restart stays
+  // "online" in Redis until a human clears it by hand. See
+  // `MessageRealtimeService.releaseAllConnections`.
+  const shutdown = async (): Promise<void> => {
+    await messageRealtimeService.releaseAllConnections();
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", () => void shutdown());
+  process.on("SIGINT", () => void shutdown());
 }
 
 export default app;

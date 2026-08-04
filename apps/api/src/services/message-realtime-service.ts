@@ -129,6 +129,22 @@ export class MessageRealtimeService {
     await this.publisher.publish(MESSAGE_REALTIME_CHANNEL, JSON.stringify(event));
   }
 
+  /**
+   * Every connection this process is still holding, released as if each one
+   * had closed normally. Call this before the process exits: nothing else
+   * decrements the Redis presence count for a socket that vanishes with the
+   * process rather than through `onClose`/`onError`, so a restart without
+   * this leaves every user who was connected at the time stuck "online"
+   * until a human clears `genex:messages:presence` by hand.
+   */
+  public async releaseAllConnections(): Promise<void> {
+    const releases = [...this.socketsByUserId.entries()].flatMap(([userId, sockets]) =>
+      [...sockets.keys()].map((connectionId) => this.unregisterConnection(userId, connectionId))
+    );
+
+    await Promise.allSettled(releases);
+  }
+
   public async getOnlineUserIds(userIds: readonly string[]): Promise<ReadonlySet<string>> {
     const entries = await Promise.all(
       userIds.map(async (userId) => ({

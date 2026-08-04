@@ -8,12 +8,12 @@ import type { MessageConversation, MessageParticipant } from "@/lib/api/messages
 import { cn } from "@/lib/utils";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
-/** A dot in the muted scale — DESIGN.md §2 has no green/red status palette. */
+/** Green when online, muted when not — see `--color-online` in `app.css`. */
 function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
   return (
     <span
       aria-hidden="true"
-      className={cn("size-2 shrink-0 rounded-full", isOnline ? "bg-accent" : "bg-dot-idle")}
+      className={cn("size-2 shrink-0 rounded-full", isOnline ? "bg-online" : "bg-dot-idle")}
     />
   );
 }

@@ -19,6 +19,7 @@ export const colors = {
   muted: "#6b6763",
   mutedFaint: "#a8a29a",
   mutedLight: "#8a857d",
+  online: "#22c55e",
   panelWarm: "#f7f5f1",
   paper: "#fcfbf9",
   placeholder: "#b4aea6",

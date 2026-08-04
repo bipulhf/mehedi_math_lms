@@ -52,6 +52,10 @@
   /* The only red that survives. Validation text, and nothing else. */
   --color-error: #ba1a1a;
 
+  /* An explicit exception to the rule above: online presence, and nothing
+   * else. */
+  --color-online: #22c55e;
+
   /* ------------------------------------------------------------------
    * Type
    * ------------------------------------------------------------------ */
