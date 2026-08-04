@@ -305,11 +305,14 @@ export class CourseService {
 
     const repositoryQuery = {
       categoryId,
-      // A teacher's "my courses" list defaults to hiding archived courses --
-      // they're read-only leftovers, not something to manage day to day.
-      // Explicitly asking for status: "ARCHIVED" (or any other status) still
-      // works normally via the equality filter below.
-      excludeArchived: isMineRequest && effectiveStatus === undefined,
+      // Both a teacher's "my courses" list and the admin's course-approval
+      // queue default to hiding archived courses -- they're read-only
+      // leftovers, not something to manage day to day. Explicitly asking for
+      // status: "ARCHIVED" (or any other status) still works normally via
+      // the equality filter below; this only kicks in when nothing was asked
+      // for, which is the "give me everything" default for these two roles.
+      excludeArchived:
+        (isMineRequest || currentUserRole === "ADMIN") && effectiveStatus === undefined,
       hasFreeLesson: query.hasFreeLesson,
       limit: query.limit,
       maxPrice: query.maxPrice,
