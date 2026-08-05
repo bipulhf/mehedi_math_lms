@@ -8,7 +8,7 @@ import type { z } from "zod";
 import {
   generateUniqueSlug
 } from "@genex/shared";
-import { courses, eq, inArray, or, type SQL } from "@genex/db";
+import { courses, eq, inArray, or, sql, type SQL } from "@genex/db";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
@@ -338,7 +338,17 @@ export class CourseService {
 
     const extraClauses: SQL[] = [];
 
-    if (isMineRequest) {
+    if (isMineRequest && query.ownedOnly === true) {
+      // Ownership only, and deliberately not `creatorId`: an admin who created
+      // a course is its creator without being its Owner. ADR-0006.
+      const ownedCourseIds = await this.courseRepository.getOwnedCourseIds(currentUserId);
+
+      extraClauses.push(
+        ownedCourseIds.length > 0
+          ? inArray(courses.id, [...ownedCourseIds])
+          : sql`false`
+      );
+    } else if (isMineRequest) {
       const assignedCourseIds = await this.courseRepository.getAssignedCourseIds(currentUserId);
 
       if (assignedCourseIds.length > 0) {

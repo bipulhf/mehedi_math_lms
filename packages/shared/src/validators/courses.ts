@@ -59,6 +59,12 @@ export const listCoursesQuerySchema = z.object({
   maxPrice: z.coerce.number().min(0).max(999999).optional(),
   minPrice: z.coerce.number().min(0).max(999999).optional(),
   mine: booleanQueryParamSchema.optional(),
+  /**
+   * Narrows `mine` to the courses this teacher *owns* rather than every course
+   * they work on. Authority over price is the Owner's alone (ADR-0006), so a
+   * picker that offers pricing decisions has to offer exactly these.
+   */
+  ownedOnly: booleanQueryParamSchema.optional(),
   page: z.coerce.number().int().positive().default(1),
   search: z.string().trim().max(100).optional(),
   status: courseStatusSchema.optional()

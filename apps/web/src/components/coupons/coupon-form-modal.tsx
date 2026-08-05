@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import type { CouponKind } from "@genex/shared";
@@ -8,11 +7,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { CoursePicker } from "@/components/coupons/course-picker";
 import { Select } from "@/components/ui/select";
 import type { CouponListItem } from "@/lib/api/coupons";
-import { listCourses } from "@/lib/api/courses";
 import { useT } from "@/lib/i18n/locale-context";
-import { queryKeys } from "@/lib/query/keys";
 
 export interface CouponFormValues {
   code: string;
@@ -69,20 +67,15 @@ export function CouponFormModal({
   const [kind, setKind] = useState<CouponKind>("PERCENT");
   const [value, setValue] = useState("");
   const [courseId, setCourseId] = useState<string>("");
+  // The picker searches the server, so it never holds the whole catalogue: the
+  // title of what is already chosen has to be carried alongside its id.
+  const [courseTitle, setCourseTitle] = useState<string | null>(null);
+  const [courseError, setCourseError] = useState<string | null>(null);
   const [maxRedemptions, setMaxRedemptions] = useState("");
   const [startsAt, setStartsAt] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
-
-  // 50 is the ceiling `listCoursesQuerySchema` allows; asking for more is a
-  // validation error, not a bigger page. A catalogue past that needs a search
-  // field here rather than a larger number.
-  const coursesQuery = useQuery({
-    enabled: open,
-    queryFn: async () => listCourses({ limit: 50, mine: ownCoursesOnly || undefined }),
-    queryKey: queryKeys.courses.list({ forCoupons: true, mine: ownCoursesOnly })
-  });
 
   // Re-seeded whenever the modal opens on a different coupon, so editing one
   // row and then another does not carry the first one's values across.
@@ -95,6 +88,8 @@ export function CouponFormModal({
     setKind(coupon?.kind ?? "PERCENT");
     setValue(coupon ? String(Number(coupon.value)) : "");
     setCourseId(coupon?.course?.id ?? "");
+    setCourseTitle(coupon?.course?.title ?? null);
+    setCourseError(null);
     setMaxRedemptions(coupon?.maxRedemptions === null ? "" : String(coupon?.maxRedemptions ?? ""));
     setStartsAt(toLocalInput(coupon?.startsAt ?? null));
     setExpiresAt(toLocalInput(coupon?.expiresAt ?? null));
@@ -102,20 +97,16 @@ export function CouponFormModal({
     setIsDisabled(coupon?.isDisabled ?? false);
   }, [coupon, open]);
 
-  const courses = coursesQuery.data?.data ?? [];
+  const submit = (): void => {
+    // A teacher has no "every course" option, so an untouched picker would send
+    // null and come back refused as an admin-only choice.
+    if (!canTargetEveryCourse && courseId === "") {
+      setCourseError(t("coupon.courseRequired"));
 
-  // A teacher has no "every course" option, so an unset select would submit
-  // null and be refused as an admin-only choice. Seed it with whatever the
-  // browser is already showing.
-  useEffect(() => {
-    if (canTargetEveryCourse || courseId !== "" || courses.length === 0) {
       return;
     }
 
-    setCourseId(courses[0]?.id ?? "");
-  }, [canTargetEveryCourse, courseId, courses]);
-
-  const submit = (): void => {
+    setCourseError(null);
     onSubmit({
       code: code.trim().toUpperCase(),
       courseId: courseId === "" ? null : courseId,
@@ -160,18 +151,19 @@ export function CouponFormModal({
 
           <div className="space-y-2">
             <Label htmlFor="coupon-course">{t("coupon.course")}</Label>
-            <Select
+            <CoursePicker
+              allowEveryCourse={canTargetEveryCourse}
               id="coupon-course"
-              onChange={(event) => setCourseId(event.target.value)}
-              value={courseId}
-            >
-              {canTargetEveryCourse ? <option value="">{t("coupon.allCourses")}</option> : null}
-              {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.title}
-                </option>
-              ))}
-            </Select>
+              onChange={(next) => {
+                setCourseId(next.id ?? "");
+                setCourseTitle(next.title);
+                setCourseError(null);
+              }}
+              ownedOnly={ownCoursesOnly}
+              selectedTitle={courseTitle}
+              value={courseId === "" ? null : courseId}
+            />
+            {courseError === null ? null : <p className="text-sm text-error">{courseError}</p>}
             {canTargetEveryCourse ? null : (
               <p className="text-xs text-muted-light">{t("coupon.allCoursesHint")}</p>
             )}

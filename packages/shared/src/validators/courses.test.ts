@@ -123,6 +123,15 @@ describe("listCoursesQuerySchema", () => {
     expect(listCoursesQuerySchema.safeParse({ mine: "maybe" }).success).toBe(false);
   });
 
+  test("`ownedOnly` reads the word too — it decides who may price a course", () => {
+    expect(listCoursesQuerySchema.parse({ ownedOnly: "false" }).ownedOnly).toBe(false);
+    expect(listCoursesQuerySchema.parse({ ownedOnly: "true" }).ownedOnly).toBe(true);
+    expect(listCoursesQuerySchema.parse({}).ownedOnly).toBe(undefined);
+    // "yes" and "on" are truthy words `z.stringbool()` accepts; "maybe" is not.
+    expect(listCoursesQuerySchema.parse({ ownedOnly: "yes" }).ownedOnly).toBe(true);
+    expect(listCoursesQuerySchema.safeParse({ ownedOnly: "maybe" }).success).toBe(false);
+  });
+
   test("rejects a category id that is not a uuid", () => {
     expect(listCoursesQuerySchema.safeParse({ categoryId: OTHER_UUID }).success).toBe(true);
     expect(listCoursesQuerySchema.safeParse({ categoryId: "algebra" }).success).toBe(false);

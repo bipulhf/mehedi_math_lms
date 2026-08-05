@@ -114,6 +114,8 @@ export async function listCourses(query?: {
   maxPrice?: number | undefined;
   minPrice?: number | undefined;
   mine?: boolean | undefined;
+  /** Narrows `mine` to courses this teacher owns. ADR-0006. */
+  ownedOnly?: boolean | undefined;
   page?: number | undefined;
   search?: string | undefined;
   status?: CourseSummary["status"] | undefined;
@@ -126,6 +128,7 @@ export async function listCourses(query?: {
       maxPrice: query?.maxPrice,
       minPrice: query?.minPrice,
       mine: query?.mine,
+      ownedOnly: query?.ownedOnly,
       page: query?.page,
       search: query?.search,
       status: query?.status
