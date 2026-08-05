@@ -73,7 +73,7 @@ export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center lg:justify-between">
+        <CardContent className="flex flex-col gap-3 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 space-y-2">
             <p className="font-medium text-ink">{test.title}</p>
             <p className="text-sm font-light text-muted">
@@ -100,9 +100,9 @@ export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
       {attempts.length === 0 ? (
         <EmptyState message={t("exams.notAttempted")} />
       ) : (
-        <div className="grid gap-4 xl:grid-cols-[0.28fr_0.72fr]">
-          <Card>
-            <CardContent className="space-y-2 p-4">
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[0.28fr_0.72fr]">
+          <Card className="min-w-0">
+            <CardContent className="space-y-2 p-4 sm:p-6">
               {attempts.map((attempt) => (
                 <button
                   className={`w-full border px-3 py-2 text-left transition-colors ${
@@ -129,10 +129,10 @@ export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
             </CardContent>
           </Card>
 
-          <div className="space-y-3">
+          <div className="min-w-0 space-y-3">
             {submission === undefined ? (
               <Card>
-                <CardContent className="p-6 text-sm text-muted">
+                <CardContent className="p-4 text-sm text-muted sm:p-6">
                   {t("exams.pickStudent")}
                 </CardContent>
               </Card>
@@ -140,7 +140,7 @@ export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
               <>
                 {submission.feedback ? (
                   <Card>
-                    <CardContent className="space-y-2 p-5">
+                    <CardContent className="space-y-2 p-4 sm:p-6">
                       <p className="label-mono text-xs uppercase text-muted-faint">
                         {t("grade.feedback")}
                       </p>

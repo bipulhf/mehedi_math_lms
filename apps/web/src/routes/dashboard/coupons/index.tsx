@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, TicketPercent } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -112,6 +112,15 @@ function CouponsPage(): JSX.Element {
     }
   });
 
+  const toggleMutation = useMutation({
+    mutationFn: async (coupon: CouponListItem) =>
+      updateCoupon(coupon.id, { isDisabled: !coupon.isDisabled }),
+    onSuccess: async () => {
+      toast.success(t("coupon.updated"));
+      await invalidate();
+    }
+  });
+
   const coupons = couponsQuery.data?.data ?? [];
 
   return (
@@ -120,10 +129,18 @@ function CouponsPage(): JSX.Element {
     // top bar inside the page.
     <div className="space-y-6">
       <div className="border border-hairline bg-card p-4 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-xl font-medium text-ink">{t("coupon.title")}</h1>
-            <p className="mt-0.5 max-w-[60ch] text-sm font-light text-muted">{t("coupon.lead")}</p>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div
+              aria-hidden="true"
+              className="flex size-11 shrink-0 items-center justify-center border border-spectrum-amber/25 bg-spectrum-amber/10 text-spectrum-amber"
+            >
+              <TicketPercent className="size-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-medium text-ink">{t("coupon.title")}</h1>
+              <p className="mt-1 max-w-[60ch] text-sm font-light text-muted">{t("coupon.lead")}</p>
+            </div>
           </div>
           {canCreate ? (
             <Button
@@ -142,11 +159,14 @@ function CouponsPage(): JSX.Element {
       </div>
 
       <div className="space-y-4 border border-hairline bg-card p-4 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="relative flex-1">
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-faint">
+              {t("coupon.searchPlaceholder")}
+            </p>
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-5 z-10 size-4 -translate-y-1/2 text-muted-faint"
+              className="pointer-events-none absolute left-3 bottom-3.5 z-10 size-4 text-muted-faint"
             />
             <Input
               className="pl-9"
@@ -156,6 +176,9 @@ function CouponsPage(): JSX.Element {
             />
           </div>
           <div className="sm:w-48">
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-faint">
+              {t("coupon.filterState")}
+            </p>
             <Select
               aria-label={t("coupon.filterState")}
               onChange={(event) => setState(event.target.value as CouponState | "")}
@@ -211,7 +234,9 @@ function CouponsPage(): JSX.Element {
               setEditing(coupon);
               setIsFormOpen(true);
             }}
+            onToggle={(coupon) => toggleMutation.mutate(coupon)}
             showCreator={!isTeacher || showOthers}
+            toggling={toggleMutation.isPending}
           />
         </div>
       )}

@@ -67,7 +67,7 @@ export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element 
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center lg:justify-between">
+        <CardContent className="flex flex-col gap-3 p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 space-y-2">
             <p className="font-medium text-ink">{test.title}</p>
             <p className="text-sm font-light text-muted">
@@ -107,9 +107,9 @@ export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element 
       {submissions.length === 0 ? (
         <EmptyState message={t("exams.awaitingSubmissions")} />
       ) : (
-        <div className="grid gap-4 xl:grid-cols-[0.3fr_0.7fr]">
-          <Card>
-            <CardContent className="space-y-2 p-4">
+        <div className="grid min-w-0 gap-4 xl:grid-cols-[0.3fr_0.7fr]">
+          <Card className="min-w-0">
+            <CardContent className="space-y-2 p-4 sm:p-6">
               <p className="label-mono text-xs uppercase text-muted-faint">{t("exams.students")}</p>
               {submissions.map((item) => (
                 <button
@@ -141,10 +141,10 @@ export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element 
             </CardContent>
           </Card>
 
-          <div>
+          <div className="min-w-0">
             {submission === undefined ? (
               <Card>
-                <CardContent className="p-6 text-sm text-muted">
+                <CardContent className="p-4 text-sm text-muted sm:p-6">
                   {t("exams.pickStudent")}
                 </CardContent>
               </Card>

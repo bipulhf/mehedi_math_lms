@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { CouponStateBadge } from "@/components/coupons/coupon-state-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CouponListItem } from "@/lib/api/coupons";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -10,6 +11,8 @@ interface CouponTableProps {
   coupons: readonly CouponListItem[];
   onDelete: (coupon: CouponListItem) => void;
   onEdit: (coupon: CouponListItem) => void;
+  onToggle: (coupon: CouponListItem) => void;
+  toggling: boolean;
   /** Admins see who made each coupon; a teacher's own list has one answer. */
   showCreator: boolean;
 }
@@ -49,6 +52,8 @@ export function CouponTable({
   coupons,
   onDelete,
   onEdit,
+  onToggle,
+  toggling,
   showCreator
 }: CouponTableProps): JSX.Element {
   const t = useT();
@@ -85,10 +90,10 @@ export function CouponTable({
                   >
                     {coupon.code}
                   </Link>
-                  {/* A quiet marker, not a full pill: the row is already
-                      seven columns wide and a second badge doubles its height. */}
                   {coupon.isPublic ? (
-                    <span className="ml-2 text-xs text-spectrum-teal">{t("coupon.isPublic")}</span>
+                    <Badge className="ml-2 px-2 py-0.5 text-xs" tone="teal">
+                      {t("coupon.isPublic")}
+                    </Badge>
                   ) : null}
                 </td>
                 <td className="px-4 py-3 text-muted">
@@ -107,7 +112,16 @@ export function CouponTable({
                 </td>
                 <td className="px-4 py-3">
                   {coupon.isEditable ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        aria-pressed={!coupon.isDisabled}
+                        disabled={toggling}
+                        onClick={() => onToggle(coupon)}
+                        size="xs"
+                        variant={coupon.isDisabled ? "ink" : "outline"}
+                      >
+                        {coupon.isDisabled ? t("coupon.enable") : t("coupon.disable")}
+                      </Button>
                       <Button onClick={() => onEdit(coupon)} size="xs" variant="outline">
                         {t("action.edit")}
                       </Button>
@@ -127,21 +141,25 @@ export function CouponTable({
 
       <div className="divide-y divide-hairline-fainter md:hidden">
         {coupons.map((coupon) => (
-          <div className="space-y-3 p-4" key={coupon.id}>
+          <div className="space-y-4 p-4 sm:p-5" key={coupon.id}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link
-                  className="font-mono font-medium text-ink"
-                  params={{ couponId: coupon.id }}
-                  to="/dashboard/coupons/$couponId"
-                >
-                  {coupon.code}
-                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    className="font-mono font-medium text-ink"
+                    params={{ couponId: coupon.id }}
+                    to="/dashboard/coupons/$couponId"
+                  >
+                    {coupon.code}
+                  </Link>
+                  {coupon.isPublic ? (
+                    <Badge className="px-2 py-0.5 text-xs" tone="teal">
+                      {t("coupon.isPublic")}
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className="truncate text-xs text-muted-faint">
                   {coupon.course?.title ?? t("coupon.allCourses")}
-                  {coupon.isPublic ? (
-                    <span className="text-spectrum-teal"> · {t("coupon.isPublic")}</span>
-                  ) : null}
                 </p>
               </div>
               <CouponStateBadge state={coupon.state} />
@@ -171,7 +189,17 @@ export function CouponTable({
             </dl>
 
             {coupon.isEditable ? (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  aria-pressed={!coupon.isDisabled}
+                  className="flex-1"
+                  disabled={toggling}
+                  onClick={() => onToggle(coupon)}
+                  size="sm"
+                  variant={coupon.isDisabled ? "ink" : "outline"}
+                >
+                  {coupon.isDisabled ? t("coupon.enable") : t("coupon.disable")}
+                </Button>
                 <Button
                   className="flex-1"
                   onClick={() => onEdit(coupon)}

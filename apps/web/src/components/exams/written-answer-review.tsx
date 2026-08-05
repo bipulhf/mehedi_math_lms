@@ -33,7 +33,7 @@ export function WrittenAnswerReview({
         const pages = answer?.scriptPages ?? [];
 
         return (
-          <div className="border border-hairline bg-card p-4" key={question.id}>
+          <div className="border border-hairline bg-card p-4 sm:p-6" key={question.id}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <span className="label-mono text-xs text-muted-faint">

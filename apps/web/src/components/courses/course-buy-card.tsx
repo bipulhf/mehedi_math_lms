@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { TicketPercent } from "lucide-react";
 import type { JSX } from "react";
 
 import { CourseCouponField, type AppliedCoupon } from "@/components/courses/course-coupon-field";
@@ -132,7 +133,7 @@ export function CourseBuyCard({
   ];
 
   return (
-    <div className="border border-hairline bg-card p-5 sm:p-6 lg:sticky lg:top-28">
+    <div className="border border-hairline bg-card p-4 sm:p-6 lg:sticky lg:top-28">
       <PriceText
         amount={appliedCoupon ? appliedCoupon.payable : course.price}
         className="text-3xl font-medium"
@@ -191,18 +192,37 @@ export function CourseBuyCard({
             applied={appliedCoupon}
             courseId={course.id}
             onApplied={onCouponChange}
+            publicDiscountAmount={publicCoupon?.discountAmount ?? null}
             publicCode={publicCoupon?.code ?? null}
           />
         </div>
       ) : publicCoupon ? (
         // Signed out, or staff: the code is worth knowing, but there is nothing
         // here to type it into yet.
-        <p className="mt-6 border-t border-hairline pt-4 text-sm text-muted">
-          {t("coupon.bannerTitle", {
-            amount: format.currency(publicCoupon.discountAmount),
-            code: publicCoupon.code
-          })}
-        </p>
+        <div className="mt-6 border border-accent/30 bg-accent/5 p-3.5 sm:p-4">
+          <div className="flex items-start gap-3">
+            <div
+              aria-hidden="true"
+              className="flex size-9 shrink-0 items-center justify-center border border-accent/25 bg-card text-accent"
+            >
+              <TicketPercent className="size-4" />
+            </div>
+            <p className="min-w-0 pt-0.5 text-base font-medium leading-snug text-ink">
+              {t("coupon.bannerTitle", {
+                amount: format.currency(publicCoupon.discountAmount),
+                code: publicCoupon.code
+              })}
+            </p>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-3 border border-dashed border-accent/50 bg-card px-3 py-2.5">
+            <span className="label-mono text-[0.7rem] uppercase text-muted-faint">
+              {t("coupon.code")}
+            </span>
+            <span className="truncate font-mono text-sm font-medium text-ink">
+              {publicCoupon.code}
+            </span>
+          </div>
+        </div>
       ) : null}
 
       <div className="mt-8 border-t border-hairline pt-6">

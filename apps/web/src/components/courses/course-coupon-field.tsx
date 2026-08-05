@@ -35,6 +35,7 @@ interface CourseCouponFieldProps {
   applied: AppliedCoupon | null;
   courseId: string;
   onApplied: (coupon: AppliedCoupon | null) => void;
+  publicDiscountAmount: string | null;
   /** The advertised code, offered as one tap before anybody types. */
   publicCode: string | null;
 }
@@ -51,6 +52,7 @@ export function CourseCouponField({
   applied,
   courseId,
   onApplied,
+  publicDiscountAmount,
   publicCode
 }: CourseCouponFieldProps): JSX.Element {
   const t = useT();
@@ -132,6 +134,43 @@ export function CourseCouponField({
 
   return (
     <div className="space-y-3 border-t border-hairline pt-4">
+      {publicCode !== null && publicDiscountAmount !== null ? (
+        <div className="border border-accent/30 bg-accent/5 p-3.5 sm:p-4">
+          <div className="flex items-start gap-3">
+            <div
+              aria-hidden="true"
+              className="flex size-9 shrink-0 items-center justify-center border border-accent/25 bg-card text-accent"
+            >
+              <TicketPercent className="size-4" />
+            </div>
+            <p className="min-w-0 pt-0.5 text-base font-medium leading-snug text-ink">
+              {t("coupon.bannerTitle", {
+                amount: format.currency(publicDiscountAmount),
+                code: publicCode
+              })}
+            </p>
+          </div>
+          <button
+            className="mt-3 flex min-h-11 w-full items-center justify-between gap-3 border border-dashed border-accent/50 bg-card px-3 py-2.5 text-left transition-colors hover:border-accent hover:bg-paper disabled:pointer-events-none disabled:opacity-55"
+            disabled={previewMutation.isPending}
+            onClick={() => submit(publicCode)}
+            type="button"
+          >
+            <span className="min-w-0">
+              <span className="label-mono block text-[0.7rem] uppercase text-muted-faint">
+                {t("coupon.code")}
+              </span>
+              <span className="block truncate font-mono text-sm font-medium text-ink">
+                {publicCode}
+              </span>
+            </span>
+            <span className="shrink-0 text-sm font-medium text-accent">
+              {t("coupon.bannerApply")}
+            </span>
+          </button>
+        </div>
+      ) : null}
+
       <label className="block text-sm text-ink" htmlFor="course-coupon">
         {t("coupon.have")}
       </label>
@@ -165,18 +204,6 @@ export function CourseCouponField({
       </div>
 
       {reason === null ? null : <p className="text-sm text-error">{t(rejectionKeys[reason])}</p>}
-
-      {/* The advertised code, if the teacher chose to advertise one. One tap
-          rather than asking somebody to copy what is already on the screen. */}
-      {publicCode === null || previewMutation.isPending ? null : (
-        <button
-          className="text-sm text-muted transition-colors hover:text-accent"
-          onClick={() => submit(publicCode)}
-          type="button"
-        >
-          {t("coupon.bannerApply")} — <span className="font-mono">{publicCode}</span>
-        </button>
-      )}
     </div>
   );
 }
