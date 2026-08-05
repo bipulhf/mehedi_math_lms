@@ -3,7 +3,6 @@ import type { JSX } from "react";
 
 import { courseMetaParts } from "@/components/courses/course-meta";
 import { Avatar } from "@/components/ui/avatar";
-import { BackButton } from "@/components/ui/back-button";
 import { RingedPlay } from "@/components/ui/doodles";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
@@ -42,9 +41,7 @@ export function CourseHero({
 
   return (
     <section className="border-b border-hairline bg-panel-warm">
-      <div className="mx-auto w-full max-w-[90rem] space-y-8 px-4 py-8 sm:px-8 lg:px-14 lg:py-12">
-        <BackButton to="/courses" />
-
+      <div className="mx-auto w-full max-w-[90rem] px-4 py-8 sm:px-8 lg:px-14 lg:py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,44%)] lg:items-center lg:gap-14">
           <div className="min-w-0 space-y-5">
             <div className="flex flex-wrap items-center gap-2.5">
