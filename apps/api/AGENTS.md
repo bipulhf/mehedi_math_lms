@@ -52,6 +52,27 @@ paginated(context, data, pagination)        // { status: "success", data, pagina
 
 Never call `context.json()` directly in a controller. The web client (`apps/web/src/lib/api/client.ts`) depends on this envelope shape.
 
+## Audit trail
+
+Every state-changing request by a signed-in user leaves a row in `audit_logs`
+saying who made it and when. Two layers produce those rows:
+
+- **The route**, via `auditLogService.log(...)`, naming what actually happened —
+  `course.published`, `answer.marked` — with the ids and metadata worth keeping.
+  Do this wherever the action has a name a human would recognise.
+- **`auditTrailMiddleware`**, which writes a `request.<method>` entry for any
+  mutating request the route did not describe. It is the floor, not the
+  intended path: a feature added next year is audited whether or not its author
+  remembered to.
+
+The two never double up. `AuditLogService.log` marks the request through
+`src/lib/audit-trail-context.ts` (an `AsyncLocalStorage` scope opened by the
+middleware), and the fallback stays quiet when that mark is set.
+
+Not logged, deliberately: reads, requests that failed (nothing changed), and the
+marking-claim heartbeat the browser sends every 45 seconds — the exclusion list
+is at the top of the middleware.
+
 ## Errors
 
 Throw the typed errors from `src/utils/errors.ts` — `ValidationError` (400), `UnauthorizedError` (401), `ForbiddenError` (403), `NotFoundError` (404), `ConflictError` (409), or `AppError` with an explicit status. `app.onError` (`src/middleware/error-handler.ts`) logs and converts them. In production, non-`AppError` throws are flattened to `"Internal server error"`.

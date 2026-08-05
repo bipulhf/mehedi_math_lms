@@ -5,6 +5,7 @@ import { Hono } from "hono";
 
 import { env } from "@/lib/env";
 import type { AppBindings } from "@/types/app-bindings";
+import { auditTrailMiddleware } from "@/middleware/audit-trail";
 import { onError } from "@/middleware/error-handler";
 import { sessionContextMiddleware } from "@/middleware/session-context";
 import { requestLoggerMiddleware } from "@/middleware/request-logger";
@@ -34,6 +35,9 @@ if (env.NODE_ENV !== "development") {
   app.use("/api/*", createRateLimitMiddleware());
 }
 app.use("/api/v1/*", sessionContextMiddleware);
+// After the session, so it knows who acted; around the routes, so it can see
+// whether one of them described the action itself.
+app.use("/api/v1/*", auditTrailMiddleware);
 
 app.onError(onError);
 app.notFound((context) => error(context, "Route not found", 404));

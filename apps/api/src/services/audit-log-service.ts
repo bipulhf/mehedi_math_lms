@@ -1,3 +1,4 @@
+import { markExplicitAuditEntry } from "@/lib/audit-trail-context";
 import { logger } from "@/lib/logger";
 import type {
   AuditLogQuery,
@@ -23,6 +24,10 @@ export class AuditLogService {
    * a course publish silently failing because logging hiccuped is not.
    */
   public log(input: LogAuditActionInput): void {
+    // Tells the audit-trail middleware this request has already been described
+    // properly, so it does not add a second, vaguer entry beside this one.
+    markExplicitAuditEntry();
+
     this.auditLogRepository.create(input).catch((writeError: unknown) => {
       logger.error({ action: input.action, error: writeError }, "Failed to write audit log entry");
     });

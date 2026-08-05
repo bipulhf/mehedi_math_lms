@@ -25,13 +25,23 @@ answerScriptRoutes.post("/submissions/:id/pages", requireAuth(), async (context)
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.addPage(
+  const response = await answerScriptController.addPage(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "script_page.added",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test_submission",
+    metadata: { questionId: payload.questionId, uploadId: payload.uploadId }
+  });
+
+  return response;
 });
 
 answerScriptRoutes.patch("/submissions/:id/pages/order", requireAuth(), async (context) => {
@@ -40,26 +50,45 @@ answerScriptRoutes.patch("/submissions/:id/pages/order", requireAuth(), async (c
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.reorderPages(
+  const response = await answerScriptController.reorderPages(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "script_page.reordered",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test_submission",
+    metadata: { pages: payload.pageIds.length, questionId: payload.questionId }
+  });
+
+  return response;
 });
 
-answerScriptRoutes.delete("/pages/:id", requireAuth(), (context) => {
+answerScriptRoutes.delete("/pages/:id", requireAuth(), async (context) => {
   const params = scriptPageIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.removePage(
+  const response = await answerScriptController.removePage(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "script_page.removed",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "script_page"
+  });
+
+  return response;
 });
 
 answerScriptRoutes.get("/tests/:id/marking", requireRole("ADMIN", "TEACHER"), (context) => {
@@ -77,17 +106,26 @@ answerScriptRoutes.get("/tests/:id/marking", requireRole("ADMIN", "TEACHER"), (c
   );
 });
 
-answerScriptRoutes.post("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), (context) => {
+answerScriptRoutes.post("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = submissionAnswerIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.openAnswer(
+  const response = await answerScriptController.openAnswer(
     context,
     params.id,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "answer.opened_for_marking",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "submission_answer"
+  });
+
+  return response;
 });
 
 answerScriptRoutes.patch("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), (context) => {
@@ -103,11 +141,20 @@ answerScriptRoutes.patch("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), 
   );
 });
 
-answerScriptRoutes.delete("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), (context) => {
+answerScriptRoutes.delete("/answers/:id/claim", requireRole("ADMIN", "TEACHER"), async (context) => {
   const params = submissionAnswerIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");
 
-  return answerScriptController.releaseClaim(context, params.id, authUser!.id);
+  const response = await answerScriptController.releaseClaim(context, params.id, authUser!.id);
+
+  auditLogService.log({
+    action: "answer.marking_released",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "submission_answer"
+  });
+
+  return response;
 });
 
 answerScriptRoutes.put("/answers/:id/mark", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -116,13 +163,25 @@ answerScriptRoutes.put("/answers/:id/mark", requireRole("ADMIN", "TEACHER"), asy
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.setAnswerMark(
+  const response = await answerScriptController.setAnswerMark(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  // The mark itself is in the entry: a changed mark is the thing anybody would
+  // come to this log to ask about.
+  auditLogService.log({
+    action: "answer.marked",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "submission_answer",
+    metadata: { awardedMarks: payload.awardedMarks }
+  });
+
+  return response;
 });
 
 answerScriptRoutes.put("/pages/:id/marking", requireRole("ADMIN", "TEACHER"), async (context) => {
@@ -131,13 +190,23 @@ answerScriptRoutes.put("/pages/:id/marking", requireRole("ADMIN", "TEACHER"), as
   const authUser = context.get("authUser");
   const authSession = context.get("authSession");
 
-  return answerScriptController.saveMarking(
+  const response = await answerScriptController.saveMarking(
     context,
     params.id,
     payload,
     authUser!.id,
     authSession!.role as UserRole
   );
+
+  auditLogService.log({
+    action: "script_page.marking_saved",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "script_page",
+    metadata: { elements: payload.marking.elements.length }
+  });
+
+  return response;
 });
 
 answerScriptRoutes.post(
