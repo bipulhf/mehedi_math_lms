@@ -10,11 +10,18 @@ src/slug.ts           slugifySegment, buildSerialSlugCandidate, generateUniqueSl
 src/image-variants.ts imageVariantWidths, buildImageVariantKey, withImageVariants, readImageVariants,
                       buildImageSrcSet, pickImageVariant.
 src/progress-chunks.ts maxProgressChunks, resolveProgressChunks.
+src/math-segments.ts  segmentMath, hasMathDelimiters, splitHtmlTextNodes, decodeHtmlEntities, escapeHtmlText.
+src/math-html.ts      renderMathInHtml — the maths pass over sanitised HTML, with the renderer injected.
+src/math-symbols.ts   mathSymbolGroups (the palette, as data), mathCommandCharacters.
+src/math-plain-text.ts latexToPlainText, textWithMathToPlainText, richTextToPlainText.
+src/bijoy.ts          bijoyToUnicode, isBijoyEncoded. Tables in src/bijoy-char-map.ts.
 ```
 
-The last two are not validators, and they are here for the same reason the validators are: three runtimes have to agree.
+The modules below the validators are not validators, and they are here for the same reason the validators are: three runtimes have to agree.
 
 - **Image variants.** The API marks an uploaded image's URL with the widths it generated; the web app turns that into a `srcset` and the Expo app picks one URL by device pixels. If each side derived variant URLs on its own, a rename on one would 404 on the others — and a `srcset` candidate that 404s breaks the image, because the browser does not fall back to `src`.
+- **Maths.** A question is HTML with LaTeX between dollars (ADR-0014). Where a formula starts and stops has to be decided identically by the web renderer, the app's WebView and the plain-text flattener used for list rows — three implementations of the same delimiter rules would eventually disagree about the same question. The renderer is a parameter, so nothing here depends on KaTeX and the React Native bundle does not carry it.
+- **Bijoy.** The conversion tables are shared because the web editor and the MCQ option fields both need them, and because they are the part worth testing. `bijoy-char-map.ts` was copied byte-for-byte and contains control characters that do not survive being retyped — copy it, never edit it by hand.
 - **Progress chunks.** DESIGN.md's chunked tracker means turning a percentage into whole blocks, and the rounding rules — some progress never rounds to empty, nearly-done never rounds to full — are a product decision, not a rendering detail. Web and mobile draw different elements from the same numbers.
 
 `src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@genex/shared"` is the normal form. Subpath exports (`@genex/shared/validators/*`, `@genex/shared/types/*`, `@genex/shared/constants/*`) also exist but are rarely used.

@@ -16,7 +16,7 @@ Requires the API running on `http://localhost:3001` — see the proxy note below
 ```
 src/routes/          File-based routes. TanStack Router generates src/routeTree.gen.ts from these.
 src/routes/api/      Server route handlers: the Better Auth catch-all, and two hops for the Expo app.
-src/components/ui/   Primitives — button, card, input, label, select, textarea, checkbox, badge, pill, skeleton,
+src/components/ui/   Primitives — button, card, input, label, select, textarea, checkbox, switch, badge, pill, skeleton,
                      password-input, progress-track, responsive-image, avatar, tabs, accordion, data-table,
                      empty-state, stat-card, dot-row, price-text, section-heading, doodles, field (shared classes).
 src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
@@ -87,6 +87,16 @@ Two skeleton patterns coexist, and which one applies is decided by the route, no
 - A route **without a loader** has nothing to be pending on. The dashboard fetches client-side with TanStack Query, so those pages render their skeleton inline from `isPending`, with a ternary rather than `&&`.
 
 The plan originally said "every route". This split is the amended rule (`PLAN.md` §12); do not introduce a third pattern.
+
+## Maths
+
+Question text, options and marking guides may contain LaTeX between dollars — `$x^2$` inline, `$$…$$` on its own line. ADR-0014 explains why it is stored that way; what matters when editing this app is the order:
+
+`sanitizeHtml` first, **then** the maths pass. `RichTextContent` does that, and `MathText` does the same for plain fields like an MCQ option. The KaTeX markup that reaches the page is minted by `src/lib/katex.ts` from a LaTeX string, so no author bytes are re-injected as HTML and the allowlist in `src/lib/html.ts` never has to grow a `span` or a `class`. Rendering anything of the author's with `dangerouslySetInnerHTML` *after* the maths pass would undo that.
+
+Two things that look like polish and are not. A one-line context — the marking workspace's question strip — must pass `mathDisplay="inline"`, or a stored `$$…$$` renders as a centred block and breaks the row. And a label or a truncated row uses `richTextToPlainText` from `@genex/shared`, not `stripHtml`, which would print the raw `$\frac{a}{b}$`.
+
+Bijoy text is converted on paste, in the editor and in `OptionTextInput`, never on save. Every conversion is undoable and the automatic pass can be switched off from the toolbar.
 
 ## Images
 
