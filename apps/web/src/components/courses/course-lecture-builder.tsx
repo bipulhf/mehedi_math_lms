@@ -31,6 +31,7 @@ import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/
 import { createTest, deleteTest, reorderCourseItems, updateTest } from "@/lib/api/tests";
 import { uploadCourseMaterial } from "@/lib/api/uploads";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
 interface CourseLectureBuilderProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -568,9 +569,10 @@ export function CourseLectureBuilder({
                   <div className="min-w-0 flex-1">
                     <h3 className="text-lg font-medium text-ink">{chapter.title}</h3>
                     {chapter.description ? (
-                      <p className="mt-1 text-sm font-light leading-relaxed text-muted">
-                        {chapter.description}
-                      </p>
+                      <RichTextContent
+                        className="mt-1 text-sm font-light leading-relaxed text-muted"
+                        html={chapter.description}
+                      />
                     ) : null}
                   </div>
                 </header>

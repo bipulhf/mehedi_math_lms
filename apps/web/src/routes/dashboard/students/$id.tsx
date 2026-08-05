@@ -15,6 +15,7 @@ import { getAdminStudentProfile } from "@/lib/api/profiles";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
 export const Route = createFileRoute("/dashboard/students/$id")({
   head: () =>
@@ -186,9 +187,14 @@ function AdminStudentProfilePage(): JSX.Element {
               {t("profile.address")}
             </h2>
           </div>
-          <p className="text-sm text-ink leading-relaxed">
-            {profile.studentProfile?.address || "No address provided."}
-          </p>
+          {profile.studentProfile?.address ? (
+            <RichTextContent
+              className="text-sm leading-relaxed text-ink"
+              html={profile.studentProfile.address}
+            />
+          ) : (
+            <p className="text-sm leading-relaxed text-muted">{t("profile.noAddress")}</p>
+          )}
         </div>
       </div>
     </div>

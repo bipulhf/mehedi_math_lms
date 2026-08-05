@@ -2,6 +2,7 @@ import { readImageVariants } from "@genex/shared";
 import type { JSX } from "react";
 
 import type { CourseSummary } from "@/lib/api/courses";
+import { stripHtml } from "@/lib/html";
 import { siteConfig } from "@/lib/site";
 
 type HeadScript = JSX.IntrinsicElements["script"];
@@ -54,7 +55,10 @@ export function absolutePublicUrl(pathOrUrl: string): string {
 }
 
 export function buildMetaDescription(text: string): string {
-  const normalized = text.trim().replace(/\s+/g, " ");
+  // Course descriptions, teacher bios and category blurbs are all written in
+  // the rich text editor, so they arrive as HTML. A meta description is plain
+  // text by definition: left alone, a search result reads "<p>Class 9…".
+  const normalized = stripHtml(text).trim().replace(/\s+/g, " ");
 
   if (normalized.length <= MAX_DESC) {
     return normalized;

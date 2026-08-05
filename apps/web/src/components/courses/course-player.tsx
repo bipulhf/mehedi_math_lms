@@ -25,6 +25,7 @@ import type { ContentChapter } from "@/lib/api/content";
 import { markLectureComplete, type CourseProgressResponse } from "@/lib/api/progress";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { useT } from "@/lib/i18n/locale-context";
+import { stripHtml } from "@/lib/html";
 
 interface CoursePlayerProps {
   assessments: readonly AssessmentChapterSummary[];
@@ -196,7 +197,10 @@ export function CoursePlayer({
                 <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] text-ink md:text-4xl">
                   {course.title}
                 </h1>
-                <p className="max-w-3xl text-sm leading-7 text-ink/66">{course.description}</p>
+                <RichTextContent
+                  className="max-w-3xl text-sm leading-7 text-ink/66"
+                  html={course.description}
+                />
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
@@ -300,8 +304,10 @@ export function CoursePlayer({
                         <span className="min-w-0 flex-1">
                           <span className="block font-semibold text-ink">{chapter.title}</span>
                           {chapter.description ? (
+                            // Stripped rather than rendered: this sits inside a
+                            // button, where a block element is invalid markup.
                             <span className="mt-1 block text-sm leading-6 text-ink/62">
-                              {chapter.description}
+                              {stripHtml(chapter.description)}
                             </span>
                           ) : null}
                         </span>

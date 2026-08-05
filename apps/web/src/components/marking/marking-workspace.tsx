@@ -12,7 +12,7 @@ import {
   type MarkingWorkItem
 } from "@/components/marking/marking-work-list";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -289,13 +289,11 @@ export function MarkingWorkspace({
           <>
             <CardHeader>
               <CardTitle className="text-lg">{activeAnswer.student.name}</CardTitle>
-              <CardDescription>
-                <RichTextContent
-                  className="rich-text-content--inline inline [&_p]:mb-0 [&_p]:inline"
-                  html={activeAnswer.questionText}
-                  mathDisplay="inline"
-                />
-              </CardDescription>
+              <RichTextContent
+                className="rich-text-content--inline inline text-base font-light leading-relaxed text-muted [&_p]:mb-0 [&_p]:inline"
+                html={activeAnswer.questionText}
+                mathDisplay="inline"
+              />
               {activePaper ? (
                 <p className="text-xs text-ink/62">
                   {t("marking.markedOf", {

@@ -18,6 +18,7 @@ import type { CourseTeacherOption, CreateCourseInput } from "@/lib/api/courses";
 import { uploadCourseCover } from "@/lib/api/uploads";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
+import { stripHtml } from "@/lib/html";
 
 export interface CourseEditorValues extends CreateCourseInput {
   teacherIds: readonly string[];
@@ -360,8 +361,10 @@ export function CourseEditor({
                         {teacher.email}
                       </span>
                       {teacher.bio ? (
+                        // Stripped rather than rendered: this sits inside a
+                        // button, where a block element is invalid markup.
                         <span className="mt-2 line-clamp-2 block text-sm font-light leading-relaxed text-muted">
-                          {teacher.bio}
+                          {stripHtml(teacher.bio)}
                         </span>
                       ) : null}
                     </div>

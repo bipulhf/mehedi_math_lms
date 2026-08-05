@@ -8,6 +8,7 @@ import { ResponsiveImage } from "@/components/ui/responsive-image";
 import type { LandingCourse } from "@/lib/api/landing";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
 const AUTO_ADVANCE_MS = 6500;
 
@@ -208,12 +209,12 @@ function CourseSlide({
               </Link>
             </h2>
 
-            <p
-              className="slide-rise mt-4 line-clamp-2 text-base font-light leading-relaxed text-paper/85 sm:text-lg"
-              style={riseDelay(180)}
-            >
-              {course.description}
-            </p>
+            <div className="slide-rise mt-4" style={riseDelay(180)}>
+              <RichTextContent
+                className="line-clamp-2 text-base font-light leading-relaxed text-paper/85 sm:text-lg"
+                html={course.description}
+              />
+            </div>
 
             <div
               className="slide-rise mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-paper/75"

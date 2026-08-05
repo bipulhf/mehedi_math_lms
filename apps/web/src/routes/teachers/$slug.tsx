@@ -217,7 +217,7 @@ function TeacherProfilePage(): JSX.Element {
         <PublicSection className="grid gap-6 border-t border-hairline lg:grid-cols-3">
           {teacherProfile.qualifications ? (
             <DetailBlock title={t("detail.qualifications")}>
-              {teacherProfile.qualifications}
+              <RichTextContent html={teacherProfile.qualifications} />
             </DetailBlock>
           ) : null}
           {teacherProfile.socialLinks ? (
@@ -244,9 +244,11 @@ function DetailBlock({
   return (
     <div className="border border-hairline bg-card p-6">
       <p className="label-mono text-xs uppercase text-muted-faint">{title}</p>
-      <p className="mt-3 break-words text-base font-light leading-relaxed text-ink-muted">
+      {/* A div, not a p: qualifications come from the rich text editor, and a
+          rendered paragraph inside a paragraph is closed by the parser. */}
+      <div className="mt-3 break-words text-base font-light leading-relaxed text-ink-muted">
         {children}
-      </p>
+      </div>
     </div>
   );
 }

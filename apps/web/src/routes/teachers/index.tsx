@@ -10,6 +10,8 @@ import type { TeacherDirectoryEntry } from "@/lib/api/profiles";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { breadcrumbJsonLd, seo } from "@/lib/seo";
 import { ssrApiGet } from "@/lib/ssr-api";
+import { RichTextContent } from "@/components/ui/rich-text-content";
+import { stripHtml } from "@/lib/html";
 
 export const Route = createFileRoute("/teachers/")({
   loader: async () => ssrApiGet<readonly TeacherDirectoryEntry[]>("/profiles/teachers"),
@@ -67,13 +69,20 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Eleme
         <div className="min-w-0">
           <p className="truncate text-lg font-medium text-ink">{teacher.name}</p>
           {teacher.specializations === null ? null : (
-            <p className="truncate text-sm text-muted-light">{teacher.specializations}</p>
+            // One truncated line: stripped, because a paragraph inside it would
+            // break the ellipsis this row depends on.
+            <p className="truncate text-sm text-muted-light">
+              {stripHtml(teacher.specializations)}
+            </p>
           )}
         </div>
       </div>
 
       {teacher.bio === null ? null : (
-        <p className="line-clamp-3 text-base font-light leading-relaxed text-muted">{teacher.bio}</p>
+        <RichTextContent
+          className="line-clamp-3 text-base font-light leading-relaxed text-muted"
+          html={teacher.bio}
+        />
       )}
 
       <div className="mt-auto flex gap-4 border-t border-hairline-faint pt-4 text-sm text-muted-light">

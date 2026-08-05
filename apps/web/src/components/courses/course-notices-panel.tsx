@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type CourseNotice, listCourseNotices } from "@/lib/api/course-notices";
 import { queryKeys } from "@/lib/query/keys";
 import { useT } from "@/lib/i18n/locale-context";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
 export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Element {
   const t = useT();
@@ -74,8 +75,8 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
               </div>
               <CardTitle className="text-lg font-semibold">{notice.title}</CardTitle>
             </CardHeader>
-            <CardContent className="text-sm leading-7 text-ink/80 whitespace-pre-wrap">
-              {notice.content}
+            <CardContent>
+              <RichTextContent className="text-sm leading-7 text-ink/80" html={notice.content} />
             </CardContent>
           </Card>
         ))}

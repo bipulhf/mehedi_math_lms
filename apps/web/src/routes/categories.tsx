@@ -78,13 +78,14 @@ function PublicCategoryTree({
                   </div>
                   <div>
                     <CardTitle className="text-xl">{category.name}</CardTitle>
-                    <CardDescription>
-                      {category.description ? (
-                        <RichTextContent html={category.description} />
-                      ) : (
-                        "Structured academic grouping for focused course discovery."
-                      )}
-                    </CardDescription>
+                    {category.description ? (
+                      <RichTextContent
+                        className="text-base font-light leading-relaxed text-muted"
+                        html={category.description}
+                      />
+                    ) : (
+                      <CardDescription>{t("cat.fallbackDescription")}</CardDescription>
+                    )}
                   </div>
                 </div>
               </CardHeader>

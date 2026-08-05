@@ -7,6 +7,7 @@ import { TeacherAvatar } from "@/features/landing/components/teacher-avatar";
 import type { LandingTeacher } from "@/lib/api/landing";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { hueForKey, spectrumClasses } from "@/lib/spectrum";
+import { stripHtml } from "@/lib/html";
 
 /**
  * The teacher strip. A teacher without a slug has no public page, so their card
@@ -53,7 +54,9 @@ export function InstructorsSection({
                     {teacher.name}
                   </p>
                   {teacher.specializations === null ? null : (
-                    <p className="truncate text-sm text-muted-light">{teacher.specializations}</p>
+                    <p className="truncate text-sm text-muted-light">
+                      {stripHtml(teacher.specializations)}
+                    </p>
                   )}
                   <p className="text-sm text-muted-light">
                     {format.number(teacher.courseCount)} {t("common.courses")}

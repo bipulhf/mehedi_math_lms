@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
+import { RichTextContent } from "@/components/ui/rich-text-content";
 
 interface CategoryTreeProps {
   categories: readonly CategoryNode[];
@@ -98,9 +99,10 @@ function CategoryTreeItem({
                 </p>
               </div>
               {category.description ? (
-                <p className="max-w-xl text-sm leading-relaxed text-muted font-light line-clamp-2">
-                  {category.description}
-                </p>
+                <RichTextContent
+                  className="max-w-xl text-sm leading-relaxed text-muted font-light line-clamp-2"
+                  html={category.description}
+                />
               ) : null}
             </div>
           </div>

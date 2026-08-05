@@ -105,9 +105,10 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
       </div>
       <CardContent className="space-y-3 p-4">
         <CardTitle className="text-lg">{course.title}</CardTitle>
-        <CardDescription className="line-clamp-2">
-          <RichTextContent html={course.description} />
-        </CardDescription>
+        <RichTextContent
+          className="line-clamp-2 text-base font-light leading-relaxed text-muted"
+          html={course.description}
+        />
         <Link className="text-sm font-semibold text-accent" to="/courses/$slug" params={{ slug: course.slug }}>{t("cat.viewCourse")}</Link>
       </CardContent>
     </Card>
