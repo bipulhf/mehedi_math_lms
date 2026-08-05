@@ -29,33 +29,9 @@ import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 type SortOrder = "newest" | "priceLow" | "priceHigh";
 
-/** Same rounding as the web card: whole hours above an hour, whole minutes below. */
-function formatCourseLength(
-  totalDurationSeconds: number,
-  t: Translator,
-  format: Formatters
-): string | null {
-  if (totalDurationSeconds <= 0) {
-    return null;
-  }
-
-  const minutes = Math.round(totalDurationSeconds / 60);
-
-  if (minutes < 60) {
-    return t("course.minutes", { count: format.number(minutes) });
-  }
-
-  return t("course.hours", { count: format.number(Math.round(minutes / 60)) });
-}
-
-/** The meta line under a card title: length · lessons · free lessons. */
+/** The meta line under a card title: lessons · free lessons. No total length. */
 function courseMetaParts(course: CourseSummary, t: Translator, format: Formatters): readonly string[] {
   const parts: string[] = [];
-  const length = formatCourseLength(course.stats.totalDurationSeconds, t, format);
-
-  if (length !== null) {
-    parts.push(length);
-  }
 
   if (course.stats.lectureCount > 0) {
     parts.push(t("course.lessons", { count: format.number(course.stats.lectureCount) }));

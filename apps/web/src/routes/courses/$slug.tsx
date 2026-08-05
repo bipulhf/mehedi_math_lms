@@ -4,18 +4,17 @@ import type { InfiniteData, QueryKey } from "@tanstack/react-query";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 
-import { CourseBuyCard } from "@/components/courses/course-buy-card";
+import { CourseBuyCard, CourseMobileBuyBar } from "@/components/courses/course-buy-card";
 import { CourseCurriculum } from "@/components/courses/course-curriculum";
-import { courseMetaParts } from "@/components/courses/course-meta";
+import { CourseFacts } from "@/components/courses/course-facts";
+import { CourseHero } from "@/components/courses/course-hero";
+import { CoursePreviewDialog } from "@/components/courses/course-preview-dialog";
 import { CourseReviews } from "@/components/courses/course-reviews";
 import { CourseDetailSkeleton } from "@/components/common/skeletons";
 import { PublicLayout } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Avatar } from "@/components/ui/avatar";
-import { BackButton } from "@/components/ui/back-button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Pill } from "@/components/ui/pill";
-import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Tabs } from "@/components/ui/tabs";
 import { useAuthSession } from "@/hooks/use-auth-session";
@@ -26,7 +25,7 @@ import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { createEnrollment, getMyCourseEnrollment } from "@/lib/api/enrollments";
 import type { CourseReviewPublic } from "@/lib/api/reviews";
 import { getCourseReviewSummary, listCourseReviews } from "@/lib/api/reviews";
-import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
 import { breadcrumbJsonLd, courseJsonLd, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet } from "@/lib/ssr-api";
@@ -122,10 +121,10 @@ export const Route = createFileRoute("/courses/$slug")({
 function CourseDetailPage(): JSX.Element {
   const { course, content, reviewSummary: loaderReviewSummary } = Route.useLoaderData();
   const t = useT();
-  const format = useFormat();
   const { isPending: isSessionPending, session } = useAuthSession();
   const [tab, setTab] = useState<DetailTab>("curriculum");
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
 
   const isStudent = !isSessionPending && session?.session.role === "STUDENT";
 
@@ -164,7 +163,12 @@ function CourseDetailPage(): JSX.Element {
 
   const reviews: readonly CourseReviewPublic[] =
     reviewPageQuery.data?.pages.flatMap((page) => page.data) ?? [];
-  const meta = courseMetaParts(course.stats, t, format);
+  // The hero and the buy card both offer "watch a free class", and both open
+  // this one — the first lesson in outline order that anybody may watch.
+  const firstPreviewLessonId =
+    (content as readonly CourseOutlineChapter[])
+      .flatMap((chapter) => chapter.lessons)
+      .find((lesson) => lesson.isPreview)?.id ?? null;
 
   const handleEnroll = async (): Promise<void> => {
     setIsEnrolling(true);
@@ -190,50 +194,24 @@ function CourseDetailPage(): JSX.Element {
 
   return (
     <PublicLayout>
-      <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-10 sm:px-8 lg:grid-cols-[1fr_380px] lg:gap-14 lg:px-14 lg:py-14">
+      <CourseHero
+        course={course}
+        firstPreviewLessonId={firstPreviewLessonId}
+        onPreview={setPreviewLessonId}
+        reviewSummary={reviewSummary}
+      />
+      <CourseFacts course={course} reviewSummary={reviewSummary} />
+
+      {/* `pb-28` on the phone: the buy bar is pinned to the bottom edge and
+          would otherwise cover the last review. */}
+      <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 pb-28 pt-10 sm:px-8 lg:grid-cols-[1fr_380px] lg:gap-14 lg:px-14 lg:pb-14 lg:pt-14">
         <div className="min-w-0 space-y-8">
-          <BackButton to="/courses" />
-          <div className="space-y-5">
-            <p className="label-mono text-xs uppercase text-muted-faint">{course.category.name}</p>
-            <h1 className="max-w-[22ch] text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
-              {course.title}
-            </h1>
+          <div className="space-y-4">
+            <h2 className="text-xl font-medium text-ink">{t("detail.about")}</h2>
             <RichTextContent
-              className="max-w-[56ch] text-lg font-light leading-relaxed text-muted"
+              className="max-w-[68ch] text-base font-light leading-relaxed text-muted"
               html={course.description}
             />
-
-            <div className="flex flex-wrap gap-2.5">
-              {meta.map((part) => (
-                <Pill key={part}>{part}</Pill>
-              ))}
-              {course.isExamOnly ? <Pill isAccent>{t("course.examOnly")}</Pill> : null}
-              {reviewSummary && reviewSummary.count > 0 ? (
-                <Pill>
-                  {t("detail.reviewSummary", {
-                    average: format.rating(reviewSummary.average),
-                    count: format.number(reviewSummary.count)
-                  })}
-                </Pill>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex aspect-video items-center justify-center overflow-hidden bg-placeholder-fill">
-            {course.coverImageUrl ? (
-              <ResponsiveImage
-                alt={course.title}
-                className="size-full object-cover"
-                fetchPriority="high"
-                loading="eager"
-                sizes="(min-width: 1024px) 62vw, 100vw"
-                src={course.coverImageUrl}
-              />
-            ) : (
-              <span className="label-mono text-xs uppercase text-muted-faint">
-                {t("course.noThumbnail")}
-              </span>
-            )}
           </div>
 
           <Tabs
@@ -247,7 +225,9 @@ function CourseDetailPage(): JSX.Element {
             value={tab}
           />
 
-          {tab === "curriculum" ? <CourseCurriculum chapters={content} /> : null}
+          {tab === "curriculum" ? (
+            <CourseCurriculum chapters={content} onPreview={setPreviewLessonId} />
+          ) : null}
 
           {tab === "teacher" ? (
             course.teachers.length === 0 ? (
@@ -293,13 +273,30 @@ function CourseDetailPage(): JSX.Element {
         <CourseBuyCard
           course={course}
           enrollment={enrollment}
+          firstPreviewLessonId={firstPreviewLessonId}
           isEnrolling={isEnrolling}
           isSessionPending={isSessionPending}
           isSignedIn={Boolean(session)}
           onEnroll={() => void handleEnroll()}
+          onPreview={setPreviewLessonId}
+          reviewSummary={reviewSummary}
           role={session?.session.role}
         />
       </div>
+
+      <CourseMobileBuyBar
+        course={course}
+        enrollment={enrollment}
+        isEnrolling={isEnrolling}
+        isSessionPending={isSessionPending}
+        isSignedIn={Boolean(session)}
+        onEnroll={() => void handleEnroll()}
+        role={session?.session.role}
+      />
+
+      {/* One dialog for the page: the hero, the buy card and the class list all
+          open the same free class through it. */}
+      <CoursePreviewDialog lessonId={previewLessonId} onClose={() => setPreviewLessonId(null)} />
     </PublicLayout>
   );
 }

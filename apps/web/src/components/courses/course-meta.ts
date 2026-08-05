@@ -27,18 +27,19 @@ export function formatCourseLength(
   return t("course.hours", { count: format.number(Math.round(minutes / 60)) });
 }
 
-/** The meta line under a card title: length · lessons · free lessons. */
+/**
+ * The meta line under a card title: lessons · free lessons.
+ *
+ * The summed course length used to open this line. It is gone at the owner's
+ * request — `formatCourseLength` stays because a single lesson's length is
+ * still shown, on the class list and in the preview dialog.
+ */
 export function courseMetaParts(
   stats: CourseStats,
   t: Translator,
   format: Formatters
 ): readonly string[] {
   const parts: string[] = [];
-  const length = formatCourseLength(stats.totalDurationSeconds, t, format);
-
-  if (length !== null) {
-    parts.push(length);
-  }
 
   if (stats.lectureCount > 0) {
     parts.push(t("course.lessons", { count: format.number(stats.lectureCount) }));

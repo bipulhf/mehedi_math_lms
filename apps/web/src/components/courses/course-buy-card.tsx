@@ -2,24 +2,87 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { Button } from "@/components/ui/button";
+import { RatingStars } from "@/components/ui/rating-stars";
+import { RingedPlay } from "@/components/ui/doodles";
 import { PriceText } from "@/components/ui/price-text";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseDetail } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
-interface CourseBuyCardProps {
+interface CourseActionProps {
   readonly course: CourseDetail;
   readonly enrollment: StudentEnrollment | null;
   readonly isEnrolling: boolean;
   readonly isSessionPending: boolean;
+  readonly isSignedIn: boolean;
   readonly onEnroll: () => void;
   readonly role: string | undefined;
-  readonly isSignedIn: boolean;
+}
+
+interface CourseBuyCardProps extends CourseActionProps {
+  /** Opens the first free class from the rail, when the course keeps one. */
+  readonly firstPreviewLessonId: string | null;
+  readonly onPreview: (lessonId: string) => void;
+  readonly reviewSummary: { average: number; count: number } | null;
 }
 
 /**
- * The right rail. Price, one action, and what the course includes.
+ * The one action for this course, in whatever state the visitor is in.
+ *
+ * Extracted so the sidebar card and the phone bar cannot drift apart: a visitor
+ * who is signed out must be offered the same thing at 360px as at 1440px, and
+ * an enrolled student must never be shown an Enrol button in one of the two.
+ */
+export function CoursePrimaryAction({
+  course,
+  enrollment,
+  isEnrolling,
+  isSessionPending,
+  isSignedIn,
+  onEnroll,
+  role
+}: CourseActionProps): JSX.Element {
+  const t = useT();
+
+  if (isSessionPending) {
+    return <Skeleton className="h-12 w-full" />;
+  }
+
+  if (!isSignedIn) {
+    return (
+      <Button asChild className="w-full" size="lg">
+        <Link search={{ courseSlug: course.slug }} to="/auth/sign-up">
+          {t("detail.enroll")}
+        </Link>
+      </Button>
+    );
+  }
+
+  if (role !== "STUDENT") {
+    return <p className="text-base font-light text-muted">{t("detail.staffNotice")}</p>;
+  }
+
+  if (enrollment?.accessGranted) {
+    return (
+      <Button asChild className="w-full" size="lg">
+        <Link params={{ courseId: course.id }} to="/dashboard/learn/$courseId">
+          {t("detail.openPlayer")}
+        </Link>
+      </Button>
+    );
+  }
+
+  return (
+    <Button className="w-full" disabled={isEnrolling} onClick={onEnroll} size="lg">
+      {isEnrolling ? t("detail.enrolling") : t("detail.enroll")}
+    </Button>
+  );
+}
+
+/**
+ * The right rail. Price, one action, the free class, and what the course
+ * includes.
  *
  * The previous version printed a struck-through "original" price of
  * `price × 2.5` and a "65% OFF" badge. Neither existed: the schema holds one
@@ -30,13 +93,17 @@ interface CourseBuyCardProps {
 export function CourseBuyCard({
   course,
   enrollment,
+  firstPreviewLessonId,
   isEnrolling,
   isSessionPending,
   isSignedIn,
   onEnroll,
+  onPreview,
+  reviewSummary,
   role
 }: CourseBuyCardProps): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   const includes = [
     t("detail.includeLifetime"),
@@ -46,35 +113,53 @@ export function CourseBuyCard({
   ];
 
   return (
-    <div className="border border-hairline bg-card p-6 lg:sticky lg:top-28">
+    <div className="border border-hairline bg-card p-5 sm:p-6 lg:sticky lg:top-28">
       <PriceText amount={course.price} className="text-3xl font-medium" />
 
+      {reviewSummary && reviewSummary.count > 0 ? (
+        <div className="mt-2 flex items-center gap-2 text-sm text-muted-light">
+          <RatingStars rating={reviewSummary.average} />
+          <span>
+            {t("detail.reviewSummary", {
+              average: format.rating(reviewSummary.average),
+              count: format.number(reviewSummary.count)
+            })}
+          </span>
+        </div>
+      ) : null}
+
       <div className="mt-6 space-y-3">
-        {isSessionPending ? (
-          <Skeleton className="h-12 w-full" />
-        ) : !isSignedIn ? (
-          <>
-            <Button asChild className="w-full" size="lg">
-              <Link search={{ courseSlug: course.slug }} to="/auth/sign-up">
-                {t("detail.enroll")}
-              </Link>
-            </Button>
-            <Button asChild className="w-full" size="lg" variant="outline">
-              <Link to="/auth/sign-in">{t("detail.signIn")}</Link>
-            </Button>
-          </>
-        ) : role !== "STUDENT" ? (
-          <p className="text-base font-light text-muted">{t("detail.staffNotice")}</p>
-        ) : enrollment?.accessGranted ? (
-          <Button asChild className="w-full" size="lg">
-            <Link params={{ courseId: course.id }} to="/dashboard/learn/$courseId">
-              {t("detail.openPlayer")}
-            </Link>
+        <CoursePrimaryAction
+          course={course}
+          enrollment={enrollment}
+          isEnrolling={isEnrolling}
+          isSessionPending={isSessionPending}
+          isSignedIn={isSignedIn}
+          onEnroll={onEnroll}
+          role={role}
+        />
+
+        {isSessionPending || isSignedIn ? null : (
+          <Button asChild className="w-full" size="lg" variant="outline">
+            <Link to="/auth/sign-in">{t("detail.signIn")}</Link>
           </Button>
-        ) : (
-          <Button className="w-full" disabled={isEnrolling} onClick={onEnroll} size="lg">
-            {isEnrolling ? t("detail.enrolling") : t("detail.enroll")}
-          </Button>
+        )}
+
+        {/* Second in the stack, never styled as the primary: watching a class
+            is the step before paying, not an alternative to it. */}
+        {firstPreviewLessonId === null ? null : (
+          <button
+            className="flex min-h-11 w-full items-center justify-center gap-2.5 border-b border-line-strong pb-1 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+            onClick={() => onPreview(firstPreviewLessonId)}
+            type="button"
+          >
+            <RingedPlay />
+            <span>
+              {t("course.freeLessons", {
+                count: format.number(course.stats.freeLessonCount)
+              })}
+            </span>
+          </button>
         )}
       </div>
 
@@ -90,6 +175,32 @@ export function CourseBuyCard({
             </li>
           ))}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The same price and the same action, pinned to the bottom of a phone.
+ *
+ * Below `lg` the buy card sits under the class list, the teacher and every
+ * review — a visitor who has decided has to scroll past the whole page to act.
+ * The page reserves room for this so the bar never covers its last line.
+ */
+export function CourseMobileBuyBar(props: CourseActionProps): JSX.Element | null {
+  // Staff see a sentence rather than a button, and a sentence does not belong
+  // in a pinned bar.
+  if (!props.isSessionPending && props.isSignedIn && props.role !== "STUDENT") {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper lg:hidden">
+      <div className="flex items-center gap-4 px-4 py-3 sm:px-8">
+        <PriceText amount={props.course.price} className="shrink-0 text-xl font-medium" />
+        <div className="min-w-0 flex-1">
+          <CoursePrimaryAction {...props} />
+        </div>
       </div>
     </div>
   );

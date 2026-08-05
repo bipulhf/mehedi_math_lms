@@ -1,7 +1,6 @@
 import { useMemo, useState, type JSX } from "react";
 
 import { formatCourseLength } from "@/components/courses/course-meta";
-import { CoursePreviewDialog } from "@/components/courses/course-preview-dialog";
 import { AccordionRow } from "@/components/ui/accordion";
 import { RingedPlay } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,16 +15,22 @@ import { useFormat, useT } from "@/lib/i18n/locale-context";
  * only things that touch every row at once.
  */
 export function CourseCurriculum({
-  chapters
+  chapters,
+  onPreview
 }: {
   chapters: readonly CourseOutlineChapter[];
+  /**
+   * Opening a free class is the page's job, not this list's: the hero and the
+   * buy card open the same one, and three copies of the dialog would mean three
+   * places to keep in step.
+   */
+  onPreview: (lessonId: string) => void;
 }): JSX.Element {
   const t = useT();
   const format = useFormat();
   const [openIds, setOpenIds] = useState<ReadonlySet<string>>(
     () => new Set(chapters[0] ? [chapters[0].id] : [])
   );
-  const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
 
   const lessonCount = useMemo(
     () => chapters.reduce((total, chapter) => total + chapter.lessons.length, 0),
@@ -95,18 +100,12 @@ export function CourseCurriculum({
           >
             <ul className="space-y-1 pl-4 sm:pl-12">
               {chapter.lessons.map((lesson) => (
-                <LessonRow
-                  key={lesson.id}
-                  lesson={lesson}
-                  onPlay={() => setPreviewLessonId(lesson.id)}
-                />
+                <LessonRow key={lesson.id} lesson={lesson} onPlay={() => onPreview(lesson.id)} />
               ))}
             </ul>
           </AccordionRow>
         ))}
       </div>
-
-      <CoursePreviewDialog lessonId={previewLessonId} onClose={() => setPreviewLessonId(null)} />
     </div>
   );
 }
