@@ -51,9 +51,9 @@ export function AccountantOverview(): JSX.Element {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard label={t("dash.statRevenue")} value={format.currency(data.totalRevenue)} />
-        <StatCard label={t("dash.statRefunded")} value={format.currency(data.totalRefunded)} />
-        <StatCard
+        <StatCard hue="teal" label={t("dash.statRevenue")} value={format.currency(data.totalRevenue)} />
+        <StatCard hue="rose" label={t("dash.statRefunded")} value={format.currency(data.totalRefunded)} />
+        <StatCard hue="amber"
           delta={format.percent(refundRate)}
           isDeltaAccent={refundRate > 0}
           label={t("dash.statRefunded")}

@@ -11,6 +11,8 @@ import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CourseSummary } from "@/lib/api/courses";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { hueForKey, spectrumClasses } from "@/lib/spectrum";
+import { cn } from "@/lib/utils";
 
 interface CourseCardProps {
   course: CourseSummary;
@@ -71,7 +73,11 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-light">
-          <span>{course.category.name}</span>
+          {/* The subject, in its own colour — the same subject is the same
+              colour on every card and every page. ADR-0011. */}
+          <span className={cn("font-medium", spectrumClasses(hueForKey(course.category.slug)).text)}>
+            {course.category.name}
+          </span>
           {meta.map((part) => (
             <span key={part}>· {part}</span>
           ))}
@@ -183,7 +189,11 @@ export function CourseListCard({ course }: { course: CourseSummary }): JSX.Eleme
 
       <div className="flex flex-1 flex-col gap-2 p-5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-light">
-          <span>{course.category.name}</span>
+          {/* The subject, in its own colour — the same subject is the same
+              colour on every card and every page. ADR-0011. */}
+          <span className={cn("font-medium", spectrumClasses(hueForKey(course.category.slug)).text)}>
+            {course.category.name}
+          </span>
           {meta.map((part) => (
             <span key={part}>· {part}</span>
           ))}

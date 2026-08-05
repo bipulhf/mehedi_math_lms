@@ -71,15 +71,15 @@ export function AdminOverview(): JSX.Element {
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <StatCard label={t("dash.statRevenue")} value={format.currency(stats.revenue)} />
-        <StatCard label={t("dash.statEnrollments")} value={format.number(stats.totalEnrollments)} />
-        <StatCard label={t("dash.statStudents")} value={format.number(stats.totalStudents)} />
-        <StatCard label={t("dash.statCourses")} value={format.number(stats.activeCourses)} />
+        <StatCard hue="ember" label={t("dash.statRevenue")} value={format.currency(stats.revenue)} />
+        <StatCard hue="teal" label={t("dash.statEnrollments")} value={format.number(stats.totalEnrollments)} />
+        <StatCard hue="indigo" label={t("dash.statStudents")} value={format.number(stats.totalStudents)} />
+        <StatCard hue="violet" label={t("dash.statCourses")} value={format.number(stats.activeCourses)} />
         <Link className="block" to="/dashboard/admin/courses">
-          <StatCard label={t("dash.statPendingApproval")} value={format.number(stats.pendingCourseApprovals)} />
+          <StatCard hue="amber" label={t("dash.statPendingApproval")} value={format.number(stats.pendingCourseApprovals)} />
         </Link>
         <Link className="block" to="/dashboard/admin/bugs">
-          <StatCard label={t("dash.statOpenBugs")} value={format.number(stats.openBugs)} />
+          <StatCard hue="rose" label={t("dash.statOpenBugs")} value={format.number(stats.openBugs)} />
         </Link>
       </div>
 

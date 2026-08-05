@@ -60,6 +60,23 @@
    * else. */
   --color-online: #22c55e;
 
+  /* ------------------------------------------------------------------
+   * The spectrum. Six hues used at low strength for categorisation only --
+   * a tinted chip, an icon, a rule. Never a large fill, never body text.
+   * ADR-0011 amends DESIGN.md §2, which had one accent and nothing else.
+   *
+   * Two of these are the handoff's own accent alternates, and the rest are
+   * pitched to sit beside #EE5622 at the same warmth rather than to stand out
+   * from it: this is meant to read as a printed workbook with coloured tabs,
+   * not as a dashboard with a legend.
+   * ------------------------------------------------------------------ */
+  --color-spectrum-ember: #ee5622;
+  --color-spectrum-teal: #1f6f5c;
+  --color-spectrum-indigo: #3b5ba5;
+  --color-spectrum-violet: #6d4aa6;
+  --color-spectrum-amber: #b4801c;
+  --color-spectrum-rose: #b84a62;
+
   /* A second explicit exception: MCQ correctness on exam results screens
    * (the correct option and a correct pick are green, a wrong pick is
    * --color-error), and nothing else. Reuses one of the four approved accent

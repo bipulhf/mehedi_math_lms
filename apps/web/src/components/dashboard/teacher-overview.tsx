@@ -52,13 +52,13 @@ export function TeacherOverview({ name }: { name: string }): JSX.Element {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={t("dash.statRevenue")} value={format.currency(revenue)} />
-        <StatCard
+        <StatCard hue="ember" label={t("dash.statRevenue")} value={format.currency(revenue)} />
+        <StatCard hue="teal"
           label={t("dash.statEnrollments")}
           value={format.number(data.totalEnrollments)}
         />
-        <StatCard label={t("dash.statCourses")} value={format.number(data.courseCount)} />
-        <StatCard label={t("dash.statLessons")} value={format.number(data.lectureCount)} />
+        <StatCard hue="indigo" label={t("dash.statCourses")} value={format.number(data.courseCount)} />
+        <StatCard hue="violet" label={t("dash.statLessons")} value={format.number(data.lectureCount)} />
       </div>
 
       <RevenueBars points={data.revenueTrend} title={t("dash.statRevenue")} />

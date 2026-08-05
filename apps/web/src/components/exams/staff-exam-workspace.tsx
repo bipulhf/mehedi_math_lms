@@ -71,10 +71,12 @@ export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element 
           <div className="min-w-0 space-y-2">
             <p className="font-medium text-ink">{test.title}</p>
             <p className="text-sm font-light text-muted">
-              {isWritten ? t("author.examKindWritten") : t("author.examKindMcq")} ·{" "}
               {format.number(test.questions.length)} {t("ab.questions")} ·{" "}
               {format.number(test.totalMarks)} {t("qe.marks")}
             </p>
+            <Badge tone={isWritten ? "teal" : "indigo"}>
+              {isWritten ? t("author.examKindWritten") : t("author.examKindMcq")}
+            </Badge>
             <div className="flex flex-wrap gap-2">
               <Badge tone="neutral">
                 {t("exams.submissionCount", { count: format.number(submissions.length) })}

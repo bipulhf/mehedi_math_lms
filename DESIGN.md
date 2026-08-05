@@ -56,6 +56,16 @@ Three rules carry most of the weight:
 **Dark actions are Ink, not accent.** The accent is for marking, not for
 filling.
 
+### The spectrum
+
+Six hues sit beside the accent — ember, teal, indigo, violet, amber, rose — used
+only at tint strength (a 10% wash with a 25% hairline, a coloured icon, a 2px
+rule) and only to tell *kinds* of thing apart: a sidebar row, a subject, a kind
+of exam, one number in a row of numbers. They never fill a surface, never colour
+body text, and never stand in for the accent. Statuses keep the rules below
+unchanged. See ADR-0011, and reach for them through `src/lib/spectrum.ts` rather
+than naming a token in a component.
+
 ### The accent is a variable
 
 The handoff ships four alternates — `#EE5622` (default), `#23211E`, `#1F6F5C`,

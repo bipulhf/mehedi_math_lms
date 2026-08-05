@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth";
 import { useT } from "@/lib/i18n/locale-context";
 import { siteConfig } from "@/lib/site";
+import { hueForIndex, spectrumClasses } from "@/lib/spectrum";
 import { cn } from "@/lib/utils";
 
 export interface AppShellNavItem {
@@ -140,8 +141,11 @@ export function AppShell({
               ? Array.from({ length: 6 }, (_, index) => (
                   <Skeleton className="h-11 w-full" key={index} />
                 ))
-              : navItems.map((item) => {
+              : navItems.map((item, index) => {
                   const Icon = item.icon;
+                  // A hue per row, on the icon alone. The label stays muted, so
+                  // the sidebar reads as a list rather than as a paint chart.
+                  const hue = spectrumClasses(hueForIndex(index));
 
                   return (
                     <Link
@@ -156,7 +160,7 @@ export function AppShell({
                         className="size-[7px] shrink-0 rounded-full bg-transparent"
                         data-dot
                       />
-                      <Icon aria-hidden="true" className="size-4 shrink-0" />
+                      <Icon aria-hidden="true" className={cn("size-4 shrink-0", hue.text)} />
                       <span className="flex-1 truncate">{item.label}</span>
                       {item.badge !== undefined && item.badge > 0 ? (
                         <span className="label-mono text-xs text-accent">{item.badge}</span>

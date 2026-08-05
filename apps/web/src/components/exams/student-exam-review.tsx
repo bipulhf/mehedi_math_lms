@@ -77,10 +77,12 @@ export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
           <div className="min-w-0 space-y-2">
             <p className="font-medium text-ink">{test.title}</p>
             <p className="text-sm font-light text-muted">
-              {test.type === "WRITTEN" ? t("author.examKindWritten") : t("author.examKindMcq")} ·{" "}
               {format.number(test.questions.length)} {t("ab.questions")} ·{" "}
               {format.number(test.totalMarks)} {t("qe.marks")}
             </p>
+            <Badge tone={test.type === "WRITTEN" ? "teal" : "indigo"}>
+              {test.type === "WRITTEN" ? t("author.examKindWritten") : t("author.examKindMcq")}
+            </Badge>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <Button asChild>

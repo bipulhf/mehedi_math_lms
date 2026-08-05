@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
 
+import { spectrumClasses, type SpectrumHue } from "@/lib/spectrum";
 import { cn } from "@/lib/utils";
 
 export interface StatCardProps {
@@ -7,6 +8,8 @@ export interface StatCardProps {
   /** A movement note — "+১২%". Accent only when it is worth acting on. */
   delta?: ReactNode;
   isDeltaAccent?: boolean | undefined;
+  /** A coloured left rule, so a row of numbers is scannable. ADR-0011. */
+  hue?: SpectrumHue | undefined;
   label: string;
   value: ReactNode;
 }
@@ -21,12 +24,19 @@ export interface StatCardProps {
 export function StatCard({
   className,
   delta,
+  hue,
   isDeltaAccent = false,
   label,
   value
 }: StatCardProps): JSX.Element {
   return (
-    <div className={cn("border border-hairline bg-card p-4 sm:p-5", className)}>
+    <div
+      className={cn(
+        "border border-hairline bg-card p-4 sm:p-5",
+        hue === undefined ? null : `border-l-2 ${spectrumClasses(hue).rule}`,
+        className
+      )}
+    >
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-faint">{label}</p>
       <p className="mt-1.5 text-2xl font-medium text-ink">{value}</p>
       {delta === undefined ? null : (

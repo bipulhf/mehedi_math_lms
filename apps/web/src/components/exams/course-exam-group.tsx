@@ -70,13 +70,17 @@ export function CourseExamGroup({
                   <div className="min-w-0 space-y-2">
                     <p className="break-words font-medium text-ink">{test.title}</p>
                     <p className="text-sm font-light text-muted">
-                      {test.type === "WRITTEN"
-                        ? t("author.examKindWritten")
-                        : t("author.examKindMcq")}{" "}
-                      · {format.number(test.questionCount)} {t("ab.questions")} ·{" "}
+                      {format.number(test.questionCount)} {t("ab.questions")} ·{" "}
                       {format.number(test.totalMarks)} {t("qe.marks")}
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
+                      {/* The kind is what a reader scans this list for, so it is
+                          the one thing here wearing a colour. ADR-0011. */}
+                      <Badge tone={test.type === "WRITTEN" ? "teal" : "indigo"}>
+                        {test.type === "WRITTEN"
+                          ? t("author.examKindWritten")
+                          : t("author.examKindMcq")}
+                      </Badge>
                       {isStudent ? null : (
                         <Badge tone={test.isPublished ? "neutral" : "attention"}>
                           {test.isPublished ? t("common.published") : t("common.draft")}
