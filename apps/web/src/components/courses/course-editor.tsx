@@ -404,14 +404,14 @@ export function CourseEditor({
 export function CourseEditorSkeleton(): JSX.Element {
   return (
     <div className="flex min-h-160 flex-col overflow-hidden border border-hairline bg-card">
-      <div className="flex-1 space-y-8 p-10">
-        <Skeleton className="h-10 w-64 bg-chip-active" />
-        <Skeleton className="h-14 w-full bg-chip-active" />
-        <Skeleton className="h-14 w-full bg-chip-active" />
+      <div className="flex-1 space-y-8 p-5 sm:p-8 lg:p-10">
+        <Skeleton className="h-10 w-2/5" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
       </div>
-      <div className="flex items-center justify-between border-t border-hairline p-6">
-        <Skeleton className="h-12 w-24 bg-chip-active" />
-        <Skeleton className="h-12 w-32 bg-chip-active" />
+      <div className="flex items-center justify-between gap-4 border-t border-hairline p-4 sm:p-6">
+        <Skeleton className="h-12 w-24" />
+        <Skeleton className="h-12 w-32" />
       </div>
     </div>
   );

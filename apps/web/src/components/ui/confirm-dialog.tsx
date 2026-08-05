@@ -41,9 +41,9 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:items-center sm:p-6">
       <div
-        className="w-full max-w-md border border-hairline bg-card p-6"
+        className="w-full max-w-md border border-hairline bg-card p-5 sm:p-6"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
@@ -68,8 +68,16 @@ export function ConfirmDialog({
           {description}
         </div>
 
-        <div className="mt-6 flex flex-wrap justify-end gap-3 border-t border-hairline pt-5">
-          <Button disabled={pending} type="button" variant="outline" onClick={onCancel}>
+        {/* Column-reverse on a phone so the confirm sits under the thumb and
+            the cancel below it, rather than two half-width buttons wrapping. */}
+        <div className="mt-6 flex flex-col-reverse gap-3 border-t border-hairline pt-5 sm:flex-row sm:justify-end">
+          <Button
+            className="w-full sm:w-auto"
+            disabled={pending}
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+          >
             {cancelLabel}
           </Button>
           <Button
@@ -77,7 +85,10 @@ export function ConfirmDialog({
             type="button"
             variant={dangerous ? "ghost" : "ink"}
             onClick={onConfirm}
-            className={dangerous ? "text-error hover:bg-error/10" : undefined}
+            className={cn(
+              "w-full sm:w-auto",
+              dangerous ? "text-error hover:bg-error/10" : undefined
+            )}
           >
             {pending ? "Working…" : confirmLabel}
           </Button>

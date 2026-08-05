@@ -593,7 +593,7 @@ export function CoursePlayerSkeleton(): JSX.Element {
           </div>
           <div className="grid grid-cols-4 gap-1 md:grid-cols-8 xl:grid-cols-12">
             {Array.from({ length: 12 }).map((_, index) => (
-              <Skeleton key={index} className="h-2 rounded-full" />
+              <Skeleton key={index} className="h-2" />
             ))}
           </div>
         </CardContent>

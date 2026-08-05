@@ -88,9 +88,11 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
 
           {/* Right Column - Auth Form Card */}
           <div className="mx-auto w-full max-w-[28rem] lg:mx-0 lg:max-w-none">
-            <div className="border border-hairline bg-card p-8 sm:p-10">
+            {/* `p-8` at 360px leaves the form 264px of usable width. The step
+                down to `p-6` there gives a phone back two thumb-widths. */}
+            <div className="border border-hairline bg-card p-6 sm:p-8 lg:p-10">
               <div className="mb-8 space-y-2">
-                <h1 className="text-3xl font-medium leading-tight text-ink">{title}</h1>
+                <h1 className="text-2xl font-medium leading-tight text-ink sm:text-3xl">{title}</h1>
                 <p className="text-base font-light leading-relaxed text-muted">{description}</p>
               </div>
               {children}
