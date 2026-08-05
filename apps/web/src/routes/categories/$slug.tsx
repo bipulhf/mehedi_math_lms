@@ -76,9 +76,11 @@ export const Route = createFileRoute("/categories/$slug")({
   component: CategoryCoursesPage,
   errorComponent: RouteErrorView,
   pendingComponent: () => (
-    <div className="mx-auto max-w-7xl px-8 py-12">
-      <CourseGridSkeleton />
-    </div>
+    <PublicLayout>
+      <PublicSection>
+        <CourseGridSkeleton className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" />
+      </PublicSection>
+    </PublicLayout>
   )
 });
 

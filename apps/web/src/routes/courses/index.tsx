@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { CourseCard, CourseGridSkeleton, CourseListCard } from "@/components/courses/course-card";
 import { CourseFilterRail } from "@/components/courses/course-filter-rail";
-import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
+import { PublicLayout } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
 import type { PaginatedEnvelope } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
 import { FilterPill } from "@/components/ui/pill";
 import { RingedWord } from "@/components/ui/doodles";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseSummary } from "@/lib/api/courses";
@@ -60,11 +61,21 @@ export const Route = createFileRoute("/courses/")({
   },
   component: CoursesCatalogPage,
   errorComponent: RouteErrorView,
+  // The catalogue's own two-column container, not a bare grid: the filter rail
+  // appearing only after the loader resolved shifted every card left by 296px.
   pendingComponent: () => (
     <PublicLayout>
-      <PublicSection>
-        <CourseGridSkeleton />
-      </PublicSection>
+      <div className="mx-auto grid w-full max-w-[90rem] gap-8 px-4 py-10 sm:px-8 lg:grid-cols-[296px_1fr] lg:gap-12 lg:px-14">
+        <div className="hidden space-y-4 lg:block">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton className="h-40 w-full" key={index} />
+          ))}
+        </div>
+        <div className="min-w-0 space-y-6">
+          <Skeleton className="h-6 w-1/3" />
+          <CourseGridSkeleton />
+        </div>
+      </div>
     </PublicLayout>
   )
 });
@@ -310,7 +321,12 @@ function CoursesCatalogPage(): JSX.Element {
           ) : null}
 
           {isPending ? (
-            <CourseGridSkeleton />
+            // The placeholder follows the view toggle: a two-column grid of
+            // cards standing in for a list of full-width rows is a reshuffle.
+            <CourseGridSkeleton
+              cardClassName={viewMode === "grid" ? "h-[22rem] w-full" : "h-32 w-full sm:h-40"}
+              className={viewMode === "grid" ? "grid gap-5 sm:grid-cols-2" : "flex flex-col gap-5"}
+            />
           ) : courses.length === 0 ? (
             <EmptyState
               action={

@@ -142,11 +142,24 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
   );
 }
 
-export function CourseGridSkeleton(): JSX.Element {
+/**
+ * The catalogue grid's placeholder. `className` takes the caller's own grid,
+ * because the two pages that show course cards do not use the same one and a
+ * placeholder in the wrong number of columns reshuffles on arrival.
+ */
+export function CourseGridSkeleton({
+  cardClassName = "h-[22rem] w-full",
+  cards = 6,
+  className = "grid gap-5 sm:grid-cols-2"
+}: {
+  cardClassName?: string;
+  cards?: number;
+  className?: string;
+}): JSX.Element {
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      {Array.from({ length: 6 }, (_, index) => (
-        <Skeleton className="h-[22rem] w-full" key={index} />
+    <div className={className}>
+      {Array.from({ length: cards }, (_, index) => (
+        <Skeleton className={cardClassName} key={index} />
       ))}
     </div>
   );

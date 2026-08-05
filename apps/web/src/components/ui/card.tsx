@@ -9,6 +9,10 @@ import { cn } from "@/lib/utils";
  * surface comes from the page texture showing through translucent panels, and
  * a card is what sits solidly on top of it. Hover raises the border to
  * `line-strong`; nothing lifts or scales.
+ *
+ * Header, content and footer step from `p-4` to `p-6` at `sm`. This is the most
+ * repeated padding in the app, and 24px a side inside a 16px page gutter left a
+ * 360px phone 272px of usable card.
  */
 export function Card({
   children,
@@ -31,7 +35,7 @@ export function CardHeader({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
-    <div className={cn("space-y-3 p-6", className)} {...props}>
+    <div className={cn("space-y-3 p-4 sm:p-6", className)} {...props}>
       {children}
     </div>
   );
@@ -70,7 +74,7 @@ export function CardContent({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
-    <div className={cn("p-6 pt-0", className)} {...props}>
+    <div className={cn("p-4 pt-0 sm:p-6 sm:pt-0", className)} {...props}>
       {children}
     </div>
   );
@@ -82,7 +86,7 @@ export function CardFooter({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
-    <div className={cn("flex items-center gap-3 p-6 pt-0", className)} {...props}>
+    <div className={cn("flex items-center gap-3 p-4 pt-0 sm:p-6 sm:pt-0", className)} {...props}>
       {children}
     </div>
   );

@@ -7,7 +7,6 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryTreeSkeleton } from "@/components/common/skeletons";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
@@ -44,10 +43,14 @@ export const Route = createFileRoute("/categories")({
   },
   component: CategoriesPage,
   errorComponent: RouteErrorView,
+  // Same chrome as the loaded page, or the header and footer appear only after
+  // the loader resolves and the whole page jumps down.
   pendingComponent: () => (
-    <div className="mx-auto max-w-5xl px-8 py-16">
-      <CategoryTreeSkeleton rows={8} />
-    </div>
+    <PublicLayout>
+      <PublicSection>
+        <CategoryTreeSkeleton rows={8} />
+      </PublicSection>
+    </PublicLayout>
   )
 });
 
@@ -64,8 +67,10 @@ function PublicCategoryTree({
     <div className="space-y-4">
       {categories.map((category) => (
         <div key={category.id}>
+          {/* Square, like every other card. The inner panel is what carries
+              the nesting, so the outer card is a 1px frame around it. */}
           <Card className="bg-panel-warm p-1">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card">
+            <div className="bg-card">
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="rounded-full bg-chip-active p-3 text-accent">
@@ -121,11 +126,7 @@ function CategoriesPage(): JSX.Element {
           56px gutter and the body was running edge to edge under it. */}
       <PublicSection>
         {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-40" />
-            <Skeleton className="h-40" />
-            <Skeleton className="h-40" />
-          </div>
+          <CategoryTreeSkeleton rows={6} />
         ) : (
           <PublicCategoryTree categories={categories} />
         )}

@@ -2,7 +2,6 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { JSX, ReactNode } from "react";
 
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
-import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
@@ -10,6 +9,7 @@ import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PriceText } from "@/components/ui/price-text";
 import { RichTextContent } from "@/components/ui/rich-text-content";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { PublicTeacherProfileData, TeacherCourseSummary } from "@/lib/api/profiles";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -71,8 +71,53 @@ export const Route = createFileRoute("/teachers/$slug")({
   },
   component: TeacherProfilePage,
   errorComponent: RouteErrorView,
-  pendingComponent: ProfilePageSkeleton
+  pendingComponent: TeacherProfileSkeleton
 });
+
+/**
+ * The teacher page's own shape — hero band with the portrait beside the name,
+ * then the course grid.
+ *
+ * It used to borrow `ProfilePageSkeleton`, which is the dashboard's profile
+ * *editor*: a stack of form cards, with no header or footer around it. The page
+ * that arrived looked nothing like the one being promised.
+ */
+function TeacherProfileSkeleton(): JSX.Element {
+  return (
+    <PublicLayout>
+      <section className="border-b border-hairline">
+        <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[196px_1fr] lg:px-14 lg:py-20">
+          <Skeleton className="size-40 rounded-full lg:size-[196px]" />
+          <div className="min-w-0 space-y-6">
+            <Skeleton className="h-10 w-3/5" />
+            <Skeleton className="h-5 w-2/5" />
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full max-w-[56ch]" />
+              <Skeleton className="h-4 w-4/5 max-w-[56ch]" />
+            </div>
+            <div className="flex flex-wrap gap-x-11 gap-y-6 border-t border-hairline pt-7">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div className="space-y-2" key={index}>
+                  <Skeleton className="h-7 w-16" />
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <PublicSection className="space-y-8">
+        <Skeleton className="h-6 w-40" />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton className="h-52 w-full" key={index} />
+          ))}
+        </div>
+      </PublicSection>
+    </PublicLayout>
+  );
+}
 
 function TeacherProfilePage(): JSX.Element {
   const profile: PublicTeacherProfileData = Route.useLoaderData();
