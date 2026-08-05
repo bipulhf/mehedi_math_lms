@@ -8,6 +8,7 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
+  Languages,
   Quote,
   Sigma,
   Strikethrough,
@@ -91,10 +92,16 @@ function LinkPrompt({ editor }: { editor: Editor }): JSX.Element {
 
 export function RichTextToolbar({
   editor,
-  onInsertMath
+  isBijoyEnabled,
+  onConvertBijoy,
+  onInsertMath,
+  onToggleBijoy
 }: {
   editor: Editor;
+  isBijoyEnabled: boolean;
+  onConvertBijoy: () => void;
   onInsertMath: () => void;
+  onToggleBijoy: (value: boolean) => void;
 }): JSX.Element {
   const t = useT();
 
@@ -184,6 +191,22 @@ export function RichTextToolbar({
       <ToolbarButton onClick={onInsertMath} title={t("math.insert")}>
         <Sigma className="size-3.5" />
       </ToolbarButton>
+
+      <span className="mx-1 h-4 w-px bg-hairline" />
+
+      {/* Bijoy is two controls, not one: the switch decides whether a paste is
+          converted without being asked, and the button converts what is already
+          in the field -- text that arrived before the switch was turned on. */}
+      <ToolbarButton
+        active={isBijoyEnabled}
+        onClick={() => onToggleBijoy(!isBijoyEnabled)}
+        title={t("bijoy.autoConvert")}
+      >
+        <Languages className="size-3.5" />
+      </ToolbarButton>
+      <Button className="h-7 px-2" onClick={onConvertBijoy} size="xs" type="button" variant="outline">
+        {t("bijoy.convert")}
+      </Button>
 
       <span className="mx-1 h-4 w-px bg-hairline" />
 

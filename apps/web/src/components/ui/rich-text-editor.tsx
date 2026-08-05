@@ -1,13 +1,15 @@
-import { hasMathDelimiters } from "@genex/shared";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { bijoyToUnicode, hasMathDelimiters, isBijoyEncoded } from "@genex/shared";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { MathInputDialog } from "@/components/ui/math-input-dialog";
+import { useBijoyAutoConvert } from "@/hooks/use-bijoy-paste";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { RichTextToolbar } from "@/components/ui/rich-text-toolbar";
 import { fieldClassName } from "@/components/ui/field";
@@ -33,10 +35,37 @@ export function RichTextEditor({
 }: RichTextEditorProps): JSX.Element {
   const t = useT();
   const [isMathOpen, setIsMathOpen] = useState(false);
+  const { isEnabled: isBijoyEnabled, setEnabled: setBijoyEnabled } = useBijoyAutoConvert();
+  // The paste handler is built with the editor's own configuration, so it
+  // cannot close over the editor. This is how it reaches it afterwards.
+  const editorRef = useRef<Editor | null>(null);
   const editor = useEditor({
     editorProps: {
       attributes: {
         class: "min-h-32 px-3.5 py-3 text-sm text-ink focus-visible:outline-none"
+      },
+      /**
+       * Bijoy arrives through the clipboard or not at all — nobody types it into
+       * a browser. Converting here rather than on save means the teacher reads
+       * what will be stored, and can undo it.
+       */
+      handlePaste: (view, event) => {
+        const pasted = event.clipboardData?.getData("text/plain") ?? "";
+
+        if (!isBijoyEnabled || !isBijoyEncoded(pasted)) {
+          return false;
+        }
+
+        event.preventDefault();
+
+        const converted = bijoyToUnicode(pasted, { convertDigits: false });
+
+        view.dispatch(view.state.tr.insertText(converted));
+        toast.success(t("bijoy.converted"), {
+          action: { label: t("bijoy.undo"), onClick: () => editorRef.current?.commands.undo() }
+        });
+
+        return true;
       }
     },
     extensions: [
@@ -68,10 +97,58 @@ export function RichTextEditor({
   });
 
   useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
+
+  useEffect(() => {
     if (editor && !editor.isDestroyed && value !== editor.getHTML()) {
       editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [editor, value]);
+
+  /**
+   * Convert the whole field on demand, for text that was typed or pasted before
+   * the switch was on. Replacements are applied last-first so the positions
+   * taken from the document stay valid as it shortens.
+   */
+  const convertDocument = (): void => {
+    if (!editor) {
+      return;
+    }
+
+    const replacements: { from: number; text: string; to: number }[] = [];
+
+    editor.state.doc.descendants((node, position) => {
+      const text = node.text;
+
+      if (!node.isText || text === undefined || !isBijoyEncoded(text)) {
+        return;
+      }
+
+      const converted = bijoyToUnicode(text, { convertDigits: false });
+
+      if (converted !== text) {
+        replacements.push({ from: position, text: converted, to: position + text.length });
+      }
+    });
+
+    if (replacements.length === 0) {
+      toast.info(t("bijoy.nothingToConvert"));
+
+      return;
+    }
+
+    const transaction = editor.state.tr;
+
+    for (const replacement of [...replacements].reverse()) {
+      transaction.insertText(replacement.text, replacement.from, replacement.to);
+    }
+
+    editor.view.dispatch(transaction);
+    toast.success(t("bijoy.converted"), {
+      action: { label: t("bijoy.undo"), onClick: () => editor.commands.undo() }
+    });
+  };
 
   if (!editor) {
     return (
@@ -91,7 +168,13 @@ export function RichTextEditor({
         )}
         id={id}
       >
-        <RichTextToolbar editor={editor} onInsertMath={() => setIsMathOpen(true)} />
+        <RichTextToolbar
+          editor={editor}
+          isBijoyEnabled={isBijoyEnabled}
+          onConvertBijoy={convertDocument}
+          onInsertMath={() => setIsMathOpen(true)}
+          onToggleBijoy={setBijoyEnabled}
+        />
         <EditorContent editor={editor} />
       </div>
 

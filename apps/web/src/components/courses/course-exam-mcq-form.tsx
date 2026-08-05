@@ -1,6 +1,7 @@
 import { Eye, Plus, X } from "lucide-react";
 import type { JSX } from "react";
 
+import { OptionTextInput } from "@/components/tests/option-text-input";
 import { MathText } from "@/components/ui/math-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -136,15 +137,15 @@ export function McqQuestionForm({
                   </span>
                 </label>
                 <div className="flex items-center gap-2">
-                  <Input
+                  <OptionTextInput
                     className="min-w-0 flex-1"
                     placeholder={t("author.mcqOption", { number: String(index + 1) })}
                     value={option.optionText}
-                    onChange={(event) =>
+                    onChange={(optionText) =>
                       onChange({
                         ...draft,
                         options: draft.options.map((current, optionIndex) =>
-                          optionIndex === index ? { ...current, optionText: event.target.value } : current
+                          optionIndex === index ? { ...current, optionText } : current
                         )
                       })
                     }

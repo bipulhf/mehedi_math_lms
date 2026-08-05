@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { QuestionDraft } from "@/components/tests/question-draft";
+import { OptionTextInput } from "@/components/tests/option-text-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -172,20 +173,15 @@ export function QuestionEditor({
                     })
                   }
                 />{t("qe.correct")}</label>
-              <Input
+              <OptionTextInput
                 className="h-10"
                 placeholder={`Option ${index + 1}`}
                 value={option.optionText}
-                onChange={(event) =>
+                onChange={(optionText) =>
                   onChange({
                     ...draft,
                     options: draft.options.map((currentOption, optionIndex) =>
-                      optionIndex === index
-                        ? {
-                            ...currentOption,
-                            optionText: event.target.value
-                          }
-                        : currentOption
+                      optionIndex === index ? { ...currentOption, optionText } : currentOption
                     )
                   })
                 }
