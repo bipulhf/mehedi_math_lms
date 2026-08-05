@@ -3,11 +3,11 @@ import type { Formatters, Translator } from "@genex/i18n";
 import type { CourseStats } from "@/lib/api/courses";
 
 /**
- * The design writes a course's length as "৬ মাস". No column holds that, so the
+ * The design writes a course's length as "6 মাস". No column holds that, so the
  * honest substitute is the summed lesson duration — see GENEX_MIGRATION.md §2.
  *
  * Rounds to whole hours above one hour and whole minutes below it. A catalogue
- * card saying "৫ ঘণ্টা ৪৩ মিনিট" is precision nobody asked for.
+ * card saying "5 ঘণ্টা 43 মিনিট" is precision nobody asked for.
  */
 export function formatCourseLength(
   totalDurationSeconds: number,

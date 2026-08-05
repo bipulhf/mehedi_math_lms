@@ -34,7 +34,7 @@ export function HowItWorksSection(): JSX.Element {
         {steps.map((step, index) => (
           <Reveal as="li" delayMs={index * 80} key={step.title}>
             {/* The numeral goes through `digits`: a step number is a label, not
-                a quantity, and grouping it would print ০,০১ in Bangla. */}
+                a quantity, and grouping it would print 0,01. */}
             <StepCircle>{format.digits(String(index + 1).padStart(2, "0"))}</StepCircle>
             <h3 className="mt-4 text-lg font-medium leading-snug text-ink">{step.title}</h3>
             <p className="mt-2 text-base font-light leading-relaxed text-muted">{step.body}</p>

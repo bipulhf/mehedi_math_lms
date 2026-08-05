@@ -37,8 +37,8 @@ describe("translate", () => {
 
 describe("interpolation", () => {
   test("fills every placeholder", () => {
-    expect(translate("bn", "courses.resultCount", { shown: "৬", total: "১৮৪" })).toBe(
-      "৬টি কোর্স দেখানো হচ্ছে · মোট ১৮৪টি"
+    expect(translate("bn", "courses.resultCount", { shown: "6", total: "184" })).toBe(
+      "6টি কোর্স দেখানো হচ্ছে · মোট 184টি"
     );
     expect(translate("en", "courses.resultCount", { shown: 6, total: 184 })).toBe(
       "Showing 6 of 184 courses"

@@ -31,7 +31,7 @@ export interface CourseStats {
   lectureCount: number;
   reviewAverage: number | null;
   reviewCount: number;
-  /** Summed lesson duration. The design's "৬ মাস" has no column behind it;
+  /** Summed lesson duration. The design's "6 মাস" has no column behind it;
       this is the honest substitute. GENEX_MIGRATION.md §2. */
   totalDurationSeconds: number;
 }

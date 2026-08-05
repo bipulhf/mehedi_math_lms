@@ -2,12 +2,22 @@ import type { Locale } from "./locales";
 import { localeTags } from "./locales";
 
 /**
- * Every number the user sees goes through here, so that Bangla gets Bangla
- * numerals and the lakh/crore grouping the design uses (১,৮৪,০০০, not
- * ১৮৪,০০০) without any screen having to think about it.
+ * Every number the user sees goes through here.
  *
- * `Intl` already knows both. The value of this module is that it is the single
- * place that knows, and that web and mobile import the same one.
+ * Two rules, and they pull in different directions. Grouping follows the
+ * locale, so Bangla gets the lakh/crore shape the design uses — 1,84,000, not
+ * 184,000. **Digits are always Western**, in both languages: a Bangla page
+ * reads ৳5,900 and 12 August, never ৳৫,৯০০ or ১২ আগস্ট.
+ *
+ * That is a product decision, not an oversight. Prices, marks, phone numbers,
+ * transaction ids and exam scores are read, compared and typed back by people
+ * who use ASCII digits everywhere else — a keypad, a bank SMS, a calculator —
+ * and mixing the two sets makes a mark of 18 out of 20 harder to check, not
+ * more Bangla. `Intl` will happily produce native numerals, so every formatter
+ * here passes its output through `toWesternDigits`.
+ *
+ * The value of this module is that it is the single place that knows, and that
+ * web and mobile import the same one.
  */
 
 // Constructing an Intl formatter is expensive enough that a list of a hundred
@@ -45,6 +55,20 @@ function dateFormatter(locale: Locale, options: Intl.DateTimeFormatOptions): Int
   return formatter;
 }
 
+const banglaDigits = "০১২৩৪৫৬৭৮৯";
+
+/**
+ * Bengali numerals to ASCII, leaving everything else — month names, the taka
+ * sign, separators — exactly as the locale formatted it.
+ *
+ * Also the public path for a string that is not a number and must not be
+ * regrouped: a phone number, a transaction id, "1280 × 720", a chapter's "04".
+ * It takes no locale, because the answer is the same in both.
+ */
+export function toWesternDigits(value: string): string {
+  return value.replace(/[০-৯]/g, (digit) => String(banglaDigits.indexOf(digit)));
+}
+
 function toNumber(value: number | string): number {
   const parsed = typeof value === "string" ? Number(value) : value;
 
@@ -52,47 +76,51 @@ function toNumber(value: number | string): number {
 }
 
 export function formatNumber(value: number | string, locale: Locale): string {
-  return numberFormatter(locale, { maximumFractionDigits: 0 }).format(toNumber(value));
+  return toWesternDigits(numberFormatter(locale, { maximumFractionDigits: 0 }).format(toNumber(value)));
 }
 
 /**
- * The taka sign sits tight against the number in the design — ৳৫,৯০০, no space
+ * The taka sign sits tight against the number in the design — ৳5,900, no space
  * — which is not what `Intl`'s currency style produces, so it is composed here
  * instead.
  *
  * Paisa are shown only when there are any. Prices are stored as
  * `numeric(10, 2)` and arrive as strings like `"5900.00"`, which should read as
- * ৳৫,৯০০ rather than ৳৫,৯০০.০০.
+ * ৳5,900 rather than ৳5,900.00.
  */
 export function formatCurrency(value: number | string, locale: Locale): string {
   const amount = toNumber(value);
   const hasFraction = !Number.isInteger(amount);
-  const formatted = numberFormatter(locale, {
-    maximumFractionDigits: hasFraction ? 2 : 0,
-    minimumFractionDigits: hasFraction ? 2 : 0
-  }).format(amount);
+  const formatted = toWesternDigits(
+    numberFormatter(locale, {
+      maximumFractionDigits: hasFraction ? 2 : 0,
+      minimumFractionDigits: hasFraction ? 2 : 0
+    }).format(amount)
+  );
 
   return `৳${formatted}`;
 }
 
 /**
- * A review average, to one decimal. `formatNumber` would round 4.8 to ৫ and
+ * A review average, to one decimal. `formatNumber` would round 4.8 to 5 and
  * quietly flatter every course on the page.
  */
 export function formatRating(value: number, locale: Locale): string {
-  return numberFormatter(locale, {
-    maximumFractionDigits: 1,
-    minimumFractionDigits: 1
-  }).format(value);
+  return toWesternDigits(
+    numberFormatter(locale, {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1
+    }).format(value)
+  );
 }
 
-/** Takes a percentage, not a fraction: `formatPercent(78, "bn")` is `৭৮%`. */
+/** Takes a percentage, not a fraction: `formatPercent(78, "bn")` is `78%`. */
 export function formatPercent(value: number, locale: Locale): string {
   return `${formatNumber(Math.round(value), locale)}%`;
 }
 
 export interface FormatDateOptions {
-  /** Adds the year. Off by default — the design writes "১২ আগস্ট". */
+  /** Adds the year. Off by default — the design writes "12 আগস্ট". */
   readonly withYear?: boolean;
 }
 
@@ -107,11 +135,14 @@ export function formatDate(
     return "";
   }
 
-  return dateFormatter(locale, {
-    day: "numeric",
-    month: "long",
-    ...(options.withYear === true ? { year: "numeric" } : {})
-  }).format(date);
+  // Bangla month names, Western day and year: "12 আগস্ট 2026".
+  return toWesternDigits(
+    dateFormatter(locale, {
+      day: "numeric",
+      month: "long",
+      ...(options.withYear === true ? { year: "numeric" } : {})
+    }).format(date)
+  );
 }
 
 export function formatDateTime(value: Date | string | number, locale: Locale): string {
@@ -121,30 +152,14 @@ export function formatDateTime(value: Date | string | number, locale: Locale): s
     return "";
   }
 
-  return dateFormatter(locale, {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "long"
-  }).format(date);
-}
-
-const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"] as const;
-
-/**
- * Maps the digits inside an already-formatted string, leaving everything else
- * alone. For values that are not numbers and must not be regrouped — phone
- * numbers, transaction ids, "১২৮০ × ৭২০ পিক্সেল".
- *
- * Grouped counts should use `formatNumber` instead; this one would happily
- * turn `184000` into `১৮৪০০০`.
- */
-export function toLocaleDigits(value: string, locale: Locale): string {
-  if (locale !== "bn") {
-    return value;
-  }
-
-  return value.replace(/[0-9]/g, (digit) => banglaDigits[Number(digit)] ?? digit);
+  return toWesternDigits(
+    dateFormatter(locale, {
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      month: "long"
+    }).format(date)
+  );
 }
 
 export interface Formatters {
@@ -162,7 +177,7 @@ export function createFormatters(locale: Locale): Formatters {
     currency: (value) => formatCurrency(value, locale),
     date: (value, options) => formatDate(value, locale, options),
     dateTime: (value) => formatDateTime(value, locale),
-    digits: (value) => toLocaleDigits(value, locale),
+    digits: (value) => toWesternDigits(value),
     number: (value) => formatNumber(value, locale),
     percent: (value) => formatPercent(value, locale),
     rating: (value) => formatRating(value, locale)

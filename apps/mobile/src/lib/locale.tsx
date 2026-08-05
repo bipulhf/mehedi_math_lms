@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 /**
  * The same catalogue and the same formatters as the web app, so a price reads
- * ৳৫,৯০০ in both and neither has its own idea of how to group a number.
+ * ৳5,900 in both and neither has its own idea of how to group a number.
  *
  * There is no SSR here, so unlike the web there is no cookie and no first-paint
  * problem: the app reads the stored locale in an effect and re-renders. The

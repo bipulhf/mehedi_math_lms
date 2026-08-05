@@ -28,7 +28,7 @@ export function isLocale(value: unknown): value is Locale {
 export const localeTags: Readonly<Record<Locale, string>> = {
   bn: "bn-BD",
   // en-GB rather than en-US: identical digit grouping and separators, but it
-  // writes dates as "12 August", which matches the Bangla "১২ আগস্ট" instead of
+  // writes dates as "12 August", which matches the Bangla "12 আগস্ট" instead of
   // inverting it to "August 12".
   en: "en-GB"
 };

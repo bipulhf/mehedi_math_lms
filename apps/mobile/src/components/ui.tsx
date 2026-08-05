@@ -516,7 +516,7 @@ export function StatCard({ label, value }: { label: string; value: ReactNode }):
   );
 }
 
-/** A price, formatted for the reader's locale. ৳৫,৯০০ in Bangla. */
+/** A price, formatted for the reader's locale. ৳5,900, grouped the Bangla way. */
 export function PriceText({ amount }: { amount: number | string }): JSX.Element {
   const format = useFormat();
 

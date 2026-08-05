@@ -10,8 +10,8 @@ export interface PriceTextProps {
 }
 
 /**
- * A price, formatted for the reader's locale — ৳৫,৯০০ in Bangla, ৳5,900 in
- * English. The taka sign sits tight against the number; `formatCurrency` in
+ * A price, formatted for the reader's locale — ৳5,900, grouped the Bangla way
+ * for a Bangla reader. The taka sign sits tight against the number; `formatCurrency` in
  * `@genex/i18n` is the one place that knows why.
  *
  * There is no struck-through original price: the schema stores one price per

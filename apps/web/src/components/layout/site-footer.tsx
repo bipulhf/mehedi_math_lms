@@ -11,7 +11,7 @@ import { siteConfig } from "@/lib/site";
  * `panel-warm`. DESIGN.md §7 doodle 5.
  *
  * The year goes through `digits` and not `number`: a year is not a quantity,
- * and grouping it would print ২,০২৬.
+ * and grouping it would print 2,026.
  */
 export function SiteFooter(): JSX.Element {
   const t = useT();

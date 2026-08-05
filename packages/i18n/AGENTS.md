@@ -38,19 +38,31 @@ longer or more formal than its source.
 
 ## Formatting
 
-`src/format.ts` is the only place that knows about Bangla numerals and the
-lakh/crore grouping (১,৮৪,০০০, never ১৮৪,০০০). `Intl` does the real work; the
-value of the module is that there is exactly one of it.
+`src/format.ts` is the only place that knows how a number is written, and it
+holds two rules that pull in different directions:
 
-- `formatNumber` — grouped, native digits. Accepts the numeric **strings**
-  Postgres returns for `numeric` columns.
+**Grouping follows the locale.** Bangla gets the lakh/crore shape — 1,84,000,
+never 184,000.
+
+**Digits are always Western, in both languages.** A Bangla page reads ৳5,900 and
+12 August, never ৳৫,৯০০ or ১২ আগস্ট. That is the owner's decision, and it holds
+for every numeric value in the product: prices, marks, counts, dates, phone
+numbers, ids, percentages. `Intl` will happily produce native numerals, so every
+formatter passes its output through `toWesternDigits` — if you add one, do the
+same, and do not write Bengali numerals into a message string either.
+
+- `formatNumber` — grouped. Accepts the numeric **strings** Postgres returns for
+  `numeric` columns.
 - `formatCurrency` — `৳` tight against the number, paisa only when non-zero.
   Composed by hand because `Intl`'s currency style inserts a space.
 - `formatPercent` — takes 0–100, not a fraction.
 - `formatDate` / `formatDateTime` — day before month in both locales, which is
-  why `en` maps to `en-GB` and not `en-US`.
-- `toLocaleDigits` — maps digits **in place** without regrouping. For phone
-  numbers, ids and dimensions. Never for counts.
+  why `en` maps to `en-GB` and not `en-US`. Month names are translated; the day
+  and the year are numbers, so they are not.
+- `toWesternDigits` — digits **in place** without regrouping, for phone numbers,
+  ids and dimensions. Takes no locale, because the answer is the same in both.
+  Never use it for counts. (It replaced `toLocaleDigits`, which converted the
+  other way; `createFormatters(...).digits` still calls it.)
 
 `createFormatters(locale)` bundles all of them, which is what the web
 `useFormat()` hook returns.

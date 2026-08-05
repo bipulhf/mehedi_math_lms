@@ -91,7 +91,7 @@ export function HatchedRule({ className }: { className?: string }): JSX.Element 
 }
 
 /**
- * A circled step number — the ০১ / ০২ / ০৩ marks. The numeral is accent, the
+ * A circled step number — the 01 / 02 / 03 marks. The numeral is accent, the
  * ring is a hairline.
  */
 export function StepCircle({

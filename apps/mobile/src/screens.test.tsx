@@ -139,7 +139,7 @@ describe("learning", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Higher Mathematics").length).toBeGreaterThan(0);
     });
-    expect(screen.getByText("৪০%")).toBeTruthy();
+    expect(screen.getByText("40%")).toBeTruthy();
   });
 
   test("an account with nothing enrolled is told where to start", async () => {

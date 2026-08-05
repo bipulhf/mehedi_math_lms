@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface StatCardProps {
   className?: string | undefined;
-  /** A movement note — "+১২%". Accent only when it is worth acting on. */
+  /** A movement note — "+12%". Accent only when it is worth acting on. */
   delta?: ReactNode;
   isDeltaAccent?: boolean | undefined;
   /** A coloured left rule, so a row of numbers is scannable. ADR-0011. */
