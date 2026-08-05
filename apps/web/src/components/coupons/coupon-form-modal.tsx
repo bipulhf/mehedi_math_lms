@@ -75,9 +75,12 @@ export function CouponFormModal({
   const [isPublic, setIsPublic] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
 
+  // 50 is the ceiling `listCoursesQuerySchema` allows; asking for more is a
+  // validation error, not a bigger page. A catalogue past that needs a search
+  // field here rather than a larger number.
   const coursesQuery = useQuery({
     enabled: open,
-    queryFn: async () => listCourses({ limit: 100, mine: ownCoursesOnly || undefined }),
+    queryFn: async () => listCourses({ limit: 50, mine: ownCoursesOnly || undefined }),
     queryKey: queryKeys.courses.list({ forCoupons: true, mine: ownCoursesOnly })
   });
 
@@ -100,6 +103,17 @@ export function CouponFormModal({
   }, [coupon, open]);
 
   const courses = coursesQuery.data?.data ?? [];
+
+  // A teacher has no "every course" option, so an unset select would submit
+  // null and be refused as an admin-only choice. Seed it with whatever the
+  // browser is already showing.
+  useEffect(() => {
+    if (canTargetEveryCourse || courseId !== "" || courses.length === 0) {
+      return;
+    }
+
+    setCourseId(courses[0]?.id ?? "");
+  }, [canTargetEveryCourse, courseId, courses]);
 
   const submit = (): void => {
     onSubmit({
@@ -152,11 +166,6 @@ export function CouponFormModal({
               value={courseId}
             >
               {canTargetEveryCourse ? <option value="">{t("coupon.allCourses")}</option> : null}
-              {canTargetEveryCourse ? null : (
-                <option disabled value="">
-                  —
-                </option>
-              )}
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.title}

@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { CouponStateBadge } from "@/components/coupons/coupon-state-badge";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CouponListItem } from "@/lib/api/coupons";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -86,10 +85,10 @@ export function CouponTable({
                   >
                     {coupon.code}
                   </Link>
+                  {/* A quiet marker, not a full pill: the row is already
+                      seven columns wide and a second badge doubles its height. */}
                   {coupon.isPublic ? (
-                    <Badge className="ml-2" tone="teal">
-                      {t("coupon.isPublic")}
-                    </Badge>
+                    <span className="ml-2 text-xs text-spectrum-teal">{t("coupon.isPublic")}</span>
                   ) : null}
                 </td>
                 <td className="px-4 py-3 text-muted">
@@ -140,6 +139,9 @@ export function CouponTable({
                 </Link>
                 <p className="truncate text-xs text-muted-faint">
                   {coupon.course?.title ?? t("coupon.allCourses")}
+                  {coupon.isPublic ? (
+                    <span className="text-spectrum-teal"> · {t("coupon.isPublic")}</span>
+                  ) : null}
                 </p>
               </div>
               <CouponStateBadge state={coupon.state} />

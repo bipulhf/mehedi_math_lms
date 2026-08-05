@@ -11,7 +11,6 @@ import { CouponFormModal, type CouponFormValues } from "@/components/coupons/cou
 import { CouponTable } from "@/components/coupons/coupon-table";
 import { CouponListSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -116,12 +115,15 @@ function CouponsPage(): JSX.Element {
   const coupons = couponsQuery.data?.data ?? [];
 
   return (
-    <DashboardLayout isLoading={isSessionPending} {...(role ? { role } : {})}>
-      <div className="space-y-6">
+    // No shell here: `/dashboard` is a layout route and already wraps every
+    // child in `DashboardLayout`. Adding a second one drew the sidebar and the
+    // top bar inside the page.
+    <div className="space-y-6">
+      <div className="border border-hairline bg-card p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-medium text-ink">{t("coupon.title")}</h1>
-            <p className="max-w-[60ch] text-sm font-light text-muted">{t("coupon.lead")}</p>
+          <div>
+            <h1 className="text-xl font-medium text-ink">{t("coupon.title")}</h1>
+            <p className="mt-0.5 max-w-[60ch] text-sm font-light text-muted">{t("coupon.lead")}</p>
           </div>
           {canCreate ? (
             <Button
@@ -137,12 +139,14 @@ function CouponsPage(): JSX.Element {
             </Button>
           ) : null}
         </div>
+      </div>
 
+      <div className="space-y-4 border border-hairline bg-card p-4 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-faint"
+              className="pointer-events-none absolute left-3 top-5 z-10 size-4 -translate-y-1/2 text-muted-faint"
             />
             <Input
               className="pl-9"
@@ -151,61 +155,66 @@ function CouponsPage(): JSX.Element {
               value={search}
             />
           </div>
-          <Select
-            className="sm:w-48"
-            onChange={(event) => setState(event.target.value as CouponState | "")}
-            value={state}
-          >
-            <option value="">{t("coupon.filterState")}</option>
-            {COUPON_STATES.map((option) => (
-              <option key={option} value={option}>
-                {t(COUPON_STATE_KEYS[option])}
-              </option>
-            ))}
-          </Select>
+          <div className="sm:w-48">
+            <Select
+              aria-label={t("coupon.filterState")}
+              onChange={(event) => setState(event.target.value as CouponState | "")}
+              value={state}
+            >
+              <option value="">{t("coupon.filterState")}</option>
+              {COUPON_STATES.map((option) => (
+                <option key={option} value={option}>
+                  {t(COUPON_STATE_KEYS[option])}
+                </option>
+              ))}
+            </Select>
+          </div>
         </div>
 
         {isTeacher ? (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={() => setShowOthers(false)}
-              size="sm"
-              variant={showOthers ? "outline" : "ink"}
-            >
-              {t("coupon.mine")}
-            </Button>
-            <Button
-              onClick={() => setShowOthers(true)}
-              size="sm"
-              variant={showOthers ? "ink" : "outline"}
-            >
-              {t("coupon.othersOnCourses")}
-            </Button>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => setShowOthers(false)}
+                size="sm"
+                variant={showOthers ? "outline" : "ink"}
+              >
+                {t("coupon.mine")}
+              </Button>
+              <Button
+                onClick={() => setShowOthers(true)}
+                size="sm"
+                variant={showOthers ? "ink" : "outline"}
+              >
+                {t("coupon.othersOnCourses")}
+              </Button>
+            </div>
+            {showOthers ? (
+              <p className="text-sm text-muted-light">{t("coupon.othersLead")}</p>
+            ) : null}
           </div>
         ) : null}
-
-        {isTeacher && showOthers ? (
-          <p className="text-sm text-muted-light">{t("coupon.othersLead")}</p>
-        ) : null}
-
-        {couponsQuery.isPending ? (
-          <CouponListSkeleton />
-        ) : coupons.length === 0 ? (
-          <EmptyState message={t("coupon.empty")} />
-        ) : (
-          <div className="border border-hairline bg-card">
-            <CouponTable
-              coupons={coupons}
-              onDelete={setDeleteTarget}
-              onEdit={(coupon) => {
-                setEditing(coupon);
-                setIsFormOpen(true);
-              }}
-              showCreator={!isTeacher || showOthers}
-            />
-          </div>
-        )}
       </div>
+
+      {couponsQuery.isPending || isSessionPending ? (
+        <CouponListSkeleton />
+      ) : coupons.length === 0 ? (
+        <div className="border border-hairline bg-card p-6">
+          <EmptyState message={t("coupon.empty")} />
+        </div>
+      ) : (
+        <div className="border border-hairline bg-card">
+          <CouponTable
+            coupons={coupons}
+            onDelete={setDeleteTarget}
+            onEdit={(coupon) => {
+              setEditing(coupon);
+              setIsFormOpen(true);
+            }}
+            showCreator={!isTeacher || showOthers}
+          />
+        </div>
+      )}
 
       <CouponFormModal
         canTargetEveryCourse={isAdmin}
@@ -235,6 +244,6 @@ function CouponsPage(): JSX.Element {
         pending={deleteMutation.isPending}
         title={t("coupon.deleteConfirmTitle")}
       />
-    </DashboardLayout>
+    </div>
   );
 }
