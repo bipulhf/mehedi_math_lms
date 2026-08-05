@@ -5,6 +5,7 @@ export * from "./admin";
 export * from "./categories";
 export * from "./comments";
 export * from "./content";
+export * from "./coupons";
 export * from "./courses";
 export * from "./marking";
 export * from "./messages";

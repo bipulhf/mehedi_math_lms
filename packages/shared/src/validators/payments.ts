@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { couponCodeSchema } from "./coupons";
+
 const idSchema = z.string().uuid();
 
 export const paymentStatusSchema = z.enum(["PENDING", "SUCCESS", "FAILED", "REFUNDED"]);
@@ -24,6 +26,11 @@ const callbackPathSchema = z
 export const createEnrollmentSchema = z.object({
   callbackOrigin: z.string().url().optional(),
   callbackPath: callbackPathSchema.optional(),
+  /**
+   * The coupon the student applied, if any. Checked and priced again at
+   * checkout — the preview the buy card showed is never trusted. ADR-0013.
+   */
+  couponCode: couponCodeSchema.optional(),
   courseId: idSchema
 });
 
