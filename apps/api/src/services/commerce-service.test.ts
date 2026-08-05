@@ -6,6 +6,7 @@ import type { PaymentRecord, PaymentRepository } from "@/repositories/payment-re
 import type { ProfileRepository } from "@/repositories/profile-repository";
 import type { ReviewRepository } from "@/repositories/review-repository";
 import { CommerceService } from "@/services/commerce-service";
+import type { CouponService, ResolvedCoupon } from "@/services/coupon-service";
 import type { NotificationService } from "@/services/notification-service";
 import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
@@ -17,6 +18,7 @@ import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@
  */
 
 interface Overrides {
+  coupon?: ResolvedCoupon | null;
   course?: Partial<CourseShape> | null;
   enrollment?: { id: string; status: string } | null;
   hasAccess?: boolean;
@@ -42,6 +44,7 @@ interface Calls {
   createdEnrollments: number;
   createdPayments: number;
   grantedAccess: number;
+  paymentInputs: Record<string, unknown>[];
   updates: { id: string; patch: Record<string, unknown> }[];
 }
 
@@ -51,6 +54,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
     createdEnrollments: 0,
     createdPayments: 0,
     grantedAccess: 0,
+    paymentInputs: [],
     updates: []
   };
 
@@ -102,8 +106,9 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
   } as unknown as EnrollmentRepository;
 
   const paymentRepository = {
-    create: async () => {
+    create: async (input: Record<string, unknown>) => {
       calls.createdPayments += 1;
+      calls.paymentInputs.push(input);
 
       return payment;
     },
@@ -154,6 +159,18 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
     notifyUsers: async () => undefined
   } as unknown as NotificationService;
 
+  const couponService = {
+    resolveForCheckout: async () => {
+      if (!overrides.coupon) {
+        throw new ValidationError("This coupon cannot be used", [
+          { field: "couponCode", message: "NOT_FOUND" }
+        ]);
+      }
+
+      return overrides.coupon;
+    }
+  } as unknown as CouponService;
+
   return {
     calls,
     service: new CommerceService(
@@ -163,7 +180,8 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
       profileRepository,
       sslCommerzService,
       reviewRepository,
-      notificationService
+      notificationService,
+      couponService
     )
   };
 }
@@ -208,6 +226,59 @@ describe("CommerceService.createEnrollment", () => {
     expect(result.accessGranted).toBe(false);
     expect(result.requiresPayment).toBe(true);
     expect(result.payment?.gatewayUrl).toBe("https://sandbox.sslcommerz.com/pay/abc");
+  });
+
+  test("a coupon prices the payment, and the discount is recorded on it", async () => {
+    const { calls, service } = buildService({
+      coupon: {
+        coupon: { code: "EID25", id: "coupon-1" },
+        pricing: { discountAmount: "299.80", listAmount: "1499.00", payable: "1199.20" }
+      } as unknown as ResolvedCoupon,
+      course: { price: "1499.00" }
+    });
+    const result = await service.createEnrollment("course-1", "user-1", "STUDENT", {}, "EID25");
+
+    expect(result.requiresPayment).toBe(true);
+    // The Payable, not the list price -- and the ledger keeps both. ADR-0013.
+    expect(calls.paymentInputs[0]).toMatchObject({
+      amount: "1199.20",
+      couponCode: "EID25",
+      couponId: "coupon-1",
+      discountAmount: "299.80",
+      listAmount: "1499.00"
+    });
+  });
+
+  test("a coupon that reaches zero skips the gateway and settles on the spot", async () => {
+    const { calls, service } = buildService({
+      coupon: {
+        coupon: { code: "FREE100", id: "coupon-2" },
+        pricing: { discountAmount: "1499.00", listAmount: "1499.00", payable: "0.00" }
+      } as unknown as ResolvedCoupon,
+      course: { price: "1499.00" }
+    });
+    const result = await service.createEnrollment("course-1", "user-1", "STUDENT", {}, "FREE100");
+
+    expect(result.accessGranted).toBe(true);
+    expect(result.requiresPayment).toBe(false);
+    expect(result.payment).toBeNull();
+    expect(calls.grantedAccess).toBe(1);
+    // A row is still written, so the redemption counts and accounting sees it.
+    expect(calls.paymentInputs[0]).toMatchObject({
+      amount: "0.00",
+      couponId: "coupon-2",
+      provider: "COUPON",
+      status: "SUCCESS"
+    });
+  });
+
+  test("a coupon the service refuses stops the checkout before any payment", async () => {
+    const { calls, service } = buildService({ coupon: null, course: { price: "1499.00" } });
+
+    await expect(
+      service.createEnrollment("course-1", "user-1", "STUDENT", {}, "NOPE")
+    ).rejects.toBeInstanceOf(ValidationError);
+    expect(calls.createdPayments).toBe(0);
   });
 
   test("an existing enrolment with access short-circuits without a new payment", async () => {

@@ -22,7 +22,8 @@ enrollmentsRoutes.post("/", requireRole("STUDENT"), async (context) => {
     payload.courseId,
     { origin: payload.callbackOrigin, path: payload.callbackPath },
     authUser!.id,
-    authSession!.role as UserRole
+    authSession!.role as UserRole,
+    payload.couponCode
   );
 
   // The response payload here isn't the extractCreatedId `data.id` shape —

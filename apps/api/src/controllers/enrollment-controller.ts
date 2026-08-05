@@ -17,13 +17,15 @@ export class EnrollmentController {
     courseId: string,
     callback: PaymentCallbackTarget,
     currentUserId: string,
-    currentUserRole: UserRole
+    currentUserRole: UserRole,
+    couponCode?: string | undefined
   ): Promise<Response> {
     const data = await this.commerceService.createEnrollment(
       courseId,
       currentUserId,
       currentUserRole,
-      callback
+      callback,
+      couponCode
     );
 
     return success(context, data, 201, "Enrollment created successfully");

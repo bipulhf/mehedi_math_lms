@@ -12,6 +12,7 @@ import {
 } from "@/repositories/payment-repository";
 import type { ProfileRepository } from "@/repositories/profile-repository";
 import type { ReviewRepository } from "@/repositories/review-repository";
+import type { CouponService } from "@/services/coupon-service";
 import type { NotificationService } from "@/services/notification-service";
 import type { SslCommerzService } from "@/services/sslcommerz-service";
 import { isSettledValidationStatus } from "@/services/sslcommerz-service";
@@ -62,13 +63,19 @@ export interface StudentEnrollmentItem {
 type FormattedEnrollment = Omit<StudentEnrollmentItem, "hasReview">;
 
 export interface PaymentHistoryItem {
+  /** The Payable — what was actually charged, after any coupon. */
   amount: string;
+  /** The code as typed, when a coupon was used. ADR-0013. */
+  couponCode: string | null;
   course: {
     id: string;
     title: string;
   };
   createdAt: string;
   currency: string;
+  discountAmount: string | null;
+  /** The price before the discount. Null when no coupon was used. */
+  listAmount: string | null;
   /** Null while the payment is still at checkout. ADR-0001. */
   enrollmentId: string | null;
   id: string;
@@ -148,12 +155,15 @@ function readMetadataString(
 function formatPayment(record: PaymentListRecord, includeUser = false): PaymentHistoryItem {
   return {
     amount: record.amount,
+    couponCode: record.couponCode,
     course: {
       id: record.courseId,
       title: record.courseTitle
     },
     createdAt: record.createdAt.toISOString(),
     currency: record.currency,
+    discountAmount: record.discountAmount,
+    listAmount: record.listAmount,
     enrollmentId: record.enrollmentId,
     id: record.id,
     metadata: record.metadata,
@@ -212,7 +222,8 @@ export class CommerceService {
     private readonly profileRepository: ProfileRepository,
     private readonly sslCommerzService: SslCommerzService,
     private readonly reviewRepository: ReviewRepository,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly couponService: CouponService
   ) {}
 
   private async getPublishedCourseOrThrow(courseId: string) {
@@ -235,7 +246,8 @@ export class CommerceService {
     courseId: string,
     currentUserId: string,
     currentUserRole: UserRole,
-    callback: PaymentCallbackTarget = {}
+    callback: PaymentCallbackTarget = {},
+    couponCode?: string | undefined
   ): Promise<EnrollmentActionResponse> {
     this.ensureStudent(currentUserRole);
 
@@ -272,13 +284,56 @@ export class CommerceService {
       };
     }
 
+    // Priced again here, from the course row. The buy card's preview is a
+    // quote, never what the money is measured against. ADR-0013.
+    const resolvedCoupon = couponCode
+      ? await this.couponService.resolveForCheckout(courseId, couponCode, currentUserId)
+      : null;
+    const couponColumns = resolvedCoupon
+      ? {
+          couponCode: resolvedCoupon.coupon.code,
+          couponId: resolvedCoupon.coupon.id,
+          discountAmount: resolvedCoupon.pricing.discountAmount,
+          listAmount: resolvedCoupon.pricing.listAmount
+        }
+      : {};
+    const payable = resolvedCoupon ? resolvedCoupon.pricing.payable : course.price;
+
+    // A coupon that reaches zero leaves nothing to collect, so the gateway is
+    // skipped and the purchase settles here. The payment row is still written,
+    // at 0.00 and marked COUPON, because the redemption has to be countable and
+    // accounting still has to see the sale. ADR-0013.
+    if (Number(payable) <= 0) {
+      const enrollment = await this.enrollmentRepository.grantAccess(currentUserId, courseId);
+
+      await this.paymentRepository.create({
+        amount: "0.00",
+        ...couponColumns,
+        courseId,
+        enrollmentId: enrollment.id,
+        paidAt: new Date(),
+        provider: "COUPON",
+        status: "SUCCESS",
+        transactionId: createTransactionId(),
+        userId: currentUserId
+      });
+
+      return {
+        accessGranted: true,
+        enrollmentId: enrollment.id,
+        payment: null,
+        requiresPayment: false
+      };
+    }
+
     const profile = await this.profileRepository.findByUserId(currentUserId);
 
     if (!profile) {
       throw new NotFoundError("Profile not found");
     }
     const payment = await this.paymentRepository.create({
-      amount: course.price,
+      amount: payable,
+      ...couponColumns,
       courseId,
       enrollmentId: existingEnrollment?.id ?? null,
       metadata: {
@@ -328,9 +383,10 @@ export class CommerceService {
     courseId: string,
     currentUserId: string,
     currentUserRole: UserRole,
-    callback: PaymentCallbackTarget = {}
+    callback: PaymentCallbackTarget = {},
+    couponCode?: string | undefined
   ): Promise<EnrollmentActionResponse> {
-    return this.createEnrollment(courseId, currentUserId, currentUserRole, callback);
+    return this.createEnrollment(courseId, currentUserId, currentUserRole, callback, couponCode);
   }
 
   public async listMyEnrollments(userId: string): Promise<readonly StudentEnrollmentItem[]> {
@@ -387,12 +443,15 @@ export class CommerceService {
 
     return {
       amount: payment.amount,
+      couponCode: payment.couponCode,
       course: {
         id: course?.id ?? "",
         title: course?.title ?? "Course"
       },
       createdAt: payment.createdAt.toISOString(),
       currency: payment.currency,
+      discountAmount: payment.discountAmount,
+      listAmount: payment.listAmount,
       enrollmentId: payment.enrollmentId,
       id: payment.id,
       metadata: payment.metadata,
@@ -470,8 +529,13 @@ export class CommerceService {
         throw new ConflictError("Payment was not confirmed by the gateway");
       }
 
-      // Guard against a tampered amount. Mock mode reports no amount, so the
-      // comparison only applies when a real gateway is configured.
+      // Guard against a tampered amount, measured against the Payable this
+      // checkout agreed to — a discounted purchase collects less than the list
+      // price by design. The coupon itself is not re-checked here: the money
+      // has moved, and a rule that changed mid-payment is not the buyer's
+      // problem, so a cap may end a use or two over. ADR-0013.
+      // Mock mode reports no amount, so the comparison only applies when a real
+      // gateway is configured.
       if (validation.amount !== null && Number(validation.amount) < Number(payment.amount)) {
         throw new ConflictError("Paid amount does not match the course price");
       }
