@@ -84,6 +84,17 @@ export default function MarkingScreen(): JSX.Element {
   const activePaper = queue?.papers.find(
     (paper) => paper.submissionId === activeAnswer?.submissionId
   );
+  /** Whether this mark is the paper's last one, and so hands the paper in. */
+  const isLastAnswerOfPaper =
+    activePaper !== undefined &&
+    activePaper.status === "SUBMITTED" &&
+    activePaper.questions.every(
+      (question) =>
+        question.answerId === null ||
+        question.pageCount === 0 ||
+        question.awardedMarks !== null ||
+        question.answerId === activeAnswer?.id
+    );
 
   useEffect(() => {
     if (!activeAnswer) {
@@ -139,6 +150,11 @@ export default function MarkingScreen(): JSX.Element {
     );
   };
 
+  /**
+   * Marking the last answer of a paper hands the paper in, as on the web: the
+   * mark is the decision and handing in is its consequence, so there is one
+   * button rather than a second that can only be pressed at one moment.
+   */
   const saveMarkAndAdvance = async (): Promise<void> => {
     if (!activeAnswer) {
       return;
@@ -147,7 +163,7 @@ export default function MarkingScreen(): JSX.Element {
     const awardedMarks = Number(markInput);
 
     if (markInput.trim() === "" || Number.isNaN(awardedMarks)) {
-      Alert.alert(t("marking.saveMark"), t("marking.incomplete"));
+      Alert.alert(t("marking.saveMark"), t("marking.markNeeded"));
       return;
     }
 
@@ -155,11 +171,31 @@ export default function MarkingScreen(): JSX.Element {
 
     try {
       await setAnswerMark(activeAnswer.id, { awardedMarks });
-      const refreshed = await refetch();
-      const nextList = buildMarkingWorkList(refreshed.data, mode);
-      const next = findNextUnmarked(nextList, activeIndex < 0 ? -1 : activeIndex);
-
       await releaseAnswerClaim(activeAnswer.id).catch(() => undefined);
+
+      const refreshed = await refetch();
+      const paper =
+        refreshed.data?.papers.find(
+          (candidate) => candidate.submissionId === activeAnswer.submissionId
+        ) ?? null;
+      let workListNow = buildMarkingWorkList(refreshed.data, mode);
+      let fromIndex = activeIndex < 0 ? -1 : activeIndex;
+
+      // `isComplete` is the server's count -- the same one that decides whether
+      // the submit would be refused.
+      if (paper?.status === "SUBMITTED" && paper.isComplete) {
+        await submitPaper(paper.submissionId, { feedback: undefined });
+        Alert.alert(t("marking.title"), t("marking.paperSubmitted"));
+
+        // The paper left the queue, so every index after it moved.
+        const afterSubmit = await refetch();
+
+        workListNow = buildMarkingWorkList(afterSubmit.data, mode);
+        fromIndex = -1;
+      }
+
+      const next = findNextUnmarked(workListNow, fromIndex);
+
       setActiveAnswer(null);
 
       if (next) {
@@ -169,24 +205,6 @@ export default function MarkingScreen(): JSX.Element {
       Alert.alert(
         t("marking.saveMark"),
         error instanceof Error ? error.message : t("marking.saveMark")
-      );
-    } finally {
-      setIsBusy(false);
-    }
-  };
-
-  const handleSubmitPaper = async (submissionId: string): Promise<void> => {
-    setIsBusy(true);
-
-    try {
-      await submitPaper(submissionId, { feedback: undefined });
-      setActiveAnswer(null);
-      await refetch();
-      Alert.alert(t("marking.title"), t("marking.paperSubmitted"));
-    } catch (error) {
-      Alert.alert(
-        t("marking.title"),
-        error instanceof Error ? error.message : t("marking.incomplete")
       );
     } finally {
       setIsBusy(false);
@@ -367,21 +385,10 @@ export default function MarkingScreen(): JSX.Element {
               <Caption tone="faint">{t("marking.outOf", { marks: activeAnswer.marks })}</Caption>
               <Button
                 isBusy={isBusy}
-                label={t("marking.saveMark")}
+                label={isLastAnswerOfPaper ? t("marking.saveAndSubmit") : t("marking.saveMark")}
                 onPress={() => void saveMarkAndAdvance()}
               />
             </View>
-
-            {activePaper?.isComplete ? (
-              <Button
-                isBusy={isBusy}
-                label={t("marking.submitPaper")}
-                onPress={() => void handleSubmitPaper(activePaper.submissionId)}
-                variant="outline"
-              />
-            ) : (
-              <Caption tone="faint">{t("marking.incomplete")}</Caption>
-            )}
           </Card>
         ) : null}
       </ScrollView>

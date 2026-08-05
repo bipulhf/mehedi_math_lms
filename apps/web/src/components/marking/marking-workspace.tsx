@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { apiErrorMessage } from "@/lib/api/client";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MarkingAnswerView } from "@/lib/api/tests";
@@ -104,6 +105,21 @@ export function MarkingWorkspace({
   const workList = useMemo(() => buildMarkingWorkList(queue, mode), [mode, queue]);
   const activeIndex = workList.findIndex((item) => item.answerId === activeAnswer?.id);
   const activePaper = queue?.papers.find((paper) => paper.submissionId === activeAnswer?.submissionId);
+  /**
+   * Whether this mark is the paper's last one, and so hands the paper in. Only
+   * the button's wording rests on it — the decision to submit is taken from the
+   * server's own count after the mark is saved.
+   */
+  const isLastAnswerOfPaper =
+    activePaper !== undefined &&
+    activePaper.status === "SUBMITTED" &&
+    activePaper.questions.every(
+      (question) =>
+        question.answerId === null ||
+        question.pageCount === 0 ||
+        question.awardedMarks !== null ||
+        question.answerId === activeAnswer?.id
+    );
 
   // The claim expires on its own, so it is renewed for as long as this answer
   // stays open and simply allowed to lapse when the tab goes away.
@@ -161,6 +177,14 @@ export function MarkingWorkspace({
     );
   };
 
+  /**
+   * Marking the last answer of a paper hands the paper in.
+   *
+   * There used to be a second button for that, which could only ever be pressed
+   * at one moment -- once every answer had a mark -- and until it was, a paper
+   * sat fully marked and ungraded because nobody noticed the button appear. The
+   * mark is the decision; handing in is its consequence.
+   */
   const saveMarkAndAdvance = async (): Promise<void> => {
     if (!activeAnswer) {
       return;
@@ -177,37 +201,42 @@ export function MarkingWorkspace({
 
     try {
       await setAnswerMark(activeAnswer.id, { awardedMarks });
-      toast.success(t("marking.markSaved"));
-      const refreshed = await refetch();
-      const nextList = buildMarkingWorkList(refreshed.data ?? null, mode);
-      const next = findNextUnmarked(nextList, activeIndex < 0 ? -1 : activeIndex);
-
       await releaseAnswerClaim(activeAnswer.id).catch(() => undefined);
 
-      if (next) {
-        setActiveAnswer(null);
-        await openAnswer(next);
-        return;
+      const refreshed = await refetch();
+      const paper =
+        refreshed.data?.papers.find(
+          (candidate) => candidate.submissionId === activeAnswer.submissionId
+        ) ?? null;
+      let workListNow = buildMarkingWorkList(refreshed.data ?? null, mode);
+      let fromIndex = activeIndex < 0 ? -1 : activeIndex;
+
+      // `isComplete` is the server's count, not this component's: it is the one
+      // that decides whether the submit would be refused.
+      if (paper?.status === "SUBMITTED" && paper.isComplete) {
+        await submitPaper(paper.submissionId, { feedback: undefined });
+        toast.success(t("marking.paperSubmitted"));
+
+        // The paper just left the queue, so every index after it moved. Start
+        // the search from the top rather than from a position that no longer
+        // means what it did.
+        const afterSubmit = await refetch();
+
+        workListNow = buildMarkingWorkList(afterSubmit.data ?? null, mode);
+        fromIndex = -1;
+      } else {
+        toast.success(t("marking.markSaved"));
       }
 
-      setActiveAnswer(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("marking.saveMark"));
-    } finally {
-      setIsBusy(false);
-    }
-  };
+      const next = findNextUnmarked(workListNow, fromIndex);
 
-  const handleSubmitPaper = async (submissionId: string): Promise<void> => {
-    setIsBusy(true);
-
-    try {
-      await submitPaper(submissionId, { feedback: undefined });
-      toast.success(t("marking.paperSubmitted"));
       setActiveAnswer(null);
-      await refetch();
+
+      if (next) {
+        await openAnswer(next);
+      }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("marking.incomplete"));
+      toast.error(await apiErrorMessage(error, t("marking.saveMark")));
     } finally {
       setIsBusy(false);
     }
@@ -377,20 +406,8 @@ export function MarkingWorkspace({
                   {t("marking.outOf", { marks: activeAnswer.marks })}
                 </span>
                 <Button disabled={isBusy} type="button" onClick={() => void saveMarkAndAdvance()}>
-                  {t("marking.saveMark")}
+                  {isLastAnswerOfPaper ? t("marking.saveAndSubmit") : t("marking.saveMark")}
                 </Button>
-                {activePaper?.isComplete ? (
-                  <Button
-                    disabled={isBusy}
-                    type="button"
-                    variant="outline"
-                    onClick={() => void handleSubmitPaper(activePaper.submissionId)}
-                  >
-                    {t("marking.submitPaper")}
-                  </Button>
-                ) : (
-                  <span className="text-xs text-ink/62">{t("marking.incomplete")}</span>
-                )}
               </div>
             </CardContent>
           </>
