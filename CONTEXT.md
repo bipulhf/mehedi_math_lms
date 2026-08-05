@@ -115,14 +115,49 @@ _Avoid_: Deleted message, redacted message
 ### Assessment
 
 **Test**:
-The assessable unit a teacher builds inside a chapter, made of MCQ or written Questions. This is the only
-word for it, at every layer.
+The assessable unit a teacher builds inside a chapter. A Test is either MCQ or written, never both — the
+kind is settled once, for the whole Test, and every Question in it follows. This is the only word for it,
+at every layer.
 _Avoid_: Assessment, exam, quiz, paper
 
+**Written Test**:
+A Test answered on paper. The student is shown the Questions, works on real paper, and photographs what
+they wrote; nothing is typed. A teacher must read and mark every answer, so a written Test allows one
+attempt unless its owner deliberately allows more.
+_Avoid_: Essay test, subjective test, offline test
+
 **Submission**:
-One student's attempt at a Test. MCQ answers are graded on submission; written answers wait for a teacher.
-Retakes are unlimited, and where a Test's result matters it is the student's best attempt that counts.
+One student's attempt at a Test. MCQ answers are graded on submission; a Written Test's answers wait for a
+teacher. Where a Test's result matters it is the student's best attempt that counts.
 _Avoid_: Attempt, entry, response, sitting
+
+**Answer Script**:
+What a student hands in for one Question of a Written Test: the photographed pages of their working, in
+the order they wrote them. A Question with no Answer Script was not attempted, and scores nothing.
+_Avoid_: Answer sheet, answer image, upload, attachment
+
+**Script Page**:
+One page of an Answer Script. Only the sized-down copy exists — the full-resolution photograph the student
+took is never kept, so a page that is too blurry to read has to be shot again rather than recovered.
+_Avoid_: Photo, scan, image, attachment
+
+**Marking**:
+What a teacher draws over a Script Page — pen strokes, ticks and crosses, and short written notes. It sits
+over the page rather than in it: the student's own page is never altered, and the teacher can rub out any
+piece of their Marking, whole, and put it back differently.
+_Avoid_: Annotation, correction, overlay, ink
+
+**Marking Guide**:
+The model answer and mark breakdown a teacher writes on a Question when building a Written Test, so that
+whoever marks it marks it the same way. Only staff ever see it.
+_Avoid_: Answer key, rubric, solution, expected answer
+
+**Submitting a Paper**:
+The teacher's act of finishing one student's Written Test. It is refused until every attempted Question has
+a mark — the point of the gate is that no one is graded on a paper that was only half read. Marks and
+Marking are kept as the teacher works, but the student sees nothing until the paper is submitted, and once
+it is, it is final: only an Admin can put it back into a teacher's hands.
+_Avoid_: Finalising, publishing marks, releasing results
 
 **Passing a Test**:
 Holding a graded submission whose score reaches the Test's passing score. A Test with no passing score set

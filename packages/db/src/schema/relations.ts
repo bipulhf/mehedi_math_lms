@@ -12,7 +12,16 @@ import { conversationReports, conversations, messages } from "./messages";
 import { smsBatches, smsRecipients } from "./sms";
 import { fcmTokens, notifications } from "./notifications";
 import { payments } from "./payments";
-import { questionOptions, submissionAnswers, testQuestions, tests, testSubmissions } from "./tests";
+import {
+  answerMarkingLocks,
+  questionImages,
+  questionOptions,
+  scriptPages,
+  submissionAnswers,
+  testQuestions,
+  tests,
+  testSubmissions
+} from "./tests";
 import { uploads } from "./uploads";
 import {
   accounts,
@@ -219,7 +228,19 @@ export const testQuestionsRelations = relations(testQuestions, ({ many, one }) =
     references: [tests.id]
   }),
   options: many(questionOptions),
+  images: many(questionImages),
   submissionAnswers: many(submissionAnswers)
+}));
+
+export const questionImagesRelations = relations(questionImages, ({ one }) => ({
+  question: one(testQuestions, {
+    fields: [questionImages.questionId],
+    references: [testQuestions.id]
+  }),
+  upload: one(uploads, {
+    fields: [questionImages.uploadId],
+    references: [uploads.id]
+  })
 }));
 
 export const questionOptionsRelations = relations(questionOptions, ({ many, one }) => ({
@@ -247,7 +268,7 @@ export const testSubmissionsRelations = relations(testSubmissions, ({ many, one 
   answers: many(submissionAnswers)
 }));
 
-export const submissionAnswersRelations = relations(submissionAnswers, ({ one }) => ({
+export const submissionAnswersRelations = relations(submissionAnswers, ({ many, one }) => ({
   submission: one(testSubmissions, {
     fields: [submissionAnswers.submissionId],
     references: [testSubmissions.id]
@@ -259,6 +280,33 @@ export const submissionAnswersRelations = relations(submissionAnswers, ({ one })
   selectedOption: one(questionOptions, {
     fields: [submissionAnswers.selectedOptionId],
     references: [questionOptions.id]
+  }),
+  scriptPages: many(scriptPages),
+  markingLock: one(answerMarkingLocks, {
+    fields: [submissionAnswers.id],
+    references: [answerMarkingLocks.submissionAnswerId]
+  })
+}));
+
+export const scriptPagesRelations = relations(scriptPages, ({ one }) => ({
+  answer: one(submissionAnswers, {
+    fields: [scriptPages.submissionAnswerId],
+    references: [submissionAnswers.id]
+  }),
+  upload: one(uploads, {
+    fields: [scriptPages.uploadId],
+    references: [uploads.id]
+  })
+}));
+
+export const answerMarkingLocksRelations = relations(answerMarkingLocks, ({ one }) => ({
+  answer: one(submissionAnswers, {
+    fields: [answerMarkingLocks.submissionAnswerId],
+    references: [submissionAnswers.id]
+  }),
+  lockedBy: one(users, {
+    fields: [answerMarkingLocks.lockedById],
+    references: [users.id]
   })
 }));
 

@@ -20,9 +20,9 @@ export const lectureTypeEnum = pgEnum("lecture_type", [
   "TEXT"
 ]);
 
-export const testTypeEnum = pgEnum("test_type", ["MCQ", "WRITTEN", "MIXED"]);
-
-export const questionTypeEnum = pgEnum("question_type", ["MCQ", "WRITTEN"]);
+// A Test is one kind for its whole life -- there is no mixed paper, and no
+// per-question type to keep in step with this one. ADR-0008.
+export const testTypeEnum = pgEnum("test_type", ["MCQ", "WRITTEN"]);
 
 export const testSubmissionStatusEnum = pgEnum("test_submission_status", [
   "STARTED",
@@ -79,7 +79,11 @@ export const uploadPurposeEnum = pgEnum("upload_purpose", [
   "BUG_SCREENSHOT",
   "COURSE_COVER",
   "COURSE_MATERIAL",
-  "LECTURE_VIDEO"
+  "LECTURE_VIDEO",
+  "QUESTION_IMAGE",
+  // A photographed page of a student's Answer Script. Stored sized-down only --
+  // the camera's original never reaches the bucket. ADR-0009.
+  "ANSWER_SCRIPT_PAGE"
 ]);
 
 export const uploadKindEnum = pgEnum("upload_kind", ["IMAGE", "VIDEO", "DOCUMENT"]);
