@@ -5,6 +5,7 @@ import { publicConfigRoutes } from "@/routes/public-config-route";
 
 import { adminRoutes } from "./admin-route";
 import { analyticsRoutes } from "./analytics-route";
+import { answerScriptRoutes } from "./answer-scripts-route";
 import { authRoutes } from "./auth-route";
 import { bugsRoutes } from "./bugs-route";
 import { categoriesRoutes } from "./categories-route";
@@ -43,6 +44,7 @@ v1Routes.route("/payments", paymentsRoutes);
 v1Routes.route("/progress", progressRoutes);
 v1Routes.route("/questions", questionsRoutes);
 v1Routes.route("/tests", testsRoutes);
+v1Routes.route("/scripts", answerScriptRoutes);
 v1Routes.route("/messages", messagesRoutes);
 v1Routes.route("/notices", noticesRoutes);
 v1Routes.route("/notifications", notificationsRoutes);

@@ -1,5 +1,10 @@
 import { auth } from "@genex/auth/server";
-import type { StorageProvider, UploadKind, UploadPurpose } from "@genex/shared";
+import {
+  scriptPageContentType,
+  type StorageProvider,
+  type UploadKind,
+  type UploadPurpose
+} from "@genex/shared";
 import { createUploadthing, type FileRouter, UploadThingError } from "uploadthing/server";
 
 import { AuthGuardService } from "@/services/auth-guard-service";
@@ -28,6 +33,10 @@ const uploadLimits: Record<
   UploadPurpose,
   { allowedContentTypes: readonly string[]; maxFileSize: number }
 > = {
+  ANSWER_SCRIPT_PAGE: {
+    allowedContentTypes: [scriptPageContentType],
+    maxFileSize: 8 * 1024 * 1024
+  },
   BUG_SCREENSHOT: { allowedContentTypes: ["image/*"], maxFileSize: 5 * 1024 * 1024 },
   COURSE_COVER: { allowedContentTypes: ["image/*"], maxFileSize: 5 * 1024 * 1024 },
   COURSE_MATERIAL: {
@@ -42,7 +51,8 @@ const uploadLimits: Record<
     maxFileSize: 50 * 1024 * 1024
   },
   LECTURE_VIDEO: { allowedContentTypes: ["video/*"], maxFileSize: 500 * 1024 * 1024 },
-  PROFILE_PHOTO: { allowedContentTypes: ["image/*"], maxFileSize: 5 * 1024 * 1024 }
+  PROFILE_PHOTO: { allowedContentTypes: ["image/*"], maxFileSize: 5 * 1024 * 1024 },
+  QUESTION_IMAGE: { allowedContentTypes: ["image/*"], maxFileSize: 10 * 1024 * 1024 }
 };
 
 function matchesContentType(pattern: string, contentType: string): boolean {

@@ -1,3 +1,6 @@
+import { emptyMarkingDocument, type MarkingDocument, readMarkingDocument } from "@genex/shared";
+
+import type { ScriptPageRecord } from "@/repositories/answer-script-repository";
 import type { SubmissionSummaryRecord } from "@/repositories/test-repository";
 
 /**
@@ -12,14 +15,21 @@ export interface AssessmentOption {
   sortOrder: number;
 }
 
-export interface AssessmentQuestion {
-  expectedAnswer: string | null;
+export interface AssessmentQuestionImage {
+  fileUrl: string;
   id: string;
+  sortOrder: number;
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  images: readonly AssessmentQuestionImage[];
+  /** Staff only. Null for a student, always. */
+  markingGuide: string | null;
   marks: number;
   options: readonly AssessmentOption[];
   questionText: string;
   sortOrder: number;
-  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentTestSummary {
@@ -39,7 +49,7 @@ export interface AssessmentTestSummary {
   sortOrder: number;
   title: string;
   totalMarks: number;
-  type: "MCQ" | "WRITTEN" | "MIXED";
+  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentChapterSummary {
@@ -48,13 +58,42 @@ export interface AssessmentChapterSummary {
   tests: readonly AssessmentTestSummary[];
 }
 
+export interface ScriptPageView {
+  fileUrl: string;
+  height: number | null;
+  id: string;
+  /** The teacher's Marking. Empty until the paper is submitted to the student. */
+  marking: MarkingDocument;
+  sortOrder: number;
+  width: number | null;
+}
+
 export interface SubmissionAnswerView {
   awardedMarks: number | null;
   id: string;
   isCorrect: boolean | null;
   questionId: string;
+  scriptPages: readonly ScriptPageView[];
   selectedOptionId: string | null;
-  writtenAnswer: string | null;
+}
+
+/**
+ * A student sees nothing of the marking until the paper is submitted: no marks,
+ * no ticks, no notes. Staff always see it, which is what makes a half-marked
+ * paper resumable.
+ */
+export function mapScriptPageView(
+  record: ScriptPageRecord,
+  revealMarking: boolean
+): ScriptPageView {
+  return {
+    fileUrl: record.fileUrl,
+    height: record.height,
+    id: record.id,
+    marking: revealMarking ? readMarkingDocument(record.marking) : emptyMarkingDocument,
+    sortOrder: record.sortOrder,
+    width: record.width
+  };
 }
 
 export interface SubmissionSummary {

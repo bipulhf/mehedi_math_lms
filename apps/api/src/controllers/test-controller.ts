@@ -235,21 +235,4 @@ export class TestController {
 
     return success(context, data);
   }
-
-  public async gradeSubmission(
-    context: Context<AppBindings>,
-    submissionId: string,
-    input: Parameters<TestService["gradeSubmission"]>[1],
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<Response> {
-    const data = await this.testService.gradeSubmission(
-      submissionId,
-      input,
-      currentUserId,
-      currentUserRole
-    );
-
-    return success(context, data, 200, "Submission graded successfully");
-  }
 }

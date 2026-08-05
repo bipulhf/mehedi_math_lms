@@ -1,4 +1,8 @@
-import { imageVariantWidths } from "@genex/shared";
+import {
+  imageVariantWidths,
+  scriptPageJpegQualityPercent,
+  scriptPageMaxEdge
+} from "@genex/shared";
 import sharp, { type Sharp } from "sharp";
 
 export interface GeneratedImageVariant {
@@ -37,6 +41,50 @@ function encode(pipeline: Sharp, format: "jpeg" | "png" | "webp"): Sharp {
   // 78 is where a downscaled photograph stops shedding bytes and starts shedding
   // detail. The original is untouched either way -- this only governs the copies.
   return pipeline.jpeg({ mozjpeg: true, quality: 78 });
+}
+
+export interface SizedDownPage {
+  body: Uint8Array;
+  height: number;
+  width: number;
+}
+
+/**
+ * The backstop for a Script Page: the client already sized the photograph down,
+ * and this makes sure of it. Returns null when the stored page is already
+ * within the cap, which is the normal case — there is then nothing to rewrite.
+ *
+ * `rotate()` with no argument applies the camera's EXIF orientation and drops
+ * the tag, so a page photographed sideways is stored the way it was held.
+ * ADR-0009.
+ */
+export async function sizeDownScriptPage(original: Uint8Array): Promise<SizedDownPage | null> {
+  const metadata = await sharp(original).metadata();
+  const width = metadata.width ?? 0;
+  const height = metadata.height ?? 0;
+
+  if (width <= 0 || height <= 0) {
+    return null;
+  }
+
+  const isOriented = metadata.orientation === undefined || metadata.orientation <= 1;
+
+  if (Math.max(width, height) <= scriptPageMaxEdge && isOriented) {
+    return null;
+  }
+
+  const resized = sharp(original)
+    .rotate()
+    .resize({
+      fit: "inside",
+      height: scriptPageMaxEdge,
+      width: scriptPageMaxEdge,
+      withoutEnlargement: true
+    })
+    .jpeg({ mozjpeg: true, quality: scriptPageJpegQualityPercent });
+  const { data, info } = await resized.toBuffer({ resolveWithObject: true });
+
+  return { body: new Uint8Array(data), height: info.height, width: info.width };
 }
 
 /**

@@ -1,46 +1,43 @@
 import type { UserRole } from "@genex/shared";
 import type { z } from "zod";
-import type {
-  gradeSubmissionSchema,
-  saveSubmissionAnswersSchema,
-  submitTestSchema
-} from "@genex/shared";
+import type { saveSubmissionAnswersSchema, submitTestSchema } from "@genex/shared";
 
+import type { AnswerScriptRepository } from "@/repositories/answer-script-repository";
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import type {
+  SubmissionAnswerRecord,
   SubmissionRecord,
   SubmissionSummaryRecord,
   TestRecord,
   TestRepository
 } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
-import { gradeAnswers } from "@/services/assessment-grading";
+import { gradeMcqAnswers, totalMarks } from "@/services/assessment-grading";
 import {
   attachAttemptNumbers,
-  isTestPassed,
+  mapScriptPageView,
   mapSubmissionDetail,
   mapSubmissionSummary,
+  type SubmissionAnswerView,
   type SubmissionDetail,
   type SubmissionSummary
 } from "@/services/assessment-views";
-import { normalizeOptionalHtml } from "@/lib/html";
 import type { ProgressService } from "@/services/progress-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
 type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 type SubmitTestInput = z.infer<typeof submitTestSchema>;
-type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
 
 /**
- * Taking a test and grading it: starting/resuming an attempt, autosaving
- * answers, submitting, and a teacher's manual grading pass. Split out of
- * `TestService` (which keeps test/question authoring) — a distinct
- * responsibility, not a file-size trick.
+ * Sitting a test: starting or resuming an attempt, autosaving MCQ selections,
+ * and submitting. Marking a written paper is a teacher's job and lives in
+ * `PaperMarkingService`.
  */
 export class TestSubmissionService {
   public constructor(
     private readonly testRepository: TestRepository,
+    private readonly answerScriptRepository: AnswerScriptRepository,
     private readonly contentRepository: ContentRepository,
     private readonly enrollmentRepository: EnrollmentRepository,
     private readonly access: AssessmentAccessGuards,
@@ -52,7 +49,7 @@ export class TestSubmissionService {
    * enrolment is re-evaluated here. For an Exam-Only Course this is the only
    * path to completion — it has no lectures to mark. ADR-0005.
    */
-  private async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<void> {
+  public async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<void> {
     const chapter = await this.contentRepository.findChapterById(chapterId);
 
     if (!chapter) {
@@ -115,6 +112,56 @@ export class TestSubmissionService {
     return (counts.get(testId) ?? 0) + 1;
   }
 
+  /**
+   * Answers with their Script Pages attached.
+   *
+   * `revealMarking` is what keeps a half-marked paper private: a student sees
+   * their own pages but no marks and no Marking until the paper is submitted.
+   */
+  public async buildAnswerViews(
+    answers: readonly SubmissionAnswerRecord[],
+    revealMarking: boolean
+  ): Promise<readonly SubmissionAnswerView[]> {
+    const pages = await this.answerScriptRepository.listScriptPagesByAnswerIds(
+      answers.map((answer) => answer.id)
+    );
+    const pagesByAnswerId = new Map<string, typeof pages>();
+
+    for (const page of pages) {
+      const existing = pagesByAnswerId.get(page.submissionAnswerId) ?? [];
+      pagesByAnswerId.set(page.submissionAnswerId, [...existing, page]);
+    }
+
+    return answers.map((answer) => ({
+      awardedMarks: revealMarking ? answer.awardedMarks : null,
+      id: answer.id,
+      isCorrect: revealMarking ? answer.isCorrect : null,
+      questionId: answer.questionId,
+      scriptPages: (pagesByAnswerId.get(answer.id) ?? []).map((page) =>
+        mapScriptPageView(page, revealMarking)
+      ),
+      selectedOptionId: answer.selectedOptionId
+    }));
+  }
+
+  private async loadSubmissionDetail(
+    submission: SubmissionRecord,
+    test: TestRecord,
+    attemptNumber: number,
+    revealMarking: boolean,
+    summary?: SubmissionSummaryRecord
+  ): Promise<SubmissionDetail> {
+    const answers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
+    const answerViews = await this.buildAnswerViews(answers, revealMarking);
+    const summaryRecord: SubmissionSummaryRecord = summary ?? {
+      ...submission,
+      userEmail: "",
+      userName: ""
+    };
+
+    return mapSubmissionDetail(summaryRecord, answerViews, test.passingScore, attemptNumber);
+  }
+
   public async startSubmission(
     testId: string,
     currentUserId: string,
@@ -122,37 +169,14 @@ export class TestSubmissionService {
   ): Promise<SubmissionDetail> {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const submission = await this.getOrCreateActiveSubmission(test, currentUserId);
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
     const attemptNumber = await this.getAttemptNumber(testId, currentUserId);
 
-    return {
-      answers: answers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      })),
+    return this.loadSubmissionDetail(
+      submission,
+      test,
       attemptNumber,
-      createdAt: submission.createdAt.toISOString(),
-      feedback: submission.feedback,
-      gradedAt: submission.gradedAt?.toISOString() ?? null,
-      gradedById: submission.gradedById,
-      id: submission.id,
-      maxScore: submission.maxScore,
-      passed: isTestPassed(submission.score, test.passingScore),
-      score: submission.score,
-      startedAt: submission.startedAt?.toISOString() ?? null,
-      status: submission.status,
-      submittedAt: submission.submittedAt?.toISOString() ?? null,
-      testId: submission.testId,
-      user: {
-        email: "",
-        id: currentUserId,
-        name: ""
-      }
-    };
+      submission.status === "GRADED"
+    );
   }
 
   public async saveSubmissionAnswers(
@@ -186,6 +210,15 @@ export class TestSubmissionService {
       throw new NotFoundError("Test not found");
     }
 
+    if (test.type === "WRITTEN") {
+      throw new ValidationError("A written paper has no answers to save", [
+        {
+          field: "answers",
+          message: "Upload the pages of your answer instead"
+        }
+      ]);
+    }
+
     if (test.lockAnswerOnSelect) {
       const existingAnswers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
       const lockedOptionByQuestionId = new Map(
@@ -212,8 +245,8 @@ export class TestSubmissionService {
     const options = await this.testRepository.listOptionsByQuestionIds(
       questions.map((question) => question.id)
     );
-    const graded = gradeAnswers(questions, options, input.answers);
-    await this.testRepository.replaceSubmissionAnswers({
+    const graded = gradeMcqAnswers(questions, options, input.answers);
+    await this.testRepository.upsertSubmissionAnswers({
       answers: graded.normalizedAnswers,
       submissionId
     });
@@ -221,6 +254,13 @@ export class TestSubmissionService {
     return this.startSubmission(submission.testId, currentUserId, currentUserRole);
   }
 
+  /**
+   * Closes the attempt.
+   *
+   * An MCQ paper grades itself and lands on `GRADED`. A written paper lands on
+   * `SUBMITTED` — its Answer Scripts were uploaded page by page while the
+   * student worked, and a teacher has to read them.
+   */
   public async submitTest(
     testId: string,
     input: SubmitTestInput,
@@ -230,47 +270,39 @@ export class TestSubmissionService {
     const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
     const submission = await this.getOrCreateActiveSubmission(test, currentUserId);
     const attemptNumber = await this.getAttemptNumber(testId, currentUserId);
-
     const questions = await this.testRepository.listQuestionsByTestId(testId);
-    const options = await this.testRepository.listOptionsByQuestionIds(
-      questions.map((question) => question.id)
-    );
-    const graded = gradeAnswers(questions, options, input.answers);
-    await this.testRepository.replaceSubmissionAnswers({
-      answers: graded.normalizedAnswers,
-      submissionId: submission.id
-    });
+    const isWritten = test.type === "WRITTEN";
 
-    const updatedSubmission = await this.testRepository.updateSubmission(submission.id, {
-      maxScore: graded.maxScore,
-      score: graded.autoGradedScore,
-      status: graded.hasWrittenQuestions ? "SUBMITTED" : "GRADED",
-      submittedAt: new Date()
-    });
-    if (updatedSubmission.status === "GRADED") {
+    if (!isWritten) {
+      const options = await this.testRepository.listOptionsByQuestionIds(
+        questions.map((question) => question.id)
+      );
+      const graded = gradeMcqAnswers(questions, options, input.answers);
+      await this.testRepository.upsertSubmissionAnswers({
+        answers: graded.normalizedAnswers,
+        submissionId: submission.id
+      });
+
+      const updatedSubmission = await this.testRepository.updateSubmission(submission.id, {
+        maxScore: graded.maxScore,
+        score: graded.autoGradedScore,
+        status: "GRADED",
+        submittedAt: new Date()
+      });
+
       await this.promoteEnrollmentIfFinished(test.chapterId, currentUserId);
+
+      return this.loadSubmissionDetail(updatedSubmission, test, attemptNumber, true);
     }
 
-    const summaryRecord: SubmissionSummaryRecord = {
-      ...updatedSubmission,
-      userEmail: "",
-      userName: ""
-    };
-    const savedAnswers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
+    const updatedSubmission = await this.testRepository.updateSubmission(submission.id, {
+      maxScore: totalMarks(questions),
+      score: null,
+      status: "SUBMITTED",
+      submittedAt: new Date()
+    });
 
-    return mapSubmissionDetail(
-      summaryRecord,
-      savedAnswers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      })),
-      test.passingScore,
-      attemptNumber
-    );
+    return this.loadSubmissionDetail(updatedSubmission, test, attemptNumber, false);
   }
 
   public async listSubmissions(
@@ -326,7 +358,9 @@ export class TestSubmissionService {
       throw new NotFoundError("Test not found");
     }
 
-    if (currentUserRole === "ADMIN" || currentUserRole === "TEACHER") {
+    const isStaff = currentUserRole === "ADMIN" || currentUserRole === "TEACHER";
+
+    if (isStaff) {
       await this.access.requireManageableTest(test.id, currentUserId, currentUserRole, {
         allowArchived: true
       });
@@ -342,120 +376,13 @@ export class TestSubmissionService {
     }
 
     const attemptNumbers = attachAttemptNumbers(submissions);
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
 
-    return mapSubmissionDetail(
-      summaryRecord,
-      answers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      })),
-      test.passingScore,
-      attemptNumbers.get(summaryRecord.id) ?? 1
-    );
-  }
-
-  public async gradeSubmission(
-    submissionId: string,
-    input: GradeSubmissionInput,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<SubmissionDetail> {
-    const submission = await this.testRepository.findSubmissionById(submissionId);
-
-    if (!submission) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    await this.access.requireManageableTest(submission.testId, currentUserId, currentUserRole);
-
-    const questions = await this.testRepository.listQuestionsByTestId(submission.testId);
-    const questionMap = new Map(questions.map((question) => [question.id, question]));
-    const answers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
-    const answerMap = new Map(answers.map((answer) => [answer.id, answer]));
-
-    for (const gradedAnswer of input.answers) {
-      const answer = answerMap.get(gradedAnswer.answerId);
-
-      if (!answer) {
-        throw new ValidationError("Invalid grading payload", [
-          {
-            field: "answers",
-            message: "Answer does not belong to the submission"
-          }
-        ]);
-      }
-
-      const question = questionMap.get(answer.questionId);
-
-      if (!question || question.type !== "WRITTEN") {
-        throw new ValidationError("Only written answers can be graded manually", [
-          {
-            field: "answers",
-            message: "One or more graded answers are not written responses"
-          }
-        ]);
-      }
-
-      if (gradedAnswer.awardedMarks > question.marks) {
-        throw new ValidationError("Awarded marks exceed question marks", [
-          {
-            field: "answers",
-            message: "Awarded marks must be less than or equal to the question marks"
-          }
-        ]);
-      }
-    }
-
-    for (const gradedAnswer of input.answers) {
-      await this.testRepository.updateSubmissionAnswer(gradedAnswer.answerId, {
-        awardedMarks: gradedAnswer.awardedMarks,
-        isCorrect: null
-      });
-    }
-
-    const refreshedAnswers = await this.testRepository.listAnswersBySubmissionIds([submissionId]);
-    const score = refreshedAnswers.reduce((sum, answer) => sum + (answer.awardedMarks ?? 0), 0);
-    const maxScore = questions.reduce((sum, question) => sum + question.marks, 0);
-    const updatedSubmission = await this.testRepository.updateSubmission(submissionId, {
-      feedback: input.feedback !== undefined ? normalizeOptionalHtml(input.feedback) : undefined,
-      gradedAt: new Date(),
-      gradedById: currentUserId,
-      maxScore,
-      score,
-      status: "GRADED"
-    });
-    const gradedTest = await this.testRepository.findTestById(updatedSubmission.testId);
-
-    if (gradedTest) {
-      await this.promoteEnrollmentIfFinished(gradedTest.chapterId, updatedSubmission.userId);
-    }
-
-    const summaries = await this.testRepository.listSubmissionsByTestId(updatedSubmission.testId);
-    const summaryRecord = summaries.find((item) => item.id === submissionId);
-
-    if (!summaryRecord) {
-      throw new NotFoundError("Submission not found");
-    }
-
-    const attemptNumbers = attachAttemptNumbers(summaries);
-
-    return mapSubmissionDetail(
-      summaryRecord,
-      refreshedAnswers.map((answer) => ({
-        awardedMarks: answer.awardedMarks,
-        id: answer.id,
-        isCorrect: answer.isCorrect,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        writtenAnswer: answer.writtenAnswer
-      })),
-      gradedTest?.passingScore ?? null,
-      attemptNumbers.get(summaryRecord.id) ?? 1
+    return this.loadSubmissionDetail(
+      submission,
+      test,
+      attemptNumbers.get(summaryRecord.id) ?? 1,
+      isStaff || submission.status === "GRADED",
+      summaryRecord
     );
   }
 }

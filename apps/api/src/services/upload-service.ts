@@ -1,6 +1,7 @@
 import type { AuthUser } from "@genex/auth/server";
 import {
   buildImageVariantKey,
+  scriptPageContentType,
   type StorageProvider,
   type UploadKind,
   type UploadPurpose,
@@ -13,7 +14,11 @@ import { fetchObjectBytes } from "@/lib/object-url-fetch";
 import { queues } from "@/lib/queues";
 import { writeStoredFile } from "@/lib/s3";
 import type { UploadRepository, UploadRecord } from "@/repositories/upload-repository";
-import { generateImageVariants, isResizableImage } from "@/services/image-variants";
+import {
+  generateImageVariants,
+  isResizableImage,
+  sizeDownScriptPage
+} from "@/services/image-variants";
 import { S3StorageProvider } from "@/services/s3-storage-provider";
 import type { StorageProviderAdapter, StorageProviderAdapters } from "@/services/storage-provider";
 import { UploadThingStorageProvider } from "@/services/uploadthing-storage-provider";
@@ -75,6 +80,17 @@ interface UploadPurposeConfig {
 }
 
 const uploadPurposeConfig: Record<UploadPurpose, UploadPurposeConfig> = {
+  /**
+   * A photographed page of an Answer Script. The client has already sized it
+   * down and re-encoded it to JPEG, which is why the cap is small and the type
+   * list is one entry — anything else means the capture path was bypassed.
+   * ADR-0009.
+   */
+  ANSWER_SCRIPT_PAGE: {
+    allowedContentTypes: [scriptPageContentType],
+    maxFileSize: 8 * 1024 * 1024,
+    pathSegment: "answer-scripts"
+  },
   BUG_SCREENSHOT: {
     allowedContentTypes: ["image/*"],
     maxFileSize: 5 * 1024 * 1024,
@@ -106,6 +122,11 @@ const uploadPurposeConfig: Record<UploadPurpose, UploadPurposeConfig> = {
     allowedContentTypes: ["image/*"],
     maxFileSize: 5 * 1024 * 1024,
     pathSegment: "profile-photos"
+  },
+  QUESTION_IMAGE: {
+    allowedContentTypes: ["image/*"],
+    maxFileSize: 10 * 1024 * 1024,
+    pathSegment: "question-images"
   }
 };
 
@@ -287,6 +308,51 @@ export class UploadService {
     }
   }
 
+  /**
+   * Rewrites a Script Page that arrived larger than the cap, over the same key.
+   *
+   * The client shrinks the photograph before uploading, so this normally finds
+   * nothing to do. It exists because nothing else enforces the cap: the upload
+   * goes client-direct to storage, and a client that skipped the canvas path —
+   * or was never a browser — would otherwise park a camera-sized image in the
+   * bucket forever. ADR-0009.
+   *
+   * Never fatal. If the rewrite fails the page still stands as uploaded, which
+   * is worse than intended but better than losing a student's answer.
+   */
+  private async enforceScriptPageSize(upload: UploadRecord): Promise<UploadRecord> {
+    if (upload.provider !== "s3") {
+      return upload;
+    }
+
+    try {
+      const original = await fetchObjectBytes(upload.fileUrl);
+      const sizedDown = await sizeDownScriptPage(original);
+
+      if (!sizedDown) {
+        return upload;
+      }
+
+      await this.variantWriter.write(upload.fileKey, sizedDown.body, scriptPageContentType);
+
+      return (
+        (await this.uploadRepository.updateMediaMetadata({
+          durationInSeconds: null,
+          height: sizedDown.height,
+          id: upload.id,
+          width: sizedDown.width
+        })) ?? upload
+      );
+    } catch (error) {
+      logger.warn(
+        { err: error, uploadId: upload.id },
+        "Script page size backstop failed; storing the page as uploaded"
+      );
+
+      return upload;
+    }
+  }
+
   public async prepareUpload(
     actor: AuthUser,
     input: CreatePresignedUploadRequest
@@ -351,6 +417,12 @@ export class UploadService {
         contentType: confirmedUpload.contentType,
         uploadId: confirmedUpload.id
       });
+    }
+
+    if (confirmedUpload.purpose === "ANSWER_SCRIPT_PAGE") {
+      // The page is the only copy there will ever be, so it is capped before
+      // anything else reads it. No variants: a marking canvas wants the page.
+      return formatUploadRecord(await this.enforceScriptPageSize(confirmedUpload));
     }
 
     if (confirmedUpload.kind === "IMAGE") {

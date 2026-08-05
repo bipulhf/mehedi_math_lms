@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import {
   createQuestionSchema,
-  gradeSubmissionSchema,
   reorderQuestionsSchema,
   saveSubmissionAnswersSchema,
   submissionIdParamsSchema,
@@ -243,28 +242,4 @@ testsRoutes.get("/submissions/:id", requireAuth(), (context) => {
     authUser!.id,
     authSession!.role as UserRole
   );
-});
-
-testsRoutes.put("/submissions/:id/grade", requireRole("ADMIN", "TEACHER"), async (context) => {
-  const params = submissionIdParamsSchema.parse(context.req.param());
-  const payload = gradeSubmissionSchema.parse(await context.req.json());
-  const authUser = context.get("authUser");
-  const authSession = context.get("authSession");
-
-  const response = await testController.gradeSubmission(
-    context,
-    params.id,
-    payload,
-    authUser!.id,
-    authSession!.role as UserRole
-  );
-
-  auditLogService.log({
-    action: "test_submission.graded",
-    actorId: authUser!.id,
-    entityId: params.id,
-    entityType: "test_submission"
-  });
-
-  return response;
 });

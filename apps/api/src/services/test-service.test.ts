@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import type { AnswerScriptRepository } from "@/repositories/answer-script-repository";
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
@@ -19,7 +20,6 @@ import { ForbiddenError, ValidationError } from "@/utils/errors";
 interface QuestionSpec {
   id: string;
   marks: number;
-  type: "MCQ" | "WRITTEN";
 }
 
 interface OptionSpec {
@@ -39,6 +39,7 @@ interface SubmissionHistoryRecord {
 
 interface Overrides {
   completedAttempts?: number;
+  testType?: "MCQ" | "WRITTEN";
   isPublished?: boolean;
   latestSubmissionStatus?: string | null;
   lockAnswerOnSelect?: boolean;
@@ -57,8 +58,8 @@ interface Calls {
 }
 
 const defaultQuestions: readonly QuestionSpec[] = [
-  { id: "q1", marks: 5, type: "MCQ" },
-  { id: "q2", marks: 5, type: "MCQ" }
+  { id: "q1", marks: 5 },
+  { id: "q2", marks: 5 }
 ];
 
 const defaultOptions: readonly OptionSpec[] = [
@@ -111,13 +112,15 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
       lockAnswerOnSelect: overrides.lockAnswerOnSelect ?? false,
       maxAttempts: overrides.maxAttempts ?? null,
       passingScore: overrides.passingScore ?? null,
-      title: "Chapter 1 Test"
+      title: "Chapter 1 Test",
+      type: overrides.testType ?? "MCQ"
     }),
     listAnswersBySubmissionIds: async () =>
       overrides.lockAnswerOnSelect
         ? [{ questionId: "q1", selectedOptionId: "o1a" }]
         : [],
     listOptionsByQuestionIds: async () => options,
+    listQuestionImagesByQuestionIds: async () => [],
     listQuestionsByTestId: async () => questions,
     listSubmissionsByTestAndUser: async (_testId: string, userId: string) =>
       (
@@ -129,7 +132,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
       overrides.submissionHistory ?? [
         { ...submission, userEmail: "student@example.com", userName: "Student" }
       ],
-    replaceSubmissionAnswers: async () => undefined,
+    upsertSubmissionAnswers: async () => undefined,
     updateSubmission: async (_id: string, patch: Record<string, unknown>) => {
       calls.submissionUpdates.push(patch);
 
@@ -197,10 +200,15 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
     enrollmentRepository
   );
 
+  const answerScriptRepository = {
+    listScriptPagesByAnswerIds: async () => []
+  } as unknown as AnswerScriptRepository;
+
   return {
     calls,
     service: new TestService(
       testRepository,
+      answerScriptRepository,
       contentRepository,
       enrollmentRepository,
       access,
@@ -275,32 +283,21 @@ describe("TestService.submitTest — MCQ auto-grading", () => {
 });
 
 describe("TestService.submitTest — SUBMITTED vs GRADED", () => {
-  test("a written question leaves the submission awaiting a teacher", async () => {
+  test("a written paper waits for a teacher and carries no score yet", async () => {
     const { calls, service } = buildService({
-      options: [
-        { id: "o1a", isCorrect: true, questionId: "q1" },
-        { id: "o1b", isCorrect: false, questionId: "q1" }
-      ],
       questions: [
-        { id: "q1", marks: 5, type: "MCQ" },
-        { id: "q2", marks: 10, type: "WRITTEN" }
-      ]
+        { id: "q1", marks: 5 },
+        { id: "q2", marks: 10 }
+      ],
+      testType: "WRITTEN"
     });
 
-    await service.submitTest(
-      "test-1",
-      { answers: [
-        { questionId: "q1", selectedOptionId: "o1a" },
-        { questionId: "q2", writtenAnswer: "Because force equals mass times acceleration." }
-      ] },
-      "user-1",
-      "STUDENT"
-    );
+    await service.submitTest("test-1", { answers: [] }, "user-1", "STUDENT");
 
     const patch = calls.submissionUpdates[0];
 
     expect(patch?.status).toBe("SUBMITTED");
-    expect(patch?.score).toBe(5);
+    expect(patch?.score).toBeNull();
     expect(patch?.maxScore).toBe(15);
   });
 
@@ -522,7 +519,7 @@ describe("TestService.getTestDetail — answer reveal", () => {
     const detail = await service.getTestDetail("test-1", "user-1", "STUDENT", true);
 
     expect(detail.questions[0]?.options[0]?.isCorrect).toBeNull();
-    expect(detail.questions[0]?.expectedAnswer).toBeNull();
+    expect(detail.questions[0]?.markingGuide).toBeNull();
   });
 
   test("a student gets answers only after a completed submission", async () => {

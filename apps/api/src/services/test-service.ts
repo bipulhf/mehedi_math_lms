@@ -3,7 +3,6 @@ import type { z } from "zod";
 import type {
   createQuestionSchema,
   createTestSchema,
-  gradeSubmissionSchema,
   reorderCourseItemsSchema,
   reorderQuestionsSchema,
   saveSubmissionAnswersSchema,
@@ -12,14 +11,16 @@ import type {
   updateTestSchema
 } from "@genex/shared";
 
+import type { AnswerScriptRepository } from "@/repositories/answer-script-repository";
 import type { ContentRepository } from "@/repositories/content-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import type { TestRepository } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
-import { validateQuestionAgainstTest, validateQuestionInput } from "@/services/assessment-grading";
+import { totalMarks, validateQuestionInput } from "@/services/assessment-grading";
 import {
   type AssessmentOption,
   type AssessmentQuestion,
+  type AssessmentQuestionImage,
   type AssessmentTestDetail,
   type AssessmentChapterSummary,
   type AssessmentTestSummary,
@@ -29,7 +30,7 @@ import {
 import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type { ProgressService } from "@/services/progress-service";
 import { TestSubmissionService } from "@/services/test-submission-service";
-import { ValidationError } from "@/utils/errors";
+import { NotFoundError, ValidationError } from "@/utils/errors";
 
 export type {
   AssessmentChapterSummary,
@@ -50,7 +51,6 @@ type ReorderCourseItemsInput = z.infer<typeof reorderCourseItemsSchema>;
 type ReorderQuestionsInput = z.infer<typeof reorderQuestionsSchema>;
 type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 type SubmitTestInput = z.infer<typeof submitTestSchema>;
-type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
 
 /**
  * Test and question authoring. Taking a test, autosaving answers, submitting,
@@ -62,18 +62,23 @@ export class TestService {
 
   public constructor(
     private readonly testRepository: TestRepository,
+    private readonly answerScriptRepository: AnswerScriptRepository,
     private readonly contentRepository: ContentRepository,
     private readonly enrollmentRepository: EnrollmentRepository,
     private readonly access: AssessmentAccessGuards,
-    private readonly progressService: ProgressService
+    private readonly progressService: ProgressService,
+    submissions?: TestSubmissionService
   ) {
-    this.submissions = new TestSubmissionService(
-      testRepository,
-      contentRepository,
-      enrollmentRepository,
-      access,
-      progressService
-    );
+    this.submissions =
+      submissions ??
+      new TestSubmissionService(
+        testRepository,
+        answerScriptRepository,
+        contentRepository,
+        enrollmentRepository,
+        access,
+        progressService
+      );
   }
 
   private attemptsRemaining(
@@ -110,19 +115,65 @@ export class TestService {
       optionMap.set(option.questionId, currentOptions);
     }
 
+    const imageRecords = await this.testRepository.listQuestionImagesByQuestionIds(questionIds);
+    const imageMap = new Map<string, AssessmentQuestionImage[]>();
+
+    for (const image of imageRecords) {
+      const currentImages = imageMap.get(image.questionId) ?? [];
+      currentImages.push({
+        fileUrl: image.fileUrl,
+        id: image.id,
+        sortOrder: image.sortOrder
+      });
+      imageMap.set(image.questionId, currentImages);
+    }
+
     const questions = questionRecords.map((question) => ({
-      expectedAnswer: includeAnswers ? question.expectedAnswer : null,
       id: question.id,
+      images: imageMap.get(question.id) ?? [],
+      // The marking guide is a teacher's answer key. `includeAnswers` is the
+      // same gate the correct MCQ option sits behind.
+      markingGuide: includeAnswers ? question.markingGuide : null,
       marks: question.marks,
       options: optionMap.get(question.id) ?? [],
       questionText: question.questionText,
-      sortOrder: question.sortOrder,
-      type: question.type
+      sortOrder: question.sortOrder
     }));
 
     return {
       questions,
-      totalMarks: questions.reduce((sum, question) => sum + question.marks, 0)
+      totalMarks: totalMarks(questions)
+    };
+  }
+
+  /** One question as staff see it — options marked, guide and images attached. */
+  private async loadQuestion(questionId: string): Promise<AssessmentQuestion> {
+    const question = await this.testRepository.findQuestionById(questionId);
+
+    if (!question) {
+      throw new NotFoundError("Question not found");
+    }
+
+    const optionRecords = await this.testRepository.listOptionsByQuestionIds([questionId]);
+    const imageRecords = await this.testRepository.listQuestionImagesByQuestionIds([questionId]);
+
+    return {
+      id: question.id,
+      images: imageRecords.map((image) => ({
+        fileUrl: image.fileUrl,
+        id: image.id,
+        sortOrder: image.sortOrder
+      })),
+      markingGuide: question.markingGuide,
+      marks: question.marks,
+      options: optionRecords.map((option) => ({
+        id: option.id,
+        isCorrect: option.isCorrect,
+        optionText: option.optionText,
+        sortOrder: option.sortOrder
+      })),
+      questionText: question.questionText,
+      sortOrder: question.sortOrder
     };
   }
 
@@ -247,11 +298,17 @@ export class TestService {
     currentUserRole: UserRole
   ): Promise<AssessmentTestSummary> {
     const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
-    const nextType = input.type ?? test.type;
     const existingQuestions = await this.testRepository.listQuestionsByTestId(testId);
 
-    for (const question of existingQuestions) {
-      validateQuestionAgainstTest(nextType, question.type);
+    // A Test's kind decides what its questions mean, so it can only be changed
+    // while the paper is empty. ADR-0008.
+    if (input.type && input.type !== test.type && existingQuestions.length > 0) {
+      throw new ValidationError("This test already has questions", [
+        {
+          field: "type",
+          message: "Remove the questions before changing what kind of test this is"
+        }
+      ]);
     }
 
     const record = await this.testRepository.updateTest(testId, {
@@ -349,12 +406,12 @@ export class TestService {
     currentUserRole: UserRole
   ): Promise<AssessmentQuestion> {
     const test = await this.access.requireManageableTest(testId, currentUserId, currentUserRole);
-    validateQuestionAgainstTest(test.type, input.type);
-    validateQuestionInput(input);
+    validateQuestionInput(test.type, input);
 
     const existingQuestions = await this.testRepository.listQuestionsByTestId(testId);
     const question = await this.testRepository.createQuestion({
-      expectedAnswer: normalizeOptionalHtml(input.expectedAnswer),
+      imageUploadIds: input.imageUploadIds ?? [],
+      markingGuide: normalizeOptionalHtml(input.markingGuide),
       marks: input.marks,
       options: (input.options ?? []).map((option) => ({
         isCorrect: option.isCorrect,
@@ -362,25 +419,10 @@ export class TestService {
       })),
       questionText: sanitizeHtml(input.questionText.trim()),
       sortOrder: existingQuestions.length,
-      testId,
-      type: input.type
+      testId
     });
-    const optionRecords = await this.testRepository.listOptionsByQuestionIds([question.id]);
 
-    return {
-      expectedAnswer: question.expectedAnswer,
-      id: question.id,
-      marks: question.marks,
-      options: optionRecords.map((option) => ({
-        id: option.id,
-        isCorrect: option.isCorrect,
-        optionText: option.optionText,
-        sortOrder: option.sortOrder
-      })),
-      questionText: question.questionText,
-      sortOrder: question.sortOrder,
-      type: question.type
-    };
+    return this.loadQuestion(question.id);
   }
 
   public async updateQuestion(
@@ -394,50 +436,23 @@ export class TestService {
       currentUserId,
       currentUserRole
     );
-    const nextType = input.type ?? question.type;
-    validateQuestionAgainstTest(question.test.type, nextType);
-    validateQuestionInput({
-      expectedAnswer: input.expectedAnswer ?? question.expectedAnswer ?? "",
-      marks: input.marks ?? question.marks,
-      options:
-        input.options ??
-        (await this.testRepository.listOptionsByQuestionIds([questionId])).map((option) => ({
-          isCorrect: option.isCorrect,
-          optionText: option.optionText
-        })),
-      questionText: input.questionText ?? question.questionText,
-      type: nextType
-    });
+    const existingOptions = await this.testRepository.listOptionsByQuestionIds([questionId]);
+    validateQuestionInput(question.test.type, input, existingOptions.length);
 
-    const updatedQuestion = await this.testRepository.updateQuestion(questionId, {
-      expectedAnswer:
-        input.expectedAnswer !== undefined
-          ? normalizeOptionalHtml(input.expectedAnswer)
-          : undefined,
+    await this.testRepository.updateQuestion(questionId, {
+      imageUploadIds: input.imageUploadIds,
+      markingGuide:
+        input.markingGuide !== undefined ? normalizeOptionalHtml(input.markingGuide) : undefined,
       marks: input.marks,
       options: input.options?.map((option) => ({
         isCorrect: option.isCorrect,
         optionText: option.optionText.trim()
       })),
-      questionText: input.questionText === undefined ? undefined : sanitizeHtml(input.questionText.trim()),
-      type: input.type
+      questionText:
+        input.questionText === undefined ? undefined : sanitizeHtml(input.questionText.trim())
     });
-    const optionRecords = await this.testRepository.listOptionsByQuestionIds([questionId]);
 
-    return {
-      expectedAnswer: updatedQuestion.expectedAnswer,
-      id: updatedQuestion.id,
-      marks: updatedQuestion.marks,
-      options: optionRecords.map((option) => ({
-        id: option.id,
-        isCorrect: option.isCorrect,
-        optionText: option.optionText,
-        sortOrder: option.sortOrder
-      })),
-      questionText: updatedQuestion.questionText,
-      sortOrder: updatedQuestion.sortOrder,
-      type: updatedQuestion.type
-    };
+    return this.loadQuestion(questionId);
   }
 
   public async deleteQuestion(
@@ -584,14 +599,5 @@ export class TestService {
     currentUserRole: UserRole
   ): Promise<SubmissionDetail> {
     return this.submissions.getSubmissionDetail(submissionId, currentUserId, currentUserRole);
-  }
-
-  public async gradeSubmission(
-    submissionId: string,
-    input: GradeSubmissionInput,
-    currentUserId: string,
-    currentUserRole: UserRole
-  ): Promise<SubmissionDetail> {
-    return this.submissions.gradeSubmission(submissionId, input, currentUserId, currentUserRole);
   }
 }

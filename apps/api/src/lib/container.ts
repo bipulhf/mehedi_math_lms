@@ -1,5 +1,6 @@
 import { AdminController } from "@/controllers/admin-controller";
 import { AnalyticsController } from "@/controllers/analytics-controller";
+import { AnswerScriptController } from "@/controllers/answer-script-controller";
 import { AuditLogController } from "@/controllers/audit-log-controller";
 import { AdminDashboardController } from "@/controllers/admin-dashboard-controller";
 import { AdminUserController } from "@/controllers/admin-user-controller";
@@ -27,6 +28,7 @@ import { env } from "@/lib/env";
 import { redis } from "@/lib/redis";
 import { AdminDashboardRepository } from "@/repositories/admin-dashboard-repository";
 import { AnalyticsRepository } from "@/repositories/analytics-repository";
+import { AnswerScriptRepository } from "@/repositories/answer-script-repository";
 import { AuditLogRepository } from "@/repositories/audit-log-repository";
 import { AdminUserRepository } from "@/repositories/admin-user-repository";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
@@ -52,6 +54,9 @@ import { TestRepository } from "@/repositories/test-repository";
 import { UploadRepository } from "@/repositories/upload-repository";
 import { AdminDashboardService } from "@/services/admin-dashboard-service";
 import { AnalyticsService } from "@/services/analytics-service";
+import { AnswerScriptService } from "@/services/answer-script-service";
+import { PaperMarkingService } from "@/services/paper-marking-service";
+import { TestSubmissionService } from "@/services/test-submission-service";
 import { AuditLogService } from "@/services/audit-log-service";
 import { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { AdminUserService } from "@/services/admin-user-service";
@@ -186,12 +191,37 @@ const assessmentAccessGuards = new AssessmentAccessGuards(
   courseRepository,
   enrollmentRepository
 );
-const testService = new TestService(
+const answerScriptRepository = new AnswerScriptRepository();
+const testSubmissionService = new TestSubmissionService(
   testRepository,
+  answerScriptRepository,
   contentRepository,
   enrollmentRepository,
   assessmentAccessGuards,
   progressService
+);
+const testService = new TestService(
+  testRepository,
+  answerScriptRepository,
+  contentRepository,
+  enrollmentRepository,
+  assessmentAccessGuards,
+  progressService,
+  testSubmissionService
+);
+const answerScriptService = new AnswerScriptService(
+  testRepository,
+  answerScriptRepository,
+  uploadRepository
+);
+// Marking promotes an enrolment through the submission service once a paper is
+// submitted, which is how an Exam-Only Course of written papers completes.
+const paperMarkingService = new PaperMarkingService(
+  testRepository,
+  answerScriptRepository,
+  assessmentAccessGuards,
+  testSubmissionService,
+  notificationService
 );
 const uploadService = new UploadService(
   uploadRepository,
@@ -236,5 +266,9 @@ export {
 export const paymentController = new PaymentController(commerceService);
 export const progressController = new ProgressController(progressService);
 export const profileController = new ProfileController(profileService);
+export const answerScriptController = new AnswerScriptController(
+  answerScriptService,
+  paperMarkingService
+);
 export const testController = new TestController(testService);
 export const uploadController = new UploadController(uploadService);

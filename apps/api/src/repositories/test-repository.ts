@@ -7,14 +7,16 @@ import {
   eq,
   inArray,
   sql,
+  questionImages,
   questionOptions,
   submissionAnswers,
   testQuestions,
   testSubmissions,
   tests,
+  uploads,
   users
 } from "@genex/db";
-import type { QuestionType, TestSubmissionStatus, TestType } from "@genex/shared";
+import type { TestSubmissionStatus, TestType } from "@genex/shared";
 
 /** One published Test and how the student has fared against it. ADR-0005. */
 export interface CourseTestResultRecord {
@@ -42,14 +44,23 @@ export interface TestRecord {
 
 export interface QuestionRecord {
   createdAt: Date;
-  expectedAnswer: string | null;
   id: string;
+  markingGuide: string | null;
   marks: number;
   questionText: string;
   sortOrder: number;
   testId: string;
-  type: QuestionType;
   updatedAt: Date;
+}
+
+/** A diagram or photographed question paper attached to a Question. */
+export interface QuestionImageRecord {
+  createdAt: Date;
+  fileUrl: string;
+  id: string;
+  questionId: string;
+  sortOrder: number;
+  uploadId: string;
 }
 
 export interface QuestionOptionRecord {
@@ -92,7 +103,6 @@ export interface SubmissionAnswerRecord {
   selectedOptionId: string | null;
   submissionId: string;
   updatedAt: Date;
-  writtenAnswer: string | null;
 }
 
 interface CreateTestInput {
@@ -120,7 +130,8 @@ interface UpdateTestInput {
 }
 
 interface SaveQuestionInput {
-  expectedAnswer: string | null;
+  imageUploadIds: readonly string[];
+  markingGuide: string | null;
   marks: number;
   options: readonly {
     isCorrect: boolean;
@@ -129,11 +140,11 @@ interface SaveQuestionInput {
   questionText: string;
   sortOrder: number;
   testId: string;
-  type: QuestionType;
 }
 
 interface UpdateQuestionInput {
-  expectedAnswer?: string | null | undefined;
+  imageUploadIds?: readonly string[] | undefined;
+  markingGuide?: string | null | undefined;
   marks?: number | undefined;
   options?:
     | readonly {
@@ -143,17 +154,15 @@ interface UpdateQuestionInput {
     | undefined;
   questionText?: string | undefined;
   sortOrder?: number | undefined;
-  type?: QuestionType | undefined;
 }
 
-interface ReplaceSubmissionAnswersInput {
+interface UpsertSubmissionAnswersInput {
   submissionId: string;
   answers: readonly {
     awardedMarks?: number | null | undefined;
     isCorrect?: boolean | null | undefined;
     questionId: string;
     selectedOptionId?: string | null | undefined;
-    writtenAnswer?: string | null | undefined;
   }[];
 }
 
@@ -175,13 +184,12 @@ function mapTestRecord(record: typeof tests.$inferSelect): TestRecord {
 function mapQuestionRecord(record: typeof testQuestions.$inferSelect): QuestionRecord {
   return {
     createdAt: record.createdAt,
-    expectedAnswer: record.expectedAnswer,
     id: record.id,
+    markingGuide: record.markingGuide,
     marks: record.marks,
     questionText: record.questionText,
     sortOrder: record.sortOrder,
     testId: record.testId,
-    type: record.type,
     updatedAt: record.updatedAt
   };
 }
@@ -375,12 +383,11 @@ export class TestRepository {
       const [questionRecord] = await transaction
         .insert(testQuestions)
         .values({
-          expectedAnswer: input.expectedAnswer,
+          markingGuide: input.markingGuide,
           marks: input.marks,
           questionText: input.questionText,
           sortOrder: input.sortOrder,
-          testId: input.testId,
-          type: input.type
+          testId: input.testId
         })
         .returning();
 
@@ -399,6 +406,16 @@ export class TestRepository {
         );
       }
 
+      if (input.imageUploadIds.length > 0) {
+        await transaction.insert(questionImages).values(
+          input.imageUploadIds.map((uploadId, index) => ({
+            questionId: questionRecord.id,
+            sortOrder: index,
+            uploadId
+          }))
+        );
+      }
+
       return questionRecord;
     });
 
@@ -410,11 +427,10 @@ export class TestRepository {
       const [questionRecord] = await transaction
         .update(testQuestions)
         .set({
-          expectedAnswer: input.expectedAnswer,
+          markingGuide: input.markingGuide,
           marks: input.marks,
           questionText: input.questionText,
           sortOrder: input.sortOrder,
-          type: input.type,
           updatedAt: new Date()
         })
         .where(eq(testQuestions.id, id))
@@ -439,10 +455,46 @@ export class TestRepository {
         }
       }
 
+      if (input.imageUploadIds) {
+        await transaction.delete(questionImages).where(eq(questionImages.questionId, id));
+
+        if (input.imageUploadIds.length > 0) {
+          await transaction.insert(questionImages).values(
+            input.imageUploadIds.map((uploadId, index) => ({
+              questionId: id,
+              sortOrder: index,
+              uploadId
+            }))
+          );
+        }
+      }
+
       return questionRecord;
     });
 
     return mapQuestionRecord(question);
+  }
+
+  public async listQuestionImagesByQuestionIds(
+    questionIds: readonly string[]
+  ): Promise<readonly QuestionImageRecord[]> {
+    if (questionIds.length === 0) {
+      return [];
+    }
+
+    return db
+      .select({
+        createdAt: questionImages.createdAt,
+        fileUrl: uploads.fileUrl,
+        id: questionImages.id,
+        questionId: questionImages.questionId,
+        sortOrder: questionImages.sortOrder,
+        uploadId: questionImages.uploadId
+      })
+      .from(questionImages)
+      .innerJoin(uploads, eq(uploads.id, questionImages.uploadId))
+      .where(inArray(questionImages.questionId, [...questionIds]))
+      .orderBy(asc(questionImages.questionId), asc(questionImages.sortOrder));
   }
 
   public async deleteQuestion(id: string): Promise<void> {
@@ -567,27 +619,67 @@ export class TestRepository {
     return mapSubmissionRecord(record);
   }
 
-  public async replaceSubmissionAnswers(input: ReplaceSubmissionAnswersInput): Promise<void> {
-    await db.transaction(async (transaction) => {
-      await transaction
-        .delete(submissionAnswers)
-        .where(eq(submissionAnswers.submissionId, input.submissionId));
+  /**
+   * Answers are upserted against `(submission_id, question_id)`, never deleted
+   * and re-inserted: an answer row is what a question's Script Pages hang off,
+   * so it has to survive every autosave.
+   */
+  public async upsertSubmissionAnswers(input: UpsertSubmissionAnswersInput): Promise<void> {
+    if (input.answers.length === 0) {
+      return;
+    }
 
-      if (input.answers.length === 0) {
-        return;
-      }
-
-      await transaction.insert(submissionAnswers).values(
+    await db
+      .insert(submissionAnswers)
+      .values(
         input.answers.map((answer) => ({
           awardedMarks: answer.awardedMarks,
           isCorrect: answer.isCorrect,
           questionId: answer.questionId,
           selectedOptionId: answer.selectedOptionId,
-          submissionId: input.submissionId,
-          writtenAnswer: answer.writtenAnswer
+          submissionId: input.submissionId
         }))
-      );
-    });
+      )
+      .onConflictDoUpdate({
+        set: {
+          awardedMarks: sql`excluded.awarded_marks`,
+          isCorrect: sql`excluded.is_correct`,
+          selectedOptionId: sql`excluded.selected_option_id`,
+          updatedAt: new Date()
+        },
+        target: [submissionAnswers.submissionId, submissionAnswers.questionId]
+      });
+  }
+
+  /** The answer row for one question of one attempt, created if it is the first page. */
+  public async findOrCreateSubmissionAnswer(
+    submissionId: string,
+    questionId: string
+  ): Promise<SubmissionAnswerRecord> {
+    const [inserted] = await db
+      .insert(submissionAnswers)
+      .values({ questionId, submissionId })
+      .onConflictDoUpdate({
+        set: { updatedAt: new Date() },
+        target: [submissionAnswers.submissionId, submissionAnswers.questionId]
+      })
+      .returning();
+
+    if (!inserted) {
+      throw new Error("Failed to create submission answer");
+    }
+
+    return mapSubmissionAnswerRecord(inserted);
+  }
+
+  public async findSubmissionAnswerById(id: string): Promise<SubmissionAnswerRecord | null> {
+    const [record] = await db
+      .select()
+      .from(submissionAnswers)
+      .where(eq(submissionAnswers.id, id))
+      .limit(1);
+
+    return record ? mapSubmissionAnswerRecord(record) : null;
   }
 
   public async updateSubmissionAnswer(
