@@ -10,6 +10,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourseAnalytics } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
@@ -47,11 +48,13 @@ function CourseAnalyticsPage(): JSX.Element {
   const { isPending, session } = useAuthSession();
   const role = session?.session.role;
   const canView = role === "ADMIN" || role === "ACCOUNTANT" || role === "TEACHER";
-  const { data = null, isPending: isLoading } = useQuery<CourseAnalyticsDetail>({
+  const { data = null, error, isPending: isLoading } = useQuery<CourseAnalyticsDetail>({
     enabled: !isPending && canView,
     queryFn: async () => getCourseAnalytics(id),
     queryKey: queryKeys.analytics.course(id)
   });
+
+  useAccessGuard([error]);
 
   useEffect(() => {
     if (isPending || !session) {

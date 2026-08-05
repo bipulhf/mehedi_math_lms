@@ -12,6 +12,7 @@ import { RichTextContent } from "@/components/ui/rich-text-content";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContentChapter } from "@/lib/api/content";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourseContent } from "@/lib/api/content";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse, submitCourse } from "@/lib/api/courses";
@@ -53,6 +54,8 @@ function PublishCoursePage(): JSX.Element {
       { queryFn: async () => getCourseAssessments(id), queryKey: queryKeys.tests.byCourse(id) }
     ]
   });
+
+  useAccessGuard([courseQuery?.error ?? null, contentQuery?.error ?? null]);
 
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const chapters: readonly ContentChapter[] = contentQuery?.data ?? [];

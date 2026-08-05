@@ -32,6 +32,7 @@ import {
   type AssessmentTestSummary,
   type ContentLecture
 } from "@/src/lib/api";
+import { ApiError } from "@/src/lib/api-client";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";
@@ -213,6 +214,19 @@ export default function CoursePlayerScreen(): JSX.Element {
     Boolean(courseQuery?.isPending) ||
     Boolean(contentQuery?.isPending) ||
     Boolean(progressQuery?.isPending);
+  // A course this student is not enrolled in answers 403, and the screen below
+  // would then draw an empty player -- a title, no chapters, nothing to press.
+  // Send them back to their courses instead. ADR-0001: the enrolment is the
+  // access, and they do not have one.
+  const isDenied = [courseQuery?.error, contentQuery?.error, progressQuery?.error].some(
+    (error) => error instanceof ApiError && (error.status === 403 || error.status === 404)
+  );
+
+  useEffect(() => {
+    if (isDenied) {
+      router.replace("/(tabs)/learning");
+    }
+  }, [isDenied, router]);
 
   const lectures = useMemo(() => chapters.flatMap((chapter) => chapter.lectures), [chapters]);
   const completedIds = useMemo(

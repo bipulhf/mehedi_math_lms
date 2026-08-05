@@ -19,6 +19,7 @@ import {
   type WrittenDraft
 } from "@/components/courses/course-exam-written-form";
 import { MathText } from "@/components/ui/math-text";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -83,10 +84,14 @@ export function CourseExamEditor({
   const t = useT();
   const format = useFormat();
   const queryClient = useQueryClient();
-  const { data: exam, isPending } = useQuery({
+  const { data: exam, error, isPending } = useQuery({
     queryFn: async () => getTestDetail(examId),
     queryKey: queryKeys.tests.detail(examId)
   });
+
+  // An exam that is not this teacher's to open would otherwise leave the page
+  // on its skeleton for ever.
+  useAccessGuard([error]);
   const [settings, setSettings] = useState<ExamSettingsDraft>({
     description: "",
     durationInMinutes: null,

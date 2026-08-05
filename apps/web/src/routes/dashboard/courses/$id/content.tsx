@@ -12,6 +12,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContentChapter } from "@/lib/api/content";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourseContent } from "@/lib/api/content";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
@@ -53,6 +54,8 @@ function CourseContentPage(): JSX.Element {
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const content: readonly ContentChapter[] = contentQuery?.data ?? [];
   const assessments: readonly AssessmentChapterSummary[] = assessmentsQuery?.data ?? [];
+  useAccessGuard([courseQuery?.error ?? null, contentQuery?.error ?? null]);
+
   const isLoading =
     Boolean(courseQuery?.isPending) ||
     Boolean(contentQuery?.isPending) ||

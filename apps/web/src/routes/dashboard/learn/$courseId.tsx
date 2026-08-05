@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 
@@ -9,7 +9,7 @@ import {
   CoursePlayerSkeleton
 } from "@/components/courses/course-player";
 import { RouteErrorView } from "@/components/common/route-error";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
@@ -23,7 +23,6 @@ import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
-import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/learn/$courseId")({
   head: () =>
@@ -37,8 +36,6 @@ export const Route = createFileRoute("/dashboard/learn/$courseId")({
 } as never);
 
 function CourseLearningPage(): JSX.Element {
-  const t = useT();
-
   const { courseId } = Route.useParams();
   const { isPending: isSessionPending, session } = useAuthSession();
   const isStudent = !isSessionPending && session?.session.role === "STUDENT";
@@ -66,6 +63,16 @@ function CourseLearningPage(): JSX.Element {
       }
     ]
   });
+  // A course this student is not enrolled in answers 403 on its content, and
+  // the page below renders a skeleton until content arrives — so without this
+  // they would sit on a player that never loads. ADR-0001: the enrolment is the
+  // access, and they do not have one.
+  useAccessGuard([
+    courseQuery?.error ?? null,
+    contentQuery?.error ?? null,
+    progressQuery?.error ?? null
+  ]);
+
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const content: readonly ContentChapter[] = contentQuery?.data ?? [];
   const progress: CourseProgressResponse | null = progressQuery?.data ?? null;
@@ -78,19 +85,13 @@ function CourseLearningPage(): JSX.Element {
       Boolean(progressQuery?.isPending) ||
       Boolean(assessmentsQuery?.isPending));
 
-  if (session?.session.role !== "STUDENT") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("learn.studentOnly")}</CardTitle>
-          <CardDescription>{t("learn.studentOnlyLead")}</CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm leading-7 text-ink/68">{t("learn.switchAccount")}</CardContent>
-      </Card>
-    );
+  // Staff have no player: they read a course through the builder. Their own
+  // dashboard is a better answer than a card telling them to switch accounts.
+  if (!isSessionPending && session !== null && session.session.role !== "STUDENT") {
+    return <Navigate replace to="/dashboard" />;
   }
 
-  if (isLoading || !course || !progress) {
+  if (isSessionPending || isLoading || !course || !progress) {
     return <CoursePlayerSkeleton />;
   }
 

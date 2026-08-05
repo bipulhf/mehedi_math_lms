@@ -9,6 +9,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { RouteErrorView } from "@/components/common/route-error";
 import { AssessmentBuilder } from "@/components/tests/assessment-builder";
 import type { CourseDetail } from "@/lib/api/courses";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourse } from "@/lib/api/courses";
 import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { getCourseAssessments } from "@/lib/api/tests";
@@ -37,6 +38,8 @@ function CourseAssessmentsPage(): JSX.Element {
   });
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const assessments: readonly AssessmentChapterSummary[] = assessmentsQuery?.data ?? [];
+  useAccessGuard([courseQuery?.error ?? null, assessmentsQuery?.error ?? null]);
+
   const isLoading = Boolean(courseQuery?.isPending) || Boolean(assessmentsQuery?.isPending);
 
   const loadData = async (): Promise<void> => {

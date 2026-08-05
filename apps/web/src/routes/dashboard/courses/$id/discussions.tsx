@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ContentChapter } from "@/lib/api/content";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourseContent } from "@/lib/api/content";
 import type { CourseDetail } from "@/lib/api/courses";
 import { getCourse } from "@/lib/api/courses";
@@ -49,6 +50,8 @@ function CourseDiscussionsPage(): JSX.Element {
 
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const chapters: readonly ContentChapter[] = contentQuery?.data ?? [];
+  useAccessGuard([courseQuery?.error ?? null, contentQuery?.error ?? null]);
+
   const isLoading = Boolean(courseQuery?.isPending) || Boolean(contentQuery?.isPending);
   const lectureCount = chapters.reduce((total, chapter) => total + chapter.lectures.length, 0);
 

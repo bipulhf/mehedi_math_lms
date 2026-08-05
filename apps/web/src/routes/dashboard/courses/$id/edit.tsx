@@ -15,6 +15,7 @@ import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
 import { RouteErrorView } from "@/components/common/route-error";
 import { BackButton } from "@/components/ui/back-button";
 import type { CategoryNode } from "@/lib/api/categories";
+import { useAccessGuard } from "@/hooks/use-access-guard";
 import { listCategories } from "@/lib/api/categories";
 import type { CourseDetail, CourseTeacherOption, UpdateCourseInput } from "@/lib/api/courses";
 import {
@@ -84,6 +85,8 @@ function EditCoursePage(): JSX.Element {
   const course: CourseDetail | null = courseQuery?.data ?? null;
   const categories: readonly CategoryNode[] = categoriesQuery?.data ?? [];
   const teachers: readonly CourseTeacherOption[] = teachersQuery?.data ?? [];
+  useAccessGuard([courseQuery?.error ?? null]);
+
   const isLoading =
     Boolean(courseQuery?.isPending) ||
     Boolean(categoriesQuery?.isPending) ||
