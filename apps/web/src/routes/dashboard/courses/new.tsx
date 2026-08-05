@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { GraduationCap, ChevronLeft } from "lucide-react";
 import type { JSX } from "react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -12,6 +12,7 @@ import {
   type CourseEditorValues
 } from "@/components/courses/course-editor";
 import { RouteErrorView } from "@/components/common/route-error";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
@@ -73,7 +74,7 @@ export const Route = createFileRoute("/dashboard/courses/new")({
   errorComponent: RouteErrorView
 } as never);
 
-const initialValues: CourseEditorValues = {
+const blankCourse: CourseEditorValues = {
   categoryId: "",
   coverImageUrl: undefined,
   description: "",
@@ -87,6 +88,7 @@ function CreateCoursePage(): JSX.Element {
   const t = useT();
 
   const router = useRouter();
+  const { isPending: isSessionPending, session } = useAuthSession();
   const [isSaving, setIsSaving] = useState(false);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>("idle");
   const courseIdRef = useRef<string | null>(null);
@@ -101,7 +103,24 @@ function CreateCoursePage(): JSX.Element {
   });
   const categories: readonly CategoryNode[] = categoriesQuery?.data ?? [];
   const teachers: readonly CourseTeacherOption[] = teachersQuery?.data ?? [];
-  const isLoading = Boolean(categoriesQuery?.isPending) || Boolean(teachersQuery?.isPending);
+  const isLoading =
+    Boolean(categoriesQuery?.isPending) || Boolean(teachersQuery?.isPending) || isSessionPending;
+
+  /**
+   * A teacher making a course is teaching it — being asked to tick your own name
+   * is a step with one right answer. An admin gets nothing preselected, because
+   * they are arranging somebody else's course and are not in the directory.
+   *
+   * The editor seeds its state from this once, on mount, which is why the page
+   * waits for the session before rendering it.
+   */
+  const initialValues = useMemo<CourseEditorValues>(() => {
+    const userId = session?.user.id;
+
+    return session?.session.role === "TEACHER" && userId !== undefined
+      ? { ...blankCourse, teacherIds: [userId] }
+      : blankCourse;
+  }, [session]);
 
   const handleAutosave = async (values: CourseEditorValues): Promise<void> => {
     if (!courseIdRef.current) {

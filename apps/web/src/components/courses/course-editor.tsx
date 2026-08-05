@@ -18,7 +18,6 @@ import type { CourseTeacherOption, CreateCourseInput } from "@/lib/api/courses";
 import { uploadCourseCover } from "@/lib/api/uploads";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
-import { stripHtml } from "@/lib/html";
 
 export interface CourseEditorValues extends CreateCourseInput {
   teacherIds: readonly string[];
@@ -334,7 +333,7 @@ export function CourseEditor({
               {t("author.noInstructor")}
             </p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {filteredTeachers.map((teacher) => {
                 const isSelected = values.teacherIds.includes(teacher.id);
                 return (
@@ -343,31 +342,31 @@ export function CourseEditor({
                     type="button"
                     onClick={() => toggleTeacher(teacher.id)}
                     className={cn(
-                      "flex items-start gap-4 border p-5 text-left transition-colors",
+                      "flex items-center gap-3 border px-3 py-2.5 text-left transition-colors",
                       isSelected
                         ? "border-line-strong bg-chip-active"
                         : "border-hairline bg-panel-warm/40 hover:border-line-strong"
                     )}
                   >
-                    <div className="flex size-10 shrink-0 items-center justify-center border border-hairline bg-card font-bold text-ink">
+                    <span className="flex size-8 shrink-0 items-center justify-center border border-hairline bg-card text-sm font-bold text-ink">
                       {teacher.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2 font-medium text-ink">
-                        <span className="truncate">{teacher.name}</span>
-                        {isSelected ? <Check className="size-4 shrink-0 text-ink" /> : null}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-ink">
+                        {teacher.name}
                       </span>
-                      <span className="block truncate text-sm font-light text-muted">
+                      <span className="block truncate text-xs font-light text-muted">
                         {teacher.email}
                       </span>
-                      {teacher.bio ? (
-                        // Stripped rather than rendered: this sits inside a
-                        // button, where a block element is invalid markup.
-                        <span className="mt-2 line-clamp-2 block text-sm font-light leading-relaxed text-muted">
-                          {stripHtml(teacher.bio)}
-                        </span>
-                      ) : null}
-                    </div>
+                    </span>
+                    {/* The tick keeps its space either way, so a row does not
+                        shift sideways the moment it is picked. */}
+                    <Check
+                      className={cn(
+                        "size-4 shrink-0 text-ink",
+                        isSelected ? "opacity-100" : "opacity-0"
+                      )}
+                    />
                   </button>
                 );
               })}
