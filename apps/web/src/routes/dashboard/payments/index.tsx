@@ -223,7 +223,9 @@ function PaymentsPage(): JSX.Element {
               <EmptyState message={t("pay.empty")} />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            // A table of seven columns is not a phone layout. Below `md` the
+            // same rows are stacked as cards, the way `DataTable` does it.
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
@@ -286,6 +288,60 @@ function PaymentsPage(): JSX.Element {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {items.length === 0 ? null : (
+            <div className="divide-y divide-hairline-fainter md:hidden">
+              {items.map((item) => (
+                <div className="space-y-3 p-4" key={item.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-ink">{item.course.title}</p>
+                      {canManagePayments ? (
+                        <p className="truncate text-xs text-muted-faint">
+                          {item.user?.email ?? "Unknown"}
+                        </p>
+                      ) : null}
+                    </div>
+                    <Badge tone={paymentTone(item.status)}>{item.status}</Badge>
+                  </div>
+
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <dt className="text-xs text-muted-light">{t("pay.amount")}</dt>
+                      <dd className="font-medium text-ink">{Number(item.amount).toFixed(2)}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-light">{t("pay.created")}</dt>
+                      <dd className="text-muted">
+                        {new Date(item.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </dd>
+                    </div>
+                    <div className="col-span-2 min-w-0">
+                      <dt className="text-xs text-muted-light">{t("pay.transaction")}</dt>
+                      <dd className="truncate font-mono text-xs text-muted-faint">
+                        {item.transactionId}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {canManagePayments && item.status === "SUCCESS" ? (
+                    <Button
+                      className="w-full"
+                      onClick={() => setRefundTarget(item)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {t("pay.refund")}
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -257,7 +257,9 @@ function AdminCoursesPage(): JSX.Element {
         </div>
       ) : (
         <div className="border border-hairline bg-card overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Six columns, one of them a 96px thumbnail and one a row of six
+              buttons: below `lg` the same rows are stacked as cards. */}
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="bg-panel-warm/10 border-b border-hairline/20">
@@ -428,6 +430,105 @@ function AdminCoursesPage(): JSX.Element {
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="divide-y divide-hairline lg:hidden">
+            {courses.map((course) => (
+              <div className="space-y-4 p-4" key={course.id}>
+                <div className="flex items-start gap-3">
+                  <div className="size-16 shrink-0 overflow-hidden border border-hairline bg-panel-warm">
+                    {course.coverImageUrl ? (
+                      <ResponsiveImage
+                        alt={course.title}
+                        className="h-full w-full object-cover"
+                        sizes="64px"
+                        src={course.coverImageUrl}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-muted-faint">
+                        <GraduationCap className="size-5" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      className="line-clamp-2 text-base font-medium tracking-tight text-ink"
+                      params={{ id: course.id }}
+                      to="/dashboard/courses/$id/edit"
+                    >
+                      {course.title}
+                    </Link>
+                    <p className="mt-1 truncate text-sm text-muted">{course.creator.name}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <CourseStatusBadge status={course.status} />
+                      <Badge tone="quiet">{course.category.name}</Badge>
+                      <span className="font-mono text-sm text-ink">
+                        ৳{Number(course.price).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* The same actions the row carries, wrapped rather than laid
+                    out in one line that would run off the screen. */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link params={{ id: course.id }} to="/dashboard/courses/$id/edit">
+                      {t("action.edit")}
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link params={{ id: course.id }} to="/dashboard/courses/$id/notices">
+                      {t("manage.notices")}
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link params={{ id: course.id }} to="/dashboard/courses/$id/discussions">
+                      {t("manage.discussions")}
+                    </Link>
+                  </Button>
+                  {course.status === "ARCHIVED" ? (
+                    <Button
+                      disabled={busyId === course.id}
+                      onClick={() => handleRestore(course)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {t("admin.courses.restore")}
+                    </Button>
+                  ) : (
+                    <Button
+                      className="text-error"
+                      disabled={busyId === course.id}
+                      onClick={() => handleArchive(course)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      {t("admin.courses.archive")}
+                    </Button>
+                  )}
+                  {course.status === "PENDING" ? (
+                    <>
+                      <Button
+                        disabled={busyId === course.id}
+                        onClick={() => handleApprove(course.id)}
+                        size="sm"
+                      >
+                        {t("admin.approve.approve")}
+                      </Button>
+                      <Button
+                        disabled={busyId === course.id}
+                        onClick={() => handleReject(course)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {t("admin.approve.reject")}
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

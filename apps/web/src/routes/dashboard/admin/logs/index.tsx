@@ -169,7 +169,7 @@ function AdminLogsPage(): JSX.Element {
             <EmptyState message={t("admin.logs.empty")} />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full border-collapse text-left whitespace-nowrap">
               <thead>
                 <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
@@ -228,7 +228,48 @@ function AdminLogsPage(): JSX.Element {
           </div>
         )}
 
-        <div className="flex items-center justify-between border-t border-hairline p-4">
+        {/* An audit row is five columns of which two are identifiers; on a phone
+            it reads as a stacked entry rather than a sideways scroll. */}
+        {logs.length === 0 ? null : (
+          <div className="divide-y divide-hairline-fainter md:hidden">
+            {logs.map((log) => (
+              <div className="space-y-2 p-4" key={log.id}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <Badge tone="neutral">{formatAction(log.action)}</Badge>
+                  <span className="text-xs text-muted">
+                    {new Date(log.createdAt).toLocaleString("en-GB", {
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      month: "short",
+                      year: "numeric"
+                    })}
+                  </span>
+                </div>
+
+                {log.actor ? (
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink">{log.actor.name}</p>
+                    <p className="truncate text-xs text-muted-faint">{log.actor.email}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-faint">{t("admin.logs.unknownActor")}</p>
+                )}
+
+                <p className="text-sm text-ink">
+                  {log.entityType}
+                  <span className="ml-2 font-mono text-xs text-muted-faint">{log.entityId}</span>
+                </p>
+
+                <p className="break-words text-xs font-light text-muted">
+                  {formatMetadata(log.metadata) ?? "\u2014"}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-4 border-t border-hairline p-4">
           <p className="text-xs text-muted-faint">
             {t("admin.users.pageLabel")}
             <span className="font-medium text-ink">{page}</span> of{" "}

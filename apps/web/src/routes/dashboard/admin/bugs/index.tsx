@@ -169,7 +169,7 @@ function AdminBugsPage(): JSX.Element {
             <EmptyState message={t("admin.bugs.empty")} />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full border-collapse text-left whitespace-nowrap">
               <thead>
                 <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
@@ -224,7 +224,47 @@ function AdminBugsPage(): JSX.Element {
           </div>
         )}
 
-        <div className="border-t border-hairline p-4 flex items-center justify-between">
+        {/* Below `md` the report is a card. The whole card is the link, matching
+            the row, so a thumb does not have to find the Inspect button. */}
+        {bugs.length === 0 ? null : (
+          <div className="divide-y divide-hairline-fainter md:hidden">
+            {bugs.map((bug) => (
+              <Link
+                className="block space-y-3 p-4"
+                key={bug.id}
+                params={{ id: bug.id }}
+                to="/dashboard/admin/bugs/$id"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-ink">{bug.title}</p>
+                  <p className="line-clamp-2 text-xs font-light text-muted">
+                    {stripHtml(bug.description)}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={statusTone(bug.status)}>{bug.status.replace("_", " ")}</Badge>
+                  <Badge tone={priorityTone(bug.priority)}>{bug.priority}</Badge>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+                  <span className="min-w-0 truncate">
+                    {bug.user.name} · {bug.user.role}
+                  </span>
+                  <span>
+                    {new Date(bug.createdAt).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                    })}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-4 border-t border-hairline p-4">
           <p className="text-xs text-muted-faint">{t("admin.users.pageLabel")}<span className="text-ink font-medium">{page}</span> of <span className="text-ink font-medium">{totalPages}</span></p>
           <div className="flex gap-2">
             <Button size="sm" type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>{t("common.previous")}</Button>

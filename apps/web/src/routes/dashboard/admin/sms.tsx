@@ -296,7 +296,7 @@ function AdminSmsPage() {
               <EmptyState message={t("sms.historyEmpty")} />
             </div>
           ) : (
-            <table className="w-full text-left whitespace-nowrap border-collapse">
+            <table className="hidden w-full whitespace-nowrap border-collapse text-left md:table">
               <thead>
                 <tr className="border-b border-hairline bg-panel-warm/40 text-xs font-semibold uppercase tracking-wider text-muted-faint">
                   <th className="px-4 py-2.5">{t("sms.time")}</th>
@@ -360,6 +360,60 @@ function AdminSmsPage() {
                 ))}
               </tbody>
             </table>
+          )}
+
+          {/* The table is `whitespace-nowrap` across six columns, so on a phone
+              it is a sideways scroll with the counts out of sight. Same batches,
+              stacked. */}
+          {historyLoading || history.length === 0 ? null : (
+            <div className="divide-y divide-hairline-fainter md:hidden">
+              {history.map((row) => (
+                <div className="space-y-3 p-4" key={row.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink">
+                        {new Date(row.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </p>
+                      <p className="text-xs text-muted-faint">
+                        {new Date(row.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
+                      </p>
+                    </div>
+                    <Badge tone={row.status === "COMPLETED" ? "neutral" : "attention"}>
+                      {row.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-ink">
+                      {row.targetKind.replace("_", " ")}
+                    </span>
+                    {row.targetRole ? <Badge tone="quiet">{row.targetRole}</Badge> : null}
+                  </div>
+
+                  <dl className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <dt className="text-xs text-muted-light">{t("sms.sent")}</dt>
+                      <dd className="font-medium text-ink">{row.sentCount}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-light">{t("sms.failed")}</dt>
+                      <dd className="font-medium text-error">{row.failedCount}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-light">{t("sms.skipped")}</dt>
+                      <dd className="text-muted-faint">{row.skippedCount}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
