@@ -5,6 +5,7 @@ import { useState, type JSX } from "react";
 import { toast } from "sonner";
 
 import { CourseBuyCard, CourseMobileBuyBar } from "@/components/courses/course-buy-card";
+import type { AppliedCoupon } from "@/components/courses/course-coupon-field";
 import { CourseCurriculum } from "@/components/courses/course-curriculum";
 import { CourseFacts } from "@/components/courses/course-facts";
 import { CourseHero } from "@/components/courses/course-hero";
@@ -125,6 +126,9 @@ function CourseDetailPage(): JSX.Element {
   const [tab, setTab] = useState<DetailTab>("curriculum");
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [previewLessonId, setPreviewLessonId] = useState<string | null>(null);
+  // Held by the page rather than the buy card, because the pinned phone bar
+  // quotes the same Payable and the enrol call has to carry the code.
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   const isStudent = !isSessionPending && session?.session.role === "STUDENT";
 
@@ -176,6 +180,9 @@ function CourseDetailPage(): JSX.Element {
     try {
       const response = await createEnrollment({
         callbackOrigin: window.location.origin,
+        // Re-priced server-side from the course row; what the card quoted is
+        // only a quote. ADR-0013.
+        ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
         courseId: course.id
       });
 
@@ -271,12 +278,14 @@ function CourseDetailPage(): JSX.Element {
         </div>
 
         <CourseBuyCard
+          appliedCoupon={appliedCoupon}
           course={course}
           enrollment={enrollment}
           firstPreviewLessonId={firstPreviewLessonId}
           isEnrolling={isEnrolling}
           isSessionPending={isSessionPending}
           isSignedIn={Boolean(session)}
+          onCouponChange={setAppliedCoupon}
           onEnroll={() => void handleEnroll()}
           onPreview={setPreviewLessonId}
           reviewSummary={reviewSummary}
@@ -285,6 +294,7 @@ function CourseDetailPage(): JSX.Element {
       </div>
 
       <CourseMobileBuyBar
+        appliedCoupon={appliedCoupon}
         course={course}
         enrollment={enrollment}
         isEnrolling={isEnrolling}

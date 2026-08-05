@@ -232,6 +232,7 @@ function PaymentsPage(): JSX.Element {
                     <th className="px-4 py-2.5">{t("pay.course")}</th>
                     {canManagePayments ? <th className="px-4 py-2.5">{t("pay.student")}</th> : null}
                     <th className="px-4 py-2.5">{t("pay.amount")}</th>
+                    <th className="px-4 py-2.5">{t("coupon.title")}</th>
                     <th className="px-4 py-2.5">{t("pay.status")}</th>
                     <th className="px-4 py-2.5">{t("pay.transaction")}</th>
                     <th className="px-4 py-2.5">{t("pay.created")}</th>
@@ -267,6 +268,20 @@ function PaymentsPage(): JSX.Element {
                       ) : null}
                       <td className="px-4 py-3 font-medium text-ink">
                         {Number(item.amount).toFixed(2)}
+                      </td>
+                      {/* The code and what it took off, so a 1499 course
+                          arriving as 1199 explains itself. ADR-0013. */}
+                      <td className="px-4 py-3">
+                        {item.couponCode === null ? (
+                          <span className="text-xs text-muted-faint">—</span>
+                        ) : (
+                          <div className="flex flex-col">
+                            <span className="font-mono text-xs text-ink">{item.couponCode}</span>
+                            <span className="text-xs text-muted-faint">
+                              −{Number(item.discountAmount ?? 0).toFixed(2)}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <Badge tone={paymentTone(item.status)}>{item.status}</Badge>
@@ -322,6 +337,15 @@ function PaymentsPage(): JSX.Element {
                         })}
                       </dd>
                     </div>
+                    {item.couponCode === null ? null : (
+                      <div className="col-span-2 min-w-0">
+                        <dt className="text-xs text-muted-light">{t("coupon.title")}</dt>
+                        <dd className="text-muted">
+                          <span className="font-mono text-ink">{item.couponCode}</span> · −
+                          {Number(item.discountAmount ?? 0).toFixed(2)}
+                        </dd>
+                      </div>
+                    )}
                     <div className="col-span-2 min-w-0">
                       <dt className="text-xs text-muted-light">{t("pay.transaction")}</dt>
                       <dd className="truncate font-mono text-xs text-muted-faint">

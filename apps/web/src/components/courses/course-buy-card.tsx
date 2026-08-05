@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { CourseCouponField, type AppliedCoupon } from "@/components/courses/course-coupon-field";
 import { Button } from "@/components/ui/button";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { RingedPlay } from "@/components/ui/doodles";
@@ -10,7 +11,8 @@ import type { CourseDetail } from "@/lib/api/courses";
 import type { StudentEnrollment } from "@/lib/api/enrollments";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
-interface CourseActionProps {
+/** What decides the button. A coupon changes the price, never the action. */
+interface CoursePrimaryActionProps {
   readonly course: CourseDetail;
   readonly enrollment: StudentEnrollment | null;
   readonly isEnrolling: boolean;
@@ -20,9 +22,15 @@ interface CourseActionProps {
   readonly role: string | undefined;
 }
 
+interface CourseActionProps extends CoursePrimaryActionProps {
+  /** Set once a code has been checked; the Payable then replaces the price. */
+  readonly appliedCoupon: AppliedCoupon | null;
+}
+
 interface CourseBuyCardProps extends CourseActionProps {
   /** Opens the first free class from the rail, when the course keeps one. */
   readonly firstPreviewLessonId: string | null;
+  readonly onCouponChange: (coupon: AppliedCoupon | null) => void;
   readonly onPreview: (lessonId: string) => void;
   readonly reviewSummary: { average: number; count: number } | null;
 }
@@ -42,7 +50,7 @@ export function CoursePrimaryAction({
   isSignedIn,
   onEnroll,
   role
-}: CourseActionProps): JSX.Element {
+}: CoursePrimaryActionProps): JSX.Element {
   const t = useT();
 
   if (isSessionPending) {
@@ -91,12 +99,14 @@ export function CoursePrimaryAction({
  * batch date and the countdown for the same reason.
  */
 export function CourseBuyCard({
+  appliedCoupon,
   course,
   enrollment,
   firstPreviewLessonId,
   isEnrolling,
   isSessionPending,
   isSignedIn,
+  onCouponChange,
   onEnroll,
   onPreview,
   reviewSummary,
@@ -104,6 +114,15 @@ export function CourseBuyCard({
 }: CourseBuyCardProps): JSX.Element {
   const t = useT();
   const format = useFormat();
+  const publicCoupon = course.publicCoupon ?? null;
+  // The code box needs a session — the preview endpoint is students-only, so a
+  // visitor sees the advertised code and nothing to type into until they join.
+  const canApplyCoupon =
+    !isSessionPending &&
+    isSignedIn &&
+    role === "STUDENT" &&
+    !enrollment?.accessGranted &&
+    Number(course.price) > 0;
 
   const includes = [
     t("detail.includeLifetime"),
@@ -114,7 +133,10 @@ export function CourseBuyCard({
 
   return (
     <div className="border border-hairline bg-card p-5 sm:p-6 lg:sticky lg:top-28">
-      <PriceText amount={course.price} className="text-3xl font-medium" />
+      <PriceText
+        amount={appliedCoupon ? appliedCoupon.payable : course.price}
+        className="text-3xl font-medium"
+      />
 
       {reviewSummary && reviewSummary.count > 0 ? (
         <div className="mt-2 flex items-center gap-2 text-sm text-muted-light">
@@ -163,6 +185,26 @@ export function CourseBuyCard({
         )}
       </div>
 
+      {canApplyCoupon ? (
+        <div className="mt-6">
+          <CourseCouponField
+            applied={appliedCoupon}
+            courseId={course.id}
+            onApplied={onCouponChange}
+            publicCode={publicCoupon?.code ?? null}
+          />
+        </div>
+      ) : publicCoupon ? (
+        // Signed out, or staff: the code is worth knowing, but there is nothing
+        // here to type it into yet.
+        <p className="mt-6 border-t border-hairline pt-4 text-sm text-muted">
+          {t("coupon.bannerTitle", {
+            amount: format.currency(publicCoupon.discountAmount),
+            code: publicCoupon.code
+          })}
+        </p>
+      ) : null}
+
       <div className="mt-8 border-t border-hairline pt-6">
         <p className="label-mono text-xs uppercase text-muted-faint">{t("detail.includes")}</p>
         <ul className="mt-4 space-y-3">
@@ -197,7 +239,12 @@ export function CourseMobileBuyBar(props: CourseActionProps): JSX.Element | null
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper lg:hidden">
       <div className="flex items-center gap-4 px-4 py-3 sm:px-8">
-        <PriceText amount={props.course.price} className="shrink-0 text-xl font-medium" />
+        {/* The Payable, once a code is applied: the bar and the card must never
+            quote two different numbers for the same purchase. */}
+        <PriceText
+          amount={props.appliedCoupon ? props.appliedCoupon.payable : props.course.price}
+          className="shrink-0 text-xl font-medium"
+        />
         <div className="min-w-0 flex-1">
           <CoursePrimaryAction {...props} />
         </div>

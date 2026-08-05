@@ -67,7 +67,24 @@ export interface CourseSummary {
   updatedAt: string;
 }
 
-export type CourseDetail = CourseSummary;
+/**
+ * A course as its own page sees it.
+ *
+ * `publicCoupon` rides along rather than living behind its own request, so the
+ * banner is there in the server-rendered pass instead of appearing a beat after
+ * the price. Only the by-slug and by-id responses carry it — a catalogue card
+ * does not advertise codes. ADR-0013.
+ */
+export interface CourseDetail extends CourseSummary {
+  publicCoupon?: {
+    code: string;
+    discountAmount: string;
+    id: string;
+    kind: "FLAT" | "PERCENT";
+    payable: string;
+    value: string;
+  } | null;
+}
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 export type RejectCourseInput = z.infer<typeof rejectCourseSchema>;

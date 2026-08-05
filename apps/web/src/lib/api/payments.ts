@@ -7,13 +7,19 @@ export type PaymentStatus = z.infer<typeof paymentStatusSchema>;
 export type RefundPaymentInput = z.infer<typeof refundPaymentSchema>;
 
 export interface PaymentHistoryItem {
+  /** The Payable — what was charged, after any coupon. */
   amount: string;
+  /** The code as the student typed it, when one was used. ADR-0013. */
+  couponCode: string | null;
   course: {
     id: string;
     title: string;
   };
   createdAt: string;
   currency: string;
+  discountAmount: string | null;
+  /** The price before the discount. Null when no coupon was used. */
+  listAmount: string | null;
   /** Null while the payment is still at checkout. ADR-0001. */
   enrollmentId: string | null;
   id: string;
