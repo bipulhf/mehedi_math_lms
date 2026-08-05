@@ -2,8 +2,9 @@ import { useState, type JSX } from "react";
 import type { MessageKey } from "@genex/i18n";
 
 import { AccordionRow } from "@/components/ui/accordion";
-import { SectionHeading } from "@/components/ui/section-heading";
+import { LandingSection } from "@/features/landing/components/landing-section";
 import { useT } from "@/lib/i18n/locale-context";
+import { hueForIndex, spectrumClasses } from "@/lib/spectrum";
 
 const faqs: readonly { answerKey: MessageKey; questionKey: MessageKey }[] = [
   { answerKey: "faq.a1", questionKey: "faq.q1" },
@@ -35,25 +36,30 @@ export function FaqSection(): JSX.Element {
   };
 
   return (
-    <section className="border-b border-hairline">
-      <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[340px_1fr] lg:gap-16 lg:px-14 lg:py-20">
-        <SectionHeading title={t("home.faqTitle")} />
-
-        <div>
-          {faqs.map((faq) => (
+    <LandingSection title={t("home.faqTitle")}>
+      <div className="max-w-4xl">
+          {faqs.map((faq, index) => (
             <AccordionRow
               isOpen={openKeys.has(faq.questionKey)}
               key={faq.questionKey}
               onToggle={() => toggle(faq.questionKey)}
-              title={t(faq.questionKey)}
+              title={
+                <span className="flex items-baseline gap-3">
+                  <span
+                    className={`label-mono text-xs ${spectrumClasses(hueForIndex(index)).text}`}
+                  >
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span>{t(faq.questionKey)}</span>
+                </span>
+              }
             >
               <p className="max-w-[60ch] text-base font-light leading-relaxed text-muted">
                 {t(faq.answerKey)}
               </p>
             </AccordionRow>
-          ))}
-        </div>
+        ))}
       </div>
-    </section>
+    </LandingSection>
   );
 }

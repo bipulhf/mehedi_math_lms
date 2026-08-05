@@ -1,8 +1,10 @@
 import type { JSX } from "react";
 
-import { SectionHeading } from "@/components/ui/section-heading";
+import { Reveal } from "@/components/marketing/reveal";
+import { LandingSection } from "@/features/landing/components/landing-section";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { useT } from "@/lib/i18n/locale-context";
+import { hueForKey, spectrumClasses } from "@/lib/spectrum";
 
 interface Review {
   name: string;
@@ -47,34 +49,37 @@ export function ReviewsSection(): JSX.Element {
   ];
 
   return (
-    <section className="border-b border-hairline">
-      <div className="mx-auto w-full max-w-[90rem] space-y-8 px-4 py-14 sm:px-8 lg:px-14 lg:py-20">
-        <SectionHeading
-          eyebrow={t("reviews.eyebrow")}
-          description={t("reviews.lead")}
-          title={t("reviews.title")}
-        />
+    <LandingSection
+      description={t("reviews.lead")}
+      eyebrow={t("reviews.eyebrow")}
+      title={t("reviews.title")}
+      tone="warm"
+    >
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {reviews.map((review, index) => {
+            const hue = spectrumClasses(hueForKey(review.name));
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {reviews.map((review) => (
-            <figure
-              className="group flex h-full flex-col gap-4 border border-hairline bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-md"
-              key={review.name}
-            >
-              <RatingStars rating={review.rating} />
-              <blockquote className="flex-1 text-base font-light leading-relaxed text-muted">
-                “{t(review.textKey)}”
-              </blockquote>
-              <figcaption className="space-y-1">
-                <p className="font-medium text-ink transition-colors group-hover:text-accent">
-                  {review.name}
-                </p>
-                <p className="text-sm text-muted-light">{t(review.roleKey)}</p>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
+            return (
+              <Reveal delayMs={index * 90} key={review.name}>
+                <figure
+                  className={`flex h-full flex-col gap-4 border border-l-2 border-hairline bg-card p-6 transition-colors hover:border-line-strong ${hue.rule}`}
+                >
+                  <span aria-hidden="true" className={`text-4xl leading-none ${hue.text}`}>
+                    “
+                  </span>
+                  <RatingStars rating={review.rating} />
+                  <blockquote className="flex-1 text-base font-light leading-relaxed text-muted">
+                    {t(review.textKey)}
+                  </blockquote>
+                  <figcaption className="space-y-1">
+                    <p className="font-medium text-ink">{review.name}</p>
+                    <p className="text-sm text-muted-light">{t(review.roleKey)}</p>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            );
+          })}
       </div>
-    </section>
+    </LandingSection>
   );
 }

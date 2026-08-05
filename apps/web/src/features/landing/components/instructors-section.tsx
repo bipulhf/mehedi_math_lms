@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
-import { SectionHeading } from "@/components/ui/section-heading";
+import { Reveal } from "@/components/marketing/reveal";
+import { LandingSection } from "@/features/landing/components/landing-section";
 import { TeacherAvatar } from "@/features/landing/components/teacher-avatar";
 import type { LandingTeacher } from "@/lib/api/landing";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { hueForKey, spectrumClasses } from "@/lib/spectrum";
 
 /**
  * The teacher strip. A teacher without a slug has no public page, so their card
@@ -24,32 +26,32 @@ export function InstructorsSection({
   }
 
   return (
-    <section className="border-b border-hairline">
-      <div className="mx-auto w-full max-w-[90rem] space-y-8 px-4 py-14 sm:px-8 lg:px-14 lg:py-20">
-        <SectionHeading
-          action={
-            <Link
-              className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
-              to="/teachers"
-            >
-              {t("action.showAll")}
-            </Link>
-          }
-          description={t("home.teachersLead")}
-          title={t("home.teachersTitle")}
-        />
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {teachers.map((teacher) => {
+    <LandingSection
+      action={
+        <Link
+          className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-spectrum-ember hover:text-spectrum-ember"
+          to="/teachers"
+        >
+          {t("action.showAll")}
+        </Link>
+      }
+      description={t("home.teachersLead")}
+      title={t("home.teachersTitle")}
+    >
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {teachers.map((teacher, index) => {
+            const hue = spectrumClasses(hueForKey(teacher.id));
             const body = (
               <>
                 <TeacherAvatar
-                  className="size-14 transition-transform duration-300 group-hover:scale-105"
+                  className="size-14"
                   name={teacher.name}
                   profilePhoto={teacher.profilePhoto}
                 />
                 <div className="min-w-0 space-y-1">
-                  <p className="truncate text-base font-medium text-ink transition-colors group-hover:text-accent">{teacher.name}</p>
+                  <p className="truncate text-base font-medium text-ink transition-colors group-hover:text-spectrum-ember">
+                    {teacher.name}
+                  </p>
                   {teacher.specializations === null ? null : (
                     <p className="truncate text-sm text-muted-light">{teacher.specializations}</p>
                   )}
@@ -60,26 +62,21 @@ export function InstructorsSection({
               </>
             );
 
-            return teacher.slug === null ? (
-              <div
-                className="group flex items-center gap-4 border border-hairline bg-card p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:shadow-md"
-                key={teacher.id}
-              >
-                {body}
-              </div>
-            ) : (
-              <Link
-                className="group flex items-center gap-4 border border-hairline bg-card p-5 transition-all duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:shadow-md"
-                key={teacher.id}
-                params={{ slug: teacher.slug }}
-                to="/teachers/$slug"
-              >
-                {body}
-              </Link>
+            const cardClassName = `group flex items-center gap-4 border border-l-2 border-hairline bg-card p-5 transition-colors hover:border-line-strong ${hue.rule}`;
+
+            return (
+              <Reveal delayMs={index * 80} key={teacher.id}>
+                {teacher.slug === null ? (
+                  <div className={cardClassName}>{body}</div>
+                ) : (
+                  <Link className={cardClassName} params={{ slug: teacher.slug }} to="/teachers/$slug">
+                    {body}
+                  </Link>
+                )}
+              </Reveal>
             );
           })}
-        </div>
       </div>
-    </section>
+    </LandingSection>
   );
 }

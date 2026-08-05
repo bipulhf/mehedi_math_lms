@@ -35,13 +35,29 @@ There is no `src/providers/` directory — providers are composed in `src/routes
 
 **Where a new component goes.** Domain components go in `src/components/<domain>/`, not in `src/features/`. `src/features/landing/` is the one exception and stays that way: it is a set of homepage sections, not a domain. Domain hooks go in `src/hooks/` — `use-messaging-socket.ts` is the pattern, extracted when a route file grew a cluster of state only one part of it read.
 
+## Motion
+
+Two rules, and which one applies depends on who is looking:
+
+- **Inside the app shell** — anything behind the login — `DESIGN.md` §1 stands:
+  colour and border transitions on hover, nothing else. No entrance animation,
+  nothing lifts or scales.
+- **On the public marketing pages** motion is allowed and deliberate (ADR-0012).
+  The vocabulary is three primitives in `src/components/marketing/` — `Reveal`,
+  `Marquee`, `CountUp` — and every one is switched off under
+  `prefers-reduced-motion` in one block at the bottom of `app.css`. Adding a
+  fourth effect is a decision, not a detail.
+
+The landing page is built from `LandingSection`, which fixes the band's padding,
+container width and heading rhythm. A section that sets its own is how the page
+drifted into looking like a stack of unrelated pages.
+
 ## Loading states
 
 No spinners, anywhere — `animate-spin` and "Loading…" are both absent from this workspace and must stay that way.
 
-No shimmer either, and no motion of any kind: `DESIGN.md` §1 forbids animation
-outright, so a skeleton is a still `#F1EEE9` block. If you are adding a keyframe
-to `app.css`, you are doing something the design rejects.
+No shimmer either: a skeleton is a still `#F1EEE9` block, on every page including
+the public ones.
 
 Two skeleton patterns coexist, and which one applies is decided by the route, not by taste:
 

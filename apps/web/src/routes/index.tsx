@@ -19,10 +19,13 @@ const FAQ_KEYS = [
 import { PublicLayout } from "@/components/layout/public-layout";
 import { CtaSection } from "@/features/landing/components/cta-section";
 import { FaqSection } from "@/features/landing/components/faq-section";
+import { FeaturedCoursesSection } from "@/features/landing/components/featured-courses-section";
 import { HeroSection } from "@/features/landing/components/hero-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
 import { ReviewsSection } from "@/features/landing/components/reviews-section";
+import { SubjectRailSection } from "@/features/landing/components/subject-rail-section";
+import { ValuePropsSection } from "@/features/landing/components/value-props-section";
 
 const EMPTY_SNAPSHOT: LandingSnapshot = {
   categories: [],
@@ -86,12 +89,18 @@ function HomePage(): JSX.Element {
 
   return (
     <PublicLayout>
-      <HeroSection courses={snapshot.courses} />
+      {/* The order a student reads it in: who this is, what is on offer, where
+          to start, why it is worth paying for, who teaches it, whether anyone
+          else rates it, the questions they will ask, and then the ask. */}
+      <HeroSection categories={snapshot.categories} stats={snapshot.stats} />
+      <FeaturedCoursesSection courses={snapshot.courses} />
+      <SubjectRailSection categories={snapshot.categories} />
       <LevelPickerSection
         categories={snapshot.categories}
         courses={snapshot.courses}
         publishedCourses={snapshot.stats.publishedCourses}
       />
+      <ValuePropsSection />
       <InstructorsSection teachers={snapshot.teachers} />
       <ReviewsSection />
       <FaqSection />

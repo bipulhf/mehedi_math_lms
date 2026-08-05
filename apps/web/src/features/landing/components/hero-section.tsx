@@ -1,72 +1,126 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { CountUp } from "@/components/marketing/count-up";
+import { Marquee } from "@/components/marketing/marquee";
+import { Reveal } from "@/components/marketing/reveal";
 import { Button } from "@/components/ui/button";
-import { DiamondTrio, DotPatch, QuarterArc, RingedPlay, RingedWord } from "@/components/ui/doodles";
-import type { LandingCourse } from "@/lib/api/landing";
-import { HeroCoursesCarousel } from "@/features/landing/components/hero-courses-carousel";
-import { useT } from "@/lib/i18n/locale-context";
+import { RingedPlay, RingedWord } from "@/components/ui/doodles";
+import type { LandingCategory, LandingStats } from "@/lib/api/landing";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { hueForKey, spectrumClasses } from "@/lib/spectrum";
 
 /**
- * The hero: a prominent, bold headline with doodle accents, lead paragraph,
- * high-impact CTA controls, ambient glow, and a featured-courses carousel.
+ * The opening: a short headline, the numbers behind it, and the subjects
+ * drifting past on a thin band. Nothing else — the catalogue is the section
+ * directly below, which is what a student came for.
+ *
+ * Marketing pages carry motion the app shell does not (ADR-0012): the headline
+ * and its supporting lines rise in sequence, the counts run once, and the
+ * subject band drifts. All of it stops under prefers-reduced-motion, where this
+ * is a headline over a row of words.
  */
-export function HeroSection({ courses }: { courses: readonly LandingCourse[] }): JSX.Element {
+export function HeroSection({
+  categories,
+  stats
+}: {
+  categories: readonly LandingCategory[];
+  stats: LandingStats;
+}): JSX.Element {
   const t = useT();
+  const format = useFormat();
   const [beforeRing = "", afterRing = ""] = t("home.heroTitle").split("{ring}");
 
+  const figures = [
+    { label: t("home.statStudents"), value: stats.students },
+    { label: t("home.statTeachers"), value: stats.teachers },
+    { label: t("home.statCourses"), value: stats.publishedCourses }
+  ].filter((figure) => figure.value > 0);
+
   return (
-    <section className="relative overflow-hidden border-b border-hairline py-12 sm:py-20 lg:py-28">
-      {/* Ambient background glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 -z-0 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/6 blur-[120px]"
-      />
-
-      {/* Decorative background doodles */}
-      <DotPatch className="-left-4 top-10 opacity-70 animate-float-subtle" />
-      <QuarterArc className="right-12 top-14 size-20 opacity-80 animate-float-subtle" />
-      <DiamondTrio className="right-1/4 top-1/5 opacity-70" />
-      <DotPatch className="-right-6 bottom-16 opacity-60 animate-pulse-subtle" />
-      <QuarterArc className="bottom-12 left-1/5 opacity-50" />
-
-      <div className="relative z-10 mx-auto max-w-[90rem] px-4 sm:px-8 lg:px-14">
-        <div className="mx-auto flex max-w-4xl flex-col items-center text-center space-y-9">
-          {/* Bold Main Headline */}
-          <h1 className="animate-fade-up-1 max-w-[22ch] text-4xl font-semibold leading-[1.12] tracking-tight text-ink sm:text-5xl lg:text-[4rem]">
-            {beforeRing}
-            <RingedWord>{t("home.heroTitleRing")}</RingedWord>
-            {afterRing}
-          </h1>
-
-          {/* Lead Copy */}
-          <p className="animate-fade-up-2 max-w-[50ch] text-lg font-light leading-relaxed text-muted sm:text-xl lg:text-[1.375rem]">
-            {t("home.heroLead")}
-          </p>
-
-          {/* Action CTAs */}
-          <div className="animate-fade-up-3 flex flex-wrap items-center justify-center gap-5 pt-2">
-            <Button
-              asChild
-              className="h-12 px-8 text-base transition-all duration-300 hover:scale-[1.04] active:scale-[0.98]"
-              size="lg"
+    <section className="relative overflow-hidden border-b border-hairline">
+      {/* Deliberately short: the courses are what a student came for, so the
+          hero says who this is and gets out of the way. */}
+      <div className="mx-auto max-w-[90rem] px-4 pb-6 pt-10 sm:px-8 lg:px-14 lg:pb-8 lg:pt-14">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+          <div>
+            <Reveal
+              as="p"
+              className="label-mono text-xs uppercase tracking-[0.28em] text-spectrum-ember"
             >
-              <Link to="/courses">{t("action.viewAllCourses")}</Link>
-            </Button>
-            <Link
-              className="group flex h-12 items-center gap-2.5 rounded-full border border-line-strong bg-card/80 px-6 text-base text-ink shadow-xs backdrop-blur-sm transition-all duration-300 hover:border-accent hover:bg-paper hover:text-accent hover:shadow-md"
-              search={{ free: true }}
-              to="/courses"
+              {t("home.subjectsEyebrow")}
+            </Reveal>
+
+            <Reveal delayMs={80}>
+              <h1
+                className="mt-4 max-w-[18ch] font-medium leading-[1.02] tracking-[-0.02em] text-ink"
+                style={{ fontSize: "var(--text-display)" }}
+              >
+                {beforeRing}
+                <RingedWord>{t("home.heroTitleRing")}</RingedWord>
+                {afterRing}
+              </h1>
+            </Reveal>
+
+            <Reveal
+              as="p"
+              className="mt-5 max-w-[46ch] text-base font-light leading-relaxed text-muted sm:text-lg"
+              delayMs={160}
             >
-              <RingedPlay className="transition-transform duration-300 group-hover:scale-110" />
-              <span>{t("action.watchFreeClass")}</span>
-            </Link>
+              {t("home.heroLead")}
+            </Reveal>
+
+            <Reveal className="mt-6 flex flex-wrap items-center gap-3" delayMs={240}>
+              <Button asChild className="h-11 px-7 text-base" size="lg">
+                <Link to="/courses">{t("action.viewAllCourses")}</Link>
+              </Button>
+              <Link
+                className="group flex h-11 items-center gap-2.5 rounded-full border border-line-strong px-5 text-base text-ink transition-colors hover:border-spectrum-ember hover:text-spectrum-ember"
+                search={{ free: true }}
+                to="/courses"
+              >
+                <RingedPlay />
+                <span>{t("action.watchFreeClass")}</span>
+              </Link>
+            </Reveal>
           </div>
-        </div>
 
-        {/* Featured courses carousel */}
-        <HeroCoursesCarousel courses={courses} />
+          {figures.length === 0 ? null : (
+            <Reveal className="grid grid-cols-3 gap-4 border-t border-hairline pt-5" delayMs={320}>
+              {figures.map((figure, index) => {
+                const hue = spectrumClasses(hueForKey(figure.label));
+
+                return (
+                  <div className={`border-l-2 pl-4 ${hue.rule}`} key={figure.label}>
+                    <p className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+                      <CountUp durationMs={900 + index * 150} value={figure.value} />
+                    </p>
+                    <p className="mt-1 text-sm text-muted-light">{figure.label}</p>
+                  </div>
+                );
+              })}
+            </Reveal>
+          )}
+        </div>
       </div>
+
+      {categories.length === 0 ? null : (
+        <div className="border-t border-hairline bg-panel-warm py-2.5">
+          <Marquee
+            items={categories.map((category) => (
+              <span
+                className={`text-lg font-medium tracking-tight sm:text-xl ${spectrumClasses(hueForKey(category.slug)).text}`}
+                key={category.id}
+              >
+                {category.name}
+                <span className="ml-2 align-super text-sm text-muted-faint">
+                  {format.number(category.courseCount)}
+                </span>
+              </span>
+            ))}
+          />
+        </div>
+      )}
     </section>
   );
 }

@@ -8,7 +8,7 @@ export interface SectionHeadingProps {
   className?: string | undefined;
   description?: ReactNode;
   /** An Archivo micro-label above the title. */
-  eyebrow?: string;
+  eyebrow?: string | undefined;
   title: ReactNode;
 }
 

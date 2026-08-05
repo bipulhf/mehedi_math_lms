@@ -21,8 +21,10 @@ that it still means something when it appears.
 Three rules carry most of the weight:
 
 1. **No shadows.** Depth comes from the background washes and hairlines.
-2. **No animation.** Colour and border transitions on hover, nothing else. No
-   parallax, no entrance animation, nothing lifts or scales.
+2. **No animation** *inside the app shell*. Colour and border transitions on
+   hover, nothing else — no parallax, no entrance animation, nothing lifts or
+   scales. The public marketing pages are the one exception, and a recorded one:
+   ADR-0012.
 3. **Accent discipline.** The accent appears roughly 6–10 times per page, never
    as a large fill on a marketing page. In an app shell, exactly one button is
    accent.

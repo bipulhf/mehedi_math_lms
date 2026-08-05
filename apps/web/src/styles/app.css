@@ -97,9 +97,16 @@
   --radius-md: 0.25rem;
   --radius-pill: 6.25rem;
 
-  /* No keyframes. DESIGN.md §1 forbids animation outright — the client
-   * rejected a livelier direction as visually stressful. Colour and border
-   * transitions on hover are the whole motion budget. */
+  /* Motion is off inside the app shell — DESIGN.md §1, the client rejected a
+   * livelier direction as visually stressful. The public marketing pages are
+   * the one exception, and a deliberate one: ADR-0012. Their keyframes live at
+   * the bottom of this file and every one of them is switched off under
+   * prefers-reduced-motion.
+   *
+   * Display type, marketing only. Fluid, and far larger than anything the app
+   * shell uses. DESIGN.md §4 still governs everything behind the login. */
+  --text-display: clamp(2rem, 1.1rem + 3.6vw, 3.5rem);
+  --text-display-lg: clamp(2.5rem, 1.2rem + 5vw, 4.75rem);
 }
 
 @layer base {
@@ -253,51 +260,22 @@
     letter-spacing: 0.06em;
   }
 
-  /* Ultra-smooth animations and transitions */
+  /* Marketing motion helpers. ADR-0012 — public pages only. */
   .animate-fade-in {
     animation: fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .animate-fade-up-1 {
-    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
-    opacity: 0;
-  }
 
-  .animate-fade-up-2 {
-    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
-    opacity: 0;
-  }
 
-  .animate-fade-up-3 {
-    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
-    opacity: 0;
-  }
 
-  .animate-fade-up-4 {
-    animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
-    opacity: 0;
-  }
 
-  .animate-float-subtle {
-    animation: floatSubtle 5s ease-in-out infinite;
-  }
 
-  .animate-pulse-subtle {
-    animation: pulseGlow 3.5s ease-in-out infinite;
-  }
 
   .animate-doodle-pulse {
     animation: doodlePulse 4s ease-in-out infinite;
   }
 
-  .hover-lift {
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
 
-  .hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.06), 0 4px 12px -4px rgba(0, 0, 0, 0.04);
-  }
 }
 
 @keyframes fadeIn {
@@ -309,36 +287,8 @@
   }
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes floatSubtle {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-8px) rotate(0.5deg);
-  }
-}
 
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.025);
-  }
-}
 
 @keyframes doodlePulse {
   0%, 100% {
@@ -440,3 +390,63 @@
   outline: none;
 }
 
+/* ------------------------------------------------------------------
+ * Marketing motion. Public pages only — ADR-0012. Everything here is
+ * disabled wholesale under prefers-reduced-motion at the bottom of the block,
+ * so a reader who has asked for stillness gets the page with no motion in it
+ * rather than a page with less.
+ * ------------------------------------------------------------------ */
+@layer components {
+  /* Scroll reveal. The element is laid out from the start and only its paint
+     changes, so nothing reflows as the page is read. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal[data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .marquee-track {
+    animation: marqueeDrift var(--marquee-duration, 38s) linear infinite;
+    will-change: transform;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes marqueeDrift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* The row is rendered twice; one full copy is exactly half the track. */
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Every marketing animation, not just the ones added last: a reader who asked
+     for stillness gets a still page, and a missed rule here is the one that
+     ruins it. */
+  .marquee-track,
+  .animate-fade-in,
+  .animate-doodle-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/marketing/reveal";
 import { DotPatch } from "@/components/ui/doodles";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { useT } from "@/lib/i18n/locale-context";
@@ -19,9 +20,12 @@ export function CtaSection(): JSX.Element {
     <section className="relative overflow-hidden bg-panel-warm">
       <DotPatch className="-left-4 bottom-4 transition-transform duration-700 hover:scale-110" />
       <DotPatch className="-right-4 top-4 transition-transform duration-700 hover:scale-110" />
-      <div className="animate-fade-in mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:py-20">
+      <Reveal className="mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:py-20">
         <div className="space-y-3">
-          <h2 className="max-w-[20ch] text-2xl font-medium leading-tight text-ink sm:text-3xl">
+          <h2
+            className="max-w-[16ch] font-medium leading-[1.05] tracking-tight text-ink"
+            style={{ fontSize: "var(--text-display)" }}
+          >
             {t("home.closingTitle")}
           </h2>
           <p className="max-w-[52ch] text-base font-light leading-relaxed text-muted">
@@ -34,13 +38,13 @@ export function CtaSection(): JSX.Element {
             which dropped the link onto a second line beneath the button. */}
         {isPending ? null : (
           <div className="flex shrink-0 flex-wrap items-center gap-6">
-            <Button asChild className="shadow-xs transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98]" size="lg">
+            <Button asChild size="lg">
               <Link to={session ? "/dashboard" : "/auth/sign-up"}>
                 {session ? t("nav.dashboard") : t("home.openAccount")}
               </Link>
             </Button>
             <Link
-              className="group flex items-center gap-1.5 whitespace-nowrap border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-200 hover:border-accent hover:text-accent"
+              className="group flex items-center gap-1.5 whitespace-nowrap border-b border-line-strong pb-0.5 text-base text-ink transition-colors duration-200 hover:border-spectrum-ember hover:text-spectrum-ember"
               to="/contact"
             >
               <span>{t("footer.support")}</span>
@@ -48,7 +52,7 @@ export function CtaSection(): JSX.Element {
             </Link>
           </div>
         )}
-      </div>
+      </Reveal>
     </section>
   );
 }

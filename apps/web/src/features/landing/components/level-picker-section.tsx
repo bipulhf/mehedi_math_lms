@@ -1,12 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 
+import { Reveal } from "@/components/marketing/reveal";
 import { DotRow } from "@/components/ui/dot-row";
 import { PriceText } from "@/components/ui/price-text";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
-import { SectionHeading } from "@/components/ui/section-heading";
+import { LandingSection } from "@/features/landing/components/landing-section";
 import type { LandingCategory, LandingCourse } from "@/lib/api/landing";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { hueForKey, spectrumClasses } from "@/lib/spectrum";
 
 const VISIBLE_COURSES = 5;
 
@@ -42,10 +44,9 @@ export function LevelPickerSection({
   const selected = categories.find((category) => category.slug === levelSlug);
 
   return (
-    <section className="border-y border-hairline">
-      <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[380px_1fr] lg:gap-16 lg:px-14 lg:py-20">
-        <div className="space-y-6">
-          <SectionHeading description={t("home.levelLead")} title={t("home.levelTitle")} />
+    <LandingSection description={t("home.levelLead")} title={t("home.levelTitle")} tone="warm">
+      <div className="grid gap-10 lg:grid-cols-[340px_1fr] lg:gap-16">
+        <Reveal>
           <div>
             <DotRow
               isSelected={levelSlug === null}
@@ -62,26 +63,28 @@ export function LevelPickerSection({
               />
             ))}
           </div>
-        </div>
+        </Reveal>
 
         <div className="space-y-2">
           <h3 className="text-xl font-medium text-ink">{selected?.name ?? t("nav.courses")}</h3>
 
           <div>
-            {visible.map((course) => (
-              <CourseRow course={course} key={course.id} />
+            {visible.map((course, index) => (
+              <Reveal delayMs={index * 70} key={course.id}>
+                <CourseRow course={course} />
+              </Reveal>
             ))}
           </div>
 
           <Link
-            className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+            className="inline-block border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-spectrum-ember hover:text-spectrum-ember"
             to="/courses"
           >
             {t("home.seeAllCourses", { count: format.number(publishedCourses) })}
           </Link>
         </div>
       </div>
-    </section>
+    </LandingSection>
   );
 }
 
@@ -91,7 +94,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
 
   return (
     <Link
-      className="group flex items-center gap-4 border-b border-hairline-faint px-2 py-4 transition-all duration-200 hover:translate-x-1 hover:bg-panel-warm"
+      className={`group flex items-center gap-4 border-b border-l-2 border-hairline-faint px-2 py-4 transition-colors hover:bg-panel-warm ${spectrumClasses(hueForKey(course.category.slug)).rule}`}
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >
@@ -115,7 +118,7 @@ function CourseRow({ course }: { course: LandingCourse }): JSX.Element {
       </div>
 
       <PriceText amount={course.price} className="hidden shrink-0 text-base sm:block" />
-      <span className="shrink-0 text-base text-accent transition-transform duration-200 group-hover:translate-x-1">{t("course.enroll")} →</span>
+      <span className="shrink-0 text-base text-spectrum-ember">{t("course.enroll")} →</span>
     </Link>
   );
 }
