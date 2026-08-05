@@ -408,6 +408,16 @@ export function AssessmentBuilder({
                         params={{ testId: selectedTest.id }}
                       >{t("ab.submissions")}</Link>
                     </Button>
+                    {selectedTest.type === "WRITTEN" ? (
+                      <Button asChild size="sm">
+                        <Link
+                          params={{ testId: selectedTest.id }}
+                          to="/dashboard/tests/$testId/marking"
+                        >
+                          {t("marking.openPaper")}
+                        </Link>
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       size="sm"

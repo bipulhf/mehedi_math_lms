@@ -52,6 +52,7 @@ interface Overrides {
 
 interface Calls {
   createdSubmissions: number;
+  testsCreated: Record<string, unknown>[];
   promotionChecks: number;
   submissionUpdates: Record<string, unknown>[];
   testUpdates: Record<string, unknown>[];
@@ -72,6 +73,7 @@ const defaultOptions: readonly OptionSpec[] = [
 function buildService(overrides: Overrides = {}): { calls: Calls; service: TestService } {
   const calls: Calls = {
     createdSubmissions: 0,
+    testsCreated: [],
     promotionChecks: 0,
     submissionUpdates: [],
     testUpdates: []
@@ -119,9 +121,28 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: TestS
       overrides.lockAnswerOnSelect
         ? [{ questionId: "q1", selectedOptionId: "o1a" }]
         : [],
+    createTest: async (input: Record<string, unknown>) => {
+      calls.testsCreated.push(input);
+
+      return {
+        chapterId: "chap-1",
+        description: null,
+        durationInMinutes: null,
+        id: "test-2",
+        isPublished: false,
+        lockAnswerOnSelect: false,
+        maxAttempts: null,
+        passingScore: null,
+        sortOrder: 0,
+        title: "Weekly paper",
+        type: "WRITTEN",
+        ...input
+      };
+    },
     listOptionsByQuestionIds: async () => options,
     listQuestionImagesByQuestionIds: async () => [],
     listQuestionsByTestId: async () => questions,
+    listTestsByChapterId: async () => [],
     listSubmissionsByTestAndUser: async (_testId: string, userId: string) =>
       (
         overrides.submissionHistory ?? [
@@ -446,6 +467,58 @@ describe("TestService.saveSubmissionAnswers — lock answer on select", () => {
         "STUDENT"
       )
     ).resolves.toBeDefined();
+  });
+});
+
+describe("TestService.createTest — attempts", () => {
+  test("a written paper starts capped at one attempt", async () => {
+    const { calls, service } = buildService();
+
+    await service.createTest(
+      "chap-1",
+      {
+        isPublished: false,
+        lockAnswerOnSelect: false,
+        title: "Weekly paper",
+        type: "WRITTEN"
+      },
+      "teacher-1",
+      "TEACHER"
+    );
+
+    expect(calls.testsCreated[0]?.maxAttempts).toBe(1);
+  });
+
+  test("an MCQ paper is still unlimited by default", async () => {
+    const { calls, service } = buildService();
+
+    await service.createTest(
+      "chap-1",
+      { isPublished: false, lockAnswerOnSelect: false, title: "Weekly quiz", type: "MCQ" },
+      "teacher-1",
+      "TEACHER"
+    );
+
+    expect(calls.testsCreated[0]?.maxAttempts).toBeNull();
+  });
+
+  test("an explicit cap wins over the default", async () => {
+    const { calls, service } = buildService();
+
+    await service.createTest(
+      "chap-1",
+      {
+        isPublished: false,
+        lockAnswerOnSelect: false,
+        maxAttempts: 3,
+        title: "Weekly paper",
+        type: "WRITTEN"
+      },
+      "teacher-1",
+      "TEACHER"
+    );
+
+    expect(calls.testsCreated[0]?.maxAttempts).toBe(3);
   });
 });
 

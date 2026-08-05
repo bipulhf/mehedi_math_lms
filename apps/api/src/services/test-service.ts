@@ -259,13 +259,18 @@ export class TestService {
   ): Promise<AssessmentTestSummary> {
     await this.access.requireManageableChapter(chapterId, currentUserId, currentUserRole);
     const existingTests = await this.testRepository.listTestsByChapterId(chapterId);
+    // A written paper costs a teacher a full read per attempt, so it starts
+    // capped at one. Unlimited is still a choice, made deliberately by passing
+    // an explicit null. ADR-0008.
+    const maxAttempts =
+      input.maxAttempts === undefined && input.type === "WRITTEN" ? 1 : (input.maxAttempts ?? null);
     const record = await this.testRepository.createTest({
       chapterId,
       description: normalizeOptionalHtml(input.description),
       durationInMinutes: input.durationInMinutes ?? null,
       isPublished: input.isPublished,
       lockAnswerOnSelect: input.lockAnswerOnSelect,
-      maxAttempts: input.maxAttempts ?? null,
+      maxAttempts,
       passingScore: input.passingScore ?? null,
       sortOrder: existingTests.length,
       title: input.title.trim(),
