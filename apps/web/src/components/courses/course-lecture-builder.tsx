@@ -28,7 +28,7 @@ import {
   updateLecture
 } from "@/lib/api/content";
 import type { AssessmentChapterSummary, AssessmentTestSummary } from "@/lib/api/tests";
-import { createTest, deleteTest, reorderCourseItems } from "@/lib/api/tests";
+import { createTest, deleteTest, reorderCourseItems, updateTest } from "@/lib/api/tests";
 import { uploadCourseMaterial } from "@/lib/api/uploads";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
@@ -313,6 +313,17 @@ export function CourseLectureBuilder({
       await updateLecture(lecture.id, { isPublished: !lecture.isPublished });
       await onRefresh();
       toast.success(lecture.isPublished ? t("author.itemUnpublished") : t("author.itemPublished"));
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
+  const handleToggleExamPublished = async (exam: AssessmentTestSummary): Promise<void> => {
+    setIsWorking(true);
+    try {
+      await updateTest(exam.id, { isPublished: !exam.isPublished });
+      await onRefresh();
+      toast.success(exam.isPublished ? t("author.itemUnpublished") : t("author.itemPublished"));
     } finally {
       setIsWorking(false);
     }
@@ -609,6 +620,7 @@ export function CourseLectureBuilder({
                         }
                         onDrop={(event) => void handleItemDrop(event, chapter.id, item.id)}
                         onMove={(offset) => void handleMoveItem(chapter.id, item.id, offset)}
+                        onTogglePublished={() => void handleToggleExamPublished(item.exam)}
                       />
                     )
                   )}
