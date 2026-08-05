@@ -62,7 +62,24 @@ for the FAQ to be the last thing before the footer.
 No spinners, anywhere — `animate-spin` and "Loading…" are both absent from this workspace and must stay that way.
 
 No shimmer either: a skeleton is a still `#F1EEE9` block, on every page including
-the public ones.
+the public ones. That fill comes from `Skeleton` itself — do not override it with
+`bg-chip-active` or anything else, or the page loads in two different greys.
+
+**A skeleton mirrors the layout it stands in for**, not a generic idea of one.
+Same container and gutters, same grid and column count, same card chrome
+(`border-hairline bg-card`, square), same breakpoint behaviour. Three failures
+worth naming because all three shipped once:
+
+- A public page's placeholder that omits `PublicLayout`, so the header and
+  footer appear only when the loader resolves and the page jumps.
+- A placeholder for a page whose layout it has never had — a centred
+  `max-w-3xl` column standing in for a two-column workspace.
+- A fixed width wider than a phone (`w-96` is 384px), which scrolls the page
+  sideways before the content arrives. Use fractional widths with a `max-w-`.
+
+A page whose data can be empty needs to tell "loading" apart from "nothing
+here". Showing the empty state while a query is still pending tells a teacher
+there are no papers to mark when there are.
 
 Two skeleton patterns coexist, and which one applies is decided by the route, not by taste:
 
@@ -231,6 +248,18 @@ Four rules from `DESIGN.md` that this codebase gets wrong most often:
 - **Cards are square.** `4px` is for buttons and inputs; `100px` for pills; `0` for cards.
 
 Fonts: `font-body` (Hind Siliguri) for everything, `font-mono-label` (Archivo) for Latin numerals, IDs and small all-caps labels.
+
+## Phones
+
+The narrow target is 360px. Two rules carry most of it:
+
+- **Padding steps up, it does not start large.** `Card`'s header, content and
+  footer are `p-4 sm:p-6`; a page-level card should do the same. 32px a side
+  inside a 16px page gutter leaves a phone 272px of usable card.
+- **A table stops being a table below `md`** and becomes one card per row —
+  `DataTable` does this, and the hand-rolled tables in payments, admin courses,
+  SMS, logs and bug reports now do too. `overflow-x-auto` on its own is not the
+  answer: it hides the column carrying the decision off the right edge.
 
 Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge classes. Follow `src/components/ui/button.tsx` when adding a primitive.
 
