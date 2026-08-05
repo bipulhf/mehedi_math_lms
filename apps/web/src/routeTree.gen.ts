@@ -21,6 +21,8 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiMobileAuthHandoffRouteImport } from './routes/api/mobile-auth-handoff'
 import { Route as ApiPaymentReturnRouteImport } from './routes/api/payment-return'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
@@ -137,6 +139,16 @@ const ApiPaymentReturnRoute = ApiPaymentReturnRouteImport.update({
   id: '/api/payment-return',
   path: '/api/payment-return',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
@@ -451,6 +463,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -520,6 +534,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -591,6 +607,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -663,6 +681,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
     | '/api/payment-return'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -732,6 +752,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
     | '/api/payment-return'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -802,6 +824,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
     | '/api/payment-return'
+    | '/auth/forgot-password'
+    | '/auth/reset-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$slug'
@@ -966,6 +990,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/payment-return'
       preLoaderRoute: typeof ApiPaymentReturnRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/auth/sign-in': {
       id: '/auth/sign-in'
@@ -1363,11 +1401,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthRouteChildren {
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
 }

@@ -65,6 +65,7 @@ This project is organized as a Turborepo workspace with Bun as the package manag
 - **Redis / BullMQ** (optional — see "Running without Redis")
 - **Firebase Admin**
 - **AWS S3**
+- **Nodemailer / SMTP** (password-reset mail — set `SMTP_HOST` and `SMTP_FROM`, or the reset fails loudly)
 
 ### Mobile
 
@@ -151,6 +152,7 @@ Typical services used by this repo include:
 - Firebase
 - payment provider credentials
 - SMS provider credentials
+- an SMTP relay (`SMTP_*`) — without it "forgot password" cannot send its link
 
 ### 3. Generate and apply database changes
 

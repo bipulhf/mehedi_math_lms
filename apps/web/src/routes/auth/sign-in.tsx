@@ -110,7 +110,15 @@ export function SignInPage(): JSX.Element {
           <Input error={errors.email?.message} id="email" type="email" {...register("email")} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">{t("auth.password")}</Label>
+          <div className="flex items-baseline justify-between gap-3">
+            <Label htmlFor="password">{t("auth.password")}</Label>
+            <Link
+              className="text-sm font-light text-muted transition-colors hover:text-accent"
+              to="/auth/forgot-password"
+            >
+              {t("auth.forgotPassword")}
+            </Link>
+          </div>
           <PasswordInput
             error={errors.password?.message}
             id="password"

@@ -13,6 +13,7 @@ Nested `AGENTS.md` files exist per workspace. Read the one for the workspace you
 | `packages/shared/AGENTS.md` | Zod validators, shared types |
 | `packages/i18n/AGENTS.md` | Bilingual catalogue and locale formatters |
 | `packages/auth/AGENTS.md` | Better Auth wiring |
+| `packages/mailer/AGENTS.md` | SMTP transport and the password-reset mail |
 | `tooling/scripts/AGENTS.md` | Seed and backfill scripts |
 
 `packages/config` holds the shared `tsconfig.base.json`, `eslint.config.mjs`, and `prettier.config.mjs`. It has no other code and no nested `AGENTS.md`.
@@ -40,7 +41,8 @@ Single workspace: `bun run --filter @genex/api dev` (or `cd apps/api && bun run 
 
 ```
 apps/web  ──┬─> @genex/auth ──┬─> @genex/db
-apps/api  ──┤                 └─> @genex/shared
+apps/api  ──┤                 ├─> @genex/shared
+            │                 └─> @genex/mailer ─> @genex/i18n
             ├─> @genex/shared
             └─> @genex/i18n
 tooling/scripts ─> @genex/auth, @genex/db, @genex/shared

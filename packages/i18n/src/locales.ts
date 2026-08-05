@@ -16,6 +16,13 @@ export const defaultLocale: Locale = "bn";
  */
 export const fallbackLocale: Locale = "en";
 
+/**
+ * Where the reader's choice is kept. It lives here rather than in the web app
+ * because it is read outside the browser too — the password-reset mail picks
+ * its language from this cookie on the request that asked for it.
+ */
+export const localeCookieName = "genex_locale";
+
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && locales.includes(value as Locale);
 }

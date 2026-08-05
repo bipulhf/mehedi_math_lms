@@ -6,6 +6,7 @@ import { customSession } from "better-auth/plugins/custom-session";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { accounts, db, sessions, users, verificationTokens } from "@genex/db";
+import { passwordResetExpirySeconds, sendPasswordResetEmail } from "@genex/mailer";
 import * as schema from "@genex/db/schema";
 import { z } from "zod";
 
@@ -66,7 +67,23 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
-    autoSignIn: true
+    autoSignIn: true,
+    resetPasswordTokenExpiresIn: passwordResetExpirySeconds,
+    // A reset is how somebody who has lost the account takes it back, so every
+    // other session goes with it. The cost is the honest one: the person is
+    // signed out on their other devices.
+    revokeSessionsOnPasswordReset: true,
+    // Throws when SMTP is unset or the relay refuses. That is deliberate --
+    // `@genex/mailer` explains why a swallowed send is the worse failure --
+    // and Better Auth turns it into a 500 the operator sees in the log.
+    sendResetPassword: async ({ user, url }, request) => {
+      await sendPasswordResetEmail({
+        email: user.email,
+        name: user.name,
+        request,
+        resetUrl: url
+      });
+    }
   },
   socialProviders: isGoogleConfigured
     ? {
@@ -86,6 +103,17 @@ export const auth = betterAuth({
         max: 5
       },
       "/sign-up/email": {
+        window: 15 * 60,
+        max: 5
+      },
+      // Each one of these sends a mail to an address the caller chose. Left at
+      // the global 100, a script could use this endpoint to post somebody
+      // else's inbox full.
+      "/request-password-reset": {
+        window: 15 * 60,
+        max: 3
+      },
+      "/reset-password": {
         window: 15 * 60,
         max: 5
       }

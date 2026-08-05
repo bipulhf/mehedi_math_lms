@@ -1,0 +1,25 @@
+{
+  "name": "@genex/mailer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "lint": "eslint .",
+    "test": "bun test src",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@genex/i18n": "workspace:*",
+    "nodemailer": "^7.0.9",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.4",
+    "bun-types": "^1.3.14"
+  }
+}

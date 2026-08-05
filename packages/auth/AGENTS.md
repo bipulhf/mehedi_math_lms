@@ -33,7 +33,8 @@ Shared by all server configs:
 - Drizzle adapter over `@genex/db`, with the model-name mapping `user → users`, `account → accounts`, `session → sessions`, `verification → verification_tokens`. Changing a table or column name in `@genex/db` means updating this mapping.
 - IDs are UUIDs (`advanced.database.generateId: "uuid"`).
 - Email/password enabled, 8–128 chars, `autoSignIn: true`.
-- Rate limiting: 100 requests / 15 min globally, 5 / 15 min on `/sign-in/email` and `/sign-up/email`. **Disabled entirely when `NODE_ENV=development`.**
+- Password reset: `sendResetPassword` hands the link to `@genex/mailer`, tokens live one hour (`passwordResetExpirySeconds`, shared with the mail so the two cannot disagree), and `revokeSessionsOnPasswordReset` is on — a reset is how somebody takes a lost account back, so every other session goes with it. The mail throws when SMTP is unset, which Better Auth turns into a 500 in the log rather than a silent nothing. The web pages are `apps/web/src/routes/auth/forgot-password.tsx` and `reset-password.tsx`.
+- Rate limiting: 100 requests / 15 min globally, 5 / 15 min on `/sign-in/email`, `/sign-up/email` and `/reset-password`, 3 / 15 min on `/request-password-reset` — that last one sends mail to an address the caller picked, so the global limit would let a script fill somebody's inbox. **Disabled entirely when `NODE_ENV=development`.**
 
 ### Plugins
 
