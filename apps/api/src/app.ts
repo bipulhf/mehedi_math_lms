@@ -24,6 +24,14 @@ app.use(
   "*",
   cors({
     origin: env.corsOrigins,
+    // The session is a cookie, and the browser only sends one cross-origin when
+    // the response says so. Development never needed this because Vite proxies
+    // /api/v1, making every call same-origin -- so a built deployment, where
+    // the browser talks to the API directly, was the first place a signed-in
+    // request arrived anonymous and the page reported that something went
+    // wrong. `origin` is an allowlist rather than "*" precisely so this is
+    // allowed to be true.
+    credentials: true,
     allowHeaders: ["Authorization", "Content-Type", "X-Request-Id"],
     exposeHeaders: ["X-Request-Id", "X-Rate-Limit-Limit", "X-Rate-Limit-Remaining"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
