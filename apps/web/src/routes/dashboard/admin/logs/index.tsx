@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
@@ -49,11 +49,26 @@ function formatMetadata(metadata: AdminAuditLogRecord["metadata"]): string | nul
 function AdminLogsPage(): JSX.Element {
   const t = useT();
 
+  // Two states, on purpose. The input owns what is typed; the query key follows
+  // 250ms later. Sending every keystroke means a request per character, and the
+  // answers arrive out of order.
+  const [actorSearchInput, setActorSearchInput] = useState("");
   const [actorSearch, setActorSearch] = useState("");
   const [action, setAction] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setActorSearch(actorSearchInput.trim());
+      setPage(1);
+    }, 250);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [actorSearchInput]);
 
   const { data: actions } = useQuery({
     queryFn: async () => listAdminAuditLogActions(),
@@ -61,7 +76,11 @@ function AdminLogsPage(): JSX.Element {
   });
 
   const filters = { action, actorSearch, from, limit: 20, page, to };
-  const { data, isPending: isLoading } = useQuery({
+  const { data, isPending } = useQuery({
+    // Without this the page falls back to its skeleton on every refetch, which
+    // unmounts the filter row -- and an input that unmounts mid-word takes the
+    // caret with it. This is why typing in the search felt broken.
+    placeholderData: keepPreviousData,
     queryFn: async () =>
       listAdminAuditLogs({
         action: action || undefined,
@@ -76,8 +95,11 @@ function AdminLogsPage(): JSX.Element {
 
   const logs = data?.data ?? [];
   const totalPages = data?.pagination.pages ?? 1;
+  // Only the first load has nothing to show. Every later one keeps the previous
+  // page on screen while the new one arrives.
+  const isFirstLoad = isPending && data === undefined;
 
-  if (isLoading) {
+  if (isFirstLoad) {
     return (
       <div className="space-y-6">
         <div className="border border-hairline bg-card p-4 sm:p-6 lg:p-8">
@@ -111,12 +133,9 @@ function AdminLogsPage(): JSX.Element {
               <Label htmlFor="log-actor-search">{t("admin.logs.actorFilter")}</Label>
               <Input
                 id="log-actor-search"
-                onChange={(event) => {
-                  setActorSearch(event.target.value);
-                  setPage(1);
-                }}
+                onChange={(event) => setActorSearchInput(event.target.value)}
                 placeholder={t("admin.logs.actorPlaceholder")}
-                value={actorSearch}
+                value={actorSearchInput}
               />
             </div>
             <div className="space-y-1">
