@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { CategoryRepository } from "@/repositories/category-repository";
+import type { CouponRepository } from "@/repositories/coupon-repository";
 import type {
   CourseRecord,
   CourseRepository,
@@ -72,6 +73,12 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
     updatedAt: new Date("2026-01-01T00:00:00Z")
   } as unknown as CourseRecord;
 
+  // The course page asks for the best public coupon; none of these tests are
+  // about that, so it answers with nothing.
+  const couponRepository = {
+    findBestPublicCoupon: async () => null
+  } as unknown as CouponRepository;
+
   const courseRepository = {
     countLecturesByCourseId: async () => overrides.lectureCount ?? 1,
     countTeachersByIds: async (ids: readonly string[]) => ids.length,
@@ -100,7 +107,12 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Cours
 
   return {
     calls,
-    service: new CourseService(courseRepository, categoryRepository, notificationService)
+    service: new CourseService(
+      courseRepository,
+      categoryRepository,
+      notificationService,
+      couponRepository
+    )
   };
 }
 

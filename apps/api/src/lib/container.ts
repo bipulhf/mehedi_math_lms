@@ -9,6 +9,7 @@ import { BugReportController } from "@/controllers/bug-report-controller";
 import { CategoryController } from "@/controllers/category-controller";
 import { CommentController } from "@/controllers/comment-controller";
 import { ContentController } from "@/controllers/content-controller";
+import { CouponController } from "@/controllers/coupon-controller";
 import { CourseController } from "@/controllers/course-controller";
 import { EnrollmentController } from "@/controllers/enrollment-controller";
 import { HealthController } from "@/controllers/health-controller";
@@ -36,6 +37,7 @@ import { BugReportRepository } from "@/repositories/bug-report-repository";
 import { CategoryRepository } from "@/repositories/category-repository";
 import { CommentRepository } from "@/repositories/comment-repository";
 import { ContentRepository } from "@/repositories/content-repository";
+import { CouponRepository } from "@/repositories/coupon-repository";
 import { CourseRepository } from "@/repositories/course-repository";
 import { EnrollmentRepository } from "@/repositories/enrollment-repository";
 import { HealthRepository } from "@/repositories/health-repository";
@@ -67,6 +69,7 @@ import { CommentService } from "@/services/comment-service";
 import { CommerceService } from "@/services/commerce-service";
 import { EnrollmentPdfService } from "@/services/enrollment-pdf-service";
 import { ContentService } from "@/services/content-service";
+import { CouponService } from "@/services/coupon-service";
 import { CourseService } from "@/services/course-service";
 import { HealthService } from "@/services/health-service";
 import { FcmPushService } from "@/services/fcm-push-service";
@@ -159,6 +162,8 @@ const commentService = new CommentService(
   enrollmentRepository
 );
 const sslCommerzService = new SslCommerzService();
+const couponRepository = new CouponRepository();
+const couponService = new CouponService(couponRepository, courseRepository, enrollmentRepository);
 const commerceService = new CommerceService(
   enrollmentRepository,
   paymentRepository,
@@ -166,7 +171,8 @@ const commerceService = new CommerceService(
   profileRepository,
   sslCommerzService,
   reviewRepository,
-  notificationService
+  notificationService,
+  couponService
 );
 const enrollmentPdfService = new EnrollmentPdfService(enrollmentRepository, paymentRepository);
 const reviewService = new ReviewService(reviewRepository, enrollmentRepository, courseRepository);
@@ -176,7 +182,12 @@ const contentService = new ContentService(
   courseRepository,
   enrollmentRepository
 );
-const courseService = new CourseService(courseRepository, categoryRepository, notificationService);
+const courseService = new CourseService(
+  courseRepository,
+  categoryRepository,
+  notificationService,
+  couponRepository
+);
 const profileService = new ProfileService(profileRepository);
 const progressService = new ProgressService(
   enrollmentRepository,
@@ -246,6 +257,7 @@ export const bugReportController = new BugReportController(bugReportService);
 export const categoryController = new CategoryController(categoryService);
 export const commentController = new CommentController(commentService);
 export const contentController = new ContentController(contentService);
+export const couponController = new CouponController(couponService);
 export const courseController = new CourseController(courseService);
 export const analyticsController = new AnalyticsController(analyticsService);
 export const enrollmentController = new EnrollmentController(commerceService, enrollmentPdfService);

@@ -13,12 +13,15 @@ import { courses, eq, inArray, or, type SQL } from "@genex/db";
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import { normalizeOptionalHtml, sanitizeHtml } from "@/lib/html";
 import type { CategoryRepository } from "@/repositories/category-repository";
+import type { CouponRepository } from "@/repositories/coupon-repository";
 import type {
   CourseRepository} from "@/repositories/course-repository";
 import {
   type CourseRecord,
   type TeacherDirectoryRecord
 } from "@/repositories/course-repository";
+import { priceWithCoupon } from "@/services/coupon-pricing";
+import type { PublicCouponSummary } from "@/services/coupon-service";
 import type { NotificationService } from "@/services/notification-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -51,7 +54,17 @@ export interface CourseListItem {
   updatedAt: string;
 }
 
-export type CourseDetailResponse = CourseListItem;
+/**
+ * The one Public Coupon a course page advertises, priced against this course.
+ *
+ * It rides on the detail response rather than sitting behind its own endpoint so
+ * the banner renders in the server pass with no second request and no flash of
+ * the undiscounted price. Absent on every other course response — a catalogue
+ * card does not advertise codes.
+ */
+export interface CourseDetailResponse extends CourseListItem {
+  publicCoupon?: PublicCouponSummary | null;
+}
 
 function normalizeOptionalUrl(value: string | undefined): string | null {
   if (!value) {
@@ -94,7 +107,8 @@ export class CourseService {
   public constructor(
     private readonly courseRepository: CourseRepository,
     private readonly categoryRepository: CategoryRepository,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly couponRepository: CouponRepository
   ) {}
 
   private async createUniqueSlug(
@@ -397,7 +411,38 @@ export class CourseService {
 
     this.ensureCanViewCourse(course, currentUserId, currentUserRole);
 
-    return mapCourse(course);
+    return { ...mapCourse(course), publicCoupon: await this.findPublicCoupon(course) };
+  }
+
+  /**
+   * The best-value Public Coupon on this course, or null.
+   *
+   * Read through the coupon repository rather than its service, per the
+   * cross-feature rule, and priced with the same pure function checkout uses —
+   * a banner quoting a different number from the one the buyer is charged is
+   * worse than no banner.
+   */
+  private async findPublicCoupon(course: CourseRecord): Promise<PublicCouponSummary | null> {
+    if (course.status !== "PUBLISHED" || Number(course.price) <= 0) {
+      return null;
+    }
+
+    const coupon = await this.couponRepository.findBestPublicCoupon(course.id, course.price);
+
+    if (!coupon) {
+      return null;
+    }
+
+    const pricing = priceWithCoupon(course.price, coupon.kind, coupon.value);
+
+    return {
+      code: coupon.code,
+      discountAmount: pricing.discountAmount,
+      id: coupon.id,
+      kind: coupon.kind,
+      payable: pricing.payable,
+      value: coupon.value
+    };
   }
 
   public async createCourse(
