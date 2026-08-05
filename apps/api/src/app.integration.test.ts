@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import { app } from "@/app";
+import { env } from "@/lib/env";
 
 /**
  * Integration tests over the real Hono app: middleware chain, guards, the error
@@ -20,6 +21,27 @@ interface ErrorEnvelope {
 async function readEnvelope(response: Response): Promise<ErrorEnvelope> {
   return (await response.json()) as ErrorEnvelope;
 }
+
+describe("health", () => {
+  test("says whether this deployment has Redis, and names its queues", async () => {
+    // Also the proof that importing the app -- which builds the container, the
+    // client and the queues -- needs no Redis when the switch is off.
+    const response = await app.request("/api/health");
+    const body = (await response.json()) as {
+      data: { queues: readonly string[]; redisEnabled: boolean; redisStatus: string };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.data.redisEnabled).toBe(env.isRedisEnabled);
+
+    if (env.isRedisEnabled) {
+      expect(body.data.queues).toHaveLength(4);
+    } else {
+      expect(body.data.redisStatus).toBe("disabled");
+      expect(body.data.queues).toHaveLength(0);
+    }
+  });
+});
 
 describe("response envelope", () => {
   test("an unknown route is a 404 in the error envelope", async () => {

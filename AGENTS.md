@@ -84,7 +84,7 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 - Keep changes focused on the request. No drive-by refactors.
 - One logical change per commit. Conventional Commits (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `build`, `ci`).
 - After a change, run `bun run typecheck` and `bun run lint` for the affected workspace at minimum.
-- `bun run test` fans out to the workspaces that have tests: unit suites for `@genex/api` services and `@genex/shared` validators, plus the API's integration tests over the real Hono app. It needs Postgres and Redis. Playwright lives outside that task — `bun run --filter @genex/web test:e2e`.
+- `bun run test` fans out to the workspaces that have tests: unit suites for `@genex/api` services and `@genex/shared` validators, plus the API's integration tests over the real Hono app. It needs Postgres; Redis only when `REDIS_ENABLED=true`, and the suite is expected to pass with it off. Playwright lives outside that task — `bun run --filter @genex/web test:e2e`.
 
 ## Reference documents
 

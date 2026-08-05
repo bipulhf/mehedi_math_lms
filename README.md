@@ -62,7 +62,7 @@ This project is organized as a Turborepo workspace with Bun as the package manag
 - **Better Auth**
 - **Drizzle ORM**
 - **PostgreSQL**
-- **Redis / BullMQ**
+- **Redis / BullMQ** (optional — see "Running without Redis")
 - **Firebase Admin**
 - **AWS S3**
 
@@ -125,7 +125,7 @@ Before running the project locally, make sure you have:
 - **Bun** `1.3.11` or compatible
 - **Node.js** available where needed by ecosystem tools
 - **PostgreSQL**
-- **Redis**
+- **Redis** — optional; see "Running without Redis" below
 - mobile tooling if you want to run the Expo app
 
 ## Getting Started
@@ -179,7 +179,9 @@ This uses Turborepo to start all package/app development tasks that define a `de
 
 The whole stack (Postgres, Redis, API, web, and all four background workers)
 runs from a single `docker-compose.yml` in the repository root — no local
-Bun/Postgres/Redis install needed.
+Bun/Postgres/Redis install needed. Redis and the workers sit behind a compose
+profile, so a deployment without them is a two-line change in `.env` — see
+"Running without Redis" below.
 
 ### 1. Configure environment variables
 
@@ -202,6 +204,31 @@ This starts Postgres and Redis, waits for Postgres to be healthy, runs
 migrations, runs the idempotent admin bootstrap (`ADMIN_EMAIL`/
 `ADMIN_PASSWORD`), then starts the API, the web app, and the four workers
 (notification, SMS, file-processing, audit-log-cleanup).
+
+### Running without Redis
+
+Redis is optional. Set `REDIS_ENABLED="false"` and clear `COMPOSE_PROFILES` in
+`.env`, and `docker compose up -d` starts five services instead of ten — no
+Redis container and no workers. Running the apps directly on the host needs only
+the `REDIS_ENABLED` line.
+
+What changes when it is off:
+
+- Caches always miss, so pages hit the database. The homepage keeps a
+  five-minute snapshot in the API process.
+- The rate limiter counts in the API process rather than in Redis.
+- Background work — SMS broadcasts, push notifications, video metadata — runs in
+  the API process after the response instead of in a worker. It is not durable:
+  if the process restarts mid-send, the SMS batch stays `QUEUED` and can be
+  resent.
+- Realtime messages and notifications are delivered by the process holding the
+  socket, **so exactly one API process is supported**. Two would mean one
+  reader never sees the other's message.
+- The audit log is pruned by the API daily rather than by the cleanup worker.
+
+`GET /api/health` reports which mode a running deployment is in. The reasoning
+is in `docs/adr/0015-redis-is-optional.md`; read it before switching an existing
+Redis off, because any SMS batch still sitting in the queue will not be sent.
 
 - Web: `http://localhost:3000`
 - API: `http://localhost:3001`
@@ -362,7 +389,7 @@ A typical local workflow looks like this:
 
 1. install dependencies with `bun install`
 2. create and fill the root `.env`
-3. start PostgreSQL and Redis
+3. start PostgreSQL, and Redis if `REDIS_ENABLED=true`
 4. run migrations
 5. seed the database
 6. start the API
