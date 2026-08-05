@@ -73,7 +73,7 @@ function HomePageSkeleton(): JSX.Element {
     <PublicLayout>
       {/* The carousel is full-bleed, so its placeholder is too — a contained
           block here and a full-width slide after the loader lands is a jump. */}
-      <Skeleton className="h-[32rem] w-full sm:h-[36rem] lg:h-[44rem]" />
+      <Skeleton className="h-[30rem] w-full sm:h-[34rem] lg:h-[40rem]" />
     </PublicLayout>
   );
 }

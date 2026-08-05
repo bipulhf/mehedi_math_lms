@@ -143,7 +143,7 @@ function CourseSlide({
   return (
     <div
       aria-hidden={!isActive}
-      className="relative h-[32rem] w-full shrink-0 sm:h-[36rem] lg:h-[44rem]"
+      className="relative h-[30rem] w-full shrink-0 sm:h-[34rem] lg:h-[40rem]"
     >
       {course.coverImageUrl ? (
         <ResponsiveImage
@@ -154,19 +154,24 @@ function CourseSlide({
         />
       ) : null}
 
-      {/* Weighted towards the bottom, where the words are: the title needs a
-          near-solid ground under it, the top of the frame needs almost none. */}
+      {/* Two washes, both weighted to the corner the words are in — up from the
+          bottom edge and in from the left. Darkening the whole frame instead
+          would flatten the photograph the slide exists to show. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/70 to-ink/15"
+        className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-ink/75 via-ink/20 to-transparent"
       />
 
       <div className="relative flex h-full items-end">
         <div className="mx-auto w-full max-w-[90rem] px-4 pb-20 pt-10 sm:px-8 lg:px-14 lg:pb-24">
-          {/* The title is the loudest thing on the page and is given the room
-              to be: a wide measure, the large display step, and the picture
-              behind it doing nothing else. */}
-          <div className="max-w-[68rem]">
+          {/* A block in the bottom-left corner, not a band across the frame:
+              the measure is narrow enough that the title stacks into two or
+              three lines and the picture is left visible beside it. */}
+          <div className="max-w-[40rem]">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="rounded-[var(--radius-pill)] border border-paper/30 bg-paper/10 px-3 py-1 text-sm text-paper backdrop-blur-sm">
                 {course.category.name}
@@ -178,11 +183,11 @@ function CourseSlide({
               ) : null}
             </div>
 
-            <h2 className="mt-6 max-w-[26ch]">
+            <h2 className="mt-5">
               <Link
-                className="font-medium leading-[1.02] tracking-[-0.025em] text-paper transition-opacity hover:opacity-80"
+                className="font-medium leading-[1.05] tracking-[-0.02em] text-paper transition-opacity hover:opacity-80"
                 params={{ slug: course.slug }}
-                style={{ fontSize: "var(--text-display-lg)" }}
+                style={{ fontSize: "var(--text-display)" }}
                 tabIndex={isActive ? 0 : -1}
                 to="/courses/$slug"
               >
@@ -190,7 +195,7 @@ function CourseSlide({
               </Link>
             </h2>
 
-            <p className="mt-5 line-clamp-3 max-w-[66ch] text-lg font-light leading-relaxed text-paper/85 sm:text-xl">
+            <p className="mt-4 line-clamp-2 text-base font-light leading-relaxed text-paper/85 sm:text-lg">
               {course.description}
             </p>
 
