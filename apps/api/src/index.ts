@@ -74,5 +74,3 @@ if (import.meta.main) {
   process.on("SIGTERM", () => void shutdown());
   process.on("SIGINT", () => void shutdown());
 }
-
-export default app;
