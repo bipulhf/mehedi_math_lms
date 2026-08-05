@@ -30,4 +30,7 @@ RUN bun run build
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["bun", "dist/server/server.js"]
+# server.ts, not dist/server/server.js: the built server renders pages and
+# nothing else, so running it alone answers every request for a stylesheet or a
+# bundle with the SSR 404 page. See apps/web/server.ts.
+CMD ["bun", "server.ts"]
