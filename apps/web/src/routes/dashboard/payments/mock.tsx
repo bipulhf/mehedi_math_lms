@@ -101,12 +101,12 @@ function MockPaymentPage(): JSX.Element {
   }, [origin, paymentId, t, transactionId]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
+    <div className="w-full space-y-6">
       <BackButton to="/dashboard/payments" />
 
       <div className="border border-hairline bg-card p-4 sm:p-6">
         <h1 className="text-xl font-medium text-ink">{t("paymock.titlePage")}</h1>
-        <p className="mt-0.5 max-w-[60ch] text-sm font-light text-muted">{t("paymock.leadPage")}</p>
+        <p className="mt-0.5 text-sm font-light text-muted">{t("paymock.leadPage")}</p>
       </div>
 
       <div className="border border-hairline bg-card p-4 sm:p-6">
