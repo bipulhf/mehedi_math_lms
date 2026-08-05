@@ -412,10 +412,30 @@
     opacity: 1;
     transform: none;
   }
+
+  /* The carousel's per-slide stagger. `Reveal` cannot do this: it fires once on
+     entering the viewport, and this has to run again every time a slide becomes
+     the active one. Resetting carries no delay, so a slide that has scrolled
+     away is hidden immediately and is staggered afresh on its next turn. */
+  .slide-rise {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-slide-active="true"] .slide-rise {
+    opacity: 1;
+    transform: none;
+    transition-delay: var(--rise-delay, 0ms);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  .reveal,
+  .slide-rise,
+  [data-slide-active="true"] .slide-rise {
     opacity: 1;
     transform: none;
     transition: none;

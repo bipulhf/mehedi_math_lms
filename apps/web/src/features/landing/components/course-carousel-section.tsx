@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState, type FocusEvent, type JSX } from "react";
+import { useEffect, useState, type CSSProperties, type FocusEvent, type JSX } from "react";
 
 import { Button } from "@/components/ui/button";
 import { PriceText } from "@/components/ui/price-text";
@@ -10,6 +10,11 @@ import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 const AUTO_ADVANCE_MS = 6500;
+
+/** How far behind the segment above it one part of the slide's copy arrives. */
+function riseDelay(delayMs: number): CSSProperties {
+  return { "--rise-delay": `${delayMs}ms` } as CSSProperties;
+}
 
 /**
  * The page opens on the catalogue itself: one course filling the width, its
@@ -129,6 +134,10 @@ export function CourseCarouselSection({
  * One slide. The picture is the surface and everything else sits on it, so the
  * text needs its own contrast: a dark wash from the bottom edge, not a tint over
  * the whole frame, which would flatten the photograph it is there to show.
+ *
+ * `data-slide-active` drives the stagger: each segment of the copy rises in
+ * behind the one above it every time this slide takes its turn, and drops back
+ * without delay when it leaves. The rule lives in `app.css` (ADR-0012).
  */
 function CourseSlide({
   course,
@@ -144,6 +153,7 @@ function CourseSlide({
     <div
       aria-hidden={!isActive}
       className="relative h-[30rem] w-full shrink-0 sm:h-[34rem] lg:h-[40rem]"
+      data-slide-active={isActive}
     >
       {course.coverImageUrl ? (
         <ResponsiveImage
@@ -172,7 +182,10 @@ function CourseSlide({
               the measure is narrow enough that the title stacks into two or
               three lines and the picture is left visible beside it. */}
           <div className="max-w-[40rem]">
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div
+              className="slide-rise flex flex-wrap items-center gap-2.5"
+              style={riseDelay(0)}
+            >
               <span className="rounded-[var(--radius-pill)] border border-paper/30 bg-paper/10 px-3 py-1 text-sm text-paper backdrop-blur-sm">
                 {course.category.name}
               </span>
@@ -183,7 +196,7 @@ function CourseSlide({
               ) : null}
             </div>
 
-            <h2 className="mt-5">
+            <h2 className="slide-rise mt-5" style={riseDelay(90)}>
               <Link
                 className="font-medium leading-[1.05] tracking-[-0.02em] text-paper transition-opacity hover:opacity-80"
                 params={{ slug: course.slug }}
@@ -195,11 +208,17 @@ function CourseSlide({
               </Link>
             </h2>
 
-            <p className="mt-4 line-clamp-2 text-base font-light leading-relaxed text-paper/85 sm:text-lg">
+            <p
+              className="slide-rise mt-4 line-clamp-2 text-base font-light leading-relaxed text-paper/85 sm:text-lg"
+              style={riseDelay(180)}
+            >
               {course.description}
             </p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-paper/75">
+            <div
+              className="slide-rise mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-base text-paper/75"
+              style={riseDelay(270)}
+            >
               {course.teacher ? <span className="text-paper">{course.teacher.name}</span> : null}
               <span>{t("course.lessons", { count: format.number(course.lectureCount) })}</span>
               {course.studentCount > 0 ? (
@@ -215,7 +234,7 @@ function CourseSlide({
               ) : null}
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-5">
+            <div className="slide-rise mt-7 flex flex-wrap items-center gap-5" style={riseDelay(360)}>
               <Button asChild className="h-12 px-8 text-base" size="lg" tabIndex={isActive ? 0 : -1}>
                 <Link params={{ slug: course.slug }} to="/courses/$slug">
                   {t("course.enroll")}

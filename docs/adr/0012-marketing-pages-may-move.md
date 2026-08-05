@@ -38,6 +38,11 @@ down or left as drift.
   later along with the drifting subject band in the hero: the subjects have
   their own section immediately below, with real course counts, and a band that
   says the same words in motion was competing with it rather than adding to it.
+- One effect is not a component: `.slide-rise` in `app.css`, the stagger that
+  brings each segment of the landing carousel's copy in behind the one above it.
+  It is a rule rather than a `Reveal` because it has to re-run every time a
+  slide takes its turn, and `Reveal` deliberately fires once. It is switched off
+  in the same `prefers-reduced-motion` block as the rest.
 - Every one of them is disabled under `prefers-reduced-motion: reduce`, in one
   block at the bottom of `app.css`. A reader who asked for stillness gets a still
   page, not a quieter one.

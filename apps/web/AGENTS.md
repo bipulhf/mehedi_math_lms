@@ -44,9 +44,10 @@ Two rules, and which one applies depends on who is looking:
   nothing lifts or scales.
 - **On the public marketing pages** motion is allowed and deliberate (ADR-0012).
   The vocabulary is two primitives in `src/components/marketing/` — `Reveal` and
-  `CountUp` — and both are switched off under `prefers-reduced-motion` in one
-  block at the bottom of `app.css`. Adding a third effect is a decision, not a
-  detail.
+  `CountUp` — plus one rule, `.slide-rise`, which staggers the landing
+  carousel's copy each time a slide takes its turn. All three are switched off
+  under `prefers-reduced-motion` in one block at the bottom of `app.css`. Adding
+  a fourth effect is a decision, not a detail.
 
 The landing page is built from `LandingSection`, which fixes the band's padding,
 container width and heading rhythm. A section that sets its own is how the page
