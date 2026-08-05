@@ -1,3 +1,4 @@
+import { MathBody } from "@/src/components/math/math-body";
 import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -5,7 +6,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer } from "@/src/components/marking-layer";
-import { Badge, Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
+import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -124,7 +125,7 @@ export default function SubmissionResultScreen(): JSX.Element {
                               : null
                         ]}
                       >
-                        <Body>{option.optionText}</Body>
+                        <MathBody text={option.optionText} />
                         <View style={styles.badgesRow}>
                           {isSelected ? (
                             <View

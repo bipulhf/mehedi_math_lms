@@ -1,3 +1,4 @@
+import { MathBody } from "@/src/components/math/math-body";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -333,7 +334,7 @@ export default function TestScreen(): JSX.Element {
                         isDisabled ? styles.optionDisabled : null
                       ]}
                     >
-                      <Body>{option.optionText}</Body>
+                      <MathBody text={option.optionText} />
                     </Pressable>
                   );
                 });

@@ -1,7 +1,9 @@
+import { hasMathDelimiters } from "@genex/shared";
 import type { JSX } from "react";
 import { useWindowDimensions } from "react-native";
 import RenderHTML, { type HTMLSource } from "react-native-render-html";
 
+import { MathWebView } from "@/src/components/math/math-webview";
 import { colors, fonts, typography } from "@/src/theme/tokens";
 
 export interface HtmlContentProps {
@@ -15,6 +17,13 @@ export function HtmlContent({ html, muted = false }: HtmlContentProps): JSX.Elem
 
   if (trimmed.length === 0) {
     return null;
+  }
+
+  // Maths needs a WebView; everything else keeps the native renderer, which is
+  // cheaper and matches the app's typography exactly. A question with no
+  // formula in it pays nothing for this.
+  if (hasMathDelimiters(trimmed)) {
+    return <MathWebView html={trimmed} muted={muted} />;
   }
 
   const source: HTMLSource = { html: trimmed };
