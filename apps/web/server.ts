@@ -1,6 +1,9 @@
-import { file } from "bun";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import handler from "./dist/server/server.js";
+import { file } from "bun";
+import { config } from "dotenv";
 
 /**
  * The production entry: static files first, then the SSR handler.
@@ -15,7 +18,27 @@ import handler from "./dist/server/server.js";
  * Vite's dev server does this job in development, and a CDN or an nginx in
  * front would do it in a larger deployment. This is the small version, so that
  * `bun server.ts` is a complete, correct way to run the site.
+ *
+ * It also loads the root `.env` first, the way `apps/api/src/load-root-env.ts`
+ * does. `VITE_*` variables are baked in at build time, but the server half
+ * needs real ones at run time — Better Auth reads `DATABASE_URL` and
+ * `BETTER_AUTH_SECRET` when the auth route is first hit. Without them that
+ * import throws, and because a failed module is cached, every later request
+ * gets `auth` as undefined rather than the original error.
  */
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const rootEnvPath = path.join(repoRoot, ".env");
+
+if (existsSync(rootEnvPath)) {
+  // `override: false`, so a variable already set by the shell or by
+  // docker-compose wins over the file.
+  config({ path: rootEnvPath, override: false, quiet: true });
+}
+
+// After the env, never before: this module pulls in the auth handler, which
+// reads it at import time.
+const { default: handler } = await import("./dist/server/server.js");
 
 const clientDirectory = new URL("./dist/client/", import.meta.url);
 const port = Number(process.env.PORT ?? 3000);
