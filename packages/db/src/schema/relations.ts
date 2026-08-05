@@ -5,6 +5,7 @@ import { bugReports } from "./bug-reports";
 import { categories } from "./categories";
 import { chapterMaterials, chapters } from "./chapters";
 import { comments } from "./comments";
+import { coupons } from "./coupons";
 import { courseProgress, enrollments } from "./enrollments";
 import { courseTeachers, courses, notices } from "./courses";
 import { lectureMaterials, lectures, videoChapters } from "./lectures";
@@ -48,6 +49,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   courseAssignments: many(courseTeachers),
   enrollments: many(enrollments),
   payments: many(payments),
+  couponsCreated: many(coupons),
   sentMessages: many(messages),
   comments: many(comments),
   notifications: many(notifications),
@@ -146,7 +148,8 @@ export const coursesRelations = relations(courses, ({ many, one }) => ({
   teachers: many(courseTeachers),
   enrollments: many(enrollments),
   notices: many(notices),
-  reviews: many(reviews)
+  reviews: many(reviews),
+  coupons: many(coupons)
 }));
 
 export const courseTeachersRelations = relations(courseTeachers, ({ one }) => ({
@@ -335,6 +338,10 @@ export const courseProgressRelations = relations(courseProgress, ({ one }) => ({
 }));
 
 export const paymentsRelations = relations(payments, ({ one }) => ({
+  coupon: one(coupons, {
+    fields: [payments.couponId],
+    references: [coupons.id]
+  }),
   enrollment: one(enrollments, {
     fields: [payments.enrollmentId],
     references: [enrollments.id]
@@ -343,6 +350,19 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
     fields: [payments.userId],
     references: [users.id]
   })
+}));
+
+export const couponsRelations = relations(coupons, ({ many, one }) => ({
+  course: one(courses, {
+    fields: [coupons.courseId],
+    references: [courses.id]
+  }),
+  createdBy: one(users, {
+    fields: [coupons.createdById],
+    references: [users.id]
+  }),
+  // Redemptions live on the payments themselves. ADR-0013.
+  payments: many(payments)
 }));
 
 export const conversationsRelations = relations(conversations, ({ many, one }) => ({

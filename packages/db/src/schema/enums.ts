@@ -48,7 +48,12 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "REFUNDED"
 ]);
 
-export const paymentProviderEnum = pgEnum("payment_provider", ["SSLCOMMERZ"]);
+// COUPON is not a gateway. It marks a purchase that settled locally because a
+// coupon took the Payable to zero -- there was nothing to collect. ADR-0013.
+export const paymentProviderEnum = pgEnum("payment_provider", ["SSLCOMMERZ", "COUPON"]);
+
+// How a coupon computes its discount. A coupon is one kind for its whole life.
+export const couponKindEnum = pgEnum("coupon_kind", ["FLAT", "PERCENT"]);
 
 export const bugReportStatusEnum = pgEnum("bug_report_status", [
   "OPEN",

@@ -81,6 +81,37 @@ An accountant's record that money was returned for a payment. It is bookkeeping 
 through the gateway out of band — and it always cancels the enrolment it paid for.
 _Avoid_: Chargeback, reversal, credit
 
+### Coupons
+
+**Coupon**:
+A code a student types at Checkout to pay less for a course. It takes either a fixed number of taka or a
+percentage off, never both, and it is created by the Course Owner of the course it applies to, or by an
+Admin. A course may have many coupons; a purchase may use only one.
+_Avoid_: Discount, promo code, voucher, offer, deal
+
+**Platform Coupon**:
+A coupon that names no course and so applies to every course, including ones published after it was made.
+Only an Admin can create one. Where a course has its own coupon of the same code, the course's own wins.
+_Avoid_: Global coupon, site-wide coupon, universal code
+
+**Public Coupon**:
+A coupon its creator has chosen to advertise on the course page, so a visitor can see and apply it without
+being told the code. Every other coupon exists only for whoever was handed it. Where several are public on
+one course, the buyer is shown the one that saves them the most.
+_Avoid_: Featured coupon, promo banner, open coupon
+
+**Redemption**:
+One use of a coupon on one purchase. It counts from the moment the money clears and keeps counting even if
+that payment is later refunded — the coupon was handed out and used, and a refund does not unspend it. A
+student may redeem a given coupon once.
+_Avoid_: Avail, usage, claim, application
+
+**Payable**:
+What a student is actually charged for a course after a coupon: the price less the discount, never below
+zero. It is fixed when Checkout starts and is what the money is measured against afterwards. A Payable of
+zero is settled on the spot, with no gateway and no waiting.
+_Avoid_: Final price, net price, discounted price, total
+
 ### Announcements
 
 **Notice**:
