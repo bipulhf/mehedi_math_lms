@@ -1,37 +1,38 @@
 import { useQueries } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import type { JSX } from "react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { MarkingLayer } from "@/components/marking/marking-layer";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { RichTextContent } from "@/components/ui/rich-text-content";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
-import { getSubmissionDetail, getTestDetail, gradeSubmission } from "@/lib/api/tests";
+import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 
-export const Route = createFileRoute(
-  "/dashboard/tests/$testId/submissions/$submissionId"
-)({
+export const Route = createFileRoute("/dashboard/tests/$testId/submissions/$submissionId")({
   head: () =>
     seo({
-      description: "Review and grade a student's written answers.",
+      description: "Review one student's submitted paper.",
       path: "/dashboard/tests",
-      title: "Grade Submission"
+      title: "Submission"
     }),
-  component: GradeSubmissionPage,
+  component: SubmissionReviewPage,
   errorComponent: RouteErrorView
 } as never);
 
-function GradeSubmissionPage(): JSX.Element {
+/**
+ * A teacher's read of one submitted paper — the answers as they stand, with any
+ * Marking already on them. Marking itself happens in the marking workspace,
+ * which claims each answer as it is opened; this page never writes.
+ */
+function SubmissionReviewPage(): JSX.Element {
   const t = useT();
 
   const { submissionId, testId } = Route.useParams();
@@ -48,71 +49,16 @@ function GradeSubmissionPage(): JSX.Element {
     ]
   });
   const test: AssessmentTestDetail | null = testQuery?.data ?? null;
-  const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [marksByAnswerId, setMarksByAnswerId] = useState<Record<string, number>>({});
-  const [isSaving, setIsSaving] = useState(false);
+  const submission: SubmissionDetail | null = submissionQuery?.data ?? null;
   const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionQuery?.isPending);
-  const fetchedSubmission = submissionQuery?.data;
-
-  // The marks and feedback are edited in place, so the fetched submission seeds
-  // them rather than being read directly.
-  useEffect(() => {
-    if (!fetchedSubmission) {
-      return;
-    }
-
-    setSubmission(fetchedSubmission);
-    setFeedback(fetchedSubmission.feedback ?? "");
-    setMarksByAnswerId(
-      Object.fromEntries(
-        fetchedSubmission.answers.map((answer) => [answer.id, answer.awardedMarks ?? 0])
-      )
-    );
-  }, [fetchedSubmission]);
 
   const answerMap = useMemo(
     () => new Map(submission?.answers.map((answer) => [answer.questionId, answer]) ?? []),
     [submission?.answers]
   );
 
-  const handleSave = async (): Promise<void> => {
-    if (!submission || !test) {
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      const writtenQuestions = test.questions.filter((question) => question.type === "WRITTEN");
-      const graded = await gradeSubmission(submission.id, {
-        answers: writtenQuestions
-          .map((question) => {
-            const answer = answerMap.get(question.id);
-
-            if (!answer) {
-              return null;
-            }
-
-            return {
-              answerId: answer.id,
-              awardedMarks: marksByAnswerId[answer.id] ?? 0
-            };
-          })
-          .filter((value): value is { answerId: string; awardedMarks: number } => value !== null),
-        feedback
-      });
-      setSubmission(graded);
-      toast.success(t("grade.graded"));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   if (isLoading || !test || !submission) {
-    return (
-      <TestTakingSkeleton />
-    );
+    return <TestTakingSkeleton />;
   }
 
   return (
@@ -125,85 +71,87 @@ function GradeSubmissionPage(): JSX.Element {
             {test.title} · {t("test.attemptLabel", { number: String(submission.attemptNumber) })} ·{" "}
             {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
           </CardDescription>
+          {test.type === "WRITTEN" && submission.status === "SUBMITTED" ? (
+            <div>
+              <Button asChild size="sm">
+                <Link params={{ testId }} to="/dashboard/tests/$testId/marking">
+                  {t("marking.openPaper")}
+                </Link>
+              </Button>
+            </div>
+          ) : null}
         </CardHeader>
       </Card>
 
-      {test.questions.map((question) => {
+      {test.questions.map((question, index) => {
         const answer = answerMap.get(question.id);
-        const selectedOption = question.options.find((option) => option.id === answer?.selectedOptionId);
+        const selectedOption = question.options.find(
+          (option) => option.id === answer?.selectedOptionId
+        );
 
         return (
           <Card key={question.id}>
             <CardHeader>
               <CardTitle className="text-lg">
-                <RichTextContent html={question.questionText} />
+                <span>Q{index + 1}. </span>
+                <RichTextContent
+                  className="inline align-baseline [&_p]:mb-0 [&_p]:inline"
+                  html={question.questionText}
+                />
               </CardTitle>
               <CardDescription>
-                {question.type} · {question.marks} marks
+                {answer?.awardedMarks ?? 0} / {question.marks}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {question.type === "MCQ" ? (
-                <>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    Selected option: {selectedOption?.optionText ?? "No answer"}
-                  </div>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    Correct option(s):{" "}
-                    {question.options
-                      .filter((option) => option.isCorrect)
-                      .map((option) => option.optionText)
-                      .join(", ") || "None"}
-                  </div>
-                </>
+              {test.type === "MCQ" ? (
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
+                  {selectedOption?.optionText ?? t("script.notAttempted")}
+                </div>
+              ) : (answer?.scriptPages.length ?? 0) === 0 ? (
+                <p className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm text-ink/62">
+                  {t("script.notAttempted")}
+                </p>
               ) : (
-                <>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    {answer?.writtenAnswer || "No written answer submitted"}
-                  </div>
-                  <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                    <span className="font-medium">Reference answer:</span>{" "}
-                    {question.expectedAnswer ? (
-                      <RichTextContent
-                        className="inline text-sm leading-6 text-ink [&_p]:mb-0 [&_p]:inline"
-                        html={question.expectedAnswer}
-                      />
-                    ) : (
-                      "Not provided"
-                    )}
-                  </div>
-                  {answer ? (
-                    <Input
-                      min={0}
-                      max={question.marks}
-                      type="number"
-                      value={marksByAnswerId[answer.id] ?? 0}
-                      onChange={(event) =>
-                        setMarksByAnswerId((currentValues) => ({
-                          ...currentValues,
-                          [answer.id]: Number(event.target.value)
-                        }))
-                      }
+                <div className="grid gap-3 md:grid-cols-2">
+                  {answer?.scriptPages.map((page) => (
+                    <MarkingLayer
+                      key={page.id}
+                      color="RED"
+                      marking={page.marking}
+                      pageHeight={page.height ?? 0}
+                      pageUrl={page.fileUrl}
+                      pageWidth={page.width ?? 0}
+                      penWidth="MEDIUM"
+                      tool="PEN"
                     />
-                  ) : null}
-                </>
+                  ))}
+                </div>
               )}
+              {question.markingGuide ? (
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
+                  <span className="font-medium">{t("marking.guide")}: </span>
+                  <RichTextContent
+                    className="inline text-sm leading-6 text-ink [&_p]:mb-0 [&_p]:inline"
+                    html={question.markingGuide}
+                  />
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         );
       })}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("grade.feedback")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <RichTextEditor value={feedback} onChange={(value) => setFeedback(value)} />
-          <Button type="button" disabled={isSaving} onClick={() => void handleSave()}>
-            {isSaving ? "Saving..." : "Finalize grading"}
-          </Button>
-        </CardContent>
-      </Card>
+      {submission.feedback ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("grade.feedback")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RichTextContent html={submission.feedback} />
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

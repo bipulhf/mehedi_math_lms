@@ -1,11 +1,14 @@
-import type { JSX } from "react";
+import type { ChangeEvent, JSX } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 import type { QuestionDraft } from "@/components/tests/question-draft";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import type { TestType } from "@/lib/api/tests";
+import { uploadQuestionImage } from "@/lib/api/uploads";
 import { useT } from "@/lib/i18n/locale-context";
 
 /**
@@ -18,6 +21,8 @@ export interface QuestionEditorProps {
   onCancel?: (() => void) | undefined;
   onChange: (draft: QuestionDraft) => void;
   onSave: () => void;
+  /** The Test decides what a question needs — options, or a marking guide. */
+  testType: TestType;
 }
 
 export function QuestionEditor({
@@ -25,34 +30,48 @@ export function QuestionEditor({
   isWorking,
   onCancel,
   onChange,
-  onSave
+  onSave,
+  testType
 }: QuestionEditorProps): JSX.Element {
   const t = useT();
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleImages = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const files = [...(event.target.files ?? [])];
+    event.target.value = "";
+
+    if (files.length === 0) {
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      const uploaded = await Promise.all(files.slice(0, 8).map((file) => uploadQuestionImage(file)));
+      onChange({
+        ...draft,
+        images: [
+          ...draft.images,
+          ...uploaded.map((upload) => ({ fileUrl: upload.fileUrl, uploadId: upload.id }))
+        ].slice(0, 8)
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("script.uploadFailed"));
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   return (
     <div className="space-y-3">
       <div className="grid gap-2 md:grid-cols-[0.75fr_0.25fr]">
-        <div className="space-y-1">
-          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.type")}</Label>
-          <Select
-            className="h-10"
-            value={draft.type}
-            onChange={(event) =>
-              onChange({
-                ...draft,
-                type: event.target.value as QuestionDraft["type"]
-              })
-            }
-          >
-            <option value="MCQ">{t("ab.mcq")}</option>
-            <option value="WRITTEN">{t("ab.written")}</option>
-          </Select>
-        </div>
-        <div className="space-y-1">
+        <div className="space-y-1 md:col-start-2">
           <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.marks")}</Label>
           <Input
             className="h-10"
-            min={1}
+            min={0.5}
+            step={0.5}
             type="number"
             value={draft.marks}
             onChange={(event) =>
@@ -74,7 +93,58 @@ export function QuestionEditor({
           })
         }
       />
-      {draft.type === "MCQ" ? (
+      <div className="space-y-2">
+        <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">
+          {t("qe.images")}
+        </Label>
+        {draft.images.length > 0 ? (
+          <div className="grid gap-2 sm:grid-cols-3">
+            {draft.images.map((image) => (
+              <div
+                key={image.uploadId}
+                className="space-y-1 rounded-[var(--radius)] border border-hairline bg-panel-warm p-1.5"
+              >
+                <img
+                  alt=""
+                  className="block w-full rounded-[calc(var(--radius)-0.125rem)]"
+                  src={image.fileUrl}
+                />
+                <Button
+                  size="xs"
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    onChange({
+                      ...draft,
+                      images: draft.images.filter((item) => item.uploadId !== image.uploadId)
+                    })
+                  }
+                >
+                  {t("qe.removeImage")}
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <input
+          ref={imageInputRef}
+          accept="image/*"
+          className="hidden"
+          multiple
+          type="file"
+          onChange={(event) => void handleImages(event)}
+        />
+        <Button
+          disabled={isUploadingImage || draft.images.length >= 8}
+          size="sm"
+          type="button"
+          variant="outline"
+          onClick={() => imageInputRef.current?.click()}
+        >
+          {t("qe.addImage")}
+        </Button>
+      </div>
+      {testType === "MCQ" ? (
         <div className="space-y-2.5">
           {draft.options.map((option, index) => (
             <div
@@ -149,14 +219,17 @@ export function QuestionEditor({
         </div>
       ) : (
         <div className="space-y-2">
-          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("qe.referenceAnswer")}</Label>
+          <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">
+            {t("qe.markingGuide")}
+          </Label>
+          <p className="text-xs text-ink/62">{t("qe.markingGuideHint")}</p>
           <RichTextEditor
-            placeholder={t("qe.expected")}
-            value={draft.expectedAnswer}
+            placeholder={t("qe.markingGuide")}
+            value={draft.markingGuide}
             onChange={(value) =>
               onChange({
                 ...draft,
-                expectedAnswer: value
+                markingGuide: value
               })
             }
           />

@@ -1,40 +1,55 @@
-import type { CreateQuestionInput } from "@/lib/api/tests";
+import type { CreateQuestionInput, TestType } from "@/lib/api/tests";
 
-/** The in-progress question shared by the builder and its editor. */
+/** An image already uploaded and waiting to be attached to the question. */
+export interface QuestionDraftImage {
+  fileUrl: string;
+  uploadId: string;
+}
+
+/**
+ * The in-progress question shared by the builder and its editor.
+ *
+ * A question carries no type of its own — the Test decides whether options or
+ * an Answer Script are expected (ADR-0008) — so the draft holds both shapes and
+ * the payload sends whichever the Test asked for.
+ */
 export interface QuestionDraft {
-  expectedAnswer: string;
+  images: QuestionDraftImage[];
+  markingGuide: string;
   marks: number;
   options: {
     isCorrect: boolean;
     optionText: string;
   }[];
   questionText: string;
-  type: "MCQ" | "WRITTEN";
 }
 
 export const initialQuestionDraft: QuestionDraft = {
-  expectedAnswer: "",
+  images: [],
+  markingGuide: "",
   marks: 1,
   options: [
     { isCorrect: true, optionText: "" },
     { isCorrect: false, optionText: "" }
   ],
-  questionText: "",
-  type: "MCQ"
+  questionText: ""
 };
 
-export function createQuestionPayload(draft: QuestionDraft): CreateQuestionInput {
+export function createQuestionPayload(
+  draft: QuestionDraft,
+  testType: TestType
+): CreateQuestionInput {
   return {
-    expectedAnswer: draft.expectedAnswer,
+    imageUploadIds: draft.images.map((image) => image.uploadId),
+    markingGuide: testType === "WRITTEN" ? draft.markingGuide : undefined,
     marks: draft.marks,
     options:
-      draft.type === "MCQ"
+      testType === "MCQ"
         ? draft.options.map((option) => ({
             isCorrect: option.isCorrect,
             optionText: option.optionText
           }))
         : undefined,
-    questionText: draft.questionText,
-    type: draft.type
+    questionText: draft.questionText
   };
 }

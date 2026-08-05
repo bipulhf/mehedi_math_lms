@@ -1,11 +1,17 @@
 import type { z } from "zod";
 import type {
+  addScriptPageSchema,
   createQuestionSchema,
   createTestSchema,
-  gradeSubmissionSchema,
+  MarkingDocument,
+  MarkingReviewMode,
+  TestType,
   reorderCourseItemsSchema,
   reorderQuestionsSchema,
+  reorderScriptPagesSchema,
   saveSubmissionAnswersSchema,
+  setAnswerMarkSchema,
+  submitPaperSchema,
   submitTestSchema,
   updateQuestionSchema,
   updateTestSchema
@@ -20,14 +26,21 @@ export interface AssessmentOption {
   sortOrder: number;
 }
 
-export interface AssessmentQuestion {
-  expectedAnswer: string | null;
+export interface AssessmentQuestionImage {
+  fileUrl: string;
   id: string;
+  sortOrder: number;
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  images: readonly AssessmentQuestionImage[];
+  /** Staff only — the model answer. Null for a student. */
+  markingGuide: string | null;
   marks: number;
   options: readonly AssessmentOption[];
   questionText: string;
   sortOrder: number;
-  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentTestSummary {
@@ -45,7 +58,7 @@ export interface AssessmentTestSummary {
   sortOrder: number;
   title: string;
   totalMarks: number;
-  type: "MCQ" | "WRITTEN" | "MIXED";
+  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentChapterSummary {
@@ -58,13 +71,22 @@ export interface AssessmentTestDetail extends AssessmentTestSummary {
   questions: readonly AssessmentQuestion[];
 }
 
+export interface ScriptPageView {
+  fileUrl: string;
+  height: number | null;
+  id: string;
+  marking: MarkingDocument;
+  sortOrder: number;
+  width: number | null;
+}
+
 export interface SubmissionAnswerView {
   awardedMarks: number | null;
   id: string;
   isCorrect: boolean | null;
   questionId: string;
+  scriptPages: readonly ScriptPageView[];
   selectedOptionId: string | null;
-  writtenAnswer: string | null;
 }
 
 export interface SubmissionSummary {
@@ -92,6 +114,8 @@ export interface SubmissionDetail extends SubmissionSummary {
   testId: string;
 }
 
+export type { TestType };
+
 export type CreateTestInput = z.infer<typeof createTestSchema>;
 export type UpdateTestInput = z.infer<typeof updateTestSchema>;
 export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
@@ -100,7 +124,54 @@ export type ReorderCourseItemsInput = z.infer<typeof reorderCourseItemsSchema>;
 export type ReorderQuestionsInput = z.infer<typeof reorderQuestionsSchema>;
 export type SaveSubmissionAnswersInput = z.infer<typeof saveSubmissionAnswersSchema>;
 export type SubmitTestInput = z.infer<typeof submitTestSchema>;
-export type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>;
+export type AddScriptPageInput = z.infer<typeof addScriptPageSchema>;
+export type ReorderScriptPagesInput = z.infer<typeof reorderScriptPagesSchema>;
+export type SetAnswerMarkInput = z.infer<typeof setAnswerMarkSchema>;
+export type SubmitPaperInput = z.infer<typeof submitPaperSchema>;
+
+export interface MarkingQuestionView {
+  answerId: string | null;
+  awardedMarks: number | null;
+  id: string;
+  lockedByName: string | null;
+  markingGuide: string | null;
+  marks: number;
+  pageCount: number;
+  questionText: string;
+  sortOrder: number;
+}
+
+export interface MarkingPaperView {
+  attemptNumber: number;
+  isComplete: boolean;
+  markedCount: number;
+  questions: readonly MarkingQuestionView[];
+  status: "STARTED" | "SUBMITTED" | "GRADED";
+  student: { email: string; id: string; name: string };
+  submissionId: string;
+  toMarkCount: number;
+}
+
+export interface MarkingQueueView {
+  mode: MarkingReviewMode;
+  papers: readonly MarkingPaperView[];
+  testId: string;
+  testTitle: string;
+  totalMarks: number;
+}
+
+export interface MarkingAnswerView {
+  awardedMarks: number | null;
+  id: string;
+  lockedByName: string | null;
+  markingGuide: string | null;
+  marks: number;
+  pages: readonly ScriptPageView[];
+  questionId: string;
+  questionText: string;
+  student: { id: string; name: string };
+  submissionId: string;
+}
 
 export async function getCourseAssessments(
   courseId: string
@@ -255,13 +326,110 @@ export async function getSubmissionDetail(submissionId: string): Promise<Submiss
   return response.data;
 }
 
-export async function gradeSubmission(
+export async function addScriptPage(
   submissionId: string,
-  values: GradeSubmissionInput
-): Promise<SubmissionDetail> {
-  const response = await apiPut<GradeSubmissionInput, SubmissionDetail>(
-    `tests/submissions/${submissionId}/grade`,
+  values: AddScriptPageInput
+): Promise<readonly ScriptPageView[]> {
+  const response = await apiPost<AddScriptPageInput, readonly ScriptPageView[]>(
+    `scripts/submissions/${submissionId}/pages`,
     values
+  );
+
+  return response.data;
+}
+
+export async function reorderScriptPages(
+  submissionId: string,
+  values: ReorderScriptPagesInput
+): Promise<readonly ScriptPageView[]> {
+  const response = await apiPatch<ReorderScriptPagesInput, readonly ScriptPageView[]>(
+    `scripts/submissions/${submissionId}/pages/order`,
+    values
+  );
+
+  return response.data;
+}
+
+export async function removeScriptPage(pageId: string): Promise<{ id: string }> {
+  const response = await apiDelete<{ id: string }>(`scripts/pages/${pageId}`);
+
+  return response.data;
+}
+
+export async function getMarkingQueue(
+  testId: string,
+  mode: MarkingReviewMode
+): Promise<MarkingQueueView> {
+  const response = await apiGet<MarkingQueueView>(`scripts/tests/${testId}/marking?mode=${mode}`);
+
+  return response.data;
+}
+
+/** Opening an answer claims it, so nobody else marks the same one at once. */
+export async function claimAnswer(answerId: string): Promise<MarkingAnswerView> {
+  const response = await apiPost<Record<string, never>, MarkingAnswerView>(
+    `scripts/answers/${answerId}/claim`,
+    {}
+  );
+
+  return response.data;
+}
+
+export async function renewAnswerClaim(answerId: string): Promise<{ expiresInMs: number }> {
+  const response = await apiPatch<Record<string, never>, { expiresInMs: number }>(
+    `scripts/answers/${answerId}/claim`,
+    {}
+  );
+
+  return response.data;
+}
+
+export async function releaseAnswerClaim(answerId: string): Promise<{ id: string }> {
+  const response = await apiDelete<{ id: string }>(`scripts/answers/${answerId}/claim`);
+
+  return response.data;
+}
+
+export async function setAnswerMark(
+  answerId: string,
+  values: SetAnswerMarkInput
+): Promise<{ awardedMarks: number; id: string }> {
+  const response = await apiPut<SetAnswerMarkInput, { awardedMarks: number; id: string }>(
+    `scripts/answers/${answerId}/mark`,
+    values
+  );
+
+  return response.data;
+}
+
+export async function saveScriptPageMarking(
+  pageId: string,
+  marking: MarkingDocument
+): Promise<{ id: string }> {
+  const response = await apiPut<{ marking: MarkingDocument }, { id: string }>(
+    `scripts/pages/${pageId}/marking`,
+    { marking }
+  );
+
+  return response.data;
+}
+
+export async function submitPaper(
+  submissionId: string,
+  values: SubmitPaperInput
+): Promise<{ score: number; submissionId: string }> {
+  const response = await apiPost<SubmitPaperInput, { score: number; submissionId: string }>(
+    `scripts/submissions/${submissionId}/marking/submit`,
+    values
+  );
+
+  return response.data;
+}
+
+export async function reopenPaper(submissionId: string): Promise<{ submissionId: string }> {
+  const response = await apiPost<Record<string, never>, { submissionId: string }>(
+    `scripts/submissions/${submissionId}/marking/reopen`,
+    {}
   );
 
   return response.data;

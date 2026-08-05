@@ -47,7 +47,6 @@ export function CreateTestPanel({
         >
           <option value="MCQ">{t("ab.mcq")}</option>
           <option value="WRITTEN">{t("ab.written")}</option>
-          <option value="MIXED">{t("ab.mixed")}</option>
         </Select>
         <Input
           className="h-10"

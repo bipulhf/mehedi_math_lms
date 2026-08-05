@@ -187,11 +187,13 @@ async function getActiveStorageProvider(): Promise<StorageProvider> {
 
 async function uploadViaUploadThing(file: File, options: UploadFileOptions): Promise<UploadRecord> {
   const routeByPurpose: Record<UploadPurpose, string> = {
+    ANSWER_SCRIPT_PAGE: "answerScriptPage",
     BUG_SCREENSHOT: "bugScreenshot",
     COURSE_COVER: "courseCover",
     COURSE_MATERIAL: "courseMaterial",
     LECTURE_VIDEO: "lectureVideo",
-    PROFILE_PHOTO: "profilePhoto"
+    PROFILE_PHOTO: "profilePhoto",
+    QUESTION_IMAGE: "questionImage"
   };
   const [uploaded] = await uploadthingUploader.uploadFiles(routeByPurpose[options.purpose], {
     files: [file],
@@ -283,6 +285,21 @@ export async function uploadLectureVideo(
   const upload = await uploadManagedFile(file, { onProgress, purpose: "LECTURE_VIDEO" });
 
   return upload.fileUrl;
+}
+
+/** A photographed page of an Answer Script, already sized down by the caller. */
+export async function uploadAnswerScriptPage(
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<UploadRecord> {
+  return uploadManagedFile(file, { onProgress, purpose: "ANSWER_SCRIPT_PAGE" });
+}
+
+export async function uploadQuestionImage(
+  file: File,
+  onProgress?: (progress: number) => void
+): Promise<UploadRecord> {
+  return uploadManagedFile(file, { onProgress, purpose: "QUESTION_IMAGE" });
 }
 
 export async function uploadProfilePhoto(

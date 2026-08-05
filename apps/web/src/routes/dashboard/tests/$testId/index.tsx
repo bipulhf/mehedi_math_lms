@@ -11,9 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
+import { AnswerScriptUploader } from "@/components/tests/answer-script-uploader";
 import { RichTextContent } from "@/components/ui/rich-text-content";
-import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
+import type { AssessmentTestDetail, ScriptPageView, SubmissionDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
@@ -26,7 +26,6 @@ import {
 
 interface DraftAnswer {
   selectedOptionId?: string | undefined;
-  writtenAnswer?: string | undefined;
 }
 
 export const Route = createFileRoute("/dashboard/tests/$testId/")({
@@ -51,6 +50,9 @@ function StudentTestPage(): JSX.Element {
   });
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, DraftAnswer>>({});
+  const [pagesByQuestionId, setPagesByQuestionId] = useState<
+    Record<string, readonly ScriptPageView[]>
+  >({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,11 +80,13 @@ function StudentTestPage(): JSX.Element {
           Object.fromEntries(
             submissionDetail.answers.map((answer) => [
               answer.questionId,
-              {
-                selectedOptionId: answer.selectedOptionId ?? undefined,
-                writtenAnswer: answer.writtenAnswer ?? undefined
-              }
+              { selectedOptionId: answer.selectedOptionId ?? undefined }
             ])
+          )
+        );
+        setPagesByQuestionId(
+          Object.fromEntries(
+            submissionDetail.answers.map((answer) => [answer.questionId, answer.scriptPages])
           )
         );
         isHydratingAnswersRef.current = true;
@@ -112,8 +116,10 @@ function StudentTestPage(): JSX.Element {
     };
   }, [submission?.startedAt, test]);
 
+  // A written paper has nothing to autosave: its pages are uploaded as the
+  // student photographs them, and there are no selections to keep.
   useEffect(() => {
-    if (!submission || isHydratingAnswersRef.current) {
+    if (!submission || test?.type === "WRITTEN" || isHydratingAnswersRef.current) {
       isHydratingAnswersRef.current = false;
       return;
     }
@@ -122,8 +128,7 @@ function StudentTestPage(): JSX.Element {
       void saveSubmissionAnswers(submission.id, {
         answers: Object.entries(draftAnswers).map(([questionId, answer]) => ({
           questionId,
-          selectedOptionId: answer.selectedOptionId,
-          writtenAnswer: answer.writtenAnswer
+          selectedOptionId: answer.selectedOptionId
         }))
       });
     }, 800);
@@ -131,7 +136,7 @@ function StudentTestPage(): JSX.Element {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [draftAnswers, submission]);
+  }, [draftAnswers, submission, test?.type]);
 
   useEffect(() => {
     if (timeRemainingSeconds !== 0 || isSubmitting || !submission || !test) {
@@ -148,14 +153,12 @@ function StudentTestPage(): JSX.Element {
 
   const answeredCount = useMemo(
     () =>
-      test?.questions.filter((question) => {
-        const answer = draftAnswers[question.id];
-
-        return question.type === "MCQ"
-          ? Boolean(answer?.selectedOptionId)
-          : Boolean(answer?.writtenAnswer?.trim());
-      }).length ?? 0,
-    [draftAnswers, test]
+      test?.questions.filter((question) =>
+        test.type === "WRITTEN"
+          ? (pagesByQuestionId[question.id]?.length ?? 0) > 0
+          : Boolean(draftAnswers[question.id]?.selectedOptionId)
+      ).length ?? 0,
+    [draftAnswers, pagesByQuestionId, test]
   );
 
   const handleSubmit = async (): Promise<void> => {
@@ -168,11 +171,13 @@ function StudentTestPage(): JSX.Element {
 
     try {
       const result = await submitTest(test.id, {
-        answers: Object.entries(draftAnswers).map(([questionId, answer]) => ({
-          questionId,
-          selectedOptionId: answer.selectedOptionId,
-          writtenAnswer: answer.writtenAnswer
-        }))
+        answers:
+          test.type === "WRITTEN"
+            ? []
+            : Object.entries(draftAnswers).map(([questionId, answer]) => ({
+                questionId,
+                selectedOptionId: answer.selectedOptionId
+              }))
       });
       toast.success(t("test.submitted"));
       await router.navigate({
@@ -249,11 +254,10 @@ function StudentTestPage(): JSX.Element {
           ) : null}
           <div className="grid gap-2">
             {test.questions.map((question, index) => {
-              const answer = draftAnswers[question.id];
               const isAnswered =
-                question.type === "MCQ"
-                  ? Boolean(answer?.selectedOptionId)
-                  : Boolean(answer?.writtenAnswer?.trim());
+                test.type === "WRITTEN"
+                  ? (pagesByQuestionId[question.id]?.length ?? 0) > 0
+                  : Boolean(draftAnswers[question.id]?.selectedOptionId);
 
               return (
                 <button
@@ -283,7 +287,7 @@ function StudentTestPage(): JSX.Element {
         <CardHeader>
           <CardTitle>Question {currentQuestionIndex + 1}</CardTitle>
           <CardDescription>
-            {currentQuestion.type} · {currentQuestion.marks} marks
+            {test.type === "WRITTEN" ? "Written" : "MCQ"} · {currentQuestion.marks} marks
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -291,7 +295,19 @@ function StudentTestPage(): JSX.Element {
             className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink"
             html={currentQuestion.questionText}
           />
-          {currentQuestion.type === "MCQ" ? (
+          {currentQuestion.images.length > 0 ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {currentQuestion.images.map((image) => (
+                <img
+                  key={image.id}
+                  alt=""
+                  className="w-full rounded-[calc(var(--radius)-0.125rem)] border border-hairline"
+                  src={image.fileUrl}
+                />
+              ))}
+            </div>
+          ) : null}
+          {test.type === "MCQ" ? (
             <div className="grid gap-3">
               {(() => {
                 const selectedOptionId = draftAnswers[currentQuestion.id]?.selectedOptionId;
@@ -334,15 +350,12 @@ function StudentTestPage(): JSX.Element {
               ) : null}
             </div>
           ) : (
-            <Input
-              value={draftAnswers[currentQuestion.id]?.writtenAnswer ?? ""}
-              onChange={(event) =>
-                setDraftAnswers((currentValues) => ({
-                  ...currentValues,
-                  [currentQuestion.id]: {
-                    writtenAnswer: event.target.value
-                  }
-                }))
+            <AnswerScriptUploader
+              pages={pagesByQuestionId[currentQuestion.id] ?? []}
+              questionId={currentQuestion.id}
+              submissionId={submission.id}
+              onPagesChange={(pages) =>
+                setPagesByQuestionId((current) => ({ ...current, [currentQuestion.id]: pages }))
               }
             />
           )}

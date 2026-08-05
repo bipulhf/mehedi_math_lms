@@ -58,6 +58,15 @@ function TestSubmissionsPage(): JSX.Element {
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
           <CardDescription>{t("grade.lead")}</CardDescription>
+          {test.type === "WRITTEN" ? (
+            <div>
+              <Button asChild>
+                <Link params={{ testId }} to="/dashboard/tests/$testId/marking">
+                  {t("marking.openPaper")}
+                </Link>
+              </Button>
+            </div>
+          ) : null}
         </CardHeader>
       </Card>
 

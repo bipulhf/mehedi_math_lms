@@ -200,7 +200,10 @@ export function AssessmentBuilder({
     setIsWorking(true);
 
     try {
-      await createQuestion(selectedTest.id, createQuestionPayload(questionDraft));
+      await createQuestion(
+        selectedTest.id,
+        createQuestionPayload(questionDraft, selectedTest.type)
+      );
       setQuestionDraft(initialQuestionDraft);
       const refreshed = await getTestDetail(selectedTest.id);
       setSelectedTest(refreshed);
@@ -222,11 +225,11 @@ export function AssessmentBuilder({
 
     try {
       const payload: UpdateQuestionInput = {
-        expectedAnswer: draft.expectedAnswer,
+        imageUploadIds: draft.images.map((image) => image.uploadId),
+        markingGuide: selectedTest?.type === "WRITTEN" ? draft.markingGuide : undefined,
         marks: draft.marks,
-        options: draft.type === "MCQ" ? draft.options : undefined,
-        questionText: draft.questionText,
-        type: draft.type
+        options: selectedTest?.type === "MCQ" ? draft.options : undefined,
+        questionText: draft.questionText
       };
       await updateQuestion(questionId, payload);
       const refreshed = await getTestDetail(selectedTestId!);
@@ -447,8 +450,7 @@ export function AssessmentBuilder({
                     >
                       <option value="MCQ">{t("ab.mcq")}</option>
                       <option value="WRITTEN">{t("ab.written")}</option>
-                      <option value="MIXED">{t("ab.mixed")}</option>
-                    </Select>
+                                </Select>
                     <Input
                       className="h-10"
                       min={1}
@@ -588,6 +590,7 @@ export function AssessmentBuilder({
                             }))
                           }
                           onSave={() => void handleSaveQuestion(question.id)}
+                          testType={selectedTest.type}
                         />
                       ) : (
                         <div className="space-y-2.5">
@@ -601,7 +604,8 @@ export function AssessmentBuilder({
                                 />
                               </div>
                               <p className="text-xs text-ink/62">
-                                {question.type} · {question.marks} marks
+                                {selectedTest.type === "WRITTEN" ? t("ab.written") : t("ab.mcq")} ·{" "}
+                                {question.marks} marks
                               </p>
                             </div>
                             <div className="flex flex-wrap gap-1.5">
@@ -626,17 +630,20 @@ export function AssessmentBuilder({
                                   setQuestionEditDrafts((currentValues) => ({
                                     ...currentValues,
                                     [question.id]: {
-                                      expectedAnswer: question.expectedAnswer ?? "",
+                                      images: question.images.map((image) => ({
+                                        fileUrl: image.fileUrl,
+                                        uploadId: image.id
+                                      })),
+                                      markingGuide: question.markingGuide ?? "",
                                       marks: question.marks,
                                       options:
-                                        question.type === "MCQ"
+                                        question.options.length > 0
                                           ? question.options.map((option) => ({
                                               isCorrect: Boolean(option.isCorrect),
                                               optionText: option.optionText
                                             }))
                                           : initialQuestionDraft.options,
-                                      questionText: question.questionText,
-                                      type: question.type
+                                      questionText: question.questionText
                                     }
                                   }));
                                 }}
@@ -649,7 +656,7 @@ export function AssessmentBuilder({
                               >{t("ab.delete")}</Button>
                             </div>
                           </div>
-                          {question.type === "MCQ" ? (
+                          {selectedTest.type === "MCQ" ? (
                             <div className="grid gap-2 md:grid-cols-2">
                               {question.options.map((option) => (
                                 <div
@@ -676,6 +683,7 @@ export function AssessmentBuilder({
                       isWorking={isWorking}
                       onChange={setQuestionDraft}
                       onSave={() => void handleCreateQuestion()}
+                      testType={selectedTest.type}
                     />
                   </div>
                 </CardContent>

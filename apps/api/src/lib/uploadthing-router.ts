@@ -184,6 +184,9 @@ async function recordCompletedUpload(
 }
 
 export const uploadthingRouter = {
+  answerScriptPage: f({ image: { maxFileCount: 1, maxFileSize: "8MB" } })
+    .middleware(async ({ files, req }) => authenticateUpload(req, "ANSWER_SCRIPT_PAGE", files))
+    .onUploadComplete(async ({ file, metadata }) => recordCompletedUpload(file, metadata)),
   bugScreenshot: f({ image: { maxFileCount: 1, maxFileSize: "8MB" } })
     .middleware(async ({ files, req }) => authenticateUpload(req, "BUG_SCREENSHOT", files))
     .onUploadComplete(async ({ file, metadata }) => recordCompletedUpload(file, metadata)),
@@ -202,6 +205,9 @@ export const uploadthingRouter = {
     .onUploadComplete(async ({ file, metadata }) => recordCompletedUpload(file, metadata)),
   profilePhoto: f({ image: { maxFileCount: 1, maxFileSize: "8MB" } })
     .middleware(async ({ files, req }) => authenticateUpload(req, "PROFILE_PHOTO", files))
+    .onUploadComplete(async ({ file, metadata }) => recordCompletedUpload(file, metadata)),
+  questionImage: f({ image: { maxFileCount: 1, maxFileSize: "16MB" } })
+    .middleware(async ({ files, req }) => authenticateUpload(req, "QUESTION_IMAGE", files))
     .onUploadComplete(async ({ file, metadata }) => recordCompletedUpload(file, metadata))
 } satisfies FileRouter;
 

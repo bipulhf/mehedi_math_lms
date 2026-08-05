@@ -4,6 +4,7 @@ import type { JSX } from "react";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { MarkingLayer } from "@/components/marking/marking-layer";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,7 +157,7 @@ function SubmissionResultPage(): JSX.Element {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {question.type === "MCQ" ? (
+                {test.type === "MCQ" ? (
                   <div className="grid gap-2">
                     {question.options.map((option) => {
                       const isSelected = option.id === answer?.selectedOptionId;
@@ -206,18 +207,27 @@ function SubmissionResultPage(): JSX.Element {
                       <p className="text-xs uppercase tracking-[0.2em] text-ink/55">
                         {t("test.yourAnswer")}
                       </p>
-                      <div className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                        {answer?.writtenAnswer || t("test.noAnswer")}
-                      </div>
-                    </div>
-                    {question.expectedAnswer ? (
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-ink/55">
-                          {t("test.correctAnswer")}
+                      {(answer?.scriptPages.length ?? 0) === 0 ? (
+                        <p className="mt-2 rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm text-ink/62">
+                          {t("test.noAnswer")}
                         </p>
-                        <RichTextContent className="mt-2" html={question.expectedAnswer} />
-                      </div>
-                    ) : null}
+                      ) : (
+                        <div className="mt-2 grid gap-3 md:grid-cols-2">
+                          {answer?.scriptPages.map((page) => (
+                            <MarkingLayer
+                              key={page.id}
+                              color="RED"
+                              marking={page.marking}
+                              pageHeight={page.height ?? 0}
+                              pageUrl={page.fileUrl}
+                              pageWidth={page.width ?? 0}
+                              penWidth="MEDIUM"
+                              tool="PEN"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-sm text-ink/70">
                       {t("test.awardedMarks", { count: String(answer?.awardedMarks ?? 0) })}
                     </p>
