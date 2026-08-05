@@ -101,6 +101,10 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-genex}
+      # Where apps/web/server.ts forwards /api/v1 and /api/health, for a build
+      # whose client uses a relative API base URL. A build with an absolute
+      # VITE_API_BASE_URL never reaches the proxy.
+      API_PROXY_TARGET: http://api:3001
     ports:
       - "3000:3000"
     restart: unless-stopped

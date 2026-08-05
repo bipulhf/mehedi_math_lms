@@ -205,6 +205,13 @@ migrations, runs the idempotent admin bootstrap (`ADMIN_EMAIL`/
 `ADMIN_PASSWORD`), then starts the API, the web app, and the four workers
 (notification, SMS, file-processing, audit-log-cleanup).
 
+`apps/web/server.ts` serves the client build and forwards `/api/v1` and
+`/api/health` to the API, the way Vite's dev proxy does — WebSocket upgrades
+included. Point it somewhere other than `http://localhost:3001` with
+`API_PROXY_TARGET`. A build that bakes an absolute `VITE_API_BASE_URL` has the
+browser call the API directly and never uses the proxy; that origin then has to
+appear in `CORS_ORIGINS`, since the session travels as a cookie.
+
 ### Running without Redis
 
 Redis is optional. Set `REDIS_ENABLED="false"` and clear `COMPOSE_PROFILES` in

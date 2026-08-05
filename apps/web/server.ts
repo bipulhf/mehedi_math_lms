@@ -44,6 +44,66 @@ const clientDirectory = new URL("./dist/client/", import.meta.url);
 const port = Number(process.env.PORT ?? 3000);
 
 /**
+ * Where `/api/v1` and `/api/health` are forwarded, the way Vite's dev proxy
+ * forwards them.
+ *
+ * Without this the two modes disagree about what a relative API path means.
+ * `clientEnv.apiBaseUrl` falls back to `/api/v1` when `VITE_API_BASE_URL` was
+ * not present at build time, and in development that resolves through the
+ * proxy — while a built site sent it to this server, which answered every call
+ * with the SSR handler's `{"error":"Only HTML requests are supported here"}`.
+ * Proxying here makes a relative base URL correct in both, and same-origin
+ * calls need no CORS and no rebuild to change the API's address.
+ *
+ * A build that bakes an absolute `VITE_API_BASE_URL` still talks to the API
+ * directly and never reaches this code.
+ */
+const apiTarget = (
+  process.env.API_PROXY_TARGET ??
+  process.env.VITE_SSR_API_BASE_URL?.replace(/\/api\/v1\/?$/, "") ??
+  "http://localhost:3001"
+).replace(/\/$/, "");
+
+/** `/api/auth/*` is this app's own route, not the API's. */
+function isProxiedPath(pathname: string): boolean {
+  return pathname === "/api/health" || pathname.startsWith("/api/v1");
+}
+
+function isWebSocketUpgrade(request: Request): boolean {
+  return request.headers.get("upgrade")?.toLowerCase() === "websocket";
+}
+
+interface SocketBridge {
+  cookie: string;
+  /** Frames the browser sent before the upstream socket finished opening. */
+  pending: string[];
+  upstream: WebSocket | null;
+  url: URL;
+}
+
+async function proxyRequest(request: Request, url: URL): Promise<Response> {
+  const upstream = new URL(`${url.pathname}${url.search}`, apiTarget);
+
+  try {
+    const response = await fetch(upstream, {
+      body: request.body,
+      // The session cookie travels on this hop, which is the point of proxying.
+      headers: request.headers,
+      method: request.method,
+      redirect: "manual",
+      // Bun needs this to stream a request body through.
+      ...(request.body === null ? {} : { duplex: "half" })
+    } as RequestInit);
+
+    return response;
+  } catch (error) {
+    console.error("API proxy failed", { error, upstream: upstream.href });
+
+    return Response.json({ message: "The API is unreachable", status: "error" }, { status: 502 });
+  }
+}
+
+/**
  * A year for anything Vite hashed, because the name changes when the bytes do.
  * Everything else — `favicon`, `firebase-messaging-sw.js`, images copied from
  * `public/` — keeps its name across deploys, so it is only allowed to be
@@ -75,9 +135,25 @@ async function staticResponse(pathname: string): Promise<Response | null> {
   });
 }
 
-Bun.serve({
+const server = Bun.serve<SocketBridge, Record<string, never>>({
   fetch: async (request) => {
-    const { pathname } = new URL(request.url);
+    const url = new URL(request.url);
+    const { pathname } = url;
+
+    if (isProxiedPath(pathname)) {
+      // Messages and notifications ride a socket on the same path prefix, so
+      // the proxy has to carry the upgrade too. Without it the page falls back
+      // to "reload to see new messages" and nobody is told why.
+      if (isWebSocketUpgrade(request)) {
+        const upgraded = server.upgrade(request, {
+          data: { cookie: request.headers.get("cookie") ?? "", pending: [], upstream: null, url }
+        });
+
+        return upgraded ? undefined : new Response("Expected a WebSocket upgrade", { status: 400 });
+      }
+
+      return proxyRequest(request, url);
+    }
 
     if (pathname !== "/") {
       const asset = await staticResponse(pathname);
@@ -90,7 +166,54 @@ Bun.serve({
     return handler.fetch(request);
   },
   idleTimeout: 60,
-  port
+  port,
+  websocket: {
+    close: (socket) => {
+      socket.data.upstream?.close();
+    },
+    message: (socket, message) => {
+      const frame = typeof message === "string" ? message : message.toString();
+      const { upstream } = socket.data;
+
+      // A typing event can be sent before the upstream socket is open; holding
+      // it is the difference between a lost keystroke and a dropped feature.
+      if (upstream === null || upstream.readyState !== WebSocket.OPEN) {
+        socket.data.pending.push(frame);
+
+        return;
+      }
+
+      upstream.send(frame);
+    },
+    open: (socket) => {
+      const { cookie, url } = socket.data;
+      const upstreamUrl = new URL(`${url.pathname}${url.search}`, apiTarget);
+
+      upstreamUrl.protocol = upstreamUrl.protocol === "https:" ? "wss:" : "ws:";
+
+      // The session travels as a cookie, and the API's socket route checks it.
+      const upstream = new WebSocket(upstreamUrl, { headers: { cookie } });
+
+      socket.data.upstream = upstream;
+
+      upstream.addEventListener("open", () => {
+        for (const frame of socket.data.pending) {
+          upstream.send(frame);
+        }
+
+        socket.data.pending = [];
+      });
+      upstream.addEventListener("message", (event: MessageEvent<string>) => {
+        socket.send(event.data);
+      });
+      upstream.addEventListener("close", () => {
+        socket.close();
+      });
+      upstream.addEventListener("error", () => {
+        socket.close();
+      });
+    }
+  }
 });
 
 console.info(`Web server listening on http://localhost:${String(port)}`);
