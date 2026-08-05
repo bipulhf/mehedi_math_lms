@@ -37,8 +37,12 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  # Behind a profile, so a deployment that sets REDIS_ENABLED=false and clears
+  # COMPOSE_PROFILES simply does not start it. The shipped .env.docker.example
+  # sets COMPOSE_PROFILES=redis, so `docker compose up -d` is unchanged.
   redis:
     image: redis:7-alpine
+    profiles: ["redis"]
     healthcheck:
       interval: 5s
       retries: 10
@@ -75,6 +79,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+        # Not required: with the redis profile off there is no container to wait
+        # for, and the API is built to run without one.
+        required: false
       seed:
         condition: service_completed_successfully
     ports:
@@ -100,6 +107,7 @@ services:
 
   worker-notification:
     <<: *api-image
+    profiles: ["redis"]
     command: ["bun", "src/workers/notification-worker.ts"]
     depends_on:
       redis:
@@ -110,6 +118,7 @@ services:
 
   worker-sms:
     <<: *api-image
+    profiles: ["redis"]
     command: ["bun", "src/workers/sms-worker.ts"]
     depends_on:
       redis:
@@ -120,6 +129,7 @@ services:
 
   worker-file-processing:
     <<: *api-image
+    profiles: ["redis"]
     command: ["bun", "src/workers/file-processing-worker.ts"]
     depends_on:
       redis:
@@ -130,6 +140,7 @@ services:
 
   worker-audit-log-cleanup:
     <<: *api-image
+    profiles: ["redis"]
     command: ["bun", "src/workers/audit-log-cleanup-worker.ts"]
     depends_on:
       redis:
