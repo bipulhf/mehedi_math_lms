@@ -3,7 +3,7 @@ import { Worker } from "bullmq";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { queues } from "@/lib/queues";
-import { redis } from "@/lib/redis";
+import { createQueueConnection } from "@/lib/redis";
 import { AuditLogRepository } from "@/repositories/audit-log-repository";
 import { AuditLogService } from "@/services/audit-log-service";
 
@@ -20,7 +20,7 @@ const worker = new Worker(
     logger.info({ deletedCount }, "Audit log retention sweep complete");
   },
   {
-    connection: redis,
+    connection: createQueueConnection(),
     concurrency: 1
   }
 );

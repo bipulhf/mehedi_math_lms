@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { redis } from "@/lib/redis";
+import { createQueueConnection } from "@/lib/redis";
 import { SmsRepository } from "@/repositories/sms-repository";
 import { processSmsBatchJob } from "@/services/sms-batch-processor";
 import { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
@@ -20,7 +20,7 @@ const worker = new Worker<SmsJobPayload>(
     await processSmsBatchJob(smsRepository, smsProvider, job.data.batchId);
   },
   {
-    connection: redis,
+    connection: createQueueConnection(),
     concurrency: 2
   }
 );

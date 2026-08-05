@@ -8,6 +8,13 @@ const apiEnvSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(3001),
   API_HOST: z.string().default("0.0.0.0"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  /**
+   * How long a Redis command may take before the caller gives up. Every command
+   * on the request path is a cache read, a rate-limit counter or a presence
+   * lookup — none of them worth waiting on, all of them with a working path
+   * behind them.
+   */
+  REDIS_COMMAND_TIMEOUT_MS: z.coerce.number().int().positive().default(1000),
   AWS_REGION: z.string().default("ap-south-1"),
   AWS_ACCESS_KEY_ID: z.string().default("replace-me"),
   AWS_SECRET_ACCESS_KEY: z.string().default("replace-me"),

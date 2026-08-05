@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { redis } from "@/lib/redis";
+import { createQueueConnection } from "@/lib/redis";
 import { UploadRepository } from "@/repositories/upload-repository";
 import {
   type ExtractVideoMetadataJob,
@@ -24,7 +24,7 @@ const worker = new Worker<ExtractVideoMetadataJob>(
     await processVideoMetadataJob(uploadRepository, objectUrlStoredFileReader, job.data);
   },
   {
-    connection: redis,
+    connection: createQueueConnection(),
     concurrency: 2
   }
 );

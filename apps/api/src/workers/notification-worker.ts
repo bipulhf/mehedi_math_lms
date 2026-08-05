@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { redis } from "@/lib/redis";
+import { createQueueConnection } from "@/lib/redis";
 import { NotificationRepository } from "@/repositories/notification-repository";
 import { FcmPushService } from "@/services/fcm-push-service";
 import { processNotificationFcmJob } from "@/services/notification-fcm-processor";
@@ -20,7 +20,7 @@ const worker = new Worker<NotificationJobPayload>(
     await processNotificationFcmJob(notificationRepository, fcmPushService, job.data.notificationIds);
   },
   {
-    connection: redis,
+    connection: createQueueConnection(),
     concurrency: 4
   }
 );

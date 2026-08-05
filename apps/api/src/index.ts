@@ -4,6 +4,7 @@ import { app } from "@/app";
 import { env } from "@/lib/env";
 import { messageRealtimeService } from "@/lib/container";
 import { logger } from "@/lib/logger";
+import { connectRedis } from "@/lib/redis";
 import { messagesWsApp } from "@/websocket/messages-ws-app";
 import { notificationsWsApp } from "@/websocket/notifications-ws-app";
 import { websocket } from "hono/bun";
@@ -27,6 +28,10 @@ function resolveListenPort(): number {
 
 if (import.meta.main) {
   const listenPort = resolveListenPort();
+
+  // Before the first request rather than during one: a bad REDIS_URL should be
+  // a startup failure a deployer sees, not a slow page a student does.
+  await connectRedis();
 
   Bun.serve({
     async fetch(request, server) {

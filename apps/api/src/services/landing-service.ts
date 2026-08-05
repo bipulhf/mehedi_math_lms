@@ -1,5 +1,6 @@
 import type Redis from "ioredis";
 
+import { logger } from "@/lib/logger";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { LandingCategoryRow, LandingRepository } from "@/repositories/landing-repository";
 import { ValidationError } from "@/utils/errors";
@@ -100,19 +101,29 @@ export class LandingService {
   ) {}
 
   public async getSnapshot(): Promise<LandingSnapshot> {
-    const cached = await this.redis.get(LandingService.CACHE_KEY);
+    // This is the public homepage. A cache that cannot be reached must cost a
+    // few database queries, never the page.
+    try {
+      const cached = await this.redis.get(LandingService.CACHE_KEY);
 
-    if (cached) {
-      return JSON.parse(cached) as LandingSnapshot;
+      if (cached) {
+        return JSON.parse(cached) as LandingSnapshot;
+      }
+    } catch (error) {
+      logger.warn({ err: error }, "Landing cache read failed; rebuilding the snapshot");
     }
 
     const snapshot = await this.buildSnapshot();
 
-    await this.redis.setex(
-      LandingService.CACHE_KEY,
-      LandingService.TTL_SECONDS,
-      JSON.stringify(snapshot)
-    );
+    try {
+      await this.redis.setex(
+        LandingService.CACHE_KEY,
+        LandingService.TTL_SECONDS,
+        JSON.stringify(snapshot)
+      );
+    } catch (error) {
+      logger.warn({ err: error }, "Landing cache write failed; the snapshot was still served");
+    }
 
     return snapshot;
   }
@@ -140,7 +151,13 @@ export class LandingService {
     }
 
     await this.courseRepository.replaceFeaturedOrder(uniqueIds);
-    await this.redis.del(LandingService.CACHE_KEY);
+
+    try {
+      await this.redis.del(LandingService.CACHE_KEY);
+    } catch (error) {
+      // The order is already written; the old snapshot expires on its own TTL.
+      logger.warn({ err: error }, "Landing cache invalidation failed; it expires in five minutes");
+    }
   }
 
   private async buildSnapshot(): Promise<LandingSnapshot> {

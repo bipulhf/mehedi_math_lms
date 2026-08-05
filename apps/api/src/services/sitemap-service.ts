@@ -1,6 +1,7 @@
 import type Redis from "ioredis";
 
 import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 import type { SeoRepository } from "@/repositories/seo-repository";
 
 function escapeXml(value: string): string {
@@ -25,10 +26,16 @@ export class SitemapService {
   ) {}
 
   public async getSitemapXml(): Promise<string> {
-    const cached = await this.redis.get(SitemapService.CACHE_KEY);
+    // The cache is a courtesy to crawlers, never the source. Every failure here
+    // falls through to a regenerated sitemap, the way `lib/cache.ts` does.
+    try {
+      const cached = await this.redis.get(SitemapService.CACHE_KEY);
 
-    if (cached) {
-      return cached;
+      if (cached) {
+        return cached;
+      }
+    } catch (error) {
+      logger.warn({ err: error }, "Sitemap cache read failed; regenerating");
     }
 
     const base = stripTrailingSlash(env.APP_URL);
@@ -83,7 +90,11 @@ export class SitemapService {
     lines.push("</urlset>");
     const xml = lines.join("");
 
-    await this.redis.setex(SitemapService.CACHE_KEY, SitemapService.TTL_SECONDS, xml);
+    try {
+      await this.redis.setex(SitemapService.CACHE_KEY, SitemapService.TTL_SECONDS, xml);
+    } catch (error) {
+      logger.warn({ err: error }, "Sitemap cache write failed; the sitemap was still served");
+    }
 
     return xml;
   }

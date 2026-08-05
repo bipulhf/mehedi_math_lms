@@ -33,10 +33,22 @@ export function createRateLimitMiddleware(
     const clientAddress = getClientAddress(context);
     const rateLimitKey = `rl:${options.keyPrefix}:${clientAddress}:${windowBucket}`;
 
-    const requestCount = await redis.incr(rateLimitKey);
+    let requestCount: number;
 
-    if (requestCount === 1) {
-      await redis.pexpire(rateLimitKey, options.windowMs);
+    try {
+      requestCount = await redis.incr(rateLimitKey);
+
+      if (requestCount === 1) {
+        await redis.pexpire(rateLimitKey, options.windowMs);
+      }
+    } catch (error) {
+      // Fail open. This is abuse control, not authorisation: a Redis blip must
+      // not turn into a total outage, and the alternative — refusing every
+      // request because the counter is unreachable — is a worse failure than
+      // the one it prevents.
+      context.get("logger").warn({ err: error, rateLimitKey }, "Rate limit check failed; allowing");
+
+      return next();
     }
 
     context.header("x-rate-limit-limit", String(options.max));
