@@ -222,6 +222,9 @@ export function MarkingLayer({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
+      {/* A bare `<img>`, deliberately: a Script Page has no variants to choose
+          between — it is stored sized-down and nothing else exists (ADR-0009) —
+          and the overlay is positioned against this exact box. */}
       <img alt="" className="block w-full rounded-[var(--radius)]" draggable={false} src={pageUrl} />
       <svg
         className="absolute inset-0 h-full w-full"

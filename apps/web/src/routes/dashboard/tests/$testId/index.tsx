@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AnswerScriptUploader } from "@/components/tests/answer-script-uploader";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, ScriptPageView, SubmissionDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
@@ -298,10 +299,11 @@ function StudentTestPage(): JSX.Element {
           {currentQuestion.images.length > 0 ? (
             <div className="grid gap-2 sm:grid-cols-2">
               {currentQuestion.images.map((image) => (
-                <img
+                <ResponsiveImage
                   key={image.id}
                   alt=""
                   className="w-full rounded-[calc(var(--radius)-0.125rem)] border border-hairline"
+                  sizes="(min-width: 640px) 45vw, 90vw"
                   src={image.fileUrl}
                 />
               ))}

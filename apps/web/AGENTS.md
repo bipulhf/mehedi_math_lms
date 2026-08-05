@@ -60,6 +60,8 @@ A URL with no marker — typed in by hand, pointing at another host, uploaded be
 
 Bundled assets (the logo, the hero illustration) are plain `<img>` — they have no variants and never will.
 
+Script Pages are the one uploaded exception. They are stored sized-down with no original and no variants (ADR-0009), and `MarkingLayer` positions its overlay against the rendered box, so that one component draws the page with a plain `<img>`. Everywhere else a page is shown — the student's uploader, a thumbnail — still goes through `ResponsiveImage`.
+
 ## Progress
 
 `ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@genex/shared`, so web and mobile fill the same number of blocks.

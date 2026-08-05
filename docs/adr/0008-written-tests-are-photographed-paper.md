@@ -29,9 +29,12 @@ each other. `MIXED` was what made the second field necessary.
   kind, so `validateQuestionAgainstTest` and its error paths are deleted rather than kept in sync.
 - `test_questions.expected_answer` and `correct_answer` — both unused in any real flow — are replaced by
   one `marking_guide`, shown to staff while marking and never to a student.
-- Marks become `numeric(5,2)` throughout (`test_questions.marks`, `submission_answers.awarded_marks`,
-  `tests.passing_score`, `test_submissions.score` and `max_score`). Half marks are ordinary in maths
-  marking, and rounding them away is a daily annoyance rather than an edge case.
+- Marks carry two decimal places everywhere: `numeric(5,2)` for a single question's marks
+  (`test_questions.marks`, `submission_answers.awarded_marks`) and `numeric(7,2)` for a paper's totals
+  (`tests.passing_score`, `test_submissions.score` and `max_score`). Half marks are ordinary in maths
+  marking, and rounding them away is a daily annoyance rather than an edge case. Totals are added in
+  JavaScript, so every sum goes through a rounding helper — binary floating point does not do two
+  decimal places on its own.
 - A written Test defaults `max_attempts` to 1. Every retake costs a teacher a second full read, so
   unlimited retakes — correct for self-grading MCQs — is the wrong default here. An owner can still raise
   it.

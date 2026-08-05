@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { useT } from "@/lib/i18n/locale-context";
 import type { ScriptPageView } from "@/lib/api/tests";
 import { addScriptPage, removeScriptPage, reorderScriptPages } from "@/lib/api/tests";
@@ -158,9 +159,10 @@ export function AnswerScriptUploader({
               key={page.id}
               className="space-y-2 rounded-[var(--radius)] border border-hairline bg-panel-warm p-2"
             >
-              <img
+              <ResponsiveImage
                 alt={t("script.page", { number: index + 1 })}
                 className="block w-full rounded-[calc(var(--radius)-0.125rem)]"
+                sizes="(min-width: 1024px) 20rem, (min-width: 640px) 45vw, 90vw"
                 src={page.fileUrl}
               />
               <div className="flex items-center justify-between gap-1">

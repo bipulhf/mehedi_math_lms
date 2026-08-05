@@ -6,6 +6,7 @@ import type { QuestionDraft } from "@/components/tests/question-draft";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { TestType } from "@/lib/api/tests";
 import { uploadQuestionImage } from "@/lib/api/uploads";
@@ -104,9 +105,10 @@ export function QuestionEditor({
                 key={image.uploadId}
                 className="space-y-1 rounded-[var(--radius)] border border-hairline bg-panel-warm p-1.5"
               >
-                <img
+                <ResponsiveImage
                   alt=""
                   className="block w-full rounded-[calc(var(--radius)-0.125rem)]"
+                  sizes="(min-width: 768px) 14rem, 45vw"
                   src={image.fileUrl}
                 />
                 <Button

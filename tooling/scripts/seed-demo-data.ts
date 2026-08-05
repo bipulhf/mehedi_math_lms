@@ -370,8 +370,7 @@ async function main(): Promise<void> {
               marks: 5,
               questionText: question.text,
               sortOrder: questionIndex,
-              testId,
-              type: "MCQ"
+              testId
             })
             .returning({ id: testQuestions.id });
 

@@ -26,7 +26,9 @@ image happens after the whole file has already crossed the student's connection.
   stored.
 - `confirmUpload` re-applies the cap server-side for Script Pages. A crafted client, or one whose canvas
   path failed, cannot put a 12MB page in the bucket.
-- No original is retained. `variantWidths` still gives the small copies used for thumbnails and lists.
+- No original is retained, and no variants are generated either: the stored page is already small
+  enough to serve everywhere it appears, and a marking canvas wants the page rather than a copy of it.
+  A Script Page is therefore the one uploaded image rendered without `srcset`.
 - Consequently there is no higher-fidelity fallback: a page too blurry or too dark to mark is re-shot by
   the student, not recovered.
 
