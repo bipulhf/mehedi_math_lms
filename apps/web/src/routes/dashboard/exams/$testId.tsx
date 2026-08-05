@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import { seo } from "@/lib/seo";
 
-export const Route = createFileRoute("/dashboard/exams/$courseId/$testId")({
+export const Route = createFileRoute("/dashboard/exams/$testId")({
   head: () =>
     seo({
       description: "Answers, marks and papers for one exam.",
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/dashboard/exams/$courseId/$testId")({
  * page with their own attempts in it and nothing to write.
  */
 function ExamWorkspacePage(): JSX.Element {
-  const { courseId, testId } = Route.useParams();
+  const { testId } = Route.useParams();
   const { isPending, session } = useAuthSession();
 
   if (isPending || !session) {
@@ -39,11 +39,11 @@ function ExamWorkspacePage(): JSX.Element {
 
   return (
     <div className="space-y-4">
-      <BackButton params={{ courseId }} to="/dashboard/exams/$courseId" />
+      <BackButton to="/dashboard/exams" />
       {session.session.role === "STUDENT" ? (
-        <StudentExamReview courseId={courseId} testId={testId} />
+        <StudentExamReview testId={testId} />
       ) : (
-        <StaffExamWorkspace courseId={courseId} testId={testId} />
+        <StaffExamWorkspace testId={testId} />
       )}
     </div>
   );

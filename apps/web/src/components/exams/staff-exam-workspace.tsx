@@ -23,13 +23,7 @@ import { useFormat, useT } from "@/lib/i18n/locale-context";
  * it was marked, with the way through to the marking workspace where the marks
  * are actually entered.
  */
-export function StaffExamWorkspace({
-  courseId,
-  testId
-}: {
-  courseId: string;
-  testId: string;
-}): JSX.Element {
+export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element {
   const t = useT();
   const format = useFormat();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
@@ -102,9 +96,7 @@ export function StaffExamWorkspace({
               </Button>
             ) : null}
             <Button asChild variant="outline">
-              <Link params={{ courseId }} to="/dashboard/exams/$courseId">
-                {t("exams.backToExams")}
-              </Link>
+              <Link to="/dashboard/exams">{t("exams.backToExams")}</Link>
             </Button>
           </div>
         </CardContent>

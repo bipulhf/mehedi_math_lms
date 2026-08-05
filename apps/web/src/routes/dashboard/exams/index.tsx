@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
+import { useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { CourseExamGroup } from "@/components/exams/course-exam-group";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/dashboard/exams/")({
       path: "/dashboard/exams",
       title: "Exams"
     }),
-  component: ExamCoursesPage,
+  component: ExamsPage,
   errorComponent: RouteErrorView
 } as never);
 
@@ -34,8 +34,8 @@ export const Route = createFileRoute("/dashboard/exams/")({
  * Every course the caller can manage, not just the first page of them.
  *
  * The list endpoint caps a page at 50, so an admin with more courses than that
- * would otherwise silently lose the tail — and a course missing from this
- * picker is a course whose exams nobody can reach.
+ * would otherwise silently lose the tail — and a course missing from this list
+ * is a course whose exams nobody can reach.
  */
 async function listAllStaffCourses(mine: boolean): Promise<readonly CourseSummary[]> {
   const firstPage = await listCourses({ limit: pageSize, mine, page: 1 });
@@ -50,26 +50,27 @@ async function listAllStaffCourses(mine: boolean): Promise<readonly CourseSummar
   return [firstPage, ...rest].flatMap((response) => response.data);
 }
 
-interface ExamCourseCard {
+interface ExamCourse {
   id: string;
   subtitle: string;
   title: string;
 }
 
 /**
- * The way in to the exam workspace: which course, first.
+ * Exams, course by course, on one page.
  *
- * Staff see the courses they can manage and students see the ones they are
- * enrolled in, which is the same page with a different source — the drill-down
- * below it behaves the same either way, read-only for a student.
+ * The same list for everyone — a teacher opens a course to mark its papers and a
+ * student opens it to see how they did — so the page is the reader's courses
+ * either way, and only the source and the actions differ.
  */
-function ExamCoursesPage(): JSX.Element {
+function ExamsPage(): JSX.Element {
   const t = useT();
   const format = useFormat();
   const { isPending: isSessionPending, session } = useAuthSession();
   const role = session?.session.role;
   const isStudent = role === "STUDENT";
   const isStaff = role === "TEACHER" || role === "ADMIN";
+  const [openCourseIds, setOpenCourseIds] = useState<ReadonlySet<string>>(new Set());
 
   const staffCourses = useQuery({
     enabled: isStaff,
@@ -87,7 +88,7 @@ function ExamCoursesPage(): JSX.Element {
     (isStaff && staffCourses.isPending) ||
     (isStudent && enrollments.isPending);
 
-  const courses: readonly ExamCourseCard[] = isStudent
+  const courses: readonly ExamCourse[] = isStudent
     ? (enrollments.data ?? [])
         .filter((enrollment) => enrollment.accessGranted)
         .map((enrollment) => ({
@@ -101,12 +102,26 @@ function ExamCoursesPage(): JSX.Element {
         title: course.title
       }));
 
+  const toggleCourse = (courseId: string): void => {
+    setOpenCourseIds((current) => {
+      const next = new Set(current);
+
+      if (next.has(courseId)) {
+        next.delete(courseId);
+      } else {
+        next.add(courseId);
+      }
+
+      return next;
+    });
+  };
+
   if (isPending) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-14 w-full" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
       </div>
     );
   }
@@ -121,22 +136,17 @@ function ExamCoursesPage(): JSX.Element {
       {courses.length === 0 ? (
         <EmptyState message={t("exams.noCourses")} />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="border-t border-hairline">
           {courses.map((course) => (
-            <Link
-              className="block"
+            <CourseExamGroup
+              courseId={course.id}
+              courseTitle={course.title}
+              isOpen={openCourseIds.has(course.id)}
+              isStudent={isStudent}
               key={course.id}
-              params={{ courseId: course.id }}
-              to="/dashboard/exams/$courseId"
-            >
-              <Card className="h-full transition-colors hover:border-line-strong">
-                <CardContent className="space-y-2 p-5">
-                  <p className="font-medium text-ink">{course.title}</p>
-                  <p className="text-sm font-light text-muted">{course.subtitle}</p>
-                  <Badge tone="neutral">{t("exams.title")}</Badge>
-                </CardContent>
-              </Card>
-            </Link>
+              onToggle={() => toggleCourse(course.id)}
+              subtitle={course.subtitle}
+            />
           ))}
         </div>
       )}

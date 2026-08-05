@@ -23,13 +23,7 @@ import { useFormat, useT } from "@/lib/i18n/locale-context";
  * is graded, so an attempt still with a teacher shows as being marked rather
  * than as a zero.
  */
-export function StudentExamReview({
-  courseId,
-  testId
-}: {
-  courseId: string;
-  testId: string;
-}): JSX.Element {
+export function StudentExamReview({ testId }: { testId: string }): JSX.Element {
   const t = useT();
   const format = useFormat();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
@@ -95,9 +89,7 @@ export function StudentExamReview({
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link params={{ courseId }} to="/dashboard/exams/$courseId">
-                {t("exams.backToExams")}
-              </Link>
+              <Link to="/dashboard/exams">{t("exams.backToExams")}</Link>
             </Button>
           </div>
         </CardContent>
