@@ -5,7 +5,9 @@ export const uploadPurposeValues = [
   "BUG_SCREENSHOT",
   "COURSE_COVER",
   "COURSE_MATERIAL",
-  "LECTURE_VIDEO"
+  "LECTURE_VIDEO",
+  "QUESTION_IMAGE",
+  "ANSWER_SCRIPT_PAGE"
 ] as const;
 
 export const uploadKindValues = ["IMAGE", "VIDEO", "DOCUMENT"] as const;

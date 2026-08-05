@@ -41,7 +41,9 @@ describe("uploads", () => {
       "BUG_SCREENSHOT",
       "COURSE_COVER",
       "COURSE_MATERIAL",
-      "LECTURE_VIDEO"
+      "LECTURE_VIDEO",
+      "QUESTION_IMAGE",
+      "ANSWER_SCRIPT_PAGE"
     ]);
   });
 

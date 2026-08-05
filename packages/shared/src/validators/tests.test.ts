@@ -1,11 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  addScriptPageSchema,
   createQuestionSchema,
   createTestSchema,
-  gradeSubmissionSchema,
   reorderCourseItemsSchema,
+  reorderScriptPagesSchema,
   saveSubmissionAnswersSchema,
+  setAnswerMarkSchema,
   submitTestSchema,
   testTypeSchema,
   updateQuestionSchema,
@@ -15,13 +17,9 @@ import {
 const UUID = "11111111-1111-4111-8111-111111111111";
 const OTHER_UUID = "22222222-2222-4222-8222-222222222222";
 
-function mcqQuestion(options: Array<{ isCorrect: boolean; optionText: string }>) {
-  return { marks: 5, options, questionText: "2 + 2 = ?", type: "MCQ" as const };
-}
-
 describe("testTypeSchema", () => {
-  test("matches the database enum", () => {
-    expect(testTypeSchema.options).toEqual(["MCQ", "WRITTEN", "MIXED"]);
+  test("matches the database enum — a Test is one kind, never mixed", () => {
+    expect(testTypeSchema.options).toEqual(["MCQ", "WRITTEN"]);
   });
 });
 
@@ -39,6 +37,13 @@ describe("createTestSchema", () => {
     );
     expect(createTestSchema.safeParse({ ...base, durationInMinutes: 0 }).success).toBe(false);
   });
+
+  test("a passing score can be a half mark", () => {
+    const base = { title: "Weekly quiz", type: "WRITTEN" };
+
+    expect(createTestSchema.safeParse({ ...base, passingScore: 17.5 }).success).toBe(true);
+    expect(createTestSchema.safeParse({ ...base, passingScore: 17.555 }).success).toBe(false);
+  });
 });
 
 describe("updateTestSchema", () => {
@@ -48,61 +53,36 @@ describe("updateTestSchema", () => {
 });
 
 describe("createQuestionSchema", () => {
-  test("an MCQ with fewer than two options is rejected", () => {
-    const result = createQuestionSchema.safeParse(
-      mcqQuestion([{ isCorrect: true, optionText: "4" }])
-    );
+  test("carries no type of its own — the Test decides", () => {
+    const parsed = createQuestionSchema.parse({ marks: 10, questionText: "Prove it." });
 
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path).toEqual(["options"]);
+    expect("type" in parsed).toBe(false);
   });
 
-  test("an MCQ with no correct option is rejected — otherwise nobody can pass it", () => {
-    const result = createQuestionSchema.safeParse(
-      mcqQuestion([
-        { isCorrect: false, optionText: "3" },
-        { isCorrect: false, optionText: "5" }
-      ])
-    );
+  test("marks may be halved but not thirded, and must be above zero", () => {
+    const base = { questionText: "Prove it." };
 
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path).toEqual(["options"]);
+    expect(createQuestionSchema.safeParse({ ...base, marks: 2.5 }).success).toBe(true);
+    expect(createQuestionSchema.safeParse({ ...base, marks: 2.333 }).success).toBe(false);
+    expect(createQuestionSchema.safeParse({ ...base, marks: 0 }).success).toBe(false);
+    expect(createQuestionSchema.safeParse({ ...base, marks: 101 }).success).toBe(false);
   });
 
-  test("a well-formed MCQ passes", () => {
+  test("caps options at eight and images at eight", () => {
+    const options = Array.from({ length: 9 }, (_, index) => ({
+      isCorrect: index === 0,
+      optionText: `Option ${index}`
+    }));
+
     expect(
-      createQuestionSchema.safeParse(
-        mcqQuestion([
-          { isCorrect: true, optionText: "4" },
-          { isCorrect: false, optionText: "5" }
-        ])
-      ).success
-    ).toBe(true);
-  });
-
-  test("a written question needs no options", () => {
-    expect(
-      createQuestionSchema.safeParse({ marks: 10, questionText: "Prove it.", type: "WRITTEN" })
-        .success
-    ).toBe(true);
-  });
-
-  test("caps options at eight and marks at a hundred", () => {
-    expect(
-      createQuestionSchema.safeParse(
-        mcqQuestion(
-          Array.from({ length: 9 }, (_, index) => ({
-            isCorrect: index === 0,
-            optionText: `Option ${index}`
-          }))
-        )
-      ).success
+      createQuestionSchema.safeParse({ marks: 5, options, questionText: "2 + 2 = ?" }).success
     ).toBe(false);
     expect(
-      createQuestionSchema.safeParse({ marks: 101, questionText: "?", type: "WRITTEN" }).success
-    ).toBe(false);
-    expect(
-      createQuestionSchema.safeParse({ marks: 0, questionText: "?", type: "WRITTEN" }).success
+      createQuestionSchema.safeParse({
+        imageUploadIds: Array.from({ length: 9 }, () => UUID),
+        marks: 5,
+        questionText: "See the diagram."
+      }).success
     ).toBe(false);
   });
 });
@@ -144,8 +124,8 @@ describe("submission answers", () => {
     expect(submitTestSchema.safeParse(overLong).success).toBe(false);
   });
 
-  test("an empty submission is allowed — leaving every question blank is an answer", () => {
-    expect(submitTestSchema.parse({ answers: [] }).answers).toEqual([]);
+  test("submitting a written paper sends no answers at all", () => {
+    expect(submitTestSchema.parse({}).answers).toEqual([]);
   });
 
   test("an answer must point at a real question id", () => {
@@ -153,16 +133,32 @@ describe("submission answers", () => {
   });
 });
 
-describe("gradeSubmissionSchema", () => {
-  test("awarded marks cannot be negative or exceed a hundred", () => {
+describe("script pages", () => {
+  test("a page joins one question of the attempt", () => {
+    expect(addScriptPageSchema.safeParse({ questionId: UUID, uploadId: OTHER_UUID }).success).toBe(
+      true
+    );
+    expect(addScriptPageSchema.safeParse({ questionId: UUID }).success).toBe(false);
+  });
+
+  test("reordering needs at least one page and caps at thirty", () => {
+    expect(reorderScriptPagesSchema.safeParse({ pageIds: [], questionId: UUID }).success).toBe(
+      false
+    );
     expect(
-      gradeSubmissionSchema.safeParse({ answers: [{ answerId: UUID, awardedMarks: -1 }] }).success
+      reorderScriptPagesSchema.safeParse({
+        pageIds: Array.from({ length: 31 }, () => UUID),
+        questionId: UUID
+      }).success
     ).toBe(false);
-    expect(
-      gradeSubmissionSchema.safeParse({ answers: [{ answerId: UUID, awardedMarks: 101 }] }).success
-    ).toBe(false);
-    expect(
-      gradeSubmissionSchema.safeParse({ answers: [{ answerId: UUID, awardedMarks: 0 }] }).success
-    ).toBe(true);
+  });
+});
+
+describe("setAnswerMarkSchema", () => {
+  test("half marks pass, negative marks and thirds do not", () => {
+    expect(setAnswerMarkSchema.safeParse({ awardedMarks: 2.5 }).success).toBe(true);
+    expect(setAnswerMarkSchema.safeParse({ awardedMarks: 0 }).success).toBe(true);
+    expect(setAnswerMarkSchema.safeParse({ awardedMarks: -1 }).success).toBe(false);
+    expect(setAnswerMarkSchema.safeParse({ awardedMarks: 1.333 }).success).toBe(false);
   });
 });

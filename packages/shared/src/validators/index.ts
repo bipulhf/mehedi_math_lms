@@ -6,6 +6,7 @@ export * from "./categories";
 export * from "./comments";
 export * from "./content";
 export * from "./courses";
+export * from "./marking";
 export * from "./messages";
 export * from "./noticeboard";
 export * from "./notifications";
