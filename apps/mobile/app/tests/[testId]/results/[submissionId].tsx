@@ -1,9 +1,10 @@
 import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
+import { MarkingLayer } from "@/src/components/marking-layer";
 import { Badge, Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api";
 import { useT } from "@/src/lib/locale";
@@ -15,6 +16,10 @@ import { colors, radius, spacing } from "@/src/theme/tokens";
  * ungraded, then each question with the student's answer once it is.
  */
 export default function SubmissionResultScreen(): JSX.Element {
+  const { width: windowWidth } = useWindowDimensions();
+  // A page is laid out inside a card, so the drawable width is the screen less
+  // the screen padding and the card's own.
+  const pageWidth = Math.max(160, windowWidth - 96);
   const { submissionId, testId } = useLocalSearchParams<{
     submissionId: string;
     testId: string;
@@ -97,10 +102,10 @@ export default function SubmissionResultScreen(): JSX.Element {
           return (
             <Card key={question.id} style={{ gap: spacing.sm }}>
               <Caption>
-                {question.type} · {question.marks}
+                {test.type === "WRITTEN" ? t("ab.written") : t("ab.mcq")} · {question.marks}
               </Caption>
               <HtmlContent html={question.questionText} />
-              {question.type === "MCQ" ? (
+              {test.type === "MCQ" ? (
                 <View style={{ gap: spacing.xs }}>
                   {question.options.map((option) => {
                     const isSelected = option.id === answer?.selectedOptionId;
@@ -151,17 +156,26 @@ export default function SubmissionResultScreen(): JSX.Element {
                   })}
                   {!answer?.selectedOptionId ? <Caption>{t("test.noOption")}</Caption> : null}
                 </View>
+              ) : (answer?.scriptPages.length ?? 0) === 0 ? (
+                <Caption>{t("test.noAnswer")}</Caption>
               ) : (
-                <Caption>
-                  {t("test.yourAnswer")}: {answer?.writtenAnswer ?? t("test.noAnswer")}
-                </Caption>
-              )}
-              {question.type === "WRITTEN" && question.expectedAnswer ? (
-                <View style={{ gap: spacing.xs }}>
-                  <Caption>{t("test.correctAnswer")}</Caption>
-                  <HtmlContent html={question.expectedAnswer} />
+                <View style={{ gap: spacing.sm }}>
+                  <Caption>{t("test.yourAnswer")}</Caption>
+                  {answer?.scriptPages.map((page) => (
+                    <MarkingLayer
+                      color="RED"
+                      key={page.id}
+                      marking={page.marking}
+                      pageHeight={page.height ?? 0}
+                      pageUrl={page.fileUrl}
+                      pageWidth={page.width ?? 0}
+                      penWidth="MEDIUM"
+                      tool="PEN"
+                      width={pageWidth}
+                    />
+                  ))}
                 </View>
-              ) : null}
+              )}
               <View style={styles.badgesRow}>
                 <Caption>{t("test.awardedMarks", { count: answer?.awardedMarks ?? 0 })}</Caption>
                 {answer?.isCorrect !== null && answer?.isCorrect !== undefined ? (

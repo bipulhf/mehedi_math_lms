@@ -652,6 +652,7 @@ export const bn = {
   "script.addAnotherPage": "আরেকটা পাতা যোগ কর",
   "script.rotateNext": "পরের পাতা ঘুরিয়ে নাও",
   "script.pagesOf": "{count}টা পাতা, সর্বোচ্চ {total}",
+  "script.chooseFromGallery": "গ্যালারি থেকে নাও",
   "script.empty": "খাতায় উত্তর লেখো, তারপর প্রতিটা পাতার ছবি তোলো। যে ক্রমে যোগ করবে, সেই ক্রমেই থাকবে।",
   "script.page": "পাতা {number}",
   "script.moveEarlier": "আগে নাও",

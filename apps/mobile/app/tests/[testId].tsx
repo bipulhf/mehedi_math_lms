@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import { AnswerScriptUploader } from "@/src/components/answer-script-uploader";
 import { HtmlContent } from "@/src/components/html-content";
 import {
   Badge,
@@ -21,15 +23,16 @@ import {
   saveSubmissionAnswers,
   startSubmission,
   submitTest,
+  type ScriptPageView,
   type SubmissionDetail
 } from "@/src/lib/api";
 import { useT } from "@/src/lib/locale";
+import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 interface DraftAnswer {
   selectedOptionId?: string | undefined;
-  writtenAnswer?: string | undefined;
 }
 
 function formatRemaining(seconds: number): string {
@@ -43,8 +46,13 @@ export default function TestScreen(): JSX.Element {
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const router = useRouter();
   const t = useT();
+  const { session } = useSession();
+  const isStaff = session?.session.role === "TEACHER" || session?.session.role === "ADMIN";
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, DraftAnswer>>({});
+  const [pagesByQuestionId, setPagesByQuestionId] = useState<
+    Record<string, readonly ScriptPageView[]>
+  >({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,12 +79,12 @@ export default function TestScreen(): JSX.Element {
           Object.fromEntries(
             started.answers.map((answer) => [
               answer.questionId,
-              {
-                selectedOptionId: answer.selectedOptionId ?? undefined,
-                writtenAnswer: answer.writtenAnswer ?? undefined
-              }
+              { selectedOptionId: answer.selectedOptionId ?? undefined }
             ])
           )
+        );
+        setPagesByQuestionId(
+          Object.fromEntries(started.answers.map((answer) => [answer.questionId, answer.scriptPages]))
         );
         isHydratingAnswersRef.current = true;
       } catch (startError) {
@@ -110,8 +118,10 @@ export default function TestScreen(): JSX.Element {
 
   // Debounced autosave: one effect, one 800ms timer per change, nothing saved
   // while the freshly-loaded answers are being written into the draft.
+  // A written paper has nothing to autosave: its pages upload as they are
+  // photographed, and there are no selections to keep.
   useEffect(() => {
-    if (!submission || isHydratingAnswersRef.current) {
+    if (!submission || test?.type === "WRITTEN" || isHydratingAnswersRef.current) {
       isHydratingAnswersRef.current = false;
       return;
     }
@@ -120,8 +130,7 @@ export default function TestScreen(): JSX.Element {
       void saveSubmissionAnswers(submission.id, {
         answers: Object.entries(draftAnswers).map(([questionId, draft]) => ({
           questionId,
-          selectedOptionId: draft.selectedOptionId,
-          writtenAnswer: draft.writtenAnswer
+          selectedOptionId: draft.selectedOptionId
         }))
       });
     }, 800);
@@ -129,7 +138,7 @@ export default function TestScreen(): JSX.Element {
     return () => {
       clearTimeout(timeout);
     };
-  }, [draftAnswers, submission]);
+  }, [draftAnswers, submission, test?.type]);
 
   useEffect(() => {
     if (timeRemainingSeconds !== 0 || isSubmitting || !submission || !test) {
@@ -144,27 +153,15 @@ export default function TestScreen(): JSX.Element {
     [currentQuestionIndex, test]
   );
 
+  const isAnswered = (questionId: string): boolean =>
+    test?.type === "WRITTEN"
+      ? (pagesByQuestionId[questionId]?.length ?? 0) > 0
+      : draftAnswers[questionId]?.selectedOptionId !== undefined;
+
   const answeredCount = useMemo(
-    () =>
-      test?.questions.filter((question) => {
-        const answer = draftAnswers[question.id];
-
-        return question.type === "MCQ"
-          ? Boolean(answer?.selectedOptionId)
-          : Boolean(answer?.writtenAnswer?.trim());
-      }).length ?? 0,
-    [draftAnswers, test]
+    () => test?.questions.filter((question) => isAnswered(question.id)).length ?? 0,
+    [draftAnswers, pagesByQuestionId, test]
   );
-
-  const isAnswered = (questionId: string): boolean => {
-    const answer = draftAnswers[questionId];
-
-    if (!answer) {
-      return false;
-    }
-
-    return answer.selectedOptionId !== undefined || Boolean(answer.writtenAnswer?.trim());
-  };
 
   const handleSubmit = async (): Promise<void> => {
     if (!test) {
@@ -175,11 +172,13 @@ export default function TestScreen(): JSX.Element {
 
     try {
       const result = await submitTest(test.id, {
-        answers: Object.entries(draftAnswers).map(([questionId, draft]) => ({
-          questionId,
-          selectedOptionId: draft.selectedOptionId,
-          writtenAnswer: draft.writtenAnswer
-        }))
+        answers:
+          test.type === "WRITTEN"
+            ? []
+            : Object.entries(draftAnswers).map(([questionId, draft]) => ({
+                questionId,
+                selectedOptionId: draft.selectedOptionId
+              }))
       });
 
       // `replace`, not `push`: back from the results must not land on a
@@ -236,6 +235,15 @@ export default function TestScreen(): JSX.Element {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Card style={{ gap: spacing.md }}>
           <Title>{test.title}</Title>
+          {isStaff && test.type === "WRITTEN" ? (
+            <Button
+              label={t("marking.openPaper")}
+              onPress={() =>
+                router.push({ params: { testId: test.id }, pathname: "/tests/[testId]/marking" })
+              }
+              variant="outline"
+            />
+          ) : null}
           <View style={styles.badgeRow}>
             <Badge>
               {t("test.answered", { count: answeredCount, total: test.questions.length })}
@@ -283,12 +291,21 @@ export default function TestScreen(): JSX.Element {
           <View style={styles.metaRow}>
             <Caption>{t("test.question", { number: currentQuestionIndex + 1 })}</Caption>
             <Caption tone="faint">
-              {currentQuestion.type} · {currentQuestion.marks}
+              {test.type === "WRITTEN" ? t("ab.written") : t("ab.mcq")} · {currentQuestion.marks}
             </Caption>
           </View>
           <HtmlContent html={currentQuestion.questionText} />
 
-          {currentQuestion.type === "MCQ" ? (
+          {currentQuestion.images.map((image) => (
+            <Image
+              contentFit="contain"
+              key={image.id}
+              source={{ uri: image.fileUrl }}
+              style={styles.questionImage}
+            />
+          ))}
+
+          {test.type === "MCQ" ? (
             <>
               {(() => {
                 const selectedOptionId = draftAnswers[currentQuestion.id]?.selectedOptionId;
@@ -326,18 +343,13 @@ export default function TestScreen(): JSX.Element {
               ) : null}
             </>
           ) : (
-            <TextInput
-              multiline
-              onChangeText={(value) =>
-                setDraftAnswers((current) => ({
-                  ...current,
-                  [currentQuestion.id]: { writtenAnswer: value }
-                }))
+            <AnswerScriptUploader
+              onPagesChange={(pages) =>
+                setPagesByQuestionId((current) => ({ ...current, [currentQuestion.id]: pages }))
               }
-              placeholder={t("test.writeAnswer")}
-              placeholderTextColor={colors.placeholder}
-              style={styles.written}
-              value={draftAnswers[currentQuestion.id]?.writtenAnswer ?? ""}
+              pages={pagesByQuestionId[currentQuestion.id] ?? []}
+              questionId={currentQuestion.id}
+              submissionId={submission.id}
             />
           )}
 
@@ -400,20 +412,11 @@ const styles = StyleSheet.create({
   },
   questionDotCurrent: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   questionGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  questionImage: { borderRadius: radius.sm, height: 200, width: "100%" },
   timerPanel: {
     backgroundColor: colors.panelWarm,
     gap: spacing.xs,
     padding: spacing.md
-  },
-  written: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    color: colors.ink,
-    minHeight: 120,
-    padding: spacing.lg,
-    textAlignVertical: "top"
   }
 });
 

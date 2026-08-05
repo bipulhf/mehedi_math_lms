@@ -1,6 +1,20 @@
-import type { BasicProfileInput, StudentProfileInput, TeacherProfileInput } from "@genex/shared";
+import type {
+  BasicProfileInput,
+  MarkingDocument,
+  MarkingReviewMode,
+  StudentProfileInput,
+  TeacherProfileInput
+} from "@genex/shared";
 
-import { apiDelete, apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
+import {
+  apiDelete,
+  apiGet,
+  apiGetPaginated,
+  apiPatch,
+  apiPost,
+  apiPut,
+  buildQueryString
+} from "@/src/lib/api-client";
 
 /**
  * One module for the endpoints the app uses. The response shapes mirror the
@@ -152,14 +166,21 @@ export interface TestQuestionOption {
   sortOrder: number;
 }
 
-export interface TestQuestion {
-  expectedAnswer: string | null;
+export interface TestQuestionImage {
+  fileUrl: string;
   id: string;
+  sortOrder: number;
+}
+
+export interface TestQuestion {
+  id: string;
+  images: readonly TestQuestionImage[];
+  /** Staff only — the model answer. Null for a student. */
+  markingGuide: string | null;
   marks: number;
   options: readonly TestQuestionOption[];
   questionText: string;
   sortOrder: number;
-  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentTestSummary {
@@ -177,7 +198,7 @@ export interface AssessmentTestSummary {
   sortOrder: number;
   title: string;
   totalMarks: number;
-  type: "MCQ" | "WRITTEN" | "MIXED";
+  type: "MCQ" | "WRITTEN";
 }
 
 export interface AssessmentChapterSummary {
@@ -190,13 +211,22 @@ export interface AssessmentTestDetail extends AssessmentTestSummary {
   questions: readonly TestQuestion[];
 }
 
+export interface ScriptPageView {
+  fileUrl: string;
+  height: number | null;
+  id: string;
+  marking: MarkingDocument;
+  sortOrder: number;
+  width: number | null;
+}
+
 export interface SubmissionAnswerView {
   awardedMarks: number | null;
   id: string;
   isCorrect: boolean | null;
   questionId: string;
+  scriptPages: readonly ScriptPageView[];
   selectedOptionId: string | null;
-  writtenAnswer: string | null;
 }
 
 export interface SubmissionSummary {
@@ -462,7 +492,6 @@ export async function saveSubmissionAnswers(
     answers: readonly {
       questionId: string;
       selectedOptionId?: string | undefined;
-      writtenAnswer?: string | undefined;
     }[];
   }
 ): Promise<SubmissionDetail> {
@@ -476,7 +505,6 @@ export async function submitTest(
     answers: readonly {
       questionId: string;
       selectedOptionId?: string | undefined;
-      writtenAnswer?: string | undefined;
     }[];
   }
 ): Promise<SubmissionDetail> {
@@ -486,6 +514,127 @@ export async function submitTest(
 /** The results screen. Returns the graded submission with per-answer marks. */
 export async function getSubmissionDetail(submissionId: string): Promise<SubmissionDetail> {
   return apiGet<SubmissionDetail>(`tests/submissions/${submissionId}`);
+}
+
+/** Adds one photographed page to a question's Answer Script. */
+export async function addScriptPage(
+  submissionId: string,
+  input: { questionId: string; uploadId: string }
+): Promise<readonly ScriptPageView[]> {
+  return apiPost<typeof input, readonly ScriptPageView[]>(
+    `scripts/submissions/${submissionId}/pages`,
+    input
+  );
+}
+
+export async function reorderScriptPages(
+  submissionId: string,
+  input: { pageIds: readonly string[]; questionId: string }
+): Promise<readonly ScriptPageView[]> {
+  return apiPatch<typeof input, readonly ScriptPageView[]>(
+    `scripts/submissions/${submissionId}/pages/order`,
+    input
+  );
+}
+
+export async function removeScriptPage(pageId: string): Promise<{ id: string }> {
+  return apiDelete<{ id: string }>(`scripts/pages/${pageId}`);
+}
+
+export interface MarkingQuestionView {
+  answerId: string | null;
+  awardedMarks: number | null;
+  id: string;
+  lockedByName: string | null;
+  markingGuide: string | null;
+  marks: number;
+  pageCount: number;
+  questionText: string;
+  sortOrder: number;
+}
+
+export interface MarkingPaperView {
+  attemptNumber: number;
+  isComplete: boolean;
+  markedCount: number;
+  questions: readonly MarkingQuestionView[];
+  status: "STARTED" | "SUBMITTED" | "GRADED";
+  student: { email: string; id: string; name: string };
+  submissionId: string;
+  toMarkCount: number;
+}
+
+export interface MarkingQueueView {
+  mode: MarkingReviewMode;
+  papers: readonly MarkingPaperView[];
+  testId: string;
+  testTitle: string;
+  totalMarks: number;
+}
+
+export interface MarkingAnswerView {
+  awardedMarks: number | null;
+  id: string;
+  lockedByName: string | null;
+  markingGuide: string | null;
+  marks: number;
+  pages: readonly ScriptPageView[];
+  questionId: string;
+  questionText: string;
+  student: { id: string; name: string };
+  submissionId: string;
+}
+
+export async function getMarkingQueue(
+  testId: string,
+  mode: MarkingReviewMode
+): Promise<MarkingQueueView> {
+  return apiGet<MarkingQueueView>(`scripts/tests/${testId}/marking?mode=${mode}`);
+}
+
+/** Opening an answer claims it, so two teachers cannot mark the same one at once. */
+export async function claimAnswer(answerId: string): Promise<MarkingAnswerView> {
+  return apiPost<undefined, MarkingAnswerView>(`scripts/answers/${answerId}/claim`);
+}
+
+export async function renewAnswerClaim(answerId: string): Promise<{ expiresInMs: number }> {
+  return apiPatch<Record<string, never>, { expiresInMs: number }>(
+    `scripts/answers/${answerId}/claim`,
+    {}
+  );
+}
+
+export async function releaseAnswerClaim(answerId: string): Promise<{ id: string }> {
+  return apiDelete<{ id: string }>(`scripts/answers/${answerId}/claim`);
+}
+
+export async function setAnswerMark(
+  answerId: string,
+  input: { awardedMarks: number }
+): Promise<{ awardedMarks: number; id: string }> {
+  return apiPut<typeof input, { awardedMarks: number; id: string }>(
+    `scripts/answers/${answerId}/mark`,
+    input
+  );
+}
+
+export async function saveScriptPageMarking(
+  pageId: string,
+  marking: MarkingDocument
+): Promise<{ id: string }> {
+  return apiPut<{ marking: MarkingDocument }, { id: string }>(`scripts/pages/${pageId}/marking`, {
+    marking
+  });
+}
+
+export async function submitPaper(
+  submissionId: string,
+  input: { feedback?: string | undefined }
+): Promise<{ score: number; submissionId: string }> {
+  return apiPost<typeof input, { score: number; submissionId: string }>(
+    `scripts/submissions/${submissionId}/marking/submit`,
+    input
+  );
 }
 
 /** Every attempt the current student has made on this test, oldest first. */

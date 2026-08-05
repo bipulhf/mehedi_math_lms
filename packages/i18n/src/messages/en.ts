@@ -654,6 +654,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "script.addAnotherPage": "Add another page",
   "script.rotateNext": "Rotate the next page",
   "script.pagesOf": "{count} pages, {total} at most",
+  "script.chooseFromGallery": "Choose from gallery",
   "script.empty": "Write this answer on paper, then photograph each page. They stay in the order you add them.",
   "script.page": "Page {number}",
   "script.moveEarlier": "Move earlier",

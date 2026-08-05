@@ -22,6 +22,7 @@ export const queryKeys = {
   enrollments: () => ["enrollments", "mine"] as const,
   lectureComments: (lectureId: string) => ["comments", lectureId] as const,
   lecturePreview: (lectureId: string) => ["content", "preview", lectureId] as const,
+  markingQueue: (testId: string, mode: string) => ["tests", "marking", testId, mode] as const,
   notifications: () => ["notifications"] as const,
   payments: () => ["payments", "mine"] as const,
   participantSearch: (search: string) => ["messages", "participants", search] as const,
