@@ -56,7 +56,7 @@ function ReportBugPage(): JSX.Element {
   });
 
   return (
-    <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+    <div className="bg-card/80 p-4 sm:p-6 lg:p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
       <BackButton className="mb-6" to="/dashboard/bugs" />
       <div className="mb-8">
         <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("bugs.report")}</h3>

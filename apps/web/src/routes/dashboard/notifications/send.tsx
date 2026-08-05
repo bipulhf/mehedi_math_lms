@@ -178,7 +178,7 @@ function SendNotificationPage(): JSX.Element {
   if (isPending || !session || (role !== "ADMIN" && role !== "TEACHER")) {
     return (
       <div className="space-y-6">
-        <div className="border border-hairline bg-card p-8">
+        <div className="border border-hairline bg-card p-4 sm:p-6 lg:p-8">
           <Skeleton className="mb-4 h-8 w-48" />
           <Skeleton className="h-4 w-96" />
         </div>

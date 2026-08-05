@@ -80,7 +80,7 @@ function AdminLogsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="border border-hairline bg-card p-8">
+        <div className="border border-hairline bg-card p-4 sm:p-6 lg:p-8">
           <Skeleton className="mb-4 h-8 w-48" />
           <Skeleton className="mb-8 h-4 w-full max-w-sm" />
           <div className="mb-8 grid gap-6 md:grid-cols-4">
@@ -165,7 +165,7 @@ function AdminLogsPage(): JSX.Element {
         </div>
 
         {logs.length === 0 ? (
-          <div className="p-8">
+          <div className="p-4 sm:p-6 lg:p-8">
             <EmptyState message={t("admin.logs.empty")} />
           </div>
         ) : (

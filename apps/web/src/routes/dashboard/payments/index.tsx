@@ -138,7 +138,7 @@ function PaymentsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
            <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
            <Skeleton className="h-4 w-full max-w-sm bg-chip-active" />
         </div>

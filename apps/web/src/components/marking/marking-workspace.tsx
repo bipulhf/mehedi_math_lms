@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RichTextContent } from "@/components/ui/rich-text-content";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { MarkingAnswerView } from "@/lib/api/tests";
 import {
   claimAnswer,
@@ -32,6 +33,38 @@ interface MarkingWorkspaceProps {
   mode: MarkingReviewMode;
   onModeChange: (mode: MarkingReviewMode) => void;
   testId: string;
+}
+
+/** The workspace's own two-card split, drawn while the queue loads. */
+function MarkingWorkspaceSkeleton(): JSX.Element {
+  return (
+    <div className="grid gap-4 xl:grid-cols-[0.32fr_0.68fr]">
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-2/3" />
+          <div className="flex flex-wrap gap-1.5">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton className="h-12 w-full" key={index} />
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-4 w-3/4" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="aspect-3/4 w-full max-w-2xl" />
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 /** Renewed well inside the API's two-minute claim, so a working teacher never loses it. */
@@ -59,7 +92,11 @@ export function MarkingWorkspace({
   const [isBusy, setIsBusy] = useState(false);
   const pendingSaveRef = useRef<Map<string, number>>(new Map());
 
-  const { data: queue = null, refetch } = useQuery({
+  const {
+    data: queue = null,
+    isPending: isQueuePending,
+    refetch
+  } = useQuery({
     queryFn: async () => getMarkingQueue(testId, mode),
     queryKey: queryKeys.tests.markingQueue(testId, mode)
   });
@@ -175,6 +212,12 @@ export function MarkingWorkspace({
       setIsBusy(false);
     }
   };
+
+  // Without this the first paint says "no papers to mark", which is the one
+  // sentence a teacher must not be shown while the queue is still loading.
+  if (isQueuePending) {
+    return <MarkingWorkspaceSkeleton />;
+  }
 
   return (
     <div className="grid gap-4 xl:grid-cols-[0.32fr_0.68fr]">

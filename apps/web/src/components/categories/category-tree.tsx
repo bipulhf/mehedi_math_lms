@@ -193,7 +193,7 @@ export function CategoryTree({
           ))}
         </div>
       ) : (
-        <div className="border border-hairline/20 bg-card/40 p-12 text-center">
+        <div className="border border-hairline/20 bg-card/40 p-6 sm:p-10 lg:p-12 text-center">
           <Layers3 className="mx-auto mb-4 size-12 opacity-10" />
           <p className="text-sm font-light italic text-ink/40">{t("cat.dormant")}</p>
         </div>

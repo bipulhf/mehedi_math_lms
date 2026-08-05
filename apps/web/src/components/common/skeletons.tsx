@@ -55,26 +55,6 @@ export function ChartSkeleton({ className }: { className?: string }): JSX.Elemen
   );
 }
 
-export function RecentActivitySkeleton({ rows = 5 }: { rows?: number }): JSX.Element {
-  return (
-    <div className="border border-hairline bg-card p-4 sm:p-6">
-      <Skeleton className="h-5 w-2/5" />
-      <div className="mt-6 space-y-4">
-        {Array.from({ length: rows }).map((_, index) => (
-          <div key={index} className="flex items-center gap-3 sm:gap-4">
-            <Skeleton className="size-10 shrink-0 rounded-full" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <Skeleton className="h-3 w-3/5" />
-              <Skeleton className="h-3 w-2/5" />
-            </div>
-            <Skeleton className="h-3 w-10 shrink-0" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function CourseDetailSkeleton(): JSX.Element {
   return (
     // The course page's own container, gutters and column split, verbatim.
@@ -224,26 +204,46 @@ export function TestBuilderSkeleton(): JSX.Element {
   );
 }
 
+/**
+ * The test page's two cards — the question index on the left, the question and
+ * its options on the right — in the same `xl` split the page uses.
+ *
+ * It used to be a single centred `max-w-3xl` column, which is not a layout this
+ * page has ever had at any width.
+ */
 export function TestTakingSkeleton(): JSX.Element {
   return (
-    <div className="mx-auto max-w-3xl space-y-6 py-8 sm:py-10">
-      <div className="flex items-center justify-between gap-4">
-        <Skeleton className="h-8 w-1/2" />
-        <Skeleton className="h-10 w-24 shrink-0 rounded-[var(--radius)]" />
-      </div>
-      <div className="border border-hairline bg-card p-4 sm:p-6 lg:p-8">
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="mt-4 h-6 w-full" />
-        <Skeleton className="mt-2 h-6 w-4/5" />
-        <div className="mt-8 space-y-3">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-14 w-full" />
-          ))}
+    <div className="space-y-4">
+      <Skeleton className="h-9 w-24" />
+      <div className="grid gap-4 xl:grid-cols-[0.3fr_0.7fr]">
+        <div className="min-w-0 border border-hairline bg-card">
+          <div className="space-y-3 p-4 sm:p-6">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-1.5 w-full rounded-full" />
+          </div>
+          <div className="space-y-2 p-4 pt-0 sm:p-6 sm:pt-0">
+            <Skeleton className="h-16 w-full" />
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full" />
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex justify-between gap-4">
-        <Skeleton className="h-11 w-28 rounded-[var(--radius)]" />
-        <Skeleton className="h-11 w-28 rounded-[var(--radius)]" />
+
+        <div className="min-w-0 border border-hairline bg-card">
+          <div className="space-y-4 p-4 sm:p-6">
+            <Skeleton className="h-20 w-full" />
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-14 w-full" />
+              ))}
+            </div>
+            <div className="flex justify-between gap-4 pt-2">
+              <Skeleton className="h-11 w-28 rounded-[var(--radius)]" />
+              <Skeleton className="h-11 w-28 rounded-[var(--radius)]" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -172,7 +172,7 @@ function AdminCoursesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
           <Skeleton className="h-4 w-full max-w-sm bg-chip-active mb-8" />
           <div className="space-y-4">
@@ -461,7 +461,7 @@ function AdminCoursesPage(): JSX.Element {
       {rejectTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40">
           <div
-            className="relative w-full max-w-lg border border-hairline bg-card p-8"
+            className="relative w-full max-w-lg border border-hairline bg-card p-4 sm:p-6 lg:p-8"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

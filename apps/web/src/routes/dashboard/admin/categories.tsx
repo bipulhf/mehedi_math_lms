@@ -321,7 +321,7 @@ function AdminCategoriesPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="border border-hairline bg-card p-8">
+        <div className="border border-hairline bg-card p-4 sm:p-6 lg:p-8">
           <Skeleton className="mb-4 h-8 w-48" />
           <Skeleton className="h-4 w-96" />
         </div>
@@ -387,7 +387,7 @@ function AdminCategoriesPage(): JSX.Element {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/40 backdrop-blur-xs animate-in fade-in">
           <div
-            className="relative w-full max-w-lg border border-hairline bg-card p-8 shadow-2xl animate-in zoom-in-95"
+            className="relative w-full max-w-lg border border-hairline bg-card p-4 sm:p-6 lg:p-8 shadow-2xl animate-in zoom-in-95"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}

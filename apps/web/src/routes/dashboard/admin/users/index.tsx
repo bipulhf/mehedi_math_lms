@@ -159,7 +159,7 @@ function AdminUsersPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8 p-4 sm:p-0">
-        <div className="bg-card/80 p-8 border border-hairline/40 w-full overflow-hidden">
+        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-8 bg-chip-active" />
           <div className="grid gap-6 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -405,7 +405,7 @@ function AdminUsersPage(): JSX.Element {
 
           {/* Desktop Table View */}
           {users.length === 0 ? (
-            <div className="p-8">
+            <div className="p-4 sm:p-6 lg:p-8">
               <EmptyState message={t("admin.users.empty")} />
             </div>
           ) : (
@@ -573,7 +573,7 @@ function AdminUsersPage(): JSX.Element {
         </div>
 
         {/* Improved Pagination */}
-        <div className="p-8 border-t border-hairline/20 flex flex-col sm:flex-row items-center justify-between gap-6 bg-panel-warm/5">
+        <div className="p-4 sm:p-6 lg:p-8 border-t border-hairline/20 flex flex-col sm:flex-row items-center justify-between gap-6 bg-panel-warm/5">
           <div className="flex items-center gap-3">
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-ink/40">
               Page Registry:{" "}

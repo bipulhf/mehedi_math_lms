@@ -114,7 +114,7 @@ function TeacherAnalyticsPage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Premium Header */}
-      <div className="bg-card/80 p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+      <div className="bg-card/80 p-4 sm:p-6 lg:p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-3">
@@ -276,7 +276,7 @@ function TeacherAnalyticsPage(): JSX.Element {
 
       {/* Course Specific Depth */}
       <div className="bg-card/80 border border-hairline/40 overflow-hidden">
-         <div className="p-8 border-b border-hairline/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+         <div className="p-4 sm:p-6 lg:p-8 border-b border-hairline/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                <h4 className="text-xl font-body font-medium text-ink mb-1">{t("an.coursePerformance")}</h4>
                <p className="text-[0.7rem] text-ink/40 font-bold uppercase tracking-widest leading-none">{t("an.engagement")}</p>
@@ -388,7 +388,7 @@ function ChartCard({
   children: React.ReactNode 
 }): JSX.Element {
   return (
-    <div className="bg-card/80 p-8 border border-hairline/40 flex flex-col h-120">
+    <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 flex flex-col h-120">
        <div className="mb-8">
           <h4 className="text-xl font-body font-medium text-ink tracking-tight leading-tight">{title}</h4>
           <p className="text-[0.65rem] font-bold text-ink/30 uppercase tracking-widest">{subtitle}</p>

@@ -89,7 +89,7 @@ function StudentsDirectoryPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8 p-4 sm:p-0">
-        <div className="bg-card/80 p-8 border border-hairline/40 w-full overflow-hidden">
+        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 w-full overflow-hidden">
           <Skeleton className="h-8 w-48 mb-8 bg-chip-active" />
           <div className="grid gap-6 sm:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -157,7 +157,7 @@ function StudentsDirectoryPage(): JSX.Element {
       {/* Directory Table / Cards */}
       <div className="border border-hairline bg-card">
         {students.length === 0 ? (
-          <div className="p-8">
+          <div className="p-4 sm:p-6 lg:p-8">
             <EmptyState message="No students found matching your criteria." />
           </div>
         ) : (

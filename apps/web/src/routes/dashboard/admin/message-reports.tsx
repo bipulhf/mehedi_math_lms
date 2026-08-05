@@ -55,7 +55,7 @@ function formatTimestamp(value: string): string {
 function ReportQueueSkeleton(): JSX.Element {
   return (
     <div className="space-y-8">
-      <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+      <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
         <Skeleton className="h-8 w-56 mb-4 bg-chip-active" />
         <Skeleton className="h-4 w-full max-w-lg bg-chip-active mb-8" />
         <div className="space-y-4">
@@ -285,7 +285,7 @@ function AdminMessageReportsPage(): JSX.Element {
             </div>
           </>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center p-12 text-center">
+          <div className="flex h-full flex-col items-center justify-center p-6 sm:p-10 lg:p-12 text-center">
             <div className="mb-4 flex size-14 items-center justify-center border border-hairline bg-panel-warm text-ink">
               <ShieldAlert className="size-6 text-muted-faint" />
             </div>

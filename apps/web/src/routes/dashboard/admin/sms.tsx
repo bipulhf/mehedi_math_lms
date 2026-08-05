@@ -115,7 +115,7 @@ function AdminSmsPage() {
   if (isPending || !session) {
     return (
       <div className="space-y-8">
-        <div className="bg-card/80 p-8 border border-hairline/40 relative w-full overflow-hidden">
+        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
           <div className="flex items-center gap-4 mb-8">
             <Skeleton className="size-12 bg-chip-active" />
             <div className="space-y-2">
