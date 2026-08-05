@@ -933,6 +933,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "an.statusMix": "Payment status",
   "an.noPayments": "No payments recorded.",
   "sms.title": "Send SMS",
+  "sms.inProcessDelivery": "This server has no separate queue, so messages are sent from here. If it restarts mid-send the batch stays QUEUED and can be resent.",
   "sms.needCredentials": "SMS gateway credentials are missing.",
   "sms.connected": "SMS gateway is connected.",
   "sms.message": "Message",

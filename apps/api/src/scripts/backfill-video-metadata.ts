@@ -7,7 +7,7 @@
  * It is safe to run again -- an upload that already has a duration is skipped.
  */
 import { logger } from "@/lib/logger";
-import { queues } from "@/lib/queues";
+import { requireQueue } from "@/lib/queues";
 import { redis } from "@/lib/redis";
 import { UploadRepository } from "@/repositories/upload-repository";
 
@@ -24,7 +24,7 @@ async function backfillVideoMetadata(): Promise<void> {
   }
 
   for (const upload of pending) {
-    await queues["file-processing"].add("extract-video-metadata", {
+    await requireQueue("file-processing").add("extract-video-metadata", {
       contentType: upload.contentType,
       fileKey: upload.fileKey,
       uploadId: upload.id
@@ -39,5 +39,5 @@ async function backfillVideoMetadata(): Promise<void> {
 }
 
 await backfillVideoMetadata();
-await queues["file-processing"].close();
-redis.disconnect();
+await requireQueue("file-processing").close();
+redis?.disconnect();

@@ -2,10 +2,17 @@ import { Worker } from "bullmq";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { queues } from "@/lib/queues";
+import { requireQueue } from "@/lib/queues";
 import { createQueueConnection } from "@/lib/redis";
 import { AuditLogRepository } from "@/repositories/audit-log-repository";
 import { AuditLogService } from "@/services/audit-log-service";
+
+// A worker with no queue is a process pretending to work. Exit loudly instead,
+// so `docker ps` and a restart loop show it rather than hiding it. ADR-0015.
+if (!env.isRedisEnabled) {
+  logger.error("REDIS_ENABLED is false; this worker has no queue to read and will not start");
+  process.exit(1);
+}
 
 const AUDIT_LOG_RETENTION_DAYS = 90;
 const CLEANUP_JOB_ID = "audit-log-cleanup-daily";
@@ -35,7 +42,7 @@ worker.on("completed", (job) => {
 
 // upsertJobScheduler is idempotent on jobSchedulerId, so re-registering this
 // on every worker boot is safe -- it does not pile up duplicate schedules.
-await queues["audit-log-cleanup"].upsertJobScheduler(CLEANUP_JOB_ID, { pattern: "0 3 * * *" }, {
+await requireQueue("audit-log-cleanup").upsertJobScheduler(CLEANUP_JOB_ID, { pattern: "0 3 * * *" }, {
   name: "prune"
 });
 

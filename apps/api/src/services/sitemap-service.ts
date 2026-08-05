@@ -22,14 +22,14 @@ export class SitemapService {
 
   public constructor(
     private readonly seoRepository: SeoRepository,
-    private readonly redis: Redis
+    private readonly redis: Redis | null
   ) {}
 
   public async getSitemapXml(): Promise<string> {
     // The cache is a courtesy to crawlers, never the source. Every failure here
     // falls through to a regenerated sitemap, the way `lib/cache.ts` does.
     try {
-      const cached = await this.redis.get(SitemapService.CACHE_KEY);
+      const cached = await this.redis?.get(SitemapService.CACHE_KEY);
 
       if (cached) {
         return cached;
@@ -91,7 +91,7 @@ export class SitemapService {
     const xml = lines.join("");
 
     try {
-      await this.redis.setex(SitemapService.CACHE_KEY, SitemapService.TTL_SECONDS, xml);
+      await this.redis?.setex(SitemapService.CACHE_KEY, SitemapService.TTL_SECONDS, xml);
     } catch (error) {
       logger.warn({ err: error }, "Sitemap cache write failed; the sitemap was still served");
     }

@@ -238,8 +238,14 @@ export interface AdminSmsBatchRow {
   totalRecipients: number;
 }
 
-export async function getAdminSmsStatus(): Promise<{ configured: boolean }> {
-  const response = await apiGet<{ configured: boolean }>("admin/sms/status");
+export interface AdminSmsStatus {
+  configured: boolean;
+  /** "in-process" when the deployment runs without Redis. */
+  deliveryMode: "in-process" | "queued";
+}
+
+export async function getAdminSmsStatus(): Promise<AdminSmsStatus> {
+  const response = await apiGet<AdminSmsStatus>("admin/sms/status");
 
   return response.data;
 }

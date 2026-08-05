@@ -15,14 +15,27 @@ interface LocalRegistration {
   connectionId: string;
 }
 
+/**
+ * Notification fan-out. Same arrangement as `MessageRealtimeService`: with
+ * Redis an event reaches every process, without it `publish` delivers to this
+ * one's sockets — which is all `deliver` ever wrote to. See ADR-0015 for why
+ * that makes `REDIS_ENABLED=false` a single-process arrangement.
+ */
 export class NotificationRealtimeService {
   private readonly socketsByUserId = new Map<string, Map<string, WSContext<undefined>>>();
 
-  private readonly publisher: Redis;
+  private readonly publisher: Redis | null;
 
-  private readonly subscriber: Redis;
+  private readonly subscriber: Redis | null;
 
-  public constructor(redisUrl: string) {
+  public constructor(redisUrl: string | null) {
+    if (redisUrl === null) {
+      this.publisher = null;
+      this.subscriber = null;
+
+      return;
+    }
+
     this.publisher = new Redis(redisUrl, {
       lazyConnect: true,
       maxRetriesPerRequest: null
@@ -35,6 +48,10 @@ export class NotificationRealtimeService {
   }
 
   private async initialize(): Promise<void> {
+    if (this.subscriber === null) {
+      return;
+    }
+
     this.subscriber.on("message", (_channel, payload) => {
       const event = JSON.parse(payload) as NotificationRealtimeEvent;
       this.deliver(event);
@@ -94,10 +111,20 @@ export class NotificationRealtimeService {
   }
 
   public async publish(event: NotificationRealtimeEvent): Promise<void> {
+    if (this.publisher === null) {
+      this.deliver(event);
+
+      return;
+    }
+
     await this.publisher.publish(CHANNEL, JSON.stringify(event));
   }
 
   public async close(): Promise<void> {
+    if (this.subscriber === null || this.publisher === null) {
+      return;
+    }
+
     try {
       await this.subscriber.unsubscribe(CHANNEL);
     } catch (error) {

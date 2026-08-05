@@ -94,17 +94,27 @@ export class LandingService {
   private static readonly CACHE_KEY = "landing:snapshot:v2";
   private static readonly TTL_SECONDS = 300;
 
+  /**
+   * The snapshot held in this process, for a deployment with no Redis.
+   *
+   * The homepage is the one cache whose absence is a real load risk — every
+   * visit would otherwise run the whole snapshot query set — and with Redis off
+   * there is one process, so one memo is the whole cache. Same TTL, so the
+   * staleness a reader can see is unchanged.
+   */
+  private memo: { expiresAt: number; snapshot: LandingSnapshot } | null = null;
+
   public constructor(
     private readonly landingRepository: LandingRepository,
     private readonly courseRepository: CourseRepository,
-    private readonly redis: Redis
+    private readonly redis: Redis | null
   ) {}
 
   public async getSnapshot(): Promise<LandingSnapshot> {
     // This is the public homepage. A cache that cannot be reached must cost a
     // few database queries, never the page.
     try {
-      const cached = await this.redis.get(LandingService.CACHE_KEY);
+      const cached = (await this.redis?.get(LandingService.CACHE_KEY)) ?? this.readMemo();
 
       if (cached) {
         return JSON.parse(cached) as LandingSnapshot;
@@ -116,11 +126,15 @@ export class LandingService {
     const snapshot = await this.buildSnapshot();
 
     try {
-      await this.redis.setex(
-        LandingService.CACHE_KEY,
-        LandingService.TTL_SECONDS,
-        JSON.stringify(snapshot)
-      );
+      if (this.redis === null) {
+        this.writeMemo(snapshot);
+      } else {
+        await this.redis.setex(
+          LandingService.CACHE_KEY,
+          LandingService.TTL_SECONDS,
+          JSON.stringify(snapshot)
+        );
+      }
     } catch (error) {
       logger.warn({ err: error }, "Landing cache write failed; the snapshot was still served");
     }
@@ -152,12 +166,26 @@ export class LandingService {
 
     await this.courseRepository.replaceFeaturedOrder(uniqueIds);
 
+    this.memo = null;
+
     try {
-      await this.redis.del(LandingService.CACHE_KEY);
+      await this.redis?.del(LandingService.CACHE_KEY);
     } catch (error) {
       // The order is already written; the old snapshot expires on its own TTL.
       logger.warn({ err: error }, "Landing cache invalidation failed; it expires in five minutes");
     }
+  }
+
+  private readMemo(): string | null {
+    if (this.memo === null || this.memo.expiresAt <= Date.now()) {
+      return null;
+    }
+
+    return JSON.stringify(this.memo.snapshot);
+  }
+
+  private writeMemo(snapshot: LandingSnapshot): void {
+    this.memo = { expiresAt: Date.now() + LandingService.TTL_SECONDS * 1000, snapshot };
   }
 
   private async buildSnapshot(): Promise<LandingSnapshot> {

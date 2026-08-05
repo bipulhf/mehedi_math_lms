@@ -1,7 +1,8 @@
 import type { AdminSendSmsInput, AdminSmsHistoryQuery } from "@genex/shared";
 
 import { env } from "@/lib/env";
-import { queues } from "@/lib/queues";
+import { enqueue } from "@/lib/queues";
+import { processSmsBatchJob } from "@/services/sms-batch-processor";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { SmsRepository, SmsTargetKind } from "@/repositories/sms-repository";
 import type { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
@@ -112,7 +113,8 @@ export class SmsService {
       totalRecipients: recipients.length
     });
 
-    await queues.sms.add(
+    await enqueue(
+      "sms",
       "sms-deliver",
       { batchId },
       {
@@ -121,6 +123,12 @@ export class SmsService {
           delay: 3000,
           type: "exponential"
         }
+      },
+      // No queue: send it from this process, after the response. The batch row
+      // is already persisted as QUEUED, so a restart mid-send leaves something
+      // an operator can resend rather than a broadcast that silently vanished.
+      async () => {
+        await processSmsBatchJob(this.smsRepository, this.smsProvider, batchId);
       }
     );
 
@@ -161,8 +169,16 @@ export class SmsService {
     };
   }
 
-  public getProviderReadiness(): { configured: boolean } {
-    return { configured: this.smsProvider.isConfigured() };
+  /**
+   * `deliveryMode` is what the admin page shows beside the credentials state:
+   * with a queue a broadcast survives a restart, without one it is sent by this
+   * process and a restart mid-send leaves the batch QUEUED for a resend.
+   */
+  public getProviderReadiness(): { configured: boolean; deliveryMode: "in-process" | "queued" } {
+    return {
+      configured: this.smsProvider.isConfigured(),
+      deliveryMode: env.isRedisEnabled ? "queued" : "in-process"
+    };
   }
 
   private async resolveTargetRows(target: AdminSendSmsInput["target"]): Promise<{

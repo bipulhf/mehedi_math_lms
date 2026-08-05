@@ -7,6 +7,7 @@ export interface HealthStatus {
   environment: string;
   timestamp: string;
   uptimeInSeconds: number;
+  redisEnabled: boolean;
   redisStatus: string;
   queues: readonly string[];
 }
@@ -22,6 +23,7 @@ export class HealthService {
       environment: env.NODE_ENV,
       timestamp: new Date().toISOString(),
       uptimeInSeconds: Math.floor(process.uptime()),
+      redisEnabled: snapshot.redisEnabled,
       redisStatus: snapshot.redisStatus,
       queues: snapshot.queueNames
     };

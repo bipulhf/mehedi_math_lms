@@ -11,6 +11,30 @@ interface RateLimitOptions {
   windowMs: number;
 }
 
+/**
+ * The counter, when there is no Redis to keep it in.
+ *
+ * A per-process window would be a lie under several API processes — each would
+ * grant the full limit — but `REDIS_ENABLED=false` means one process (ADR-0015),
+ * so this enforces exactly the configured limit. Entries are dropped as their
+ * window passes, so the map holds at most one bucket per caller.
+ */
+const localCounts = new Map<string, number>();
+let localBucket = -1;
+
+function countLocally(key: string, bucket: number): number {
+  if (bucket !== localBucket) {
+    localCounts.clear();
+    localBucket = bucket;
+  }
+
+  const next = (localCounts.get(key) ?? 0) + 1;
+
+  localCounts.set(key, next);
+
+  return next;
+}
+
 function getClientAddress(context: Parameters<MiddlewareHandler<AppBindings>>[0]): string {
   return (
     context.req.header("cf-connecting-ip") ??
@@ -35,20 +59,26 @@ export function createRateLimitMiddleware(
 
     let requestCount: number;
 
-    try {
-      requestCount = await redis.incr(rateLimitKey);
+    if (redis === null) {
+      requestCount = countLocally(rateLimitKey, windowBucket);
+    } else {
+      try {
+        requestCount = await redis.incr(rateLimitKey);
 
-      if (requestCount === 1) {
-        await redis.pexpire(rateLimitKey, options.windowMs);
+        if (requestCount === 1) {
+          await redis.pexpire(rateLimitKey, options.windowMs);
+        }
+      } catch (error) {
+        // Fail open. This is abuse control, not authorisation: a Redis blip
+        // must not turn into a total outage, and the alternative — refusing
+        // every request because the counter is unreachable — is a worse
+        // failure than the one it prevents.
+        context
+          .get("logger")
+          .warn({ err: error, rateLimitKey }, "Rate limit check failed; allowing");
+
+        return next();
       }
-    } catch (error) {
-      // Fail open. This is abuse control, not authorisation: a Redis blip must
-      // not turn into a total outage, and the alternative — refusing every
-      // request because the counter is unreachable — is a worse failure than
-      // the one it prevents.
-      context.get("logger").warn({ err: error, rateLimitKey }, "Rate limit check failed; allowing");
-
-      return next();
     }
 
     context.header("x-rate-limit-limit", String(options.max));

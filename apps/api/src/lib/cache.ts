@@ -88,6 +88,12 @@ interface ReadThroughOptions<T> {
 }
 
 export async function readThrough<T>(options: ReadThroughOptions<T>): Promise<T> {
+  // Without Redis every read is a miss, which is a path this module already
+  // supports on every request — the cache was never load-bearing.
+  if (redis === null) {
+    return options.load();
+  }
+
   try {
     const cached = await redis.get(options.key);
 
@@ -116,7 +122,7 @@ export async function readThrough<T>(options: ReadThroughOptions<T>): Promise<T>
 
 /** Drops every key recorded under these indexes. Safe to call for unknown indexes. */
 export async function invalidateCacheIndex(...indexes: readonly string[]): Promise<void> {
-  if (indexes.length === 0) {
+  if (redis === null || indexes.length === 0) {
     return;
   }
 

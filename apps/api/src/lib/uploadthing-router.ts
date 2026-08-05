@@ -10,7 +10,11 @@ import { createUploadthing, type FileRouter, UploadThingError } from "uploadthin
 import { AuthGuardService } from "@/services/auth-guard-service";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
 import { UploadRepository, type UploadRecord } from "@/repositories/upload-repository";
-import { queues } from "@/lib/queues";
+import { enqueue } from "@/lib/queues";
+import {
+  objectUrlStoredFileReader,
+  processVideoMetadataJob
+} from "@/services/file-processing-processor";
 
 const f = createUploadthing();
 const authGuardService = new AuthGuardService(new AuthSessionRepository());
@@ -174,10 +178,18 @@ async function recordCompletedUpload(
   });
 
   if (record.kind === "VIDEO") {
-    await queues["file-processing"].add("extract-video-metadata", {
-      contentType: record.contentType,
-      uploadId: record.id
-    });
+    await enqueue(
+      "file-processing",
+      "extract-video-metadata",
+      { contentType: record.contentType, uploadId: record.id },
+      {},
+      async () => {
+        await processVideoMetadataJob(uploadRepository, objectUrlStoredFileReader, {
+          contentType: record.contentType,
+          uploadId: record.id
+        });
+      }
+    );
   }
 
   return formatUploadRecord(record);

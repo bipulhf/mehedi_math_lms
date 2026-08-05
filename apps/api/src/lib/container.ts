@@ -121,12 +121,12 @@ const uploadRepository = new UploadRepository();
 const adminDashboardService = new AdminDashboardService(adminDashboardRepository);
 const healthService = new HealthService(healthRepository);
 const authGuardService = new AuthGuardService(authSessionRepository);
-const messageRealtimeService = new MessageRealtimeService(
-  process.env.REDIS_URL ?? "redis://localhost:6379"
-);
-const notificationRealtimeService = new NotificationRealtimeService(
-  process.env.REDIS_URL ?? "redis://localhost:6379"
-);
+// Null means local-only delivery and an in-process presence map. Read from
+// `env` rather than `process.env`, which this used to do -- the repo's own rule,
+// and the reason the switch would not otherwise reach these two.
+const realtimeRedisUrl = env.isRedisEnabled ? env.REDIS_URL : null;
+const messageRealtimeService = new MessageRealtimeService(realtimeRedisUrl);
+const notificationRealtimeService = new NotificationRealtimeService(realtimeRedisUrl);
 const fcmPushService = new FcmPushService();
 const messageService = new MessageService(
   messageRepository,
@@ -137,7 +137,8 @@ const notificationService = new NotificationService(
   notificationRepository,
   enrollmentRepository,
   courseRepository,
-  notificationRealtimeService
+  notificationRealtimeService,
+  fcmPushService
 );
 const onecodesoftSmsProvider = new OnecodesoftSmsProvider();
 const smsService = new SmsService(smsRepository, courseRepository, onecodesoftSmsProvider);

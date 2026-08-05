@@ -3,6 +3,7 @@ import "./load-root-env";
 import { app } from "@/app";
 import { env } from "@/lib/env";
 import { messageRealtimeService } from "@/lib/container";
+import { startAuditLogRetention } from "@/lib/audit-log-retention";
 import { logger } from "@/lib/logger";
 import { connectRedis } from "@/lib/redis";
 import { messagesWsApp } from "@/websocket/messages-ws-app";
@@ -32,6 +33,9 @@ if (import.meta.main) {
   // Before the first request rather than during one: a bad REDIS_URL should be
   // a startup failure a deployer sees, not a slow page a student does.
   await connectRedis();
+  // With Redis there is a worker holding the schedule; without one, nothing
+  // else would ever prune the audit log.
+  startAuditLogRetention();
 
   Bun.serve({
     async fetch(request, server) {

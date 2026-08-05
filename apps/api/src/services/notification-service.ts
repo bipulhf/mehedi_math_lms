@@ -3,7 +3,7 @@ import type { UserRole } from "@genex/shared";
 
 import { sanitizeHtml } from "@/lib/html";
 import { logger } from "@/lib/logger";
-import { queues } from "@/lib/queues";
+import { enqueue } from "@/lib/queues";
 import {
   type NotificationRepository,
   type NotificationRecord,
@@ -11,6 +11,8 @@ import {
 } from "@/repositories/notification-repository";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";
+import type { FcmPushService } from "@/services/fcm-push-service";
+import { processNotificationFcmJob } from "@/services/notification-fcm-processor";
 import type { NotificationRealtimeService } from "@/services/notification-realtime-service";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -49,7 +51,9 @@ export class NotificationService {
     private readonly notificationRepository: NotificationRepository,
     private readonly enrollmentRepository: EnrollmentRepository,
     private readonly courseRepository: CourseRepository,
-    private readonly notificationRealtimeService: NotificationRealtimeService
+    private readonly notificationRealtimeService: NotificationRealtimeService,
+    /** Only used when there is no queue to hand the push to. */
+    private readonly fcmPushService: FcmPushService
   ) {}
 
   private async publishNewForUsers(records: readonly NotificationRecord[]): Promise<void> {
@@ -224,7 +228,8 @@ export class NotificationService {
 
     const notificationIds = records.map((record) => record.id);
 
-    await queues.notification.add(
+    await enqueue(
+      "notification",
       "fcm-deliver",
       { notificationIds },
       {
@@ -233,6 +238,16 @@ export class NotificationService {
           delay: 2000,
           type: "exponential"
         }
+      },
+      // No queue: send the push from this process. The notification row and the
+      // WebSocket event have already happened, so this is the only piece that
+      // would otherwise be lost.
+      async () => {
+        await processNotificationFcmJob(
+          this.notificationRepository,
+          this.fcmPushService,
+          notificationIds
+        );
       }
     );
 

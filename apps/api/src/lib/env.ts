@@ -7,6 +7,18 @@ const apiEnvSchema = z.object({
   API_PUBLIC_URL: z.url().default("http://localhost:3001/api/v1"),
   API_PORT: z.coerce.number().int().positive().default(3001),
   API_HOST: z.string().default("0.0.0.0"),
+  /**
+   * Whether this deployment has a Redis. `true` means *required*: the API
+   * refuses to start if it cannot reach one, because the alternative is
+   * discovering it during somebody's checkout. `false` runs the whole product
+   * on Postgres alone, with the capabilities listed in ADR-0015 either moved
+   * in-process or gone.
+   *
+   * Not `z.coerce.boolean()`: that is `Boolean(input)`, so the string "false"
+   * -- the exact thing a deployer writes to turn this off -- would be `true`.
+   * The same trap is called out on SSLCOMMERZ_SANDBOX_MODE.
+   */
+  REDIS_ENABLED: z.stringbool().default(true),
   REDIS_URL: z.string().default("redis://localhost:6379"),
   /**
    * How long a Redis command may take before the caller gives up. Every command
@@ -87,6 +99,7 @@ export const env = {
     parsedEnv.FIREBASE_CLIENT_MESSAGING_SENDER_ID &&
     parsedEnv.FIREBASE_CLIENT_APP_ID
   ),
+  isRedisEnabled: parsedEnv.REDIS_ENABLED,
   isS3Configured,
   isSslCommerzConfigured:
     parsedEnv.SSLCOMMERZ_STORE_ID !== "replace-me" &&

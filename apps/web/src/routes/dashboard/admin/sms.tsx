@@ -175,6 +175,10 @@ function AdminSmsPage() {
             </div>
           ) : null}
 
+          {providerStatus?.deliveryMode === "in-process" ? (
+            <p className="text-sm font-light text-muted">{t("sms.inProcessDelivery")}</p>
+          ) : null}
+
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-6 max-w-3xl">
             <div className="space-y-2">
               <Label htmlFor="sms-body">{t("sms.message")}</Label>

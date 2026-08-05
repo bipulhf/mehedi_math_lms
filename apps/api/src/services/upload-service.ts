@@ -11,7 +11,11 @@ import {
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { fetchObjectBytes } from "@/lib/object-url-fetch";
-import { queues } from "@/lib/queues";
+import { enqueue } from "@/lib/queues";
+import {
+  objectUrlStoredFileReader,
+  processVideoMetadataJob
+} from "@/services/file-processing-processor";
 import { writeStoredFile } from "@/lib/s3";
 import type { UploadRepository, UploadRecord } from "@/repositories/upload-repository";
 import {
@@ -413,10 +417,18 @@ export class UploadService {
     });
 
     if (confirmedUpload.kind === "VIDEO") {
-      await queues["file-processing"].add("extract-video-metadata", {
-        contentType: confirmedUpload.contentType,
-        uploadId: confirmedUpload.id
-      });
+      await enqueue(
+        "file-processing",
+        "extract-video-metadata",
+        { contentType: confirmedUpload.contentType, uploadId: confirmedUpload.id },
+        {},
+        async () => {
+          await processVideoMetadataJob(this.uploadRepository, objectUrlStoredFileReader, {
+            contentType: confirmedUpload.contentType,
+            uploadId: confirmedUpload.id
+          });
+        }
+      );
     }
 
     if (confirmedUpload.purpose === "ANSWER_SCRIPT_PAGE") {
