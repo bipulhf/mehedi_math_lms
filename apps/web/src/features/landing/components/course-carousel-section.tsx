@@ -143,7 +143,7 @@ function CourseSlide({
   return (
     <div
       aria-hidden={!isActive}
-      className="relative h-[30rem] w-full shrink-0 sm:h-[34rem] lg:h-[40rem]"
+      className="relative h-[32rem] w-full shrink-0 sm:h-[36rem] lg:h-[44rem]"
     >
       {course.coverImageUrl ? (
         <ResponsiveImage
@@ -154,14 +154,19 @@ function CourseSlide({
         />
       ) : null}
 
+      {/* Weighted towards the bottom, where the words are: the title needs a
+          near-solid ground under it, the top of the frame needs almost none. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/55 to-ink/10"
+        className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/70 to-ink/15"
       />
 
       <div className="relative flex h-full items-end">
         <div className="mx-auto w-full max-w-[90rem] px-4 pb-20 pt-10 sm:px-8 lg:px-14 lg:pb-24">
-          <div className="max-w-[46rem]">
+          {/* The title is the loudest thing on the page and is given the room
+              to be: a wide measure, the large display step, and the picture
+              behind it doing nothing else. */}
+          <div className="max-w-[68rem]">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="rounded-[var(--radius-pill)] border border-paper/30 bg-paper/10 px-3 py-1 text-sm text-paper backdrop-blur-sm">
                 {course.category.name}
@@ -173,11 +178,11 @@ function CourseSlide({
               ) : null}
             </div>
 
-            <h2 className="mt-5 max-w-[20ch]">
+            <h2 className="mt-6 max-w-[26ch]">
               <Link
-                className="font-medium leading-[1.05] tracking-[-0.02em] text-paper transition-opacity hover:opacity-80"
+                className="font-medium leading-[1.02] tracking-[-0.025em] text-paper transition-opacity hover:opacity-80"
                 params={{ slug: course.slug }}
-                style={{ fontSize: "var(--text-display)" }}
+                style={{ fontSize: "var(--text-display-lg)" }}
                 tabIndex={isActive ? 0 : -1}
                 to="/courses/$slug"
               >
@@ -185,7 +190,7 @@ function CourseSlide({
               </Link>
             </h2>
 
-            <p className="mt-4 line-clamp-2 max-w-[52ch] text-base font-light leading-relaxed text-paper/80 sm:text-lg">
+            <p className="mt-5 line-clamp-3 max-w-[66ch] text-lg font-light leading-relaxed text-paper/85 sm:text-xl">
               {course.description}
             </p>
 

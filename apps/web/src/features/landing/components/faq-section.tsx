@@ -37,7 +37,9 @@ export function FaqSection(): JSX.Element {
 
   return (
     <LandingSection title={t("home.faqTitle")}>
-      <div className="max-w-4xl">
+      {/* Full width, like every other band. A 4xl column here left the last
+          section of the page half empty against the ones above it. */}
+      <div>
           {faqs.map((faq, index) => (
             <AccordionRow
               isOpen={openKeys.has(faq.questionKey)}
@@ -54,7 +56,7 @@ export function FaqSection(): JSX.Element {
                 </span>
               }
             >
-              <p className="max-w-[60ch] text-base font-light leading-relaxed text-muted">
+              <p className="max-w-[92ch] text-base font-light leading-relaxed text-muted">
                 {t(faq.answerKey)}
               </p>
             </AccordionRow>
