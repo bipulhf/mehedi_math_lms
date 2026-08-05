@@ -5,22 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/marketing/reveal";
 import { DotPatch } from "@/components/ui/doodles";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
+import { siteConfig } from "@/lib/site";
 
 /**
  * The closing band on `panel-warm`: one line, one Ink action, one underlined
  * link, and a dot patch behind. No accent fill — DESIGN.md §1 keeps the accent
  * off large marketing surfaces.
+ *
+ * The strip underneath answers the two questions that stop a Bangladeshi
+ * purchase — how do I pay, and who do I call. Every paid platform researched in
+ * `docs/landing-bd-edtech-patterns.md` (§1, §13) answers both before the footer.
  */
 export function CtaSection(): JSX.Element {
   const t = useT();
+  const format = useFormat();
   const { isPending, session } = useAuthSession();
 
   return (
     <section className="relative overflow-hidden bg-panel-warm">
       <DotPatch className="-left-4 bottom-4 transition-transform duration-700 hover:scale-110" />
       <DotPatch className="-right-4 top-4 transition-transform duration-700 hover:scale-110" />
-      <Reveal className="mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 py-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:py-20">
+      <Reveal className="mx-auto flex w-full max-w-[90rem] flex-col items-start gap-6 px-4 pb-10 pt-16 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-14 lg:pt-20">
         <div className="space-y-3">
           <h2
             className="max-w-[16ch] font-medium leading-[1.05] tracking-tight text-ink"
@@ -53,6 +59,21 @@ export function CtaSection(): JSX.Element {
           </div>
         )}
       </Reveal>
+
+      <div className="mx-auto w-full max-w-[90rem] px-4 pb-14 sm:px-8 lg:px-14">
+        <div className="flex flex-col gap-4 border-t border-hairline pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted">
+            <span className="text-muted-faint">{t("home.payWith")}:</span>{" "}
+            {t("home.payMethods")}
+          </p>
+          <p className="text-sm text-muted">
+            <span className="text-muted-faint">{t("nav.helpline")}:</span>{" "}
+            <a className="label-mono text-ink" href={`tel:${siteConfig.contact.helpline}`}>
+              {format.digits(siteConfig.contact.helpline)}
+            </a>
+          </p>
+        </div>
+      </div>
     </section>
   );
 }

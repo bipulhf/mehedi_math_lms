@@ -34,6 +34,7 @@ export interface LandingCourseRow {
   categorySlug: string;
   coverImageUrl: string | null;
   description: string;
+  freeLectureCount: number;
   id: string;
   lectureCount: number;
   price: string;
@@ -41,6 +42,7 @@ export interface LandingCourseRow {
   ratingAverage: number | null;
   ratingCount: number;
   slug: string;
+  studentCount: number;
   teacherName: string | null;
   teacherPhoto: string | null;
   teacherSlug: string | null;
@@ -103,15 +105,32 @@ export class LandingRepository {
   }
 
   public async listFeaturedCourses(limit: number): Promise<readonly LandingCourseRow[]> {
+    // The free count uses the same predicate the catalogue's `hasFreeLesson`
+    // filter does, so "৩টি ফ্রি ক্লাস" on a landing card means the same three
+    // lessons a student can actually open from the course page.
     const lectureCount = db
       .select({
         courseId: chapters.courseId,
+        freeValue:
+          sql<string>`count(*) filter (where ${chapters.isPublished} and ${lectures.isPublished} and ${lectures.isPreview})`.as(
+            "free_value"
+          ),
         value: count().as("value")
       })
       .from(lectures)
       .innerJoin(chapters, eq(lectures.chapterId, chapters.id))
       .groupBy(chapters.courseId)
       .as("lecture_count");
+
+    const enrolmentCount = db
+      .select({
+        courseId: enrollments.courseId,
+        value: count().as("enrolment_value")
+      })
+      .from(enrollments)
+      .where(isNull(enrollments.cancelledAt))
+      .groupBy(enrollments.courseId)
+      .as("enrolment_count");
 
     const ratingSummary = db
       .select({
@@ -141,6 +160,7 @@ export class LandingRepository {
         categorySlug: categories.slug,
         coverImageUrl: courses.coverImageUrl,
         description: courses.description,
+        freeLectureCount: lectureCount.freeValue,
         id: courses.id,
         lectureCount: lectureCount.value,
         price: courses.price,
@@ -148,6 +168,7 @@ export class LandingRepository {
         ratingAverage: ratingSummary.average,
         ratingCount: ratingSummary.value,
         slug: courses.slug,
+        studentCount: enrolmentCount.value,
         teacherName: users.name,
         teacherPhoto: teacherProfiles.profilePhoto,
         teacherSlug: users.slug,
@@ -156,6 +177,7 @@ export class LandingRepository {
       .from(courses)
       .innerJoin(categories, eq(courses.categoryId, categories.id))
       .leftJoin(lectureCount, eq(lectureCount.courseId, courses.id))
+      .leftJoin(enrolmentCount, eq(enrolmentCount.courseId, courses.id))
       .leftJoin(ratingSummary, eq(ratingSummary.courseId, courses.id))
       .leftJoin(ownerTeacher, eq(ownerTeacher.courseId, courses.id))
       .leftJoin(users, eq(ownerTeacher.teacherId, users.id))
@@ -171,9 +193,11 @@ export class LandingRepository {
 
     return rows.map((row) => ({
       ...row,
+      freeLectureCount: Number(row.freeLectureCount ?? 0),
       lectureCount: Number(row.lectureCount ?? 0),
       ratingAverage: row.ratingAverage === null ? null : Number(row.ratingAverage),
-      ratingCount: Number(row.ratingCount ?? 0)
+      ratingCount: Number(row.ratingCount ?? 0),
+      studentCount: Number(row.studentCount ?? 0)
     }));
   }
 

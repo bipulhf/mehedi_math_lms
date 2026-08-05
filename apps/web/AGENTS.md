@@ -233,7 +233,9 @@ Input, textarea, select and password-input all draw their surface from `fieldCla
 
 `Button` still accepts `default`, `gradient` and `secondary`, and `Badge` still accepts `blue`, `gray`, `green`, `violet`, `amber` and `red`. Those are compatibility names for screens that have not been rebuilt yet — each resolves to its Genex equivalent and all of them go in Phase 12. New markup uses `ink` / `accent` / `outline` / `ghost` / `accentLink` / `underline`, and `neutral` / `quiet` / `attention` / `faded`.
 
-Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip-path`, checks are drawn. `lucide-react` stays for dashboard-only surfaces with no design precedent (messages, admin tooling) and is kept out of the public pages.
+Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip-path`, checks are drawn. `lucide-react` stays for dashboard surfaces with no design precedent (messages, admin tooling).
+
+The landing page's feature grid is the one public exception, and it is deliberate: a six-tile "what you get" grid with an icon on each tile is the section every Bangladeshi platform a student already uses runs, and a grid of six unmarked text blocks does not read as one (`docs/landing-bd-edtech-patterns.md` §8). Icons stay off the other public pages.
 
 ## Forms
 

@@ -21,11 +21,12 @@ import { CtaSection } from "@/features/landing/components/cta-section";
 import { FaqSection } from "@/features/landing/components/faq-section";
 import { FeaturedCoursesSection } from "@/features/landing/components/featured-courses-section";
 import { HeroSection } from "@/features/landing/components/hero-section";
+import { HowItWorksSection } from "@/features/landing/components/how-it-works-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
+import { PlatformFeaturesSection } from "@/features/landing/components/platform-features-section";
 import { ReviewsSection } from "@/features/landing/components/reviews-section";
 import { SubjectRailSection } from "@/features/landing/components/subject-rail-section";
-import { ValuePropsSection } from "@/features/landing/components/value-props-section";
 
 const EMPTY_SNAPSHOT: LandingSnapshot = {
   categories: [],
@@ -89,9 +90,12 @@ function HomePage(): JSX.Element {
 
   return (
     <PublicLayout>
-      {/* The order a student reads it in: who this is, what is on offer, where
-          to start, why it is worth paying for, who teaches it, whether anyone
-          else rates it, the questions they will ask, and then the ask. */}
+      {/* The order the researched Bangladeshi platforms all converge on, and
+          for the same reason: catalogue first, persuasion after it. Who this
+          is, what is on offer, where to start, what a course contains, what
+          happens after paying, who teaches it, whether anyone else rates it,
+          the questions that block a purchase, and then the ask.
+          docs/landing-bd-edtech-patterns.md */}
       <HeroSection categories={snapshot.categories} stats={snapshot.stats} />
       <FeaturedCoursesSection courses={snapshot.courses} />
       <SubjectRailSection categories={snapshot.categories} />
@@ -100,7 +104,8 @@ function HomePage(): JSX.Element {
         courses={snapshot.courses}
         publishedCourses={snapshot.stats.publishedCourses}
       />
-      <ValuePropsSection />
+      <PlatformFeaturesSection />
+      <HowItWorksSection />
       <InstructorsSection teachers={snapshot.teachers} />
       <ReviewsSection />
       <FaqSection />

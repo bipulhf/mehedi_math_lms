@@ -17,11 +17,14 @@ export interface LandingCourse {
   category: { name: string; slug: string };
   coverImageUrl: string | null;
   description: string;
+  /** Lessons a signed-out visitor can open before paying anything. */
+  freeLectureCount: number;
   id: string;
   lectureCount: number;
   price: string;
   rating: { average: number; count: number } | null;
   slug: string;
+  studentCount: number;
   teacher: { name: string; profilePhoto: string | null; slug: string | null } | null;
   title: string;
 }
@@ -52,7 +55,7 @@ export interface LandingSnapshot {
 }
 
 const CATEGORY_LIMIT = 4;
-const COURSE_LIMIT = 6;
+const COURSE_LIMIT = 8;
 const TEACHER_LIMIT = 4;
 
 /**
@@ -84,7 +87,10 @@ function rollUpCourseCounts(rows: readonly LandingCategoryRow[]): readonly Landi
 }
 
 export class LandingService {
-  private static readonly CACHE_KEY = "landing:snapshot:v1";
+  // Bumped with the snapshot shape: a running cache still holding v1 would
+  // serve course rows with no free-lesson or enrolment count for five minutes
+  // after a deploy, and the card renders those.
+  private static readonly CACHE_KEY = "landing:snapshot:v2";
   private static readonly TTL_SECONDS = 300;
 
   public constructor(
@@ -164,6 +170,7 @@ export class LandingService {
         category: { name: row.categoryName, slug: row.categorySlug },
         coverImageUrl: row.coverImageUrl,
         description: row.description,
+        freeLectureCount: row.freeLectureCount,
         id: row.id,
         lectureCount: row.lectureCount,
         price: row.price,
@@ -172,6 +179,7 @@ export class LandingService {
             ? null
             : { average: Math.round(row.ratingAverage * 10) / 10, count: row.ratingCount },
         slug: row.slug,
+        studentCount: row.studentCount,
         teacher:
           row.teacherName === null
             ? null

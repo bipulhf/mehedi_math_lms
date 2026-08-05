@@ -1,16 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { Reveal } from "@/components/marketing/reveal";
+import { LandingCourseCard } from "@/features/landing/components/landing-course-card";
 import { LandingSection } from "@/features/landing/components/landing-section";
-import { HeroCoursesCarousel } from "@/features/landing/components/hero-courses-carousel";
 import type { LandingCourse } from "@/lib/api/landing";
 import { useT } from "@/lib/i18n/locale-context";
 
 /**
  * The catalogue, straight after the hero.
  *
- * This is what a student came for, so it is the first full section rather than
- * something they reach after three bands of persuasion.
+ * A grid rather than the single large auto-advancing slide this used to be:
+ * every Bangladeshi platform a student already uses shows six to twelve courses
+ * at once, and one slide showed one. `docs/landing-bd-edtech-patterns.md` §5.
  */
 export function FeaturedCoursesSection({
   courses
@@ -34,9 +36,16 @@ export function FeaturedCoursesSection({
         </Link>
       }
       description={t("home.featuredLead")}
+      eyebrow={t("home.featuredEyebrow")}
       title={t("home.featuredTitle")}
     >
-      <HeroCoursesCarousel courses={courses} />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {courses.map((course, index) => (
+          <Reveal delayMs={(index % 4) * 70} key={course.id}>
+            <LandingCourseCard course={course} />
+          </Reveal>
+        ))}
+      </div>
     </LandingSection>
   );
 }

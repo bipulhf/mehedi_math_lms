@@ -18,11 +18,14 @@ export interface LandingCourse {
   category: { name: string; slug: string };
   coverImageUrl: string | null;
   description: string;
+  /** Lessons a visitor can open before paying — the free rung on the ladder. */
+  freeLectureCount: number;
   id: string;
   lectureCount: number;
   price: string;
   rating: LandingRating | null;
   slug: string;
+  studentCount: number;
   teacher: { name: string; profilePhoto: string | null; slug: string | null } | null;
   title: string;
 }
