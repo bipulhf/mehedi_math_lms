@@ -2,6 +2,7 @@ import ky, { HTTPError } from "ky";
 import { toast } from "sonner";
 
 import { clientEnv } from "@/lib/env";
+import { refreshAfterMutation } from "@/lib/query/refresh-on-mutation";
 
 export interface ApiEnvelope<TData> {
   data: TData;
@@ -62,8 +63,19 @@ export function createApiClient(options: ApiClientOptions = {}): typeof ky {
         }
       ],
       afterResponse: [
-        async ({ response }) => {
-          if (response.ok || typeof window === "undefined") {
+        async ({ request, response }) => {
+          if (typeof window === "undefined") {
+            return;
+          }
+
+          if (response.ok) {
+            // A write just changed something a screen is showing. One rule, at
+            // the one place every write passes through -- see
+            // `lib/query/refresh-on-mutation.ts`.
+            if (request.method !== "GET" && request.method !== "HEAD") {
+              refreshAfterMutation();
+            }
+
             return;
           }
 

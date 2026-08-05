@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import type { JSX, PropsWithChildren } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
@@ -15,6 +15,7 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { LocaleProvider, useLocale } from "@/lib/i18n/locale-context";
 import { readLocale } from "@/lib/i18n/locale-cookie";
 import { createQueryClient } from "@/lib/query/query-client";
+import { setActiveQueryClient } from "@/lib/query/refresh-on-mutation";
 import { siteConfig } from "@/lib/site";
 import appCss from "@/styles/app.css?url";
 import katexCss from "katex/dist/katex.min.css?url";
@@ -84,6 +85,16 @@ function RootComponent(): JSX.Element {
   // request, and a shared client would hand one user's cache to the next.
   const [queryClient] = useState(createQueryClient);
   const { locale } = Route.useRouteContext();
+
+  // Browser only, by construction: effects do not run during SSR, and the
+  // per-request client there must never be reachable from module scope.
+  useEffect(() => {
+    setActiveQueryClient(queryClient);
+
+    return () => {
+      setActiveQueryClient(null);
+    };
+  }, [queryClient]);
 
   return (
     <LocaleProvider initialLocale={locale}>
