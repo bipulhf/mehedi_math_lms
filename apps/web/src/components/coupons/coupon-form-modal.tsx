@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import type { CouponKind } from "@genex/shared";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { CoursePicker } from "@/components/coupons/course-picker";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import type { CouponListItem } from "@/lib/api/coupons";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -234,17 +234,19 @@ export function CouponFormModal({
           </div>
         </div>
 
-        <div className="space-y-1 border-t border-hairline pt-4">
-          <Checkbox
-            checked={isPublic}
+        <div className="space-y-4 border-t border-hairline pt-4">
+          <Switch
+            description={t("coupon.isPublicHint")}
+            disabled={isSaving}
             label={t("coupon.isPublic")}
-            onChange={(event) => setIsPublic(event.target.checked)}
+            onChange={setIsPublic}
+            value={isPublic}
           />
-          <p className="pl-8 text-xs text-muted-light">{t("coupon.isPublicHint")}</p>
-          <Checkbox
-            checked={isDisabled}
+          <Switch
+            disabled={isSaving}
             label={t("coupon.isDisabled")}
-            onChange={(event) => setIsDisabled(event.target.checked)}
+            onChange={setIsDisabled}
+            value={isDisabled}
           />
         </div>
 

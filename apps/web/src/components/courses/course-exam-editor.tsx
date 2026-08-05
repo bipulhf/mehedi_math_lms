@@ -25,6 +25,7 @@ import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import type { AssessmentQuestion } from "@/lib/api/tests";
 import {
   createQuestion,
@@ -356,45 +357,29 @@ export function CourseExamEditor({
               </div>
             </div>
 
-            <label className="flex items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
-              <input
-                checked={settings.isPublished}
-                className="mt-1 size-4 accent-accent"
-                type="checkbox"
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    isPublished: event.target.checked
-                  }))
+            <div className="border border-hairline bg-panel-warm/40 p-4">
+              <Switch
+                description={t("ab.studentView")}
+                disabled={isWorking}
+                label={t("ab.publishNow")}
+                onChange={(checked) =>
+                  setSettings((current) => ({ ...current, isPublished: checked }))
                 }
+                value={settings.isPublished}
               />
-              <span>
-                <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
-                <span className="mt-1 block text-sm font-light leading-relaxed text-muted">
-                  {t("ab.studentView")}
-                </span>
-              </span>
-            </label>
+            </div>
 
-            <label className="flex items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
-              <input
-                checked={settings.lockAnswerOnSelect}
-                className="mt-1 size-4 accent-accent"
-                type="checkbox"
-                onChange={(event) =>
-                  setSettings((current) => ({
-                    ...current,
-                    lockAnswerOnSelect: event.target.checked
-                  }))
+            <div className="border border-hairline bg-panel-warm/40 p-4">
+              <Switch
+                description={t("ab.lockAnswerOnSelectHint")}
+                disabled={isWorking}
+                label={t("ab.lockAnswerOnSelect")}
+                onChange={(checked) =>
+                  setSettings((current) => ({ ...current, lockAnswerOnSelect: checked }))
                 }
+                value={settings.lockAnswerOnSelect}
               />
-              <span>
-                <span className="block text-sm font-medium text-ink">{t("ab.lockAnswerOnSelect")}</span>
-                <span className="mt-1 block text-sm font-light leading-relaxed text-muted">
-                  {t("ab.lockAnswerOnSelectHint")}
-                </span>
-              </span>
-            </label>
+            </div>
 
             <div className="flex justify-end border-t border-hairline pt-4">
               <Button

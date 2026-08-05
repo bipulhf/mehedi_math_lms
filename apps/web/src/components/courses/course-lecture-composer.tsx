@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/pill";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useT } from "@/lib/i18n/locale-context";
 
 export type AuthoringLectureType = "EXAM" | "PDF" | "VIDEO";
@@ -256,38 +257,26 @@ export function LectureComposer({
           </div>
 
           {draft.examType === "MCQ" ? (
-            <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
-              <input
-                checked={draft.examLockAnswerOnSelect}
-                className="mt-1 size-4 accent-accent"
-                type="checkbox"
-                onChange={(event) =>
-                  onChange({ ...draft, examLockAnswerOnSelect: event.target.checked })
-                }
+            <div className="border border-hairline bg-panel-warm/40 p-4">
+              <Switch
+                description={t("ab.lockAnswerOnSelectHint")}
+                disabled={isWorking}
+                label={t("ab.lockAnswerOnSelect")}
+                onChange={(checked) => onChange({ ...draft, examLockAnswerOnSelect: checked })}
+                value={draft.examLockAnswerOnSelect}
               />
-              <span>
-                <span className="block text-sm font-medium text-ink">
-                  {t("ab.lockAnswerOnSelect")}
-                </span>
-                <span className="mt-1 block text-sm font-light text-muted">
-                  {t("ab.lockAnswerOnSelectHint")}
-                </span>
-              </span>
-            </label>
+            </div>
           ) : null}
 
-          <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
-            <input
-              checked={draft.examIsPublished}
-              className="mt-1 size-4 accent-accent"
-              type="checkbox"
-              onChange={(event) => onChange({ ...draft, examIsPublished: event.target.checked })}
+          <div className="border border-hairline bg-panel-warm/40 p-4">
+            <Switch
+              description={t("ab.studentView")}
+              disabled={isWorking}
+              label={t("ab.publishNow")}
+              onChange={(checked) => onChange({ ...draft, examIsPublished: checked })}
+              value={draft.examIsPublished}
             />
-            <span>
-              <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
-              <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
-            </span>
-          </label>
+          </div>
 
           <p className="text-base font-light text-muted">{t("author.examLead")}</p>
         </div>
@@ -295,26 +284,21 @@ export function LectureComposer({
 
       {draft.type !== "EXAM" ? (
         <div className="space-y-3 border-t border-hairline pt-5">
-          <label className="flex min-h-11 items-center gap-3">
-            <input
-              checked={draft.isPreview}
-              type="checkbox"
-              onChange={(event) => onChange({ ...draft, isPreview: event.target.checked })}
+          <Switch
+            disabled={isWorking}
+            label={t("cb.allowPreview")}
+            onChange={(checked) => onChange({ ...draft, isPreview: checked })}
+            value={draft.isPreview}
+          />
+          <div className="border border-hairline bg-panel-warm/40 p-4">
+            <Switch
+              description={t("ab.studentView")}
+              disabled={isWorking}
+              label={t("ab.publishNow")}
+              onChange={(checked) => onChange({ ...draft, isPublished: checked })}
+              value={draft.isPublished}
             />
-            <span className="text-sm text-ink">{t("cb.allowPreview")}</span>
-          </label>
-          <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4">
-            <input
-              checked={draft.isPublished}
-              className="mt-1 size-4 accent-accent"
-              type="checkbox"
-              onChange={(event) => onChange({ ...draft, isPublished: event.target.checked })}
-            />
-            <span>
-              <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
-              <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
-            </span>
-          </label>
+          </div>
         </div>
       ) : null}
 

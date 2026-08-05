@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import type { CategoryNode } from "@/lib/api/categories";
 import type { CourseTeacherOption, CreateCourseInput } from "@/lib/api/courses";
 import { uploadCourseCover } from "@/lib/api/uploads";
@@ -215,20 +216,15 @@ export function CourseEditor({
             </div>
 
             <div className="flex items-end">
-              <label className="flex w-full cursor-pointer items-start gap-4 border border-hairline bg-panel-warm/40 p-5">
-                <input
-                  type="checkbox"
-                  checked={values.isExamOnly}
-                  className="mt-1 size-5 accent-ink"
-                  onChange={(e) => setValues((cv) => ({ ...cv, isExamOnly: e.target.checked }))}
+              <div className="w-full border border-hairline bg-panel-warm/40 p-5">
+                <Switch
+                  description={t("author.examOnlyLead")}
+                  disabled={isSaving}
+                  label={t("editor.examOnly")}
+                  onChange={(checked) => setValues((cv) => ({ ...cv, isExamOnly: checked }))}
+                  value={values.isExamOnly}
                 />
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium text-ink">{t("editor.examOnly")}</span>
-                  <span className="text-sm font-light leading-relaxed text-muted">
-                    {t("author.examOnlyLead")}
-                  </span>
-                </div>
-              </label>
+              </div>
             </div>
           </div>
 

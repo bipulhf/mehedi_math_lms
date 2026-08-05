@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Switch } from "@/components/ui/switch";
 import type { CategoryNode, CreateCategoryInput } from "@/lib/api/categories";
 import {
   createCategory,
@@ -466,12 +467,18 @@ function AdminCategoriesPage(): JSX.Element {
 
                   <div className="space-y-2">
                     <Label>{t("admin.cat.visibility")}</Label>
-                    <div className="flex h-10 items-center justify-between border border-hairline bg-panel-warm px-4">
-                      <span className="text-sm font-light text-muted">Active</span>
-                      <input
-                        className="size-4 accent-accent"
-                        type="checkbox"
-                        {...register("isActive")}
+                    <div className="flex h-10 items-center border border-hairline bg-panel-warm px-4">
+                      <Controller
+                        control={control}
+                        name="isActive"
+                        render={({ field }) => (
+                          <Switch
+                            disabled={isSubmitting}
+                            label={t("common.active")}
+                            onChange={field.onChange}
+                            value={field.value ?? false}
+                          />
+                        )}
                       />
                     </div>
                   </div>

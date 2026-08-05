@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Switch } from "@/components/ui/switch";
 import type { ContentChapter, CreateChapterInput } from "@/lib/api/content";
 import { createChapter, deleteChapter, reorderChapters, updateChapter } from "@/lib/api/content";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -203,20 +204,15 @@ export function CourseChapterBuilder({
               onChange={(value) => setDraft((current) => ({ ...current, description: value }))}
             />
           </div>
-          <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4 lg:col-span-2">
-            <input
-              checked={draft.isPublished}
-              className="mt-1 size-4 accent-accent"
-              type="checkbox"
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, isPublished: event.target.checked }))
-              }
+          <div className="border border-hairline bg-panel-warm/40 p-4 lg:col-span-2">
+            <Switch
+              description={t("ab.studentView")}
+              disabled={isWorking}
+              label={t("ab.publishNow")}
+              onChange={(checked) => setDraft((current) => ({ ...current, isPublished: checked }))}
+              value={draft.isPublished}
             />
-            <span>
-              <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
-              <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
-            </span>
-          </label>
+          </div>
         </div>
       </section>
 
@@ -270,23 +266,17 @@ export function CourseChapterBuilder({
                           }
                         />
                       </div>
-                      <label className="flex min-h-11 items-start gap-3 border border-hairline bg-panel-warm/40 p-4 md:col-span-2">
-                        <input
-                          checked={editDraft.isPublished}
-                          className="mt-1 size-4 accent-accent"
-                          type="checkbox"
-                          onChange={(event) =>
-                            setEditDraft((current) => ({
-                              ...current,
-                              isPublished: event.target.checked
-                            }))
+                      <div className="border border-hairline bg-panel-warm/40 p-4 md:col-span-2">
+                        <Switch
+                          description={t("ab.studentView")}
+                          disabled={isWorking}
+                          label={t("ab.publishNow")}
+                          onChange={(checked) =>
+                            setEditDraft((current) => ({ ...current, isPublished: checked }))
                           }
+                          value={editDraft.isPublished}
                         />
-                        <span>
-                          <span className="block text-sm font-medium text-ink">{t("ab.publishNow")}</span>
-                          <span className="mt-1 block text-sm font-light text-muted">{t("ab.studentView")}</span>
-                        </span>
-                      </label>
+                      </div>
                     </div>
                     <div className="flex flex-wrap justify-end gap-3">
                       <Button className="h-11" variant="outline" onClick={() => setEditingId(null)}>

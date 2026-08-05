@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Switch } from "@/components/ui/switch";
 import {
   type CourseNotice,
   createCourseNotice,
@@ -128,15 +129,12 @@ export function CourseNoticeManager({ courseId }: { courseId: string }): JSX.Ele
           />
         </div>
 
-        <label className="flex items-center gap-2.5 text-base font-light text-ink">
-          <input
-            checked={isPinned}
-            className="size-4 accent-[var(--color-accent)]"
-            onChange={(event) => setIsPinned(event.target.checked)}
-            type="checkbox"
-          />
-          {t("notice.pin")}
-        </label>
+        <Switch
+          disabled={isSubmitting}
+          label={t("notice.pin")}
+          onChange={setIsPinned}
+          value={isPinned}
+        />
 
         <div className="border-t border-hairline pt-5">
           <Button className="h-11" disabled={isSubmitting} type="submit">

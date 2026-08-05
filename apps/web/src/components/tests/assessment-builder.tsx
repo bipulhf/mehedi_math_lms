@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Switch } from "@/components/ui/switch";
 import type { CourseDetail } from "@/lib/api/courses";
 import type {
   AssessmentChapterSummary,
@@ -493,22 +494,18 @@ export function AssessmentBuilder({
                         )
                       }
                     />
-                    <label className="flex h-10 items-center gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3 text-xs text-ink">
-                      <input
-                        checked={selectedTest.isPublished}
-                        className="h-4 w-4 accent-(--secondary-container)"
-                        type="checkbox"
-                        onChange={(event) =>
+                    <div className="flex h-10 items-center rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3">
+                      <Switch
+                        disabled={isWorking}
+                        label={t("ab.published")}
+                        onChange={(checked) =>
                           setSelectedTest((currentValue) =>
-                            currentValue
-                              ? {
-                                  ...currentValue,
-                                  isPublished: event.target.checked
-                                }
-                              : currentValue
+                            currentValue ? { ...currentValue, isPublished: checked } : currentValue
                           )
                         }
-                      />{t("ab.published")}</label>
+                        value={selectedTest.isPublished}
+                      />
+                    </div>
                   </div>
                   <div className="grid gap-2 md:grid-cols-2">
                     <Input
@@ -530,25 +527,23 @@ export function AssessmentBuilder({
                         )
                       }
                     />
-                    <label
-                      className="flex h-10 items-center gap-2 rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3 text-xs text-ink"
+                    <div
+                      className="flex h-10 items-center rounded-[calc(var(--radius)-0.125rem)] border border-hairline px-3"
                       title={t("ab.lockAnswerOnSelectHint")}
                     >
-                      <input
-                        checked={selectedTest.lockAnswerOnSelect}
-                        className="h-4 w-4 accent-(--secondary-container)"
-                        type="checkbox"
-                        onChange={(event) =>
+                      <Switch
+                        disabled={isWorking}
+                        label={t("ab.lockAnswerOnSelect")}
+                        onChange={(checked) =>
                           setSelectedTest((currentValue) =>
                             currentValue
-                              ? {
-                                  ...currentValue,
-                                  lockAnswerOnSelect: event.target.checked
-                                }
+                              ? { ...currentValue, lockAnswerOnSelect: checked }
                               : currentValue
                           )
                         }
-                      />{t("ab.lockAnswerOnSelect")}</label>
+                        value={selectedTest.lockAnswerOnSelect}
+                      />
+                    </div>
                   </div>
                   <Label className="text-[0.62rem] font-bold uppercase tracking-widest text-ink/60">{t("common.description")}</Label>
                   <RichTextEditor

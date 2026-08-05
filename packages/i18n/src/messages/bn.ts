@@ -103,6 +103,7 @@ export const bn = {
   "common.teachers": "শিক্ষক",
   "common.tests": "পরীক্ষা",
 
+  "common.active": "চালু",
   "common.close": "বন্ধ কর",
   "coupon.allCourses": "সব কোর্স",
   "coupon.allCoursesHint": "শুধু অ্যাডমিন সব কোর্সের জন্য কুপন বানাতে পারে।",

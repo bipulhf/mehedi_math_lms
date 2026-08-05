@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { Switch } from "@/components/ui/switch";
 import type { CreateTestInput } from "@/lib/api/tests";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -84,25 +85,20 @@ export function CreateTestPanel({
         value={draft.description ?? ""}
         onChange={(value) => onChange({ ...draft, description: value })}
       />
-      <div className="flex flex-wrap gap-4">
-        <label className="flex items-center gap-2 text-xs text-ink/75">
-          <input
-            checked={draft.isPublished}
-            className="h-4 w-4 accent-(--secondary-container)"
-            type="checkbox"
-            onChange={(event) => onChange({ ...draft, isPublished: event.target.checked })}
-          />
-          <span>{t("ab.publishNow")}</span>
-        </label>
-        <label className="flex items-center gap-2 text-xs text-ink/75" title={t("ab.lockAnswerOnSelectHint")}>
-          <input
-            checked={draft.lockAnswerOnSelect}
-            className="h-4 w-4 accent-(--secondary-container)"
-            type="checkbox"
-            onChange={(event) => onChange({ ...draft, lockAnswerOnSelect: event.target.checked })}
-          />
-          <span>{t("ab.lockAnswerOnSelect")}</span>
-        </label>
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-8">
+        <Switch
+          disabled={isWorking}
+          label={t("ab.publishNow")}
+          onChange={(checked) => onChange({ ...draft, isPublished: checked })}
+          value={draft.isPublished}
+        />
+        <Switch
+          description={t("ab.lockAnswerOnSelectHint")}
+          disabled={isWorking}
+          label={t("ab.lockAnswerOnSelect")}
+          onChange={(checked) => onChange({ ...draft, lockAnswerOnSelect: checked })}
+          value={draft.lockAnswerOnSelect}
+        />
       </div>
       <Button className="h-10" disabled={isWorking} type="button" onClick={onCreate}>
         {t("ab.createTest")}

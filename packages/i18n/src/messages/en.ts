@@ -100,6 +100,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "common.teachers": "teachers",
   "common.tests": "tests",
 
+  "common.active": "Active",
   "common.close": "Close",
   "coupon.allCourses": "All courses",
   "coupon.allCoursesHint": "Only an admin can make a coupon for every course.",
