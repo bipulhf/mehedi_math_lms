@@ -671,6 +671,19 @@ export class CourseRepository {
     return rows.map((row) => row.courseId);
   }
 
+  /**
+   * Courses this teacher has authority over, not merely works on. Pricing
+   * decisions — and a coupon is one — belong to the Owner. ADR-0006.
+   */
+  public async getOwnedCourseIds(teacherId: string): Promise<readonly string[]> {
+    const rows = await db
+      .select({ courseId: courseTeachers.courseId })
+      .from(courseTeachers)
+      .where(and(eq(courseTeachers.teacherId, teacherId), eq(courseTeachers.role, "OWNER")));
+
+    return rows.map((row) => row.courseId);
+  }
+
   public async listTeacherDirectory(search?: string | undefined): Promise<readonly TeacherDirectoryRecord[]> {
     const whereClause =
       search && search.trim().length > 0

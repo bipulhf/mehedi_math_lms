@@ -1,17 +1,25 @@
 import { and, db, desc, eq, payments, sql } from "@genex/db";
 
 export interface PaymentRecord {
+  /** The Payable: what the gateway was asked to collect, after any coupon. */
   amount: string;
+  /** The code as the student typed it, kept because a coupon stays editable. */
+  couponCode: string | null;
+  couponId: string | null;
   /** Known at checkout. The enrolment is not, so this is the durable link. */
   courseId: string;
   createdAt: Date;
   currency: string;
+  discountAmount: string | null;
   /** Null until the payment settles and the enrolment is created. ADR-0001. */
   enrollmentId: string | null;
   id: string;
+  /** The course price before the discount. Null when no coupon was used. */
+  listAmount: string | null;
   metadata: Record<string, string | number | boolean | null> | null;
   paidAt: Date | null;
-  provider: "SSLCOMMERZ";
+  /** COUPON means a coupon took the Payable to zero and no gateway ran. ADR-0013. */
+  provider: "SSLCOMMERZ" | "COUPON";
   refundedAt: Date | null;
   status: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
   transactionId: string;
@@ -39,9 +47,16 @@ function mapPaymentRecord(record: typeof payments.$inferSelect): PaymentRecord {
 export class PaymentRepository {
   public async create(input: {
     amount: string;
+    couponCode?: string | null | undefined;
+    couponId?: string | null | undefined;
     courseId: string;
+    discountAmount?: string | null | undefined;
     enrollmentId?: string | null | undefined;
+    listAmount?: string | null | undefined;
     metadata?: Record<string, string | number | boolean | null> | null | undefined;
+    paidAt?: Date | null | undefined;
+    provider?: PaymentRecord["provider"] | undefined;
+    status?: PaymentRecord["status"] | undefined;
     transactionId: string;
     userId: string;
   }): Promise<PaymentRecord> {
@@ -49,9 +64,16 @@ export class PaymentRepository {
       .insert(payments)
       .values({
         amount: input.amount,
+        couponCode: input.couponCode ?? null,
+        couponId: input.couponId ?? null,
         courseId: input.courseId,
+        discountAmount: input.discountAmount ?? null,
         enrollmentId: input.enrollmentId ?? null,
+        listAmount: input.listAmount ?? null,
         metadata: input.metadata ?? null,
+        ...(input.paidAt === undefined ? {} : { paidAt: input.paidAt }),
+        ...(input.provider === undefined ? {} : { provider: input.provider }),
+        ...(input.status === undefined ? {} : { status: input.status }),
         transactionId: input.transactionId,
         userId: input.userId
       })
@@ -146,12 +168,16 @@ export class PaymentRepository {
     const rows = await db
       .select({
         amount: payments.amount,
+        couponCode: payments.couponCode,
+        couponId: payments.couponId,
         courseId: payments.courseId,
         courseTitle: sql<string>`(select c.title from courses c where c.id = ${payments.courseId})`,
         createdAt: payments.createdAt,
         currency: payments.currency,
+        discountAmount: payments.discountAmount,
         enrollmentId: payments.enrollmentId,
         id: payments.id,
+        listAmount: payments.listAmount,
         metadata: payments.metadata,
         paidAt: payments.paidAt,
         provider: payments.provider,
@@ -181,12 +207,16 @@ export class PaymentRepository {
       db
         .select({
           amount: payments.amount,
+          couponCode: payments.couponCode,
+          couponId: payments.couponId,
           courseId: payments.courseId,
           courseTitle: sql<string>`(select c.title from courses c where c.id = ${payments.courseId})`,
           createdAt: payments.createdAt,
           currency: payments.currency,
+          discountAmount: payments.discountAmount,
           enrollmentId: payments.enrollmentId,
           id: payments.id,
+          listAmount: payments.listAmount,
           metadata: payments.metadata,
           paidAt: payments.paidAt,
           provider: payments.provider,

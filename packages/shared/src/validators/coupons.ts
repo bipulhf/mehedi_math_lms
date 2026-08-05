@@ -140,5 +140,25 @@ export const previewCouponSchema = z.object({
   courseId: idSchema
 });
 
+/**
+ * Why a code was refused, as a value rather than a sentence.
+ *
+ * The API answers a preview with one of these and the client renders its own
+ * Bangla — a translated refusal is not something an English error message from
+ * the server can provide, and the message is the first thing a buyer reads.
+ */
+export const couponRejectionReasonSchema = z.enum([
+  "NOT_FOUND",
+  "DISABLED",
+  "NOT_STARTED",
+  "EXPIRED",
+  "EXHAUSTED",
+  "ALREADY_USED",
+  "ALREADY_ENROLLED",
+  "COURSE_UNAVAILABLE",
+  "FREE_COURSE"
+]);
+
 export type CouponKind = z.infer<typeof couponKindSchema>;
+export type CouponRejectionReason = z.infer<typeof couponRejectionReasonSchema>;
 export type CouponState = z.infer<typeof couponStateSchema>;
