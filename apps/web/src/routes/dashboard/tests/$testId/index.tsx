@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,12 +16,14 @@ import { AnswerScriptUploader } from "@/components/tests/answer-script-uploader"
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, ScriptPageView, SubmissionDetail } from "@/lib/api/tests";
+import { apiErrorMessage } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import {
   getTestDetail,
   saveSubmissionAnswers,
+  listMyTestSubmissions,
   startSubmission,
   submitTest
 } from "@/lib/api/tests";
@@ -46,10 +48,29 @@ function StudentTestPage(): JSX.Element {
 
   const { testId } = Route.useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: test = null, isPending: isLoadingTest } = useQuery<AssessmentTestDetail>({
     queryFn: async () => getTestDetail(testId),
     queryKey: queryKeys.tests.detail(testId)
   });
+  /**
+   * What this student has already done with this exam, newest first.
+   *
+   * Read before anything is started, because starting is a write: pressing the
+   * browser's back button out of the result page lands here again, and without
+   * this the page silently opened a fresh attempt — or, on a one-attempt exam,
+   * showed the raw refusal from the server.
+   */
+  const { data: attempts, isPending: isLoadingAttempts } = useQuery({
+    queryFn: async () => listMyTestSubmissions(testId),
+    queryKey: queryKeys.tests.myAttempts(testId),
+    // Never from cache. Landing here decides whether to write an attempt, and a
+    // 30-second-old "no attempts yet" is exactly what the back button hands us
+    // one second after a paper was submitted.
+    refetchOnMount: "always",
+    staleTime: 0
+  });
+  const [isRetaking, setIsRetaking] = useState(false);
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, DraftAnswer>>({});
   const [pagesByQuestionId, setPagesByQuestionId] = useState<
@@ -62,14 +83,40 @@ function StudentTestPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
   const isHydratingAnswersRef = useRef(true);
-  const isLoading = isLoadingTest || isStartingSubmission;
+  const startedForRef = useRef<string | null>(null);
+  const latestAttempt = attempts?.[0] ?? null;
+  /** An attempt that is over. A `STARTED` one is resumed, not re-opened. */
+  const finishedAttempt =
+    latestAttempt !== null && latestAttempt.status !== "STARTED" ? latestAttempt : null;
+  const isShowingFinishedAttempt = finishedAttempt !== null && !isRetaking;
+  const isLoading = isLoadingTest || isLoadingAttempts || isStartingSubmission;
 
   /**
    * Starting a submission is a write -- it creates the attempt, or resumes the
    * open one -- so it stays an effect rather than becoming a cached read. It
-   * must happen exactly once per test.
+   * must happen exactly once per test, and never for a student who has already
+   * finished one: that student is offered the choice instead.
    */
   useEffect(() => {
+    if (isLoadingAttempts) {
+      return;
+    }
+
+    if (isShowingFinishedAttempt) {
+      setIsStartingSubmission(false);
+
+      return;
+    }
+
+    // Resuming and retaking are two different starts, so the guard is keyed on
+    // which one this is rather than on the test alone.
+    const startKey = `${testId}:${isRetaking ? "retake" : "open"}`;
+
+    if (startedForRef.current === startKey) {
+      return;
+    }
+
+    startedForRef.current = startKey;
     setIsStartingSubmission(true);
     setError(null);
 
@@ -93,12 +140,12 @@ function StudentTestPage(): JSX.Element {
         );
         isHydratingAnswersRef.current = true;
       } catch (startError) {
-        setError(startError instanceof Error ? startError.message : "Could not start this test");
+        setError(await apiErrorMessage(startError, t("test.startFailed")));
       } finally {
         setIsStartingSubmission(false);
       }
     })();
-  }, [testId]);
+  }, [isLoadingAttempts, isRetaking, isShowingFinishedAttempt, t, testId]);
 
   useEffect(() => {
     if (!test || !submission?.startedAt || !test.durationInMinutes) {
@@ -182,6 +229,12 @@ function StudentTestPage(): JSX.Element {
               }))
       });
       toast.success(t("test.submitted"));
+      // The attempt list and the remaining-attempt count both just changed, and
+      // this page reads them the moment the reader comes back to it.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.tests.myAttempts(test.id) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.tests.detail(test.id) })
+      ]);
       await router.navigate({
         params: {
           submissionId: result.id,
@@ -190,10 +243,41 @@ function StudentTestPage(): JSX.Element {
         to: "/dashboard/tests/$testId/results/$submissionId"
       });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Could not submit this test");
+      setError(await apiErrorMessage(submitError, t("test.submitFailed")));
       setIsSubmitting(false);
     }
   };
+
+  if (isShowingFinishedAttempt && finishedAttempt !== null) {
+    const canRetake = test === null || test.attemptsRemaining === null || test.attemptsRemaining > 0;
+
+    return (
+      <div className="space-y-4">
+        <BackButton to="/dashboard/exams" />
+        <Card>
+          <CardHeader>
+            <CardTitle>{test?.title ?? t("test.alreadySubmitted")}</CardTitle>
+            <CardDescription>{t("test.alreadySubmittedLead")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link
+                params={{ submissionId: finishedAttempt.id, testId }}
+                to="/dashboard/tests/$testId/results/$submissionId"
+              >
+                {t("test.seeResult")}
+              </Link>
+            </Button>
+            {canRetake ? (
+              <Button onClick={() => setIsRetaking(true)} type="button" variant="outline">
+                {t("test.takeAgain")}
+              </Button>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error && !submission) {
     return (

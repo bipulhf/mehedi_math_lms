@@ -1,4 +1,4 @@
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 import { toast } from "sonner";
 
 import { clientEnv } from "@/lib/env";
@@ -80,6 +80,27 @@ export function createApiClient(options: ApiClientOptions = {}): typeof ky {
 }
 
 export const apiClient = createApiClient();
+
+/**
+ * The sentence the server wrote, or the caller's fallback.
+ *
+ * ky's own message is "Request failed with status code 403 Forbidden: POST
+ * http://localhost:3001/api/v1/tests/…", which is a stack trace wearing a
+ * sentence. Every error response from this API carries a `message` written for
+ * a reader; this is how a screen gets at it.
+ */
+export async function apiErrorMessage(error: unknown, fallback: string): Promise<string> {
+  if (!(error instanceof HTTPError)) {
+    return fallback;
+  }
+
+  const payload = (await error.response
+    .clone()
+    .json()
+    .catch(() => null)) as ApiEnvelope<null> | null;
+
+  return payload?.message ?? fallback;
+}
 
 export async function apiGet<TData>(path: string): Promise<ApiEnvelope<TData>> {
   return apiClient.get(path).json() as Promise<ApiEnvelope<TData>>;
