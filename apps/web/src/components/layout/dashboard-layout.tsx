@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BookCopy,
   ChartColumn,
+  ClipboardCheck,
   History,
   Layers3,
   LayoutDashboard,
@@ -50,6 +51,7 @@ const dashboardNavigation = {
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
     { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
     { icon: BookCopy, labelKey: "nav.courseApproval", to: "/dashboard/admin/courses" },
+    { icon: ClipboardCheck, labelKey: "nav.exams", to: "/dashboard/exams" },
     { icon: ListOrdered, labelKey: "nav.featuredCourses", to: "/dashboard/admin/featured-courses" },
     { icon: Users, labelKey: "nav.users", to: "/dashboard/admin/users" },
     { icon: Layers3, labelKey: "nav.categoryAdmin", to: "/dashboard/admin/categories" },
@@ -63,6 +65,7 @@ const dashboardNavigation = {
   STUDENT: [
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
     { icon: BookCopy, labelKey: "nav.myCourses", to: "/dashboard/my-courses" },
+    { icon: ClipboardCheck, labelKey: "nav.exams", to: "/dashboard/exams" },
     { icon: MessageSquareText, labelKey: "nav.messages", to: "/dashboard/messages" },
     { icon: ChartColumn, labelKey: "nav.payments", to: "/dashboard/payments" },
     { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
@@ -71,6 +74,7 @@ const dashboardNavigation = {
   TEACHER: [
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
     { icon: BookCopy, labelKey: "nav.teacherCourses", to: "/dashboard/courses" },
+    { icon: ClipboardCheck, labelKey: "nav.exams", to: "/dashboard/exams" },
     { icon: MessageSquareText, labelKey: "nav.messages", to: "/dashboard/messages" },
     { icon: Users, labelKey: "nav.students", to: "/dashboard/students" },
     { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/analytics" },
