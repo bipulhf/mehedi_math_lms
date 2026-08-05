@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
@@ -7,50 +6,41 @@ import { AccordionRow } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCourseAssessments } from "@/lib/api/tests";
-import { queryKeys } from "@/lib/query/keys";
+import type { AssessmentChapterSummary } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 /**
  * One course in the exams list, with its exams inside it.
  *
- * The exams only load when the row is opened: a teacher with twenty courses
- * would otherwise fire twenty requests to render a list of names, and every one
- * of those pulls a chapter tree they may never look at.
+ * The chapters arrive already filtered — the page owns the search box, so a
+ * course that survived it has at least one exam worth showing.
  */
 export function CourseExamGroup({
-  courseId,
+  chapters,
   courseTitle,
   isOpen,
+  isPending,
   isStudent,
   onToggle,
   subtitle
 }: {
-  courseId: string;
+  chapters: readonly AssessmentChapterSummary[];
   courseTitle: string;
   isOpen: boolean;
+  isPending: boolean;
   isStudent: boolean;
   onToggle: () => void;
   subtitle: string;
 }): JSX.Element {
   const t = useT();
   const format = useFormat();
-  const { data: chapters, isPending } = useQuery({
-    enabled: isOpen,
-    queryFn: async () => getCourseAssessments(courseId),
-    queryKey: queryKeys.tests.byCourse(courseId)
-  });
-
-  const chaptersWithExams = (chapters ?? []).filter((chapter) => chapter.tests.length > 0);
-  const examCount = chaptersWithExams.reduce((total, chapter) => total + chapter.tests.length, 0);
+  const examCount = chapters.reduce((total, chapter) => total + chapter.tests.length, 0);
 
   return (
     <AccordionRow
       isOpen={isOpen}
       meta={
-        isOpen && !isPending
-          ? t("exams.examCount", { count: format.number(examCount) })
-          : subtitle
+        isOpen && !isPending ? t("exams.examCount", { count: format.number(examCount) }) : subtitle
       }
       onToggle={onToggle}
       title={courseTitle}
@@ -60,13 +50,13 @@ export function CourseExamGroup({
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
-      ) : chaptersWithExams.length === 0 ? (
+      ) : chapters.length === 0 ? (
         <p className="border border-dashed border-dot-idle px-4 py-6 text-center text-sm text-muted">
           {t("exams.noExams")}
         </p>
       ) : (
         <div className="space-y-5">
-          {chaptersWithExams.map((chapter) => (
+          {chapters.map((chapter) => (
             <div className="space-y-2" key={chapter.chapterId}>
               <p className="label-mono text-xs uppercase text-muted-faint">
                 {chapter.chapterTitle}

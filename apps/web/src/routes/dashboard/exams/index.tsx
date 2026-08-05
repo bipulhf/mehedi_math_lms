@@ -1,10 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useState } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { CourseExamGroup } from "@/components/exams/course-exam-group";
+import { ExamFilterBar } from "@/components/exams/exam-filter-bar";
+import {
+  countExams,
+  emptyExamFilters,
+  type ExamFilterState,
+  filterChapters,
+  isFiltering
+} from "@/components/exams/exam-filters";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +20,7 @@ import { useAuthSession } from "@/hooks/use-auth-session";
 import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses } from "@/lib/api/courses";
 import { listMyEnrollments } from "@/lib/api/enrollments";
+import { getCourseAssessments } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -71,6 +80,7 @@ function ExamsPage(): JSX.Element {
   const isStudent = role === "STUDENT";
   const isStaff = role === "TEACHER" || role === "ADMIN";
   const [openCourseIds, setOpenCourseIds] = useState<ReadonlySet<string>>(new Set());
+  const [filters, setFilters] = useState<ExamFilterState>(emptyExamFilters);
 
   const staffCourses = useQuery({
     enabled: isStaff,
@@ -101,6 +111,44 @@ function ExamsPage(): JSX.Element {
         subtitle: `${course.category.name} · ${format.number(course.stats.lectureCount)} ${t("common.lessons")}`,
         title: course.title
       }));
+
+  const isSearching = isFiltering(filters);
+  const search = filters.search.trim().toLowerCase();
+
+  /**
+   * A course's exams load when its row is opened — a teacher with twenty
+   * courses should not fetch twenty chapter trees to read a list of names. A
+   * search is the exception: it has to look inside every course to answer
+   * honestly, so filtering loads them all.
+   */
+  const assessmentQueries = useQueries({
+    queries: courses.map((course) => ({
+      enabled: isSearching || openCourseIds.has(course.id),
+      queryFn: async () => getCourseAssessments(course.id),
+      queryKey: queryKeys.tests.byCourse(course.id),
+      staleTime: 30_000
+    }))
+  });
+
+  const groups = courses.map((course, index) => {
+    const query = assessmentQueries[index];
+    const courseMatchesSearch = search.length === 0 || course.title.toLowerCase().includes(search);
+    const chapters = filterChapters(query?.data ?? [], filters, courseMatchesSearch);
+
+    return {
+      chapters,
+      course,
+      // `isLoading`, not `isPending`: a disabled query — a course nobody has
+      // opened — stays pending forever, and that is not a row still loading.
+      isLoading: Boolean(query?.isLoading),
+      matches: chapters.length > 0
+    };
+  });
+
+  const visibleGroups = isSearching
+    ? groups.filter((group) => group.isLoading || group.matches)
+    : groups;
+  const matchCount = visibleGroups.reduce((total, group) => total + countExams(group.chapters), 0);
 
   const toggleCourse = (courseId: string): void => {
     setOpenCourseIds((current) => {
@@ -136,19 +184,34 @@ function ExamsPage(): JSX.Element {
       {courses.length === 0 ? (
         <EmptyState message={t("exams.noCourses")} />
       ) : (
-        <div className="border-t border-hairline">
-          {courses.map((course) => (
-            <CourseExamGroup
-              courseId={course.id}
-              courseTitle={course.title}
-              isOpen={openCourseIds.has(course.id)}
-              isStudent={isStudent}
-              key={course.id}
-              onToggle={() => toggleCourse(course.id)}
-              subtitle={course.subtitle}
-            />
-          ))}
-        </div>
+        <>
+          <ExamFilterBar filters={filters} isStudent={isStudent} onChange={setFilters} />
+
+          {isSearching ? (
+            <p className="label-mono text-xs uppercase text-muted-faint">
+              {t("exams.matchCount", { count: format.number(matchCount) })}
+            </p>
+          ) : null}
+
+          {visibleGroups.length === 0 ? (
+            <EmptyState message={t("exams.noMatches")} />
+          ) : (
+            <div className="border-t border-hairline">
+              {visibleGroups.map((group) => (
+                <CourseExamGroup
+                  chapters={group.chapters}
+                  courseTitle={group.course.title}
+                  isOpen={isSearching || openCourseIds.has(group.course.id)}
+                  isPending={group.isLoading}
+                  isStudent={isStudent}
+                  key={group.course.id}
+                  onToggle={() => toggleCourse(group.course.id)}
+                  subtitle={group.course.subtitle}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
