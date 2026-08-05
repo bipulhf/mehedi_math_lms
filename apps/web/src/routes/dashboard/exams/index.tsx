@@ -9,11 +9,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthSession } from "@/hooks/use-auth-session";
+import type { CourseSummary } from "@/lib/api/courses";
 import { listCourses } from "@/lib/api/courses";
 import { listMyEnrollments } from "@/lib/api/enrollments";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
+
+/** The course list endpoint's own maximum. */
+const pageSize = 50;
 
 export const Route = createFileRoute("/dashboard/exams/")({
   head: () =>
@@ -25,6 +29,26 @@ export const Route = createFileRoute("/dashboard/exams/")({
   component: ExamCoursesPage,
   errorComponent: RouteErrorView
 } as never);
+
+/**
+ * Every course the caller can manage, not just the first page of them.
+ *
+ * The list endpoint caps a page at 50, so an admin with more courses than that
+ * would otherwise silently lose the tail — and a course missing from this
+ * picker is a course whose exams nobody can reach.
+ */
+async function listAllStaffCourses(mine: boolean): Promise<readonly CourseSummary[]> {
+  const firstPage = await listCourses({ limit: pageSize, mine, page: 1 });
+  const remainingPages = Array.from(
+    { length: Math.max(0, firstPage.pagination.pages - 1) },
+    (_unused, index) => index + 2
+  );
+  const rest = await Promise.all(
+    remainingPages.map(async (page) => listCourses({ limit: pageSize, mine, page }))
+  );
+
+  return [firstPage, ...rest].flatMap((response) => response.data);
+}
 
 interface ExamCourseCard {
   id: string;
@@ -49,7 +73,7 @@ function ExamCoursesPage(): JSX.Element {
 
   const staffCourses = useQuery({
     enabled: isStaff,
-    queryFn: async () => listCourses({ limit: 100, mine: role === "TEACHER" }),
+    queryFn: async () => listAllStaffCourses(role === "TEACHER"),
     queryKey: queryKeys.courses.list({ exams: true, mine: role === "TEACHER" })
   });
   const enrollments = useQuery({
@@ -71,7 +95,7 @@ function ExamCoursesPage(): JSX.Element {
           subtitle: enrollment.category.name,
           title: enrollment.course.title
         }))
-    : (staffCourses.data?.data ?? []).map((course) => ({
+    : (staffCourses.data ?? []).map((course) => ({
         id: course.id,
         subtitle: `${course.category.name} · ${format.number(course.stats.lectureCount)} ${t("common.lessons")}`,
         title: course.title
