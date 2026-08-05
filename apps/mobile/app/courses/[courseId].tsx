@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import { CourseCouponField, type AppliedCoupon } from "@/src/components/course-coupon-field";
 import { CourseReviews } from "@/src/components/course-reviews";
 import { HtmlContent } from "@/src/components/html-content";
 import {
@@ -62,6 +63,9 @@ export default function CourseDetailScreen(): JSX.Element {
   const [tab, setTab] = useState<"curriculum" | "reviews" | "teacher">("curriculum");
   const [error, setError] = useState<string | null>(null);
   const [openChapterIds, setOpenChapterIds] = useState<ReadonlySet<string>>(new Set());
+  // Held here rather than in the field, because the price above it and the
+  // enrol call both need what the coupon resolved to.
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   const [courseQuery, outlineQuery, enrollmentQuery] = useQueries({
     queries: [
@@ -101,7 +105,7 @@ export default function CourseDetailScreen(): JSX.Element {
   const collapseAll = (): void => setOpenChapterIds(new Set());
 
   const enrol = useMutation({
-    mutationFn: () => startCheckout(courseId),
+    mutationFn: () => startCheckout(courseId, appliedCoupon?.code),
     onError: (mutationError: Error) => {
       setError(mutationError.message);
     },
@@ -137,6 +141,9 @@ export default function CourseDetailScreen(): JSX.Element {
   }
 
   const isFree = Number(course.price) <= 0;
+  // The preview endpoint is students-only, and there is nothing to discount for
+  // somebody who already has the course.
+  const canApplyCoupon = !isSessionPending && isStudent && !hasAccess && !isFree;
   const includes = [
     t("detail.includeLifetime"),
     t("detail.includeCertificate"),
@@ -192,8 +199,16 @@ export default function CourseDetailScreen(): JSX.Element {
         <HtmlContent html={course.description} muted />
 
         <Card style={{ gap: spacing.md }}>
-          <PriceText amount={course.price} />
+          <PriceText amount={appliedCoupon ? appliedCoupon.payable : course.price} />
           {action}
+          {canApplyCoupon ? (
+            <CourseCouponField
+              applied={appliedCoupon}
+              courseId={courseId}
+              onApplied={setAppliedCoupon}
+              publicCode={course.publicCoupon?.code ?? null}
+            />
+          ) : null}
           <View style={styles.includes}>
             <Caption>{t("detail.includes")}</Caption>
             {includes.map((item) => (

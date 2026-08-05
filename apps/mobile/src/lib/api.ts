@@ -59,6 +59,37 @@ export interface CourseTeacher {
 
 export interface CourseDetail extends CourseSummary {
   creator: { id: string; name: string };
+  /**
+   * The one advertised coupon on this course, already priced against it. It
+   * rides on the detail response so the offer is there with the price rather
+   * than a request later. ADR-0013.
+   */
+  publicCoupon?: {
+    code: string;
+    discountAmount: string;
+    id: string;
+    kind: "FLAT" | "PERCENT";
+    payable: string;
+    value: string;
+  } | null;
+}
+
+export type CouponRejectionReason =
+  | "NOT_FOUND"
+  | "DISABLED"
+  | "NOT_STARTED"
+  | "EXPIRED"
+  | "EXHAUSTED"
+  | "ALREADY_USED"
+  | "ALREADY_ENROLLED"
+  | "COURSE_UNAVAILABLE"
+  | "FREE_COURSE";
+
+export interface CouponPreview {
+  coupon: { code: string; id: string; kind: "FLAT" | "PERCENT"; value: string } | null;
+  pricing: { discountAmount: string; listAmount: string; payable: string } | null;
+  reason: CouponRejectionReason | null;
+  status: "APPLIED" | "REJECTED";
 }
 
 export interface StudentEnrollment {
@@ -462,9 +493,22 @@ export async function createEnrollment(input: {
   callbackOrigin?: string;
   /** A path on `callbackOrigin`. See `src/lib/payment.ts`. */
   callbackPath?: string;
+  /** Checked and priced again server-side; the preview is only a quote. */
+  couponCode?: string;
   courseId: string;
 }): Promise<EnrollmentActionResponse> {
   return apiPost<typeof input, EnrollmentActionResponse>("enrollments", input);
+}
+
+/**
+ * Checks a code without committing to it. Answers either way — a refusal is a
+ * reason the screen renders in Bangla, not a thrown error. ADR-0013.
+ */
+export async function previewCoupon(input: {
+  code: string;
+  courseId: string;
+}): Promise<CouponPreview> {
+  return apiPost<typeof input, CouponPreview>("coupons/preview", input);
 }
 
 export async function getCourseAssessments(

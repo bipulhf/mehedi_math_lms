@@ -55,11 +55,18 @@ export function readCheckoutOutcome(callbackUrl: string): CheckoutOutcome {
   };
 }
 
-export async function startCheckout(courseId: string): Promise<CheckoutOutcome> {
+export async function startCheckout(
+  courseId: string,
+  couponCode?: string | undefined
+): Promise<CheckoutOutcome> {
   const returnUrl = Linking.createURL(PAYMENT_CALLBACK);
   const action = await createEnrollment({
     callbackOrigin: mobileEnv.webOrigin,
     callbackPath: buildPaymentCallbackPath(returnUrl),
+    // A coupon can take the payable to zero, and then there is no gateway to
+    // open -- the response comes back with requiresPayment false and the
+    // enrolment already granted, which the branch below already handles.
+    ...(couponCode ? { couponCode } : {}),
     courseId
   });
 
