@@ -12,6 +12,7 @@ import {
   MessageSquareText,
   ShieldAlert,
   Smartphone,
+  TicketPercent,
   UserRound,
   Users
 } from "lucide-react";
@@ -45,7 +46,8 @@ const dashboardNavigation = {
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
     { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },
     { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/accountant/analytics" },
-    { icon: ChartColumn, labelKey: "nav.payments", to: "/dashboard/payments" }
+    { icon: ChartColumn, labelKey: "nav.payments", to: "/dashboard/payments" },
+    { icon: TicketPercent, labelKey: "coupon.title", to: "/dashboard/coupons" }
   ],
   ADMIN: [
     { icon: LayoutDashboard, labelKey: "nav.overview", to: "/dashboard" },
@@ -59,6 +61,7 @@ const dashboardNavigation = {
     { icon: Smartphone, labelKey: "nav.sms", to: "/dashboard/admin/sms" },
     { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/admin/bugs" },
     { icon: ShieldAlert, labelKey: "nav.reports", to: "/dashboard/admin/message-reports" },
+    { icon: TicketPercent, labelKey: "coupon.title", to: "/dashboard/coupons" },
     { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/admin/analytics" },
     { icon: History, labelKey: "nav.logs", to: "/dashboard/admin/logs" }
   ],
@@ -77,6 +80,7 @@ const dashboardNavigation = {
     { icon: ClipboardCheck, labelKey: "nav.exams", to: "/dashboard/exams" },
     { icon: MessageSquareText, labelKey: "nav.messages", to: "/dashboard/messages" },
     { icon: Users, labelKey: "nav.students", to: "/dashboard/students" },
+    { icon: TicketPercent, labelKey: "coupon.title", to: "/dashboard/coupons" },
     { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/analytics" },
     { icon: Megaphone, labelKey: "nav.notify", to: "/dashboard/notifications/send" },
     { icon: UserRound, labelKey: "nav.profile", to: "/dashboard/profile" },

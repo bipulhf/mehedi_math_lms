@@ -45,6 +45,8 @@ import { Route as DashboardAdminMessageReportsRouteImport } from './routes/dashb
 import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/sms'
 import { Route as DashboardBugsIndexRouteImport } from './routes/dashboard/bugs/index'
 import { Route as DashboardBugsReportRouteImport } from './routes/dashboard/bugs/report'
+import { Route as DashboardCouponsIndexRouteImport } from './routes/dashboard/coupons/index'
+import { Route as DashboardCouponsCouponIdRouteImport } from './routes/dashboard/coupons/$couponId'
 import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard/courses/index'
 import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard/courses/new'
 import { Route as DashboardExamsIndexRouteImport } from './routes/dashboard/exams/index'
@@ -261,6 +263,17 @@ const DashboardBugsReportRoute = DashboardBugsReportRouteImport.update({
   path: '/bugs/report',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCouponsIndexRoute = DashboardCouponsIndexRouteImport.update({
+  id: '/coupons/',
+  path: '/coupons/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCouponsCouponIdRoute =
+  DashboardCouponsCouponIdRouteImport.update({
+    id: '/coupons/$couponId',
+    path: '/coupons/$couponId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -461,6 +474,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/coupons/$couponId': typeof DashboardCouponsCouponIdRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/exams/$testId': typeof DashboardExamsTestIdRoute
   '/dashboard/learn/$courseId': typeof DashboardLearnCourseIdRoute
@@ -469,6 +483,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/payments/return': typeof DashboardPaymentsReturnRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/coupons/': typeof DashboardCouponsIndexRoute
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/exams/': typeof DashboardExamsIndexRoute
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
@@ -528,6 +543,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/coupons/$couponId': typeof DashboardCouponsCouponIdRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/exams/$testId': typeof DashboardExamsTestIdRoute
   '/dashboard/learn/$courseId': typeof DashboardLearnCourseIdRoute
@@ -536,6 +552,7 @@ export interface FileRoutesByTo {
   '/dashboard/payments/return': typeof DashboardPaymentsReturnRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs': typeof DashboardBugsIndexRoute
+  '/dashboard/coupons': typeof DashboardCouponsIndexRoute
   '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/exams': typeof DashboardExamsIndexRoute
   '/dashboard/payments': typeof DashboardPaymentsIndexRoute
@@ -597,6 +614,7 @@ export interface FileRoutesById {
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
   '/dashboard/bugs/report': typeof DashboardBugsReportRoute
+  '/dashboard/coupons/$couponId': typeof DashboardCouponsCouponIdRoute
   '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/exams/$testId': typeof DashboardExamsTestIdRoute
   '/dashboard/learn/$courseId': typeof DashboardLearnCourseIdRoute
@@ -605,6 +623,7 @@ export interface FileRoutesById {
   '/dashboard/payments/return': typeof DashboardPaymentsReturnRoute
   '/dashboard/students/$id': typeof DashboardStudentsIdRoute
   '/dashboard/bugs/': typeof DashboardBugsIndexRoute
+  '/dashboard/coupons/': typeof DashboardCouponsIndexRoute
   '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/exams/': typeof DashboardExamsIndexRoute
   '/dashboard/payments/': typeof DashboardPaymentsIndexRoute
@@ -667,6 +686,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
     | '/dashboard/bugs/report'
+    | '/dashboard/coupons/$couponId'
     | '/dashboard/courses/new'
     | '/dashboard/exams/$testId'
     | '/dashboard/learn/$courseId'
@@ -675,6 +695,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments/return'
     | '/dashboard/students/$id'
     | '/dashboard/bugs/'
+    | '/dashboard/coupons/'
     | '/dashboard/courses/'
     | '/dashboard/exams/'
     | '/dashboard/payments/'
@@ -734,6 +755,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
     | '/dashboard/bugs/report'
+    | '/dashboard/coupons/$couponId'
     | '/dashboard/courses/new'
     | '/dashboard/exams/$testId'
     | '/dashboard/learn/$courseId'
@@ -742,6 +764,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments/return'
     | '/dashboard/students/$id'
     | '/dashboard/bugs'
+    | '/dashboard/coupons'
     | '/dashboard/courses'
     | '/dashboard/exams'
     | '/dashboard/payments'
@@ -802,6 +825,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
     | '/dashboard/bugs/report'
+    | '/dashboard/coupons/$couponId'
     | '/dashboard/courses/new'
     | '/dashboard/exams/$testId'
     | '/dashboard/learn/$courseId'
@@ -810,6 +834,7 @@ export interface FileRouteTypes {
     | '/dashboard/payments/return'
     | '/dashboard/students/$id'
     | '/dashboard/bugs/'
+    | '/dashboard/coupons/'
     | '/dashboard/courses/'
     | '/dashboard/exams/'
     | '/dashboard/payments/'
@@ -1110,6 +1135,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBugsReportRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/coupons/': {
+      id: '/dashboard/coupons/'
+      path: '/coupons'
+      fullPath: '/dashboard/coupons/'
+      preLoaderRoute: typeof DashboardCouponsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/coupons/$couponId': {
+      id: '/dashboard/coupons/$couponId'
+      path: '/coupons/$couponId'
+      fullPath: '/dashboard/coupons/$couponId'
+      preLoaderRoute: typeof DashboardCouponsCouponIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/courses/': {
       id: '/dashboard/courses/'
       path: '/courses'
@@ -1377,6 +1416,7 @@ interface DashboardRouteChildren {
   DashboardAdminMessageReportsRoute: typeof DashboardAdminMessageReportsRoute
   DashboardAdminSmsRoute: typeof DashboardAdminSmsRoute
   DashboardBugsReportRoute: typeof DashboardBugsReportRoute
+  DashboardCouponsCouponIdRoute: typeof DashboardCouponsCouponIdRoute
   DashboardCoursesNewRoute: typeof DashboardCoursesNewRoute
   DashboardExamsTestIdRoute: typeof DashboardExamsTestIdRoute
   DashboardLearnCourseIdRoute: typeof DashboardLearnCourseIdRoute
@@ -1385,6 +1425,7 @@ interface DashboardRouteChildren {
   DashboardPaymentsReturnRoute: typeof DashboardPaymentsReturnRoute
   DashboardStudentsIdRoute: typeof DashboardStudentsIdRoute
   DashboardBugsIndexRoute: typeof DashboardBugsIndexRoute
+  DashboardCouponsIndexRoute: typeof DashboardCouponsIndexRoute
   DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
   DashboardExamsIndexRoute: typeof DashboardExamsIndexRoute
   DashboardPaymentsIndexRoute: typeof DashboardPaymentsIndexRoute
@@ -1424,6 +1465,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminMessageReportsRoute: DashboardAdminMessageReportsRoute,
   DashboardAdminSmsRoute: DashboardAdminSmsRoute,
   DashboardBugsReportRoute: DashboardBugsReportRoute,
+  DashboardCouponsCouponIdRoute: DashboardCouponsCouponIdRoute,
   DashboardCoursesNewRoute: DashboardCoursesNewRoute,
   DashboardExamsTestIdRoute: DashboardExamsTestIdRoute,
   DashboardLearnCourseIdRoute: DashboardLearnCourseIdRoute,
@@ -1432,6 +1474,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPaymentsReturnRoute: DashboardPaymentsReturnRoute,
   DashboardStudentsIdRoute: DashboardStudentsIdRoute,
   DashboardBugsIndexRoute: DashboardBugsIndexRoute,
+  DashboardCouponsIndexRoute: DashboardCouponsIndexRoute,
   DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
   DashboardExamsIndexRoute: DashboardExamsIndexRoute,
   DashboardPaymentsIndexRoute: DashboardPaymentsIndexRoute,

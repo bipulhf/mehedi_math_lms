@@ -248,3 +248,78 @@ export function TestTakingSkeleton(): JSX.Element {
     </div>
   );
 }
+
+/**
+ * The coupon list: the same bordered card, a table above `md` and stacked cards
+ * below it, because that is what `CouponTable` renders at each width.
+ */
+export function CouponListSkeleton({ rows = 5 }: { rows?: number }): JSX.Element {
+  return (
+    <div className="border border-hairline bg-card">
+      <div className="hidden md:block">
+        <div className="grid grid-cols-7 gap-3 border-b border-hairline bg-panel-warm/40 px-4 py-2.5">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <Skeleton key={`head-${index}`} className="h-3 w-3/5" />
+          ))}
+        </div>
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div
+            className="grid grid-cols-7 gap-3 border-b border-hairline-fainter px-4 py-3.5 last:border-b-0"
+            key={`row-${rowIndex}`}
+          >
+            {Array.from({ length: 7 }).map((_, cellIndex) => (
+              <Skeleton className="h-4 w-full" key={`cell-${rowIndex}-${cellIndex}`} />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <div className="divide-y divide-hairline-fainter md:hidden">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div className="space-y-3 p-4" key={`card-${rowIndex}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+              <Skeleton className="h-7 w-20 rounded-[var(--radius-pill)]" />
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {Array.from({ length: 4 }).map((_, cellIndex) => (
+                <div className="space-y-1.5" key={`field-${rowIndex}-${cellIndex}`}>
+                  <Skeleton className="h-3 w-2/5" />
+                  <Skeleton className="h-4 w-3/5" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** The coupon page: heading, four figures, two charts, the redemption table. */
+export function CouponDetailSkeleton(): JSX.Element {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-8 w-2/5" />
+        <Skeleton className="h-4 w-3/5" />
+      </div>
+
+      <StatsGridSkeleton />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ChartSkeleton />
+        <ChartSkeleton />
+      </div>
+
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-1/4" />
+        <CouponListSkeleton rows={4} />
+      </div>
+    </div>
+  );
+}

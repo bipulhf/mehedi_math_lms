@@ -43,6 +43,13 @@ export const queryKeys = {
     course: (courseId: string) => ["content", "course", courseId] as const,
     lecturePreview: (lectureId: string) => ["content", "lecture-preview", lectureId] as const
   },
+  coupons: {
+    all: () => ["coupons"] as const,
+    detail: (couponId: string) => ["coupons", "detail", couponId] as const,
+    list: (filters: Record<string, unknown> = {}) => ["coupons", "list", filters] as const,
+    redemptions: (couponId: string, filters: Record<string, unknown> = {}) =>
+      ["coupons", "detail", couponId, "redemptions", filters] as const
+  },
   courses: {
     all: () => ["courses"] as const,
     detail: (courseId: string) => ["courses", "detail", courseId] as const,
