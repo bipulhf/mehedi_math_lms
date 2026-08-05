@@ -1,12 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { z } from "zod";
 
 import { CourseExamEditor } from "@/components/courses/course-exam-editor";
 import { CourseBuilderSteps } from "@/components/courses/course-builder-steps";
-import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/ui/back-button";
 import { useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
@@ -52,12 +51,9 @@ function CourseExamQuestionPage(): JSX.Element {
             {t("author.questionPageLead")}
           </p>
         </div>
-        <Button asChild className="h-11 shrink-0" variant="outline">
-          <Link params={{ id }} search={{ stage: "lectures" }} to="/dashboard/courses/$id/content">
-            <ArrowLeft className="size-4" />
-            {t("action.back")}
-          </Link>
-        </Button>
+        {/* Opened in its own tab from the outline, so there is often no history
+            to go back through — the fallback lands on the outline it came from. */}
+        <BackButton className="h-11 shrink-0" params={{ id }} to="/dashboard/courses/$id/content" />
       </div>
 
       <div className="overflow-hidden border border-hairline bg-card">
