@@ -2,9 +2,20 @@ import { z } from "zod";
 
 import { booleanQueryParamSchema, optionalRichTextSchema, richTextSchema } from "./common";
 import { markingDocumentSchema } from "./marking";
+import { refineMathBudget } from "./math";
 
 const idSchema = z.string().uuid();
-const optionalTextSchema = optionalRichTextSchema(6000);
+
+/**
+ * The caps are generous because a maths question spends its length on LaTeX:
+ * `$\frac{\partial^2 u}{\partial x^2}$` is 35 characters of budget and one
+ * symbol on the page. `richTextLength` still counts plain characters -- an
+ * author told "12000 characters" who saw a formula counted as four would find
+ * the limit unknowable -- and `refineMathBudget` carries the ceilings that are
+ * really about renderer cost. ADR-0014.
+ */
+const questionTextMax = 12000;
+const optionalTextSchema = optionalRichTextSchema(questionTextMax).superRefine(refineMathBudget);
 
 /**
  * Marks carry two decimal places -- half marks are ordinary in maths marking,
@@ -85,10 +96,10 @@ export const updateTestSchema = z
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
 
-const questionOptionSchema = z.object({
+export const questionOptionSchema = z.object({
   id: idSchema.optional(),
   isCorrect: z.boolean().default(false),
-  optionText: z.string().trim().min(1).max(2000)
+  optionText: z.string().trim().min(1).max(4000).superRefine(refineMathBudget)
 });
 
 /**
@@ -101,7 +112,7 @@ export const createQuestionSchema = z.object({
   markingGuide: optionalTextSchema,
   marks: marksSchema(100).refine((value) => value > 0, "Marks must be greater than zero"),
   options: z.array(questionOptionSchema).max(8).optional(),
-  questionText: richTextSchema({ min: 1, max: 6000 })
+  questionText: richTextSchema({ min: 1, max: questionTextMax }).superRefine(refineMathBudget)
 });
 
 export const updateQuestionSchema = z
@@ -112,7 +123,9 @@ export const updateQuestionSchema = z
       .refine((value) => value > 0, "Marks must be greater than zero")
       .optional(),
     options: z.array(questionOptionSchema).max(8).optional(),
-    questionText: richTextSchema({ min: 1, max: 6000 }).optional()
+    questionText: richTextSchema({ min: 1, max: questionTextMax })
+      .superRefine(refineMathBudget)
+      .optional()
   })
   .refine((value) => Object.keys(value).length > 0, "At least one field must be provided");
 

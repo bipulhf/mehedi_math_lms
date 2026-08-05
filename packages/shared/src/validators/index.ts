@@ -8,6 +8,7 @@ export * from "./content";
 export * from "./coupons";
 export * from "./courses";
 export * from "./marking";
+export * from "./math";
 export * from "./messages";
 export * from "./noticeboard";
 export * from "./notifications";
