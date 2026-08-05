@@ -1,19 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { CheckCircle2, Clock, XCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
+import type { MessageKey } from "@genex/i18n";
 
-import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { PaymentHistoryItem } from "@/lib/api/payments";
 import { getPaymentById } from "@/lib/api/payments";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/dashboard/payments/return")({
   head: () =>
@@ -26,10 +29,77 @@ export const Route = createFileRoute("/dashboard/payments/return")({
   errorComponent: RouteErrorView
 } as never);
 
+type ReturnStatus = "cancel" | "fail" | "pending" | "success";
+
+interface Outcome {
+  icon: LucideIcon;
+  isGood: boolean;
+  leadKey: MessageKey;
+  titleKey: MessageKey;
+}
+
+/**
+ * What the page says, from the gateway's own word for what happened.
+ *
+ * The payment record is the truth about money and is shown below; this is the
+ * headline, and it has to be right even when the record cannot be loaded —
+ * which is exactly the case where a student is most worried.
+ */
+const outcomes = {
+  cancel: {
+    icon: XCircle,
+    isGood: false,
+    leadKey: "payreturn.cancelledLead",
+    titleKey: "payreturn.cancelled"
+  },
+  fail: {
+    icon: XCircle,
+    isGood: false,
+    leadKey: "payreturn.failedLead",
+    titleKey: "payreturn.failed"
+  },
+  pending: {
+    icon: Clock,
+    isGood: false,
+    leadKey: "payreturn.pendingLead",
+    titleKey: "payreturn.pending"
+  },
+  success: {
+    icon: CheckCircle2,
+    isGood: true,
+    leadKey: "payreturn.successLead",
+    titleKey: "payreturn.success"
+  }
+} as const satisfies Record<ReturnStatus, Outcome>;
+
+function readStatus(value: string | null): ReturnStatus {
+  return value === "success" || value === "fail" || value === "cancel" ? value : "pending";
+}
+
+function statusTone(status: PaymentHistoryItem["status"]): "attention" | "faded" | "neutral" {
+  if (status === "SUCCESS") {
+    return "neutral";
+  }
+
+  // Pending is the one that needs somebody to come back to it. A failure is
+  // finished, so it reads as quiet rather than alarming. DESIGN.md §2.
+  return status === "PENDING" ? "attention" : "faded";
+}
+
+function Fact({ label, value }: { label: string; value: string }): JSX.Element {
+  return (
+    <div className="min-w-0 space-y-1">
+      <dt className="label-mono text-xs uppercase text-muted-faint">{label}</dt>
+      <dd className="break-words text-sm text-ink">{value}</dd>
+    </div>
+  );
+}
+
 function PaymentReturnPage(): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState<ReturnStatus>("pending");
   // The gateway hands the ids back on the query string, which only exists in the
   // browser -- hence a mount effect rather than a route search schema.
   const [paymentId, setPaymentId] = useState<string | null>(null);
@@ -44,54 +114,91 @@ function PaymentReturnPage(): JSX.Element {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
-    setStatus(searchParams.get("status") ?? "pending");
+    setStatus(readStatus(searchParams.get("status")));
     setPaymentId(searchParams.get("paymentId"));
     setHasReadSearch(true);
   }, []);
 
-  if (isLoading) {
-    return <DataTableSkeleton columns={3} rows={3} />;
-  }
+  const outcome = outcomes[status];
+  const OutcomeIcon = outcome.icon;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-10">
+    <div className="w-full space-y-6">
       <BackButton to="/dashboard/payments" />
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment {status}</CardTitle>
-          <CardDescription>{t("paymock.lead")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {payment ? (
-            <>
-              <div className="flex flex-wrap gap-2">
-                <Badge tone={payment.status === "SUCCESS" ? "neutral" : payment.status === "PENDING" ? "attention" : "attention"}>
-                  {payment.status}
-                </Badge>
-                <Badge tone="neutral">{payment.course.title}</Badge>
-              </div>
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">
-                <p>Amount: BDT {Number(payment.amount).toFixed(2)}</p>
-                <p>Transaction ID: {payment.transactionId}</p>
-                <p>Created: {new Date(payment.createdAt).toLocaleString()}</p>
-                <p>Paid at: {payment.paidAt ? new Date(payment.paidAt).toLocaleString() : "Not completed yet"}</p>
-              </div>
-            </>
-          ) : (
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-7 text-ink/68">
-              Payment details are unavailable. The callback may have been interrupted before the final redirect.
-            </div>
-          )}
-          <div className="flex gap-3">
-            <Button asChild>
-              <Link to="/dashboard/payments">{t("paymock.openHistory")}</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/dashboard/my-courses">{t("paymock.goCourses")}</Link>
-            </Button>
+
+      <div className="border border-hairline bg-card p-4 sm:p-6">
+        <div className="flex items-start gap-3">
+          <OutcomeIcon
+            aria-hidden="true"
+            className={`mt-0.5 size-6 shrink-0 ${outcome.isGood ? "text-accent" : "text-muted-faint"}`}
+          />
+          <div className="min-w-0">
+            <h1 className="text-xl font-medium text-ink">{t(outcome.titleKey)}</h1>
+            <p className="mt-0.5 text-sm font-light text-muted">{t(outcome.leadKey)}</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      <div className="border border-hairline bg-card p-4 sm:p-6">
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-7 w-32 rounded-[var(--radius-pill)]" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div className="space-y-1.5" key={index}>
+                  <Skeleton className="h-3 w-2/5" />
+                  <Skeleton className="h-4 w-3/5" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : payment === null ? (
+          <EmptyState message={t("payreturn.missing")} />
+        ) : (
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone={statusTone(payment.status)}>{payment.status}</Badge>
+              <span className="text-sm text-muted">{payment.course.title}</span>
+            </div>
+
+            <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Fact label={t("pay.amount")} value={format.currency(payment.amount)} />
+              <Fact label={t("pay.created")} value={format.dateTime(payment.createdAt)} />
+              <Fact
+                label={t("payreturn.paidAt")}
+                value={payment.paidAt ? format.dateTime(payment.paidAt) : t("payreturn.notPaidYet")}
+              />
+              <Fact label={t("pay.transaction")} value={payment.transactionId} />
+            </dl>
+
+            {/* A discounted purchase collects less than the list price by
+                design, so the coupon has to be on the receipt or the number
+                above looks wrong. ADR-0013. */}
+            {payment.couponCode === null ? null : (
+              <dl className="grid gap-4 border-t border-hairline pt-4 sm:grid-cols-3">
+                <Fact label={t("coupon.code")} value={payment.couponCode} />
+                <Fact
+                  label={t("coupon.listPrice")}
+                  value={format.currency(payment.listAmount ?? payment.amount)}
+                />
+                <Fact
+                  label={t("coupon.discount")}
+                  value={`−${format.currency(payment.discountAmount ?? "0")}`}
+                />
+              </dl>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button asChild className="w-full sm:w-auto">
+          <Link to="/dashboard/payments">{t("paymock.openHistory")}</Link>
+        </Button>
+        <Button asChild className="w-full sm:w-auto" variant="outline">
+          <Link to="/dashboard/my-courses">{t("paymock.goCourses")}</Link>
+        </Button>
+      </div>
     </div>
   );
 }
