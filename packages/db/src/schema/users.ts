@@ -132,7 +132,14 @@ export const verificationTokens = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     identifier: varchar("identifier", { length: 255 }).notNull(),
-    value: varchar("token", { length: 255 }).notNull(),
+    // `text`, not varchar(255): Better Auth stores the whole OAuth state here as
+    // JSON -- the callback URL, the PKCE verifier, the expiry. A sign-in whose
+    // callback is "/dashboard" fits; "/dashboard/profile-complete", which is
+    // where the sign-up button sends people, does not, and Postgres refused the
+    // insert with "value too long for type character varying(255)". The button
+    // then did nothing at all, because the failure was a 500 on the request
+    // that was meant to return the Google URL.
+    value: text("token").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
