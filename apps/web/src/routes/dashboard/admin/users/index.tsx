@@ -159,18 +159,18 @@ function AdminUsersPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-8 p-4 sm:p-0">
-        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 w-full overflow-hidden">
-          <Skeleton className="h-8 w-48 mb-8 bg-chip-active" />
+        <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline w-full overflow-hidden">
+          <Skeleton className="h-8 w-48 mb-8" />
           <div className="grid gap-6 sm:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full bg-chip-active" />
+              <Skeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         </div>
-        <div className="bg-card/80 p-4 border border-hairline/40 overflow-hidden">
+        <div className="bg-card p-4 border border-hairline overflow-hidden">
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full bg-chip-active" />
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         </div>
@@ -366,7 +366,7 @@ function AdminUsersPage(): JSX.Element {
                     asChild
                     size="sm"
                     variant="outline"
-                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[0.65rem] border-hairline/40"
+                    className="flex-1 h-10 font-bold uppercase tracking-widest text-[0.65rem] border-hairline"
                   >
                     <Link to="/dashboard/admin/users/$id" params={{ id: user.id }}>{t("admin.users.manageProfile")}</Link>
                   </Button>

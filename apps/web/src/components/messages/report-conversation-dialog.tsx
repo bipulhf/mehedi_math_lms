@@ -52,7 +52,7 @@ export function ReportConversationDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-lg overflow-hidden border border-hairline/40 bg-card">
+      <div className="w-full max-w-lg overflow-hidden border border-hairline bg-card">
         <div className="flex items-start gap-4 border-b border-hairline/20 px-6 py-5">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-error/10 text-error">
             <ShieldAlert className="size-5" />

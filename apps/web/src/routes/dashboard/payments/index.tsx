@@ -138,26 +138,26 @@ function PaymentsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
-           <Skeleton className="h-4 w-full max-w-sm bg-chip-active" />
+        <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4" />
+           <Skeleton className="h-4 w-full max-w-sm" />
         </div>
         {canManagePayments && (
           <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-card/80 p-6 border border-hairline/30 relative overflow-hidden">
-                <Skeleton className="h-4 w-24 mb-3 bg-chip-active" />
-                <Skeleton className="h-9 w-32 bg-chip-active" />
+              <div key={i} className="bg-card p-6 border border-hairline/30 relative overflow-hidden">
+                <Skeleton className="h-4 w-24 mb-3" />
+                <Skeleton className="h-9 w-32" />
               </div>
             ))}
           </section>
         )}
-        <div className="bg-card/80 border border-hairline/40 overflow-hidden">
+        <div className="bg-card border border-hairline overflow-hidden">
            <div className="p-0">
              <div className="bg-panel-warm h-12 w-full" />
              <div className="p-4 space-y-4">
                {Array.from({ length: 6 }).map((_, i) => (
-                 <Skeleton key={i} className="h-16 w-full bg-chip-active" />
+                 <Skeleton key={i} className="h-16 w-full" />
                ))}
              </div>
            </div>

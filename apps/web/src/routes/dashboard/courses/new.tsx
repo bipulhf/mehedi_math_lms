@@ -196,7 +196,7 @@ function CreateCoursePage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Creation Header */}
-      <div className="bg-card/80 p-4 sm:p-6 lg:p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+      <div className="bg-card p-4 sm:p-6 lg:p-10 border border-hairline relative w-full overflow-hidden group">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-2">

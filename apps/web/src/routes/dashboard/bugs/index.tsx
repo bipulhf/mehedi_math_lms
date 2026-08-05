@@ -51,22 +51,22 @@ function MyBugReportsPage(): JSX.Element {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
-           <Skeleton className="h-8 w-48 mb-4 bg-chip-active" />
-           <Skeleton className="h-4 w-full max-w-sm bg-chip-active" />
+        <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline relative w-full overflow-hidden">
+           <Skeleton className="h-8 w-48 mb-4" />
+           <Skeleton className="h-4 w-full max-w-sm" />
         </div>
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative overflow-hidden">
+            <div key={i} className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline relative overflow-hidden">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-3 flex-1">
-                  <Skeleton className="h-6 w-1/3 bg-chip-active" />
-                  <Skeleton className="h-4 w-full bg-chip-active" />
-                  <Skeleton className="h-4 w-2/3 bg-chip-active" />
+                  <Skeleton className="h-6 w-1/3" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
                 </div>
                 <div className="flex flex-col gap-2 w-24">
-                  <Skeleton className="h-6 w-full rounded-full bg-chip-active" />
-                  <Skeleton className="h-4 w-full bg-chip-active" />
+                  <Skeleton className="h-6 w-full rounded-full" />
+                  <Skeleton className="h-4 w-full" />
                 </div>
               </div>
             </div>
@@ -78,7 +78,7 @@ function MyBugReportsPage(): JSX.Element {
 
   return (
     <div className="space-y-6">
-      <div className="bg-card/80 p-4 sm:p-6 lg:p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+      <div className="bg-card p-4 sm:p-6 lg:p-10 border border-hairline relative w-full overflow-hidden group">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between relative z-10">
           <div>
             <h3 className="font-body text-3xl font-medium tracking-tight text-ink">{t("bugs.mineTitle")}</h3>
@@ -93,7 +93,7 @@ function MyBugReportsPage(): JSX.Element {
       <div className="space-y-4">
         {bugs.length > 0 ? (
           bugs.map((bug) => (
-            <div key={bug.id} className="bg-card/80 border border-hairline/40 p-4 sm:p-6 lg:p-8 relative overflow-hidden group transition-all hover:border-ink/20">
+            <div key={bug.id} className="bg-card border border-hairline p-4 sm:p-6 lg:p-8 relative overflow-hidden group transition-all hover:border-ink/20">
                <div className="absolute -top-8 -right-8 w-24 h-24 bg-ink/5 rounded-full blur-xl pointer-events-none group-hover:bg-ink/10 transition-colors z-[-1]"></div>
               <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between relative z-10">
                 <div className="space-y-3 flex-1">
@@ -121,7 +121,7 @@ function MyBugReportsPage(): JSX.Element {
             </div>
           ))
         ) : (
-          <div className="bg-card/80 p-6 sm:p-10 lg:p-12 border border-hairline/40 text-center italic text-muted font-light">{t("bugs.mineEmpty")}</div>
+          <div className="bg-card p-6 sm:p-10 lg:p-12 border border-hairline text-center italic text-muted font-light">{t("bugs.mineEmpty")}</div>
         )}
       </div>
     </div>

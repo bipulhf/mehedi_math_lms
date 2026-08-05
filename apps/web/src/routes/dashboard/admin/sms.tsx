@@ -115,22 +115,22 @@ function AdminSmsPage() {
   if (isPending || !session) {
     return (
       <div className="space-y-8">
-        <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 relative w-full overflow-hidden">
+        <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline relative w-full overflow-hidden">
           <div className="flex items-center gap-4 mb-8">
-            <Skeleton className="size-12 bg-chip-active" />
+            <Skeleton className="size-12" />
             <div className="space-y-2">
-              <Skeleton className="h-6 w-48 bg-chip-active" />
-              <Skeleton className="h-4 w-96 bg-chip-active" />
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-full max-w-96" />
             </div>
           </div>
           <div className="space-y-6 max-w-xl">
-            <Skeleton className="h-32 w-full bg-chip-active" />
+            <Skeleton className="h-32 w-full" />
             <div className="flex gap-4">
-              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
-              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
-              <Skeleton className="h-6 w-24 bg-chip-active rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-24 rounded-full" />
             </div>
-            <Skeleton className="h-12 w-48 bg-chip-active" />
+            <Skeleton className="h-12 w-48" />
           </div>
         </div>
       </div>

@@ -104,7 +104,7 @@ function TeacherAnalyticsPage(): JSX.Element {
 
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-card/40 border border-dashed border-hairline/40">
+      <div className="flex flex-col items-center justify-center py-20 bg-card/40 border border-dashed border-hairline">
         <Info className="size-10 text-ink/20 mb-4" />
         <p className="text-sm text-ink/40 font-medium italic">{t("an.loadFailed")}</p>
       </div>
@@ -114,7 +114,7 @@ function TeacherAnalyticsPage(): JSX.Element {
   return (
     <div className="space-y-8">
       {/* Premium Header */}
-      <div className="bg-card/80 p-4 sm:p-6 lg:p-8 sm:p-10 border border-hairline/40 relative w-full overflow-hidden group">
+      <div className="bg-card p-4 sm:p-6 lg:p-10 border border-hairline relative w-full overflow-hidden group">
         
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="space-y-3">
@@ -275,7 +275,7 @@ function TeacherAnalyticsPage(): JSX.Element {
       </div>
 
       {/* Course Specific Depth */}
-      <div className="bg-card/80 border border-hairline/40 overflow-hidden">
+      <div className="bg-card border border-hairline overflow-hidden">
          <div className="p-4 sm:p-6 lg:p-8 border-b border-hairline/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                <h4 className="text-xl font-body font-medium text-ink mb-1">{t("an.coursePerformance")}</h4>
@@ -365,7 +365,7 @@ function StatsCard({
   };
 
   return (
-    <div className="bg-card/80 p-6 border border-hairline/40 hover:border-ink/20 transition-all group">
+    <div className="bg-card p-6 border border-hairline hover:border-ink/20 transition-all group">
        <div className={cn("size-12 rounded-2xl mb-4 flex items-center justify-center transition-transform group-hover:scale-110", colorStyles[color])}>
           <Icon className="size-6" />
        </div>
@@ -388,7 +388,7 @@ function ChartCard({
   children: React.ReactNode 
 }): JSX.Element {
   return (
-    <div className="bg-card/80 p-4 sm:p-6 lg:p-8 border border-hairline/40 flex flex-col h-120">
+    <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline flex flex-col h-120">
        <div className="mb-8">
           <h4 className="text-xl font-body font-medium text-ink tracking-tight leading-tight">{title}</h4>
           <p className="text-[0.65rem] font-bold text-ink/30 uppercase tracking-widest">{subtitle}</p>

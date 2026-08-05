@@ -34,7 +34,7 @@ export const Route = createFileRoute("/dashboard/courses/")({
 function CourseListSkeleton(): JSX.Element {
   return (
     <div className="space-y-4">
-      <Skeleton className="h-12 w-64" />
+      <Skeleton className="h-12 w-full max-w-64" />
       <div className="border border-hairline bg-card">
         {Array.from({ length: 6 }).map((_, index) => (
           <Skeleton className="m-4 h-10" key={index} />

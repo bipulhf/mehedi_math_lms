@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  * are easy to get wrong:
  *
  * - The chrome is the real chrome. `border-hairline bg-card`, not a translucent
- *   `border-hairline/40 bg-card/80` that draws a second, fainter card.
+ *   `border-hairline bg-card` that draws a second, fainter card.
  * - Cards are square (DESIGN.md §6). Only avatars are round, and a button
  *   placeholder carries the button's own `--radius`. A skeleton with soft
  *   corners promises a card that never arrives.

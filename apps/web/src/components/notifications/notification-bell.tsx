@@ -189,7 +189,7 @@ export function NotificationBell(): JSX.Element | null {
         <div
           className={cn(
             "absolute right-0 z-50 mt-3 w-[min(100vw-1.5rem,24rem)] rounded-[calc(var(--radius)+0.25rem)]",
-            "border border-hairline/40 bg-paper p-3 shadow-[0_18px_38px_-20px_rgba(19,27,46,0.2)]"
+            "border border-hairline bg-paper p-3 shadow-[0_18px_38px_-20px_rgba(19,27,46,0.2)]"
           )}
           onClick={(event) => event.stopPropagation()}
         >
@@ -228,9 +228,9 @@ export function NotificationBell(): JSX.Element | null {
             )}
           </div>
           {clientEnv.firebaseVapidKey ? (
-            <p className="border-t border-hairline/40 pt-2 text-[0.65rem] text-ink/50">{t("notif.pushOn")}</p>
+            <p className="border-t border-hairline pt-2 text-[0.65rem] text-ink/50">{t("notif.pushOn")}</p>
           ) : (
-            <p className="border-t border-hairline/40 pt-2 text-[0.65rem] text-ink/50">{t("notif.pushKeyMissing")}</p>
+            <p className="border-t border-hairline pt-2 text-[0.65rem] text-ink/50">{t("notif.pushKeyMissing")}</p>
           )}
           <div className="pt-2">
             <Button asChild variant="outline" className="h-9 w-full text-xs">

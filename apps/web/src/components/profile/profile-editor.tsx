@@ -114,7 +114,7 @@ function StepRail({
           className={cn(
             "border p-4 transition-colors",
             index === activeStep
-              ? "border-line-strong bg-chip-active"
+              ? "border-line-strong"
               : "border-hairline bg-panel-warm"
           )}
           key={step.label}
@@ -705,7 +705,7 @@ export function ProfilePageSkeleton(): JSX.Element {
     <div className="space-y-6">
       <div className="w-full border border-hairline bg-card p-6 sm:p-8">
         <div className="space-y-4 mb-10">
-          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-8 w-full max-w-64" />
           <Skeleton className="h-5 w-full max-w-xl" />
         </div>
         <div className="space-y-8">

@@ -60,7 +60,7 @@ function CourseDiscussionsPage(): JSX.Element {
 
       {isLoading || !course ? (
         <div className="space-y-4">
-          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-full max-w-64" />
           <Skeleton className="h-64 w-full" />
         </div>
       ) : (

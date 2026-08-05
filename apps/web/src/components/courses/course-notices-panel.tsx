@@ -24,7 +24,7 @@ export function CourseNoticesPanel({ courseId }: { courseId: string }): JSX.Elem
       <Card className="border-hairline/60 bg-panel-warm/70">
         <CardHeader>
           <Skeleton className="h-7 w-48" />
-          <Skeleton className="h-4 w-72" />
+          <Skeleton className="h-4 w-full max-w-72" />
         </CardHeader>
         <CardContent className="space-y-3">
           <Skeleton className="h-24 w-full" />

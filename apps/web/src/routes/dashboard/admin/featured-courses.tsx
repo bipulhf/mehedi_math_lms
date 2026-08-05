@@ -132,15 +132,15 @@ function FeaturedCoursesPage(): JSX.Element {
     return (
       <div className="space-y-6">
         <div className="border border-hairline bg-card p-6">
-          <Skeleton className="mb-3 h-7 w-52 bg-chip-active" />
-          <Skeleton className="h-4 w-full max-w-lg bg-chip-active" />
+          <Skeleton className="mb-3 h-7 w-52" />
+          <Skeleton className="h-4 w-full max-w-lg" />
         </div>
         <div className="border border-hairline bg-card">
           {Array.from({ length: 4 }).map((_, i) => (
             <div className="flex items-center gap-4 border-b border-hairline/10 p-4" key={i}>
-              <Skeleton className="h-6 w-6 bg-chip-active" />
-              <Skeleton className="h-4 flex-1 bg-chip-active" />
-              <Skeleton className="h-8 w-24 bg-chip-active" />
+              <Skeleton className="h-6 w-6" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-8 w-24" />
             </div>
           ))}
         </div>

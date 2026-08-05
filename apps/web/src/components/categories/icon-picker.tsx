@@ -93,7 +93,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
         </div>
 
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-panel-warm/95 border border-hairline/40 p-4 sm:p-6">
+          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-panel-warm/95 border border-hairline p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="size-8 bg-ink/10 flex items-center justify-center text-ink">
