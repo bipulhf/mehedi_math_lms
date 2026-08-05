@@ -291,8 +291,9 @@ export function MarkingWorkspace({
               <CardTitle className="text-lg">{activeAnswer.student.name}</CardTitle>
               <CardDescription>
                 <RichTextContent
-                  className="inline [&_p]:mb-0 [&_p]:inline"
+                  className="rich-text-content--inline inline [&_p]:mb-0 [&_p]:inline"
                   html={activeAnswer.questionText}
+                  mathDisplay="inline"
                 />
               </CardDescription>
               {activePaper ? (
@@ -341,8 +342,9 @@ export function MarkingWorkspace({
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-3 text-sm text-ink">
                   <span className="font-medium">{t("marking.guide")}: </span>
                   <RichTextContent
-                    className="inline text-sm [&_p]:mb-0 [&_p]:inline"
+                    className="rich-text-content--inline inline text-sm [&_p]:mb-0 [&_p]:inline"
                     html={activeAnswer.markingGuide}
+                    mathDisplay="inline"
                   />
                 </div>
               ) : null}

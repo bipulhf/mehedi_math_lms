@@ -33,6 +33,7 @@
     "clsx": "^2.1.1",
     "firebase": "^12",
     "isomorphic-dompurify": "^3.21.0",
+    "katex": "^0.16.22",
     "ky": "^2",
     "lucide-react": "^1.28.0",
     "react": "^19.2.8",
@@ -49,6 +50,7 @@
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/katex": "^0.16.8",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

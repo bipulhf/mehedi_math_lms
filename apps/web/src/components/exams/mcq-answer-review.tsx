@@ -1,5 +1,6 @@
 import type { JSX } from "react";
 
+import { MathText } from "@/components/ui/math-text";
 import { Badge } from "@/components/ui/badge";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
@@ -67,7 +68,7 @@ export function McqAnswerReview({
                     }`}
                     key={option.id}
                   >
-                    <span className="min-w-0 break-words">{option.optionText}</span>
+                    <MathText className="min-w-0 break-words" text={option.optionText} />
                     <span className="shrink-0 text-xs uppercase tracking-wide">
                       {isPicked ? t("exams.picked") : isCorrect ? t("exams.correctOption") : ""}
                     </span>

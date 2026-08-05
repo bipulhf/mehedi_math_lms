@@ -302,6 +302,40 @@
 }
 
 /* ------------------------------------------------------------------
+ * Typeset maths. KaTeX draws itself; these rules only make it sit
+ * quietly next to Hind Siliguri.
+ * ------------------------------------------------------------------ */
+
+/* KaTeX defaults to 1.21em, which reads as a different, larger typeface
+ * mid-sentence. Just above the surrounding text is enough to keep a
+ * fraction legible without shouting. */
+.katex {
+  font-size: 1.05em;
+}
+
+/* Display maths is a block, and a wide matrix has to scroll rather than
+ * widen the page it sits in. */
+.katex-display {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* A one-line context -- the marking workspace's question strip -- asks for
+ * inline rendering, but a stored $$ block still arrives; keep it on the line. */
+.rich-text-content--inline .katex-display {
+  display: inline-block;
+  margin: 0;
+  text-align: left;
+}
+
+/* An invalid formula shows KaTeX's own error text rather than throwing. It is
+ * a teacher's typo, not a fault, so it reads as muted rather than alarming. */
+.katex-error {
+  color: var(--color-muted-light);
+}
+
+/* ------------------------------------------------------------------
  * Rich text content rendering. Matches DESIGN.md typography.
  * ------------------------------------------------------------------ */
 .rich-text-content p {

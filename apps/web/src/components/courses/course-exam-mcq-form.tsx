@@ -1,6 +1,7 @@
 import { Eye, Plus, X } from "lucide-react";
 import type { JSX } from "react";
 
+import { MathText } from "@/components/ui/math-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -265,7 +266,11 @@ function McqQuestionPreview({ draft }: { draft: McqDraft }): JSX.Element {
             <div className="flex items-center gap-3 border border-hairline bg-card px-4 py-3" key={index}>
               <span aria-hidden="true" className="size-4 shrink-0 rounded-full border border-line-strong" />
               <span className={option.optionText.trim() ? "text-sm text-ink" : "text-sm italic text-muted-faint"}>
-                {option.optionText.trim() || t("author.mcqOption", { number: String(index + 1) })}
+                {option.optionText.trim() ? (
+                  <MathText text={option.optionText} />
+                ) : (
+                  t("author.mcqOption", { number: String(index + 1) })
+                )}
               </span>
             </div>
           ))}

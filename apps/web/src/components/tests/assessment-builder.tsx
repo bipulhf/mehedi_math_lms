@@ -11,6 +11,7 @@ import {
   type QuestionDraft
 } from "@/components/tests/question-draft";
 import { QuestionEditor } from "@/components/tests/question-editor";
+import { MathText } from "@/components/ui/math-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -672,7 +673,7 @@ export function AssessmentBuilder({
                                       : "bg-panel-warm text-ink/70"
                                   }`}
                                 >
-                                  {option.optionText}
+                                  <MathText text={option.optionText} />
                                 </div>
                               ))}
                             </div>

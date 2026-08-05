@@ -1,3 +1,4 @@
+import { richTextToPlainText } from "@genex/shared";
 import { Trash2, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -17,6 +18,7 @@ import {
   WrittenQuestionForm,
   type WrittenDraft
 } from "@/components/courses/course-exam-written-form";
+import { MathText } from "@/components/ui/math-text";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
@@ -35,7 +37,6 @@ import {
   updateTest
 } from "@/lib/api/tests";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
-import { stripHtml } from "@/lib/html";
 import { queryKeys } from "@/lib/query/keys";
 
 interface ExamSettingsDraft {
@@ -425,7 +426,7 @@ export function CourseExamEditor({
                       {format.number(question.marks)}
                     </span>
                     <span className="mt-1 block truncate font-medium text-ink">
-                      {stripHtml(question.questionText)}
+                      {richTextToPlainText(question.questionText)}
                     </span>
                   </span>
                   <span aria-hidden="true" className="text-xl font-light text-accent">
@@ -499,7 +500,7 @@ export function CourseExamEditor({
                           key={option.id}
                         >
                           {option.isCorrect ? "✓ " : ""}
-                          {option.optionText}
+                          <MathText text={option.optionText} />
                         </li>
                       ))}
                     </ul>

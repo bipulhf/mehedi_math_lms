@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { MarkingLayer } from "@/components/marking/marking-layer";
+import { MathText } from "@/components/ui/math-text";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,7 +107,11 @@ function SubmissionReviewPage(): JSX.Element {
             <CardContent className="space-y-4">
               {test.type === "MCQ" ? (
                 <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm leading-6 text-ink">
-                  {selectedOption?.optionText ?? t("script.notAttempted")}
+                  {selectedOption ? (
+                    <MathText text={selectedOption.optionText} />
+                  ) : (
+                    t("script.notAttempted")
+                  )}
                 </div>
               ) : (answer?.scriptPages.length ?? 0) === 0 ? (
                 <p className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4 text-sm text-ink/62">

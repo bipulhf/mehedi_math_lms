@@ -17,6 +17,7 @@ import { readLocale } from "@/lib/i18n/locale-cookie";
 import { createQueryClient } from "@/lib/query/query-client";
 import { siteConfig } from "@/lib/site";
 import appCss from "@/styles/app.css?url";
+import katexCss from "katex/dist/katex.min.css?url";
 
 export const Route = createRootRoute({
   // Reading the cookie here rather than in an effect is what stops the page
@@ -68,7 +69,10 @@ export const Route = createRootRoute({
         rel: "preload",
         type: "font/woff2"
       },
-      { rel: "stylesheet", href: appCss }
+      { rel: "stylesheet", href: appCss },
+      // KaTeX ships its own faces. Linked rather than imported so the maths on a
+      // server-rendered question is styled in the first paint, not after it.
+      { rel: "stylesheet", href: katexCss }
     ]
   }),
   errorComponent: RouteErrorView,

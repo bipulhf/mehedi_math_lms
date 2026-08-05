@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { MathText } from "@/components/ui/math-text";
 import { BackButton } from "@/components/ui/back-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -342,7 +343,7 @@ function StudentTestPage(): JSX.Element {
                           }))
                         }
                       />
-                      <span className="text-sm text-ink">{option.optionText}</span>
+                      <MathText className="text-sm text-ink" text={option.optionText} />
                     </label>
                   );
                 });

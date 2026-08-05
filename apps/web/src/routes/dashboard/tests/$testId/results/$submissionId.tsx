@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { MarkingLayer } from "@/components/marking/marking-layer";
+import { MathText } from "@/components/ui/math-text";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,7 +176,7 @@ function SubmissionResultPage(): JSX.Element {
                                 : "border-hairline bg-panel-warm"
                           }`}
                         >
-                          <span>{option.optionText}</span>
+                          <MathText text={option.optionText} />
                           <div className="flex flex-wrap gap-2">
                             {isSelected ? (
                               <span
