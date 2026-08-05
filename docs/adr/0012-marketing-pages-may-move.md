@@ -6,8 +6,8 @@ status: accepted
 
 DESIGN.md §1 forbids animation outright — "no parallax, no entrance animation,
 nothing lifts or scales". That rule now applies to the signed-in app only. The
-public marketing pages carry scroll reveals, a drifting subject band and counters
-that run once, all of it switched off under `prefers-reduced-motion`.
+public marketing pages carry scroll reveals and counters that run once, both
+switched off under `prefers-reduced-motion`.
 
 ## Context
 
@@ -30,9 +30,14 @@ down or left as drift.
   a signed-out visitor sees. Inside the dashboard, DESIGN.md §1 stands unchanged —
   colour and border transitions on hover, nothing else.
 - The vocabulary is small and lives in `src/components/marketing/`: `Reveal`
-  (fade-and-rise once, on entering the viewport), `Marquee` (a drifting row that
-  pauses on hover), `CountUp` (a figure that counts once). Anything more elaborate
-  should be argued for rather than added quietly.
+  (fade-and-rise once, on entering the viewport) and `CountUp` (a figure that
+  counts once). Anything more elaborate should be argued for rather than added
+  quietly.
+
+  A third primitive, `Marquee`, shipped with this ADR and was removed a day
+  later along with the drifting subject band in the hero: the subjects have
+  their own section immediately below, with real course counts, and a band that
+  says the same words in motion was competing with it rather than adding to it.
 - Every one of them is disabled under `prefers-reduced-motion: reduce`, in one
   block at the bottom of `app.css`. A reader who asked for stillness gets a still
   page, not a quieter one.
@@ -51,9 +56,9 @@ down or left as drift.
 - **Allow motion everywhere.** Rejected — it would rewrite the character of the
   screens students use daily to solve a problem that only exists on the page they
   see once.
-- **Reach for a motion library.** Rejected — three CSS-driven primitives cover
-  what these pages need, and a library would make the fourth effect easier to add
-  than to justify.
+- **Reach for a motion library.** Rejected — two CSS-driven primitives cover what
+  these pages need, and a library would make the third effect easier to add than
+  to justify.
 
 ## Consequences
 

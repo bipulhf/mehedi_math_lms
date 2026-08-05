@@ -68,19 +68,15 @@ Adopted because the product genuinely delivers it:
 
 - **Helpline in the header** — already shipped, keep it above the fold on
   desktop and in the drawer on mobile.
-- **Short hero + counts + subjects** — already shipped.
-- **Course grid straight after the hero**, replacing the single large
-  auto-advancing slide. Six courses visible at once beats one.
-- **Richer card**: subject in its spectrum hue, free-class count, class count,
-  rating, enrolled count, price.
+- **The catalogue as the first thing on the page.** There is no hero at all:
+  the page opens on a full-bleed carousel of one course at a time, its subject,
+  free-class count, teacher, class count, enrolments, rating and price written
+  over the picture, and the title and price both linking into the course.
 - **Six-tile feature grid** listing what a course actually contains: recorded
   video classes, PDF class notes, MCQ tests marked instantly, written papers
   marked by hand by the teacher, questions answered under each class, a
   certificate on completion. Every tile maps to a shipped feature.
 - **Numbered "how it works"** — account, enrol, study, sit the exams.
-- **Payment and helpline reassurance** in the closing band. Payments settle
-  through SSLCommerz, which is what carries bKash, Nagad, Rocket and cards, so
-  naming them is accurate.
 
 ## What Genex does not adopt, and why
 
@@ -93,20 +89,22 @@ Adopted because the product genuinely delivers it:
 - **A free-demo booking form** — Genex has no counselling desk to route it to.
   The free rung here is the preview classes every course already keeps open.
 - **Countdown and seasonal offer banners** — no campaign engine behind them.
+- **A counts strip** (§3), and the closing call-to-action band with it. Both
+  were built and then removed at the owner's request: nothing is to sit above
+  the catalogue, and the page is to end on the FAQ. The counts are still
+  returned by the landing snapshot if this is ever reversed.
 
 ## The resulting order
 
 ```
-Hero              headline, counts, subject band
-Featured courses  grid of six, the catalogue up front
+Course carousel   full-bleed, one course at a time, details over the picture
 Pick a subject    real categories, links into the filtered catalogue
 Which level       levels on the left, their courses on the right
 What you get      six tiles, one shipped feature each
 How it works      four numbered steps
 Teachers          who you study with
 Reviews           students, named
-FAQ               the questions that block a purchase
-Closing band      the ask, plus payment and helpline reassurance
+FAQ               the questions that block a purchase, and the last band
 ```
 
 ## Notes for whoever changes this next

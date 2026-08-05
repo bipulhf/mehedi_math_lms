@@ -412,25 +412,6 @@
     opacity: 1;
     transform: none;
   }
-
-  .marquee-track {
-    animation: marqueeDrift var(--marquee-duration, 38s) linear infinite;
-    will-change: transform;
-  }
-
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
-  }
-}
-
-@keyframes marqueeDrift {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    /* The row is rendered twice; one full copy is exactly half the track. */
-    transform: translateX(-50%);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -443,7 +424,6 @@
   /* Every marketing animation, not just the ones added last: a reader who asked
      for stillness gets a still page, and a missed rule here is the one that
      ruins it. */
-  .marquee-track,
   .animate-fade-in,
   .animate-doodle-pulse {
     animation: none;

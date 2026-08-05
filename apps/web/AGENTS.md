@@ -43,14 +43,18 @@ Two rules, and which one applies depends on who is looking:
   colour and border transitions on hover, nothing else. No entrance animation,
   nothing lifts or scales.
 - **On the public marketing pages** motion is allowed and deliberate (ADR-0012).
-  The vocabulary is three primitives in `src/components/marketing/` — `Reveal`,
-  `Marquee`, `CountUp` — and every one is switched off under
-  `prefers-reduced-motion` in one block at the bottom of `app.css`. Adding a
-  fourth effect is a decision, not a detail.
+  The vocabulary is two primitives in `src/components/marketing/` — `Reveal` and
+  `CountUp` — and both are switched off under `prefers-reduced-motion` in one
+  block at the bottom of `app.css`. Adding a third effect is a decision, not a
+  detail.
 
 The landing page is built from `LandingSection`, which fixes the band's padding,
 container width and heading rhythm. A section that sets its own is how the page
-drifted into looking like a stack of unrelated pages.
+drifted into looking like a stack of unrelated pages. One band is deliberately
+not a `LandingSection` and has no heading: the full-bleed course carousel the
+page opens on. There is no hero and no closing band — the owner asked for the
+catalogue to be the first thing on the page, for nothing to sit above it, and
+for the FAQ to be the last thing before the footer.
 
 ## Loading states
 

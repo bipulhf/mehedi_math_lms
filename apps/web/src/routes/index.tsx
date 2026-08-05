@@ -17,10 +17,8 @@ const FAQ_KEYS = [
 ] as const;
 
 import { PublicLayout } from "@/components/layout/public-layout";
-import { CtaSection } from "@/features/landing/components/cta-section";
 import { FaqSection } from "@/features/landing/components/faq-section";
-import { FeaturedCoursesSection } from "@/features/landing/components/featured-courses-section";
-import { HeroSection } from "@/features/landing/components/hero-section";
+import { CourseCarouselSection } from "@/features/landing/components/course-carousel-section";
 import { HowItWorksSection } from "@/features/landing/components/how-it-works-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
@@ -73,14 +71,9 @@ export const Route = createFileRoute("/")({
 function HomePageSkeleton(): JSX.Element {
   return (
     <PublicLayout>
-      <div className="mx-auto grid w-full max-w-[90rem] gap-12 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_420px] lg:px-14 lg:py-24">
-        <div className="space-y-6">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-4/5" />
-          <Skeleton className="h-12 w-2/3" />
-        </div>
-        <Skeleton className="hidden aspect-4/5 w-full lg:block" />
-      </div>
+      {/* The carousel is full-bleed, so its placeholder is too — a contained
+          block here and a full-width slide after the loader lands is a jump. */}
+      <Skeleton className="h-[30rem] w-full sm:h-[34rem] lg:h-[40rem]" />
     </PublicLayout>
   );
 }
@@ -90,14 +83,14 @@ function HomePage(): JSX.Element {
 
   return (
     <PublicLayout>
-      {/* The order the researched Bangladeshi platforms all converge on, and
-          for the same reason: catalogue first, persuasion after it. Who this
-          is, what is on offer, where to start, what a course contains, what
-          happens after paying, who teaches it, whether anyone else rates it,
-          the questions that block a purchase, and then the ask.
-          docs/landing-bd-edtech-patterns.md */}
-      <HeroSection categories={snapshot.categories} stats={snapshot.stats} />
-      <FeaturedCoursesSection courses={snapshot.courses} />
+      {/* Catalogue first, persuasion after it — the order the researched
+          Bangladeshi platforms converge on (docs/landing-bd-edtech-patterns.md).
+          There is no hero: the page opens on a course filling the width, then
+          says where to start, what a course contains, what happens after
+          paying, who teaches it, who rates it, and the questions that block a
+          purchase. It ends on the FAQ — the closing band was removed with the
+          hero, so the last thing before the footer is an answer. */}
+      <CourseCarouselSection courses={snapshot.courses} />
       <SubjectRailSection categories={snapshot.categories} />
       <LevelPickerSection
         categories={snapshot.categories}
@@ -109,7 +102,6 @@ function HomePage(): JSX.Element {
       <InstructorsSection teachers={snapshot.teachers} />
       <ReviewsSection />
       <FaqSection />
-      <CtaSection />
     </PublicLayout>
   );
 }
