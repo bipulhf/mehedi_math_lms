@@ -144,3 +144,28 @@ export function RingedPlay({
     </span>
   );
 }
+
+/**
+ * A small set of plain-text math glyphs (Greek letters, operators) that can be
+ * sprinkled into copy. Rendered as a span of serif text so they sit with the
+ * formula type rather than the UI type. DESIGN.md §4.
+ */
+export function MathGlyph({
+  children,
+  className
+}: {
+  children: string;
+  className?: string;
+}): JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "font-formula italic text-brand-yellow tracking-normal",
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}

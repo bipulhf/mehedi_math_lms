@@ -19,9 +19,12 @@ const FAQ_KEYS = [
 import { PublicLayout } from "@/components/layout/public-layout";
 import { FaqSection } from "@/features/landing/components/faq-section";
 import { CourseCarouselSection } from "@/features/landing/components/course-carousel-section";
+import { FormulaBandSection } from "@/features/landing/components/formula-band-section";
+import { FormulaMarqueeSection } from "@/features/landing/components/formula-marquee-section";
 import { HowItWorksSection } from "@/features/landing/components/how-it-works-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
+import { MathRailSection } from "@/features/landing/components/math-rail-section";
 import { PlatformFeaturesSection } from "@/features/landing/components/platform-features-section";
 import { ReviewsSection } from "@/features/landing/components/reviews-section";
 import { SubjectRailSection } from "@/features/landing/components/subject-rail-section";
@@ -89,14 +92,24 @@ function HomePage(): JSX.Element {
           says where to start, what a course contains, what happens after
           paying, who teaches it, who rates it, and the questions that block a
           purchase. It ends on the FAQ — the closing band was removed with the
-          hero, so the last thing before the footer is an answer. */}
+          hero, so the last thing before the footer is an answer.
+
+          The math-edtech identity is layered in two places: a formula band
+          sits between the catalogue and the level picker, declaring the
+          subject through the formulae themselves; a math rail names the
+          branches of school mathematics; a thin marquee of identities runs
+          across the page between the level picker and the platform features,
+          the kind of running band that a textbook chapter opens with. */}
       <CourseCarouselSection courses={snapshot.courses} />
       <SubjectRailSection categories={snapshot.categories} />
+      <FormulaBandSection />
       <LevelPickerSection
         categories={snapshot.categories}
         courses={snapshot.courses}
         publishedCourses={snapshot.stats.publishedCourses}
       />
+      <FormulaMarqueeSection />
+      <MathRailSection />
       <PlatformFeaturesSection />
       <HowItWorksSection />
       <InstructorsSection teachers={snapshot.teachers} />

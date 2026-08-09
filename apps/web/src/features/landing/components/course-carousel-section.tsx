@@ -191,7 +191,7 @@ function CourseSlide({
                 {course.category.name}
               </span>
               {course.freeLectureCount > 0 ? (
-                <span className="rounded-[var(--radius-pill)] border border-paper/30 bg-paper px-3 py-1 text-sm text-ink">
+                <span className="rounded-[var(--radius-pill)] border border-paper/30 bg-paper/10 px-3 py-1 text-sm text-paper backdrop-blur-sm">
                   {t("course.freeLessons", { count: format.number(course.freeLectureCount) })}
                 </span>
               ) : null}

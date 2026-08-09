@@ -69,6 +69,10 @@
   --font-body: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
   /* Latin numerals, ids, and small all-caps labels. DESIGN.md §4. */
   --font-mono-label: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  /* Georgia is reserved for formulas and mathematical identity text — the
+   * reference theme treats it as the serif a maths problem is typeset in.
+   * DESIGN.md §4. */
+  --font-formula: "Georgia", "Iowan Old Style", "Apple Garamond", "Times New Roman", ui-serif, serif;
 
   /* ------------------------------------------------------------------
    * Shape. Controls are soft; cards and slabs use larger plates.
@@ -178,6 +182,11 @@
     font-family: var(--font-body);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    /* The formula marquee uses `w-max` so its content extends past the
+     * viewport. The section clips with overflow-hidden, but a wide child can
+     * still escape onto the body and make the whole page scroll sideways on
+     * a phone. Lock that off here. */
+    overflow-x: hidden;
   }
 
   a {
@@ -263,6 +272,74 @@
     animation: fadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* Formula display: KaTeX sitting inside a serif frame so the maths reads
+   * as the kind of identity a student would write in a notebook, not as a
+   * block of UI text. DESIGN.md §4. */
+  .formula-display {
+    font-family: var(--font-formula);
+    font-style: italic;
+    color: var(--color-brand-yellow);
+    /* KaTeX in displayMode produces .katex-display with overflow-x: auto.
+     * The page-level rules there make a wide formula scroll *inside* its
+     * card. We want the formula to shrink-to-fit instead, so that nothing
+     * scrolls on a phone and the section never has a horizontal scrollbar
+     * embedded in a tile. */
+    overflow: visible;
+  }
+
+  .formula-display .katex {
+    color: inherit;
+    font-style: normal;
+    white-space: nowrap;
+  }
+
+  /* A wide display formula would push past its card edge. Let KaTeX scale
+   * down to fit the available width — same trick a printed math book uses
+   * to fit a long expression in a narrow column. */
+  .formula-display .katex-display {
+    overflow: visible;
+  }
+
+  .formula-display .katex-display > .katex {
+    display: inline-block;
+    /* The viewport-relative min keeps the formula readable on a desktop
+     * (a 16px font reads fine at 1440px) and still lets it shrink on a
+     * phone (375px container → ~14px). */
+    font-size: clamp(0.85rem, 2.6vw, 1.5rem);
+    max-width: 100%;
+  }
+
+  /* Hue variants for the formula band. Each card sets --formula-hue to one
+   * of the brand tokens; KaTeX picks up the colour through a CSS variable
+   * instead of a hardcoded hex. */
+  .formula-hue-cyan {
+    color: var(--color-brand-cyan);
+  }
+  .formula-hue-orange {
+    color: var(--color-brand-orange);
+  }
+  .formula-hue-yellow {
+    color: var(--color-brand-yellow);
+  }
+  .formula-hue-rose {
+    color: var(--color-spectrum-rose);
+  }
+
+  /* A horizontal rule drawn as a row of small math operators — the seam
+   * between sections reads as the next page of the notebook. DESIGN.md §7. */
+  .formula-rule {
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(255, 242, 0, 0.35) 0 6px,
+      transparent 6px 14px
+    );
+    height: 1px;
+  }
+
+  .animate-formula-marquee {
+    animation: formulaMarquee 46s linear infinite;
+  }
+
 
 
 
@@ -296,6 +373,15 @@
   50% {
     opacity: 0.75;
     transform: rotate(-3deg) scale(1.03);
+  }
+}
+
+@keyframes formulaMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 
@@ -477,7 +563,8 @@
      for stillness gets a still page, and a missed rule here is the one that
      ruins it. */
   .animate-fade-in,
-  .animate-doodle-pulse {
+  .animate-doodle-pulse,
+  .animate-formula-marquee {
     animation: none;
     opacity: 1;
   }
