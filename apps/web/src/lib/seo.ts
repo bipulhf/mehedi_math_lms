@@ -68,7 +68,7 @@ export function buildMetaDescription(text: string): string {
 }
 
 export function buildDocumentTitle(pageTitle: string): string {
-  const suffix = ` | ${SITE}`;
+  const suffix = ` | ${siteConfig.shortName}`;
   const maxPage = MAX_DOC_TITLE - suffix.length;
   const trimmed = pageTitle.trim();
   const page = trimmed.length > maxPage ? `${trimmed.slice(0, maxPage - 1).trimEnd()}…` : trimmed;

@@ -404,7 +404,7 @@ bun run build
 bun run --filter @mma/web test:e2e     # needs the API on 3001 and Postgres
 ```
 
-E2E asserts the document title matches `/Mehedi's Math Academy/i`
+E2E asserts the document title carries the chosen short name, `/MMA/i`
 (`apps/web/e2e/public-pages.spec.ts:13`) and pins the locale cookie to
 `mma_locale=en` (`apps/web/playwright.config.ts:38`).
 

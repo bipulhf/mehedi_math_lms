@@ -1,8 +1,9 @@
 # Design System Specification: Mehedi's Math Academy
 
 The visual language for **Mehedi's Math Academy**, a Bangla-first coaching platform. Derived
-from the design handoff in `design_handoff_genex/`, which stays the authority on
-pixel-level questions this document does not answer.
+from the design handoff in `design_handoff_genex/`, which the academy deliberately adopted
+as its warm-paper palette and which stays the authority on pixel-level questions this
+document does not answer.
 
 This replaces the previous "Digital Atelier" system wholesale. That system was
 built on tonal layering, gradients, shadows and a prohibition on 1px borders.

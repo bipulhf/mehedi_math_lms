@@ -4,7 +4,6 @@ import type { JSX, PropsWithChildren } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { DiamondTrio, DotPatch, QuarterArc, RingedWord, StepCircle } from "@/components/ui/doodles";
 import { useT } from "@/lib/i18n/locale-context";
-import { siteConfig } from "@/lib/site";
 
 interface AuthLayoutProps extends PropsWithChildren {
   description: string;
@@ -46,9 +45,9 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
 
       {/* Header Bar */}
       <header className="mx-auto flex w-full max-w-[90rem] items-center justify-between px-4 py-6 sm:px-8 lg:px-14">
-        <Link aria-label={siteConfig.name} className="flex items-center gap-2.5" to="/">
+        <Link aria-label={t("brand.name")} className="flex items-center gap-2.5" to="/">
           <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
-          <img alt={siteConfig.name} className="block h-4 w-auto" src="/brand/mma-wordmark.png" />
+          <img alt={t("brand.name")} className="block h-4 w-auto" src="/brand/mma-wordmark.png" />
         </Link>
         <Link
           className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"

@@ -7,7 +7,6 @@ import { NotificationBell } from "@/components/notifications/notification-bell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth";
 import { useT } from "@/lib/i18n/locale-context";
-import { siteConfig } from "@/lib/site";
 import { hueForIndex, spectrumClasses } from "@/lib/spectrum";
 import { cn } from "@/lib/utils";
 
@@ -89,10 +88,10 @@ export function AppShell({
             </span>
           </button>
 
-          <Link aria-label={siteConfig.name} className="flex shrink-0 items-center gap-2.5" to="/">
+          <Link aria-label={t("brand.name")} className="flex shrink-0 items-center gap-2.5" to="/">
             <img alt="" className="block h-6 w-auto" src="/brand/mma-mark.png" />
             <img
-              alt={siteConfig.name}
+              alt={t("brand.name")}
               className="hidden h-[15px] w-auto sm:block"
               src="/brand/mma-wordmark.png"
             />

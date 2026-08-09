@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Mehedi's Math Academy",
-  shortName: "Mehedi's Math Academy",
+  shortName: "MMA",
   domain: "mehedismathacademy.com",
   url: "https://mehedismathacademy.com",
   description:

@@ -153,13 +153,13 @@ export function SiteHeader(): JSX.Element {
       <div className="mx-auto flex h-20 w-full max-w-[90rem] items-center justify-between gap-6 px-4 sm:px-8 lg:h-[82px] lg:px-14">
         <div className="flex min-w-0 items-center gap-8">
           <Link
-            aria-label={siteConfig.name}
+            aria-label={t("brand.name")}
             className="flex shrink-0 items-center gap-[9px]"
             to="/"
           >
             <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
             <img
-              alt={siteConfig.name}
+              alt={t("brand.name")}
               className="block h-4 w-auto"
               src="/brand/mma-wordmark.png"
             />

@@ -20,7 +20,7 @@ describe("renderPasswordResetEmail", () => {
   test("defaults to Bangla and follows the locale when given one", () => {
     const input = { expiryMinutes: 60, name: "Mehedi", resetUrl: "https://example.test/r" };
 
-    expect(renderPasswordResetEmail(input).subject).toContain("জেনেক্স");
+    expect(renderPasswordResetEmail(input).subject).toContain("মেহেদীর গণিত একাডেমি");
     expect(renderPasswordResetEmail({ ...input, locale: "en" }).subject).toContain("Mehedi's Math Academy");
   });
 

@@ -24,10 +24,10 @@ export function SiteFooter(): JSX.Element {
       <div className="bg-panel-warm">
         <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-14">
           <div className="space-y-4">
-            <Link aria-label={siteConfig.name} className="flex items-center gap-2.5" to="/">
+            <Link aria-label={t("brand.name")} className="flex items-center gap-2.5" to="/">
               <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
               <img
-                alt={siteConfig.name}
+                alt={t("brand.name")}
                 className="block h-4 w-auto"
                 src="/brand/mma-wordmark.png"
               />
