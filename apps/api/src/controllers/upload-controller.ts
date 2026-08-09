@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { AuthUser } from "@genex/auth/server";
+import type { AuthUser } from "@mma/auth/server";
 
 import type { UploadService } from "@/services/upload-service";
 import {

@@ -1,4 +1,4 @@
-import { decodeHtmlEntities, segmentMath } from "@genex/shared";
+import { decodeHtmlEntities, segmentMath } from "@mma/shared";
 import type { JSX } from "react";
 
 import { renderMathToHtml } from "@/lib/katex";

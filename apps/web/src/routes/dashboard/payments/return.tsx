@@ -4,7 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";

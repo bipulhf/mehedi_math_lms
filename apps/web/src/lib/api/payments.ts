@@ -1,4 +1,4 @@
-import type { paymentStatusSchema, refundPaymentSchema } from "@genex/shared";
+import type { paymentStatusSchema, refundPaymentSchema } from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPost } from "@/lib/api/client";

@@ -1,4 +1,4 @@
-name: genex
+name: mehedis-math-academy
 
 # Every service besides postgres/redis reads its secrets from .env (copy
 # .env.example to .env and fill in the real values) via env_file below.
@@ -18,14 +18,14 @@ x-api-image: &api-image
     dockerfile: apps/api/Dockerfile
   env_file: .env
   environment:
-    DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-genex}
+    DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-mehedis_math_academy}
     REDIS_URL: redis://redis:6379
 
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-genex}
+      POSTGRES_DB: ${POSTGRES_DB:-mehedis_math_academy}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
     healthcheck:
@@ -100,7 +100,7 @@ services:
       - api
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-genex}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-mehedis_math_academy}
       # Where apps/web/server.ts forwards /api/v1 and /api/health, for a build
       # whose client uses a relative API base URL. A build with an absolute
       # VITE_API_BASE_URL never reaches the proxy.

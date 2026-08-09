@@ -90,11 +90,11 @@ export function AppShell({
           </button>
 
           <Link aria-label={siteConfig.name} className="flex shrink-0 items-center gap-2.5" to="/">
-            <img alt="" className="block h-6 w-auto" src="/brand/genex-mark.png" />
+            <img alt="" className="block h-6 w-auto" src="/brand/mma-mark.png" />
             <img
               alt={siteConfig.name}
               className="hidden h-[15px] w-auto sm:block"
-              src="/brand/genex-wordmark.png"
+              src="/brand/mma-wordmark.png"
             />
           </Link>
 

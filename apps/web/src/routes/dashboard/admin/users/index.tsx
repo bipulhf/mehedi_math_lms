@@ -17,7 +17,7 @@ import {
 import type { JSX } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createAdminUserSchema } from "@genex/shared";
+import { createAdminUserSchema } from "@mma/shared";
 
 import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";

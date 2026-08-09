@@ -4,7 +4,7 @@ import { renderPasswordResetEmail } from "./password-reset";
 
 describe("renderPasswordResetEmail", () => {
   test("writes the link into both halves of the mail", () => {
-    const url = "https://genex.com.bd/api/auth/reset-password/abc123?callbackURL=%2Fauth%2Freset";
+    const url = "https://mehedismathacademy.com/api/auth/reset-password/abc123?callbackURL=%2Fauth%2Freset";
     const { html, text } = renderPasswordResetEmail({
       expiryMinutes: 60,
       name: "Mehedi",
@@ -21,12 +21,12 @@ describe("renderPasswordResetEmail", () => {
     const input = { expiryMinutes: 60, name: "Mehedi", resetUrl: "https://example.test/r" };
 
     expect(renderPasswordResetEmail(input).subject).toContain("জেনেক্স");
-    expect(renderPasswordResetEmail({ ...input, locale: "en" }).subject).toContain("Genex");
+    expect(renderPasswordResetEmail({ ...input, locale: "en" }).subject).toContain("Mehedi's Math Academy");
   });
 
   test("states the expiry in western digits, whatever the language", () => {
     // Every numeral in this product is western — the same rule the formatters
-    // in @genex/i18n enforce. A Bangla mail saying "৬০ মিনিট" would break it.
+    // in @mma/i18n enforce. A Bangla mail saying "৬০ মিনিট" would break it.
     const { html, text } = renderPasswordResetEmail({
       expiryMinutes: 60,
       name: "Mehedi",

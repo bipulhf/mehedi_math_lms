@@ -1,7 +1,7 @@
 import type { JSX, PropsWithChildren } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import type { Formatters, Locale, Translator } from "@genex/i18n";
-import { createFormatters, createTranslator, localeTags } from "@genex/i18n";
+import type { Formatters, Locale, Translator } from "@mma/i18n";
+import { createFormatters, createTranslator, localeTags } from "@mma/i18n";
 
 import { writeLocaleCookie } from "./locale-cookie";
 

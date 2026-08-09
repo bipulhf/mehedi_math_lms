@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { Toaster } from "sonner";
-import { localeTags } from "@genex/i18n";
+import { localeTags } from "@mma/i18n";
 
 // Bengali first: it is the default locale, so it is the subset the first
 // paint needs. Latin covers the English locale and the Archivo labels.
@@ -55,7 +55,7 @@ export const Route = createRootRoute({
     ],
     links: [
       // The traced PNG mark, until the client supplies the original vector.
-      { rel: "icon", href: "/brand/genex-mark.png", type: "image/png" },
+      { rel: "icon", href: "/brand/mma-mark.png", type: "image/png" },
       {
         as: "font",
         crossOrigin: "anonymous",

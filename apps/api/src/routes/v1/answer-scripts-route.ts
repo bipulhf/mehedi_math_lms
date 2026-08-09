@@ -10,8 +10,8 @@ import {
   submissionIdParamsSchema,
   submitPaperSchema,
   testIdParamsSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { answerScriptController, auditLogService } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";

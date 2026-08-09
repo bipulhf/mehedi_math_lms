@@ -2,8 +2,8 @@ import type {
   basicProfileInputSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPut } from "@/lib/api/client";

@@ -1,4 +1,4 @@
-import type { MarkingReviewMode } from "@genex/shared";
+import type { MarkingReviewMode } from "@mma/shared";
 
 import type { MarkingQueueView } from "@/lib/api/tests";
 

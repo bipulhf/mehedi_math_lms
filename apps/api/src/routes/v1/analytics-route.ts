@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { courseIdParamsSchema } from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+import { courseIdParamsSchema } from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { analyticsController } from "@/lib/container";
 import { requireAdmin, requireRole } from "@/middleware/auth";

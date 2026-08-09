@@ -79,7 +79,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
     paidAt: null,
     refundedAt: null,
     status: "PENDING",
-    transactionId: "GENEX-TXN-1",
+    transactionId: "MMA-TXN-1",
     userId: "user-1",
     ...overrides.payment
   } as unknown as PaymentRecord;
@@ -145,7 +145,7 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Comme
       amount: null,
       metadata: {},
       status: "VALID",
-      transactionId: "GENEX-TXN-1",
+      transactionId: "MMA-TXN-1",
       validationId: "VAL-1",
       ...overrides.validation
     })
@@ -323,14 +323,14 @@ describe("CommerceService.createEnrollment", () => {
 
     await service.createEnrollment("course-1", "user-1", "STUDENT", {
       origin: "http://192.168.0.9:3000",
-      path: "/api/payment-return?redirect=genex%3A%2F%2Fpayment-callback"
+      path: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
     });
 
     const metadata = calls.updates[0]?.patch.metadata as Record<string, unknown> | undefined;
 
     expect(metadata?.callbackOrigin).toBe("http://192.168.0.9:3000");
     expect(metadata?.callbackPath).toBe(
-      "/api/payment-return?redirect=genex%3A%2F%2Fpayment-callback"
+      "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
     );
   });
 });
@@ -373,7 +373,7 @@ describe("CommerceService.handlePaymentCallback", () => {
     const { calls, service } = buildService({
       validation: {
         status: "INVALID_TRANSACTION",
-        transactionId: "GENEX-TXN-1",
+        transactionId: "MMA-TXN-1",
         validationId: "VAL-1"
       }
     });
@@ -392,7 +392,7 @@ describe("CommerceService.handlePaymentCallback", () => {
       validation: {
         amount: "1.00",
         status: "VALID",
-        transactionId: "GENEX-TXN-1",
+        transactionId: "MMA-TXN-1",
         validationId: "VAL-1"
       }
     });
@@ -451,7 +451,7 @@ describe("CommerceService.handlePaymentCallback", () => {
       payment: {
         metadata: {
           callbackOrigin: "http://192.168.0.9:3000",
-          callbackPath: "/api/payment-return?redirect=genex%3A%2F%2Fpayment-callback"
+          callbackPath: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback"
         }
       } as Partial<PaymentRecord>
     });
@@ -460,7 +460,7 @@ describe("CommerceService.handlePaymentCallback", () => {
 
     expect(url.origin).toBe("http://192.168.0.9:3000");
     expect(url.pathname).toBe("/api/payment-return");
-    expect(url.searchParams.get("redirect")).toBe("genex://payment-callback");
+    expect(url.searchParams.get("redirect")).toBe("mma://payment-callback");
     expect(url.searchParams.get("paymentId")).toBe("pay-1");
     expect(url.searchParams.get("status")).toBe("success");
   });

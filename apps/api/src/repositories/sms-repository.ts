@@ -11,8 +11,8 @@ import {
   studentProfiles,
   teacherProfiles,
   users
-} from "@genex/db";
-import type { UserRole } from "@genex/shared";
+} from "@mma/db";
+import type { UserRole } from "@mma/shared";
 
 export type SmsBatchStatus = "QUEUED" | "SENDING" | "COMPLETED" | "FAILED";
 export type SmsRecipientStatus = "PENDING" | "SENT" | "FAILED" | "SKIPPED_NO_PHONE";

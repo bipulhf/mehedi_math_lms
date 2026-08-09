@@ -1,4 +1,4 @@
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 
 import { env } from "@/lib/env";
 import type { CourseRepository } from "@/repositories/course-repository";
@@ -102,7 +102,7 @@ export interface AccountingPaymentsResponse {
 }
 
 function createTransactionId(): string {
-  return `GENEX-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  return `MMA-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 /**
@@ -126,7 +126,7 @@ const DEFAULT_RETURN_PATH = "/dashboard/payments/return";
  * Resolved with the URL parser rather than string concatenation, because
  * `path` may already carry a query string — the mobile app's deep link travels
  * that way — and `paymentId` has to merge into it rather than start a second
- * `?`. `callbackPathSchema` in `@genex/shared` has already refused anything that
+ * `?`. `callbackPathSchema` in `@mma/shared` has already refused anything that
  * could resolve to a different origin.
  */
 function buildReturnUrl(

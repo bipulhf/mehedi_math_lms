@@ -15,15 +15,15 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_ORIGIN": "https://api.genex.com.bd",
-        "EXPO_PUBLIC_WEB_ORIGIN": "https://genex.com.bd"
+        "EXPO_PUBLIC_API_ORIGIN": "https://api.mehedismathacademy.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://mehedismathacademy.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_ORIGIN": "https://api.genex.com.bd",
-        "EXPO_PUBLIC_WEB_ORIGIN": "https://genex.com.bd"
+        "EXPO_PUBLIC_API_ORIGIN": "https://api.mehedismathacademy.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://mehedismathacademy.com"
       }
     }
   },

@@ -1,4 +1,4 @@
-import type { CouponKind } from "@genex/shared";
+import type { CouponKind } from "@mma/shared";
 
 export interface CouponPricing {
   /** Never more than the list price, and never negative. */

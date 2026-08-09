@@ -96,7 +96,7 @@ code already excluded them from the roster.
 
 ### Stage 3 — tests now load the root .env
 
-`course-service.ts` imports `@genex/db`, whose client parses `DATABASE_URL` at module load, so testing it
+`course-service.ts` imports `@mma/db`, whose client parses `DATABASE_URL` at module load, so testing it
 requires the variable to exist. The test script became `bun test --env-file ../../.env src`, matching the
 existing `dev` and `worker:*` scripts. No test connects to the database — `pg` only dials on first query.
 

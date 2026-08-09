@@ -1,4 +1,4 @@
-import { createTranslator } from "@genex/i18n";
+import { createTranslator } from "@mma/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/")({
               organizationJsonLd(),
               itemListJsonLd(
                 "Featured courses",
-                "Recently published courses at Genex.",
+                "Recently published courses at Mehedi's Math Academy.",
                 courses.map((course) => ({
                   name: course.title,
                   path: `/courses/${course.slug}`

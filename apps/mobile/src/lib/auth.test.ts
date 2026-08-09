@@ -111,7 +111,7 @@ describe("signInWithGoogle", () => {
     respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({
       type: "success",
-      url: "genex://auth-callback?token=one-time-abc"
+      url: "mma://auth-callback?token=one-time-abc"
     });
     respondWith(SESSION, { setCookie: "better-auth.session_token=fresh; Path=/" });
 
@@ -143,7 +143,7 @@ describe("signInWithGoogle", () => {
     respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({
       type: "success",
-      url: "genex://auth-callback?error=no-session"
+      url: "mma://auth-callback?error=no-session"
     });
 
     await expect(signInWithGoogle()).rejects.toThrow("Google sign-in did not complete.");

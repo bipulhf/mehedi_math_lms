@@ -1,4 +1,4 @@
-import { markingReviewModeSchema, type MarkingReviewMode } from "@genex/shared";
+import { markingReviewModeSchema, type MarkingReviewMode } from "@mma/shared";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect } from "react";
@@ -8,7 +8,7 @@ import { MarkingWorkspace } from "@/components/marking/marking-workspace";
 import { BackButton } from "@/components/ui/back-button";
 import { seo } from "@/lib/seo";
 
-const markingModeStorageKey = "genex.marking-mode";
+const markingModeStorageKey = "mma.marking-mode";
 
 export const Route = createFileRoute("/dashboard/tests/$testId/marking")({
   head: () =>

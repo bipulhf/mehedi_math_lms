@@ -1,4 +1,4 @@
-import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@genex/shared";
+import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@mma/shared";
 import { Image } from "expo-image";
 import type { JSX, ReactNode } from "react";
 import {

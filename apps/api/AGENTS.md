@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/api`
+# AGENTS.md — `@mma/api`
 
 Hono API on the Bun runtime. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -19,7 +19,7 @@ Listens on `env.API_PORT` (default `3001`) in development. The `PORT=3010` in th
 Every HTTP feature flows through four layers. Do not skip one. **Every layer file is `<name>-<layer>.ts`** — dashes, not dots. The build plan originally specified `course.route.ts`; the routes followed it and the other three layers did not, so the repo agreed with neither the plan nor itself until the routes were renamed to match the majority. Do not reintroduce the dotted form.
 
 ```
-routes/v1/*-route.ts   Hono router. Parses input with a @genex/shared Zod schema. Attaches auth middleware.
+routes/v1/*-route.ts   Hono router. Parses input with a @mma/shared Zod schema. Attaches auth middleware.
 controllers/*.ts       Class. Calls one service, wraps the result in success()/paginated(). No business logic.
 services/*.ts          Class. Business rules, authorization decisions, domain mapping. Throws AppError subclasses.
 repositories/*.ts      Class. Drizzle queries only. Returns plain records. No business rules, no HTTP types.
@@ -81,7 +81,7 @@ Do not catch-and-return an error response inside a service. Throw, and let the h
 
 ## Validation
 
-Schemas come from `@genex/shared`. Two patterns coexist:
+Schemas come from `@mma/shared`. Two patterns coexist:
 
 1. **Inline parse in the route** (dominant, e.g. `categories-route.ts`) — `schema.parse(await context.req.json())`, result passed to the controller as a typed argument. A raw `ZodError` from this path is caught by `onError` and surfaces as a 500 in development / generic 500 in production.
 2. **`validateJson` / `validateQuery` / `validateParams` middleware** (`src/middleware/validate.ts`) — wraps `ZodError` into a `ValidationError` with field-level `issues`, producing a proper 400.
@@ -100,7 +100,7 @@ requireRole("TEACHER", "ADMIN"); // one of these roles
 requireAdmin(); // requireRole("ADMIN")
 ```
 
-Both delegate to `AuthGuardService`. Roles are `STUDENT | TEACHER | ACCOUNTANT | ADMIN` from `@genex/shared`. A route with no guard is public — be deliberate about that.
+Both delegate to `AuthGuardService`. Roles are `STUDENT | TEACHER | ACCOUNTANT | ADMIN` from `@mma/shared`. A route with no guard is public — be deliberate about that.
 
 Ownership and resource-level authorization belongs in the **service**, not the route. Routes only gate by role.
 
@@ -114,7 +114,7 @@ Ownership and resource-level authorization belongs in the **service**, not the r
 
 ## Uploads and image variants
 
-A confirmed image is resized into the widths in `@genex/shared`'s `imageVariantWidths` (400/800/1200), each copy stored beside the original as `<name>@<width>.<ext>`, and the row's `fileUrl` is marked with the widths that exist. `sharp` does the resizing; there is no ffmpeg-style shell-out.
+A confirmed image is resized into the widths in `@mma/shared`'s `imageVariantWidths` (400/800/1200), each copy stored beside the original as `<name>@<width>.<ext>`, and the row's `fileUrl` is marked with the widths that exist. `sharp` does the resizing; there is no ffmpeg-style shell-out.
 
 Three things about that are deliberate:
 

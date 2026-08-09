@@ -2,7 +2,7 @@ import type {
   createCategorySchema,
   reorderCategoriesSchema,
   updateCategorySchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";

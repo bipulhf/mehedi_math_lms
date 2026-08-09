@@ -1,4 +1,4 @@
-import { adminSendSmsSchema, userRoleValues, type UserRole } from "@genex/shared";
+import { adminSendSmsSchema, userRoleValues, type UserRole } from "@mma/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
-import genexMark from "@/assets/genex-mark.png";
+import mmaMark from "@/assets/mma-mark.png";
 import { Badge } from "@/components/ui/badge";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
@@ -146,7 +146,7 @@ function AdminSmsPage() {
       <div className="border border-hairline bg-card p-6">
         <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
           <div className="flex size-10 items-center justify-center border border-hairline bg-panel-warm shrink-0">
-            <img alt="" className="size-6" src={genexMark} />
+            <img alt="" className="size-6" src={mmaMark} />
           </div>
           <div>
             <h1 className="text-xl font-medium text-ink">{t("sms.title")}</h1>

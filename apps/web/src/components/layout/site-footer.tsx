@@ -25,11 +25,11 @@ export function SiteFooter(): JSX.Element {
         <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-14">
           <div className="space-y-4">
             <Link aria-label={siteConfig.name} className="flex items-center gap-2.5" to="/">
-              <img alt="" className="block h-7 w-auto" src="/brand/genex-mark.png" />
+              <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
               <img
                 alt={siteConfig.name}
                 className="block h-4 w-auto"
-                src="/brand/genex-wordmark.png"
+                src="/brand/mma-wordmark.png"
               />
             </Link>
             <dl className="space-y-1.5 text-base font-light text-muted">

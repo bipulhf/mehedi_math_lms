@@ -1,4 +1,4 @@
-import type { WebsocketServerEvent } from "@genex/shared";
+import type { WebsocketServerEvent } from "@mma/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -13,7 +13,7 @@ import { queryKeys } from "@/lib/query/keys";
 import { buildApiWebSocketUrl } from "@/lib/ws-url";
 
 /**
- * Moved to `@genex/shared` when the mobile client grew a socket of its own. The
+ * Moved to `@mma/shared` when the mobile client grew a socket of its own. The
  * alias stays so this file reads the same as it did.
  */
 export type MessagingSocketEvent = WebsocketServerEvent;

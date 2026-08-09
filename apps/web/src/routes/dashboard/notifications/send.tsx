@@ -6,7 +6,7 @@ import {
   userRoleSchema,
   type UserRole,
   userRoleValues
-} from "@genex/shared";
+} from "@mma/shared";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent, type JSX } from "react";
@@ -28,7 +28,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { cn } from "@/lib/utils";
 import { stripHtml } from "@/lib/html";
 import { RouteErrorView } from "@/components/common/route-error";
-import genexMark from "@/assets/genex-mark.png";
+import mmaMark from "@/assets/mma-mark.png";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
@@ -193,7 +193,7 @@ function SendNotificationPage(): JSX.Element {
       <div className="border border-hairline bg-card p-6">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center border border-hairline bg-panel-warm">
-            <img alt="" className="size-6" src={genexMark} />
+            <img alt="" className="size-6" src={mmaMark} />
           </div>
           <div>
             <h1 className="text-xl font-medium text-ink">{t("notify.title")}</h1>
@@ -419,7 +419,7 @@ function SendNotificationPage(): JSX.Element {
             <div className="border border-hairline bg-paper p-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-8 shrink-0 items-center justify-center border border-hairline bg-card">
-                  <img alt="" className="size-5" src={genexMark} />
+                  <img alt="" className="size-5" src={mmaMark} />
                 </div>
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-baseline justify-between gap-2">

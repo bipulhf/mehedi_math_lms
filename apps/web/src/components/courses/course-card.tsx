@@ -31,7 +31,7 @@ interface CourseCardProps {
  * footer with the price and the accent enrol link.
  *
  * There is no struck-through original price and no seat-count badge — the
- * schema holds one price and no seat column. GENEX_MIGRATION.md §2.
+ * schema holds one price and no seat column.
  */
 export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Element {
   const t = useT();

@@ -1,5 +1,5 @@
 /**
- * Genex ships in two languages. Bangla is not a translation of the English —
+ * Mehedi's Math Academy ships in two languages. Bangla is not a translation of the English —
  * it is the language the product was designed and written in, which is why it
  * is the default and why `en` is the fallback rather than the source.
  */
@@ -21,7 +21,7 @@ export const fallbackLocale: Locale = "en";
  * because it is read outside the browser too — the password-reset mail picks
  * its language from this cookie on the request that asked for it.
  */
-export const localeCookieName = "genex_locale";
+export const localeCookieName = "mma_locale";
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && locales.includes(value as Locale);

@@ -1,4 +1,4 @@
-import { and, count, db, desc, eq, inArray, reviews, sql, users } from "@genex/db";
+import { and, count, db, desc, eq, inArray, reviews, sql, users } from "@mma/db";
 
 export interface ReviewRecord {
   comment: string | null;

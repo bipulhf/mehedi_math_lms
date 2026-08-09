@@ -9,8 +9,8 @@ import {
   isNull,
   notifications,
   users
-} from "@genex/db";
-import type { UserRole } from "@genex/shared";
+} from "@mma/db";
+import type { UserRole } from "@mma/shared";
 
 export type NotificationType = "SYSTEM" | "COURSE" | "NOTICE" | "MESSAGE" | "PAYMENT" | "BUG_REPORT";
 

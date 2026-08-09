@@ -5,7 +5,7 @@ import {
   markingDocumentVersion,
   type MarkingPenWidth,
   type MarkingStamp
-} from "@genex/shared";
+} from "@mma/shared";
 import type { JSX } from "react";
 import { useMemo, useRef, useState } from "react";
 import { PanResponder, StyleSheet, View } from "react-native";

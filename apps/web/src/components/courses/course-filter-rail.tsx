@@ -25,7 +25,7 @@ interface CourseFilterRailProps {
  * reset.
  *
  * Levels are root categories and subjects are their children — one tree, two
- * axes, per GENEX_MIGRATION.md decision 2. Which subjects are offered therefore
+ * axes. Which subjects are offered therefore
  * depends on the selected level, and selecting "all levels" offers every
  * subject in the tree.
  *

@@ -2,9 +2,9 @@ import {
   markingDocumentSchema,
   type MarkingReviewMode,
   type UserRole
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
-import type { saveMarkingSchema, setAnswerMarkSchema, submitPaperSchema } from "@genex/shared";
+import type { saveMarkingSchema, setAnswerMarkSchema, submitPaperSchema } from "@mma/shared";
 
 import { normalizeOptionalHtml } from "@/lib/html";
 import type { AnswerScriptRepository } from "@/repositories/answer-script-repository";

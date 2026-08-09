@@ -9,8 +9,8 @@ import {
   testIdParamsSchema,
   testQuestionParamsSchema,
   updateTestSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, testController } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";

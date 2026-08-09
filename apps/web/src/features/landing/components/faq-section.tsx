@@ -1,5 +1,5 @@
 import { useState, type JSX } from "react";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 import { AccordionRow } from "@/components/ui/accordion";
 import { LandingSection } from "@/features/landing/components/landing-section";

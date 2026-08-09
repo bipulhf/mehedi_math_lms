@@ -16,7 +16,7 @@ import { seo } from "@/lib/seo";
 export const Route = createFileRoute("/auth/forgot-password")({
   head: () =>
     seo({
-      description: "Ask for a link to set a new password on your Genex account.",
+      description: "Ask for a link to set a new password on your Mehedi's Math Academy account.",
       path: "/auth/forgot-password",
       title: "Forgot password"
     }),

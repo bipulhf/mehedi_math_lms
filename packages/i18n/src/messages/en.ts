@@ -80,7 +80,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "auth.signUpLead": "Open a free account and look around the courses.",
   "auth.trustBadge": "12,000+ students learning with us",
   "auth.welcomeBack": "Welcome back",
-  "brand.name": "Genex",
+  "brand.name": "Mehedi's Math Academy",
 
   "bug.charFloor": "At least {count} characters.",
   "bug.doPlaceholder": "I tapped Enrol on the Higher Maths course and the browser opened, then…",
@@ -330,14 +330,14 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "email.resetHeading": "Change your password",
   "email.resetIgnore": "If this was not you, ignore this mail — your password stays as it is.",
   "email.resetManualLink": "If the button does not work, open this link in your browser:",
-  "email.resetSubject": "Genex — your password reset link",
+  "email.resetSubject": "Mehedi's Math Academy — your password reset link",
 
   "field.hidePassword": "Hide",
   "field.showPassword": "Show",
 
-  "footer.about": "Genex",
+  "footer.about": "Mehedi's Math Academy",
   "footer.address": "Address",
-  "footer.copyright": "© {year} Genex",
+  "footer.copyright": "© {year} Mehedi's Math Academy",
   "footer.courses": "Courses",
   "footer.email": "Email",
   "footer.helpline": "Helpline",
@@ -350,7 +350,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
 
   "home.browseSubjects": "Pick a subject",
   "home.browseSubjectsLead": "Start where you actually want to study.",
-  "home.whyEyebrow": "Why Genex",
+  "home.whyEyebrow": "Why Mehedi's Math Academy",
   "home.whyTitle": "What a course actually gives you",
   "home.whyLead": "Classes, notes, exams and a teacher's attention, in one place.",
   "home.get1Title": "Recorded video classes",
@@ -1299,11 +1299,11 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "test.scoreLabel": "Score",
   "site.tagline": "Mathematics and science, made plain.",
   "cbuild.assessments": "Tests",
-  "about.title": "About Genex",
+  "about.title": "About Mehedi's Math Academy",
   "about.lead":
     "Courses, notes and tests from teachers around the country, in one place and in plain language.",
   "about.body1":
-    "Genex exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
+    "Mehedi's Math Academy exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
   "about.body2":
     "Behind every course there is a teacher, and behind them the messaging, notices and assessment tools that keep a batch running.",
   "contact.title": "Contact us",

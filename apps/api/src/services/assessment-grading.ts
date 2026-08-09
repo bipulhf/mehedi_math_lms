@@ -1,4 +1,4 @@
-import type { createQuestionSchema, submitTestSchema, updateQuestionSchema } from "@genex/shared";
+import type { createQuestionSchema, submitTestSchema, updateQuestionSchema } from "@mma/shared";
 import type { z } from "zod";
 
 import type {

@@ -4,7 +4,7 @@ import type {
   MarkingReviewMode,
   StudentProfileInput,
   TeacherProfileInput
-} from "@genex/shared";
+} from "@mma/shared";
 
 import {
   apiDelete,
@@ -18,7 +18,7 @@ import {
 
 /**
  * One module for the endpoints the app uses. The response shapes mirror the
- * API's own view types; where a validator exists it comes from `@genex/shared`
+ * API's own view types; where a validator exists it comes from `@mma/shared`
  * rather than being redeclared.
  */
 

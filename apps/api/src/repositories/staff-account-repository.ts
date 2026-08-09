@@ -1,4 +1,4 @@
-import { accounts, db, eq, users } from "@genex/db";
+import { accounts, db, eq, users } from "@mma/db";
 
 /**
  * Roles an Admin can create on someone's behalf. ADMIN is included so a second

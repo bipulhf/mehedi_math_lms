@@ -96,8 +96,8 @@ export function CoursePrimaryAction({
  * The previous version printed a struck-through "original" price of
  * `price × 2.5` and a "65% OFF" badge. Neither existed: the schema holds one
  * price and no discount, so both were invented and shown to buyers as fact.
- * They are gone — GENEX_MIGRATION.md §2 cuts the discount, the seat count, the
- * batch date and the countdown for the same reason.
+ * They are gone, along with the seat count, the batch date and the countdown,
+ * for the same reason.
  */
 export function CourseBuyCard({
   appliedCoupon,

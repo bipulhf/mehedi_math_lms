@@ -3,7 +3,7 @@ import type {
   courseStatusSchema,
   rejectCourseSchema,
   updateCourseSchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPost, apiPut, type PaginatedEnvelope } from "@/lib/api/client";
@@ -32,7 +32,7 @@ export interface CourseStats {
   reviewAverage: number | null;
   reviewCount: number;
   /** Summed lesson duration. The design's "6 মাস" has no column behind it;
-      this is the honest substitute. GENEX_MIGRATION.md §2. */
+      this is the honest substitute. */
   totalDurationSeconds: number;
 }
 

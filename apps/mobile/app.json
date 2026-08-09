@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Genex",
-    "slug": "genex",
+    "name": "Mehedi's Math Academy",
+    "slug": "mehedis-math-academy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "genex",
+    "scheme": "mma",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "com.genex.app",
+      "bundleIdentifier": "com.mehedismathacademy.app",
       "supportsTablet": true
     },
     "android": {
@@ -18,7 +18,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.genex.app",
+      "package": "com.mehedismathacademy.app",
       "predictiveBackGestureEnabled": false
     },
     "web": {

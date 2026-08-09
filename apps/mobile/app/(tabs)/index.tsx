@@ -1,4 +1,4 @@
-import type { Formatters, Translator } from "@genex/i18n";
+import type { Formatters, Translator } from "@mma/i18n";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";

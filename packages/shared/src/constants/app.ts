@@ -1,3 +1,3 @@
-export const appName = "Genex";
-export const appDomain = "genex.com.bd";
-export const appUrl = "https://genex.com.bd";
+export const appName = "Mehedi's Math Academy";
+export const appDomain = "mehedismathacademy.com";
+export const appUrl = "https://mehedismathacademy.com";

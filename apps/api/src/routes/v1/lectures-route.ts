@@ -9,8 +9,8 @@ import {
   setLectureVideoChaptersSchema,
   updateLectureSchema,
   updateMaterialSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, commentController, contentController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

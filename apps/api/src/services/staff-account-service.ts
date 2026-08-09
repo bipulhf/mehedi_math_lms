@@ -1,5 +1,5 @@
-import { generateUniqueSlug } from "@genex/shared";
-import { createPasswordHash, verifyPasswordHash } from "@genex/auth/server";
+import { generateUniqueSlug } from "@mma/shared";
+import { createPasswordHash, verifyPasswordHash } from "@mma/auth/server";
 
 import type { StaffAccountRepository} from "@/repositories/staff-account-repository";
 import { type StaffRole } from "@/repositories/staff-account-repository";

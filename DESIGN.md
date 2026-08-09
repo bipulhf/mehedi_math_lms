@@ -1,12 +1,12 @@
-# Design System Specification: Genex
+# Design System Specification: Mehedi's Math Academy
 
-The visual language for **Genex**, a Bangla-first coaching platform. Derived
+The visual language for **Mehedi's Math Academy**, a Bangla-first coaching platform. Derived
 from the design handoff in `design_handoff_genex/`, which stays the authority on
 pixel-level questions this document does not answer.
 
 This replaces the previous "Digital Atelier" system wholesale. That system was
 built on tonal layering, gradients, shadows and a prohibition on 1px borders.
-Genex is the opposite on every one of those axes. If you find a rule from the
+Mehedi's Math Academy is the opposite on every one of those axes. If you find a rule from the
 old system still quoted somewhere in the codebase, it is stale — fix it.
 
 ---
@@ -260,9 +260,9 @@ motion.
 
 `apps/web/public/brand/` holds the logo:
 
-- `genex-mark.png` (361×360, transparent) — orange **G** with a black play triangle. Light backgrounds.
-- `genex-wordmark.png` (958×210, transparent) — "GENEX", black, italic condensed with a reversed E.
-- `genex-mark-light.png`, `genex-wordmark-light.png` — white-knockout, for dark backgrounds.
+- `mma-mark.png` (361×360, transparent) — orange **G** with a black play triangle. Light backgrounds.
+- `mma-wordmark.png` (958×210, transparent) — "GENEX", black, italic condensed with a reversed E.
+- `mma-mark-light.png`, `mma-wordmark-light.png` — white-knockout, for dark backgrounds.
 
 Header lockup: mark at `28px` high (26px in app shells) plus wordmark at `16px`
 (15px), `9px` gap, both `display: block`.

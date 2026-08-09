@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/mobile`
+# AGENTS.md — `@mma/mobile`
 
 Expo SDK 57 / React Native app with Expo Router. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -67,7 +67,7 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 ## Design tokens and locale
 
 `src/theme/tokens.ts` restates `DESIGN.md` in values Metro can bundle — the
-Genex warm-paper palette, square cards, 4px on buttons and inputs, and no
+Mehedi's Math Academy warm-paper palette, square cards, 4px on buttons and inputs, and no
 shadows (`shadow.card` is an empty object kept only so screens that spread it
 still compile). The Material token names below it are compatibility aliases and
 go when the screens using them are rebuilt.
@@ -78,23 +78,23 @@ map to the same family: React Native does not synthesise a bold for a custom
 family on Android, so `fontWeight` over a family name silently renders regular
 — reach for a family, never a weight.
 
-Strings and number formatting come from `@genex/i18n`, the same catalogue the
+Strings and number formatting come from `@mma/i18n`, the same catalogue the
 web app uses, through `src/lib/locale.tsx` (`useT`, `useFormat`, `useLocale`).
 There is no SSR here, so unlike the web there is no cookie and no first-paint
 problem: the stored locale is read in an effect and the first frame uses the
 default.
 
-**Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `genex://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
+**Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `mma://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
 
 A **401 from any product request clears the stored cookie**. A session can end while the app is backgrounded, and without this every screen would keep replaying a dead cookie with nothing telling the app to ask for a sign-in.
 
 ## Payments
 
-Enrolment checkout has the same shape of problem, and `src/lib/payment.ts` solves it the same way. The gateway's own callbacks are server-to-server and have to land on a real origin, so checkout tells the API where to send the _browser_ afterwards: `callbackOrigin` plus `callbackPath`, the latter pointing at `/api/payment-return` on the web app with this app's deep link in its query. The API merges `paymentId` and `status` into that URL, the web route redirects into `genex://payment-callback?…`, and `openAuthSessionAsync` closes the sheet on it.
+Enrolment checkout has the same shape of problem, and `src/lib/payment.ts` solves it the same way. The gateway's own callbacks are server-to-server and have to land on a real origin, so checkout tells the API where to send the _browser_ afterwards: `callbackOrigin` plus `callbackPath`, the latter pointing at `/api/payment-return` on the web app with this app's deep link in its query. The API merges `paymentId` and `status` into that URL, the web route redirects into `mma://payment-callback?…`, and `openAuthSessionAsync` closes the sheet on it.
 
 The outcome is never taken as proof of anything: on return the app invalidates the enrolment queries and re-reads access from the server. Cancelling is silent, the same rule sign-in follows.
 
-**Deep links need a route.** `app/auth-callback.tsx` and `app/payment-callback.tsx` exist because Android delivers `genex://…` through `Linking` as well as resolving the browser session, and Expo Router would otherwise show `+not-found` at the exact moment the flow succeeded.
+**Deep links need a route.** `app/auth-callback.tsx` and `app/payment-callback.tsx` exist because Android delivers `mma://…` through `Linking` as well as resolving the browser session, and Expo Router would otherwise show `+not-found` at the exact moment the flow succeeded.
 
 ## Tests
 
@@ -119,7 +119,7 @@ No spinners. Standards §12 applies to mobile as written — "every screen, ever
 
 `FlashList` for every list, with a memoised row component and `useCallback` for `renderItem` / `keyExtractor` — FlashList recycles rows, so an unmemoised item re-renders the whole visible window on each keystroke. `expo-image` for every image; its disk cache is what makes the catalogue usable on a second launch.
 
-Uploaded images come with smaller copies. `CoverImage` reads the widths declared on the URL and picks one with `pickImageVariant` from `@genex/shared`, sized in **device pixels** — `useWindowDimensions()` times `PixelRatio.get()`. Points would ask for a third of what a 3x screen needs and put a blurred cover on the best display in the room. A URL with no variants is used as-is.
+Uploaded images come with smaller copies. `CoverImage` reads the widths declared on the URL and picks one with `pickImageVariant` from `@mma/shared`, sized in **device pixels** — `useWindowDimensions()` times `PixelRatio.get()`. Points would ask for a third of what a 3x screen needs and put a blurred cover on the best display in the room. A URL with no variants is used as-is.
 
 ## Progress
 
@@ -141,7 +141,7 @@ These were the three deliberate boundaries. All three are closed, and how they w
 
 ## Monorepo notes
 
-- Consumes `@genex/shared` unbuilt, from TypeScript source. `metro.config.js` adds the workspace root to `watchFolders` and `nodeModulesPaths` — without it Metro will not leave this directory.
+- Consumes `@mma/shared` unbuilt, from TypeScript source. `metro.config.js` adds the workspace root to `watchFolders` and `nodeModulesPaths` — without it Metro will not leave this directory.
 - **`bunfig.toml` at the repo root sets `linker = "hoisted"`.** React Native can only link one copy of a native module, and bun's default isolated store produces several. Do not remove it: `expo-doctor` fails immediately, and native builds break in harder-to-diagnose ways.
 - `react` / `react-dom` are excluded from the Expo version check in `package.json`. The SDK pins 19.2.3, the monorepo is on 19.2.8, and one shared copy on a newer patch is safer than two copies of React.
 - This workspace now has `lint` and `typecheck` scripts, so `turbo run lint` / `typecheck` cover it. It still has no `build` — a native build goes through EAS, not Turbo.

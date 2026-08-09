@@ -1,6 +1,6 @@
 import type { Context } from "hono";
-import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+import type { AdminSendNotificationInput, RegisterFcmDeviceInput } from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import type { NotificationService } from "@/services/notification-service";
 import type { AppBindings } from "@/types/app-bindings";

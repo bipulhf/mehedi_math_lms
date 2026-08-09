@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/mailer`
+# AGENTS.md — `@mma/mailer`
 
 The only place this product sends email from. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -24,7 +24,7 @@ Today it sends exactly one message: the password-reset link, called by `emailAnd
 - **A failed send throws.** `sendMail` does not catch, does not log-and-continue, and does not return a boolean nobody checks. A person waiting for a link that was never sent, with nothing in the log saying so, is the failure this package exists to avoid — the same reasoning as [ADR-0015](../../docs/adr/0015-redis-is-optional.md)'s refusal to fake a Redis write. The caller decides what the user sees; it does not get to not know.
 - **Off is a real state.** Every `SMTP_*` defaults to `"replace-me"`, the same convention as the API's optional integrations, so a machine with no relay still boots and imports this package. `isSmtpConfigured` is the single test; `sendMail` throws `MailNotConfiguredError` when it is false.
 - **No queue.** The only mail that exists is one the person is sitting and waiting for, and it is worthless a minute late. A future mail that nobody is waiting on gets a queue of its own; this one does not need one. See `apps/api/AGENTS.md` on why there is deliberately no `email` BullMQ queue.
-- **The language comes from the request.** `localeFromRequest` reads `@genex/i18n`'s `localeCookieName` off the request that asked for the reset, so a reader who filled in a Bangla form gets a Bangla mail. No cookie means Bangla, the product default. New copy is a key in `bn.ts` first, then `en.ts` — never a string typed into the template.
+- **The language comes from the request.** `localeFromRequest` reads `@mma/i18n`'s `localeCookieName` off the request that asked for the reset, so a reader who filled in a Bangla form gets a Bangla mail. No cookie means Bangla, the product default. New copy is a key in `bn.ts` first, then `en.ts` — never a string typed into the template.
 - **The template is tables and inline styles.** Outlook has no flexbox and Gmail drops `<style>` blocks. This is also the one place the palette is written as hexes rather than CSS custom properties, because a mail client cannot reach a variable; keep the token name beside each one.
 - **Both halves are mandatory.** `SendMailInput.text` is not optional — an HTML-only mail scores as spam.
 

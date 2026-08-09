@@ -3,7 +3,7 @@ import {
   scriptPageContentType,
   scriptPageFileExtension,
   scriptPageJpegQuality
-} from "@genex/shared";
+} from "@mma/shared";
 
 /**
  * Turning a photograph of a page into what actually gets stored.

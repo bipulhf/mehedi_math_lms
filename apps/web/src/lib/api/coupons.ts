@@ -4,7 +4,7 @@ import type {
   CouponState,
   createCouponSchema,
   updateCouponSchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
 
 import {

@@ -16,7 +16,7 @@ import {
   sql,
   teacherProfiles,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 export interface LandingCategoryRow {
   courseCount: number;

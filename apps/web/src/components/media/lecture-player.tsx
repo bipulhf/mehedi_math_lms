@@ -17,7 +17,7 @@ import { Maximize, Minimize, Pause, Play, Volume1, Volume2, VolumeX } from "luci
 import type { JSX } from "react";
 import { useMemo } from "react";
 
-import genexMark from "@/assets/genex-mark.png";
+import mmaMark from "@/assets/mma-mark.png";
 import { cn } from "@/lib/utils";
 
 export interface LectureChapterMarker {
@@ -124,7 +124,7 @@ function PlayerWatermark(): JSX.Element {
     <img
       alt=""
       className="pointer-events-none absolute top-3 left-3 z-10 size-5 opacity-35 sm:size-6"
-      src={genexMark}
+      src={mmaMark}
     />
   );
 }

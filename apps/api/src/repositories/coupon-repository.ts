@@ -1,4 +1,4 @@
-import type { CouponKind, CouponState } from "@genex/shared";
+import type { CouponKind, CouponState } from "@mma/shared";
 import {
   and,
   count,
@@ -15,8 +15,8 @@ import {
   payments,
   sql,
   users
-} from "@genex/db";
-import type { SQL } from "@genex/db";
+} from "@mma/db";
+import type { SQL } from "@mma/db";
 
 export interface CouponRecord {
   code: string;

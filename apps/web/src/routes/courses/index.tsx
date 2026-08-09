@@ -42,7 +42,7 @@ export const Route = createFileRoute("/courses/")({
 
     return seo({
       description:
-        "Explore every published course on Genex: level, subject, teacher and price in one catalogue.",
+        "Explore every published course on Mehedi's Math Academy: level, subject, teacher and price in one catalogue.",
       jsonLd: [
         catalogItemListFromCourses(courses),
         breadcrumbJsonLd([

@@ -1,12 +1,11 @@
-> **Superseded in part.** This repository is being converted to **Genex** and
-> its UI rebuilt on `design_handoff_genex/`. Read `GENEX_MIGRATION.md` first —
-> where that document and this one disagree, that one is current. The phases
-> below still describe how the system was built and why; the branding, the
-> design language and several product decisions in them are no longer accurate.
+> **Superseded in part.** The UI has since been rebuilt on
+> `design_handoff_genex/`. The phases below still describe how the system was
+> built and why; the design language and several product decisions in them are
+> no longer accurate.
 
 ---
 name: LMS Platform Build Plan
-overview: A 21-phase plan to build "Genex" (genex.com.bd) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
+overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
 lastAudited: 2026-08-03
 lastImplemented: 2026-08-03
 todos:
@@ -85,10 +84,10 @@ todos:
 isProject: false
 ---
 
-# Genex -- LMS Platform Build Plan
+# Mehedi's Math Academy -- LMS Platform Build Plan
 
-**Site Name:** Genex
-**Domain:** genex.com.bd
+**Site Name:** Mehedi's Math Academy
+**Domain:** mehedismathacademy.com
 
 ---
 
@@ -132,7 +131,7 @@ polish list. **All of it is now built.** Nothing in the 21-phase plan is outstan
 | TanStack Query owns every server read on the web; Zustand holds the unread badge; the `window` CustomEvent bus is gone                                         | `xc-state-management`  | `0ed4a1f`, `cdbfd7d`, `2d23dc7` |
 | API integration tests over the real Hono app, and a Playwright suite in `apps/web/e2e` (4 specs then, 5 now)                                                   | `xc-testing`           | `86d384a`                       |
 | `/sitemap.xml` and `/robots.txt` on the public origin, a real 404 component, the missing §12 skeletons, `pendingComponent`, image CLS, and the dead-code sweep | Polish backlog         | `7cfe99a`                       |
-| The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@genex/shared`, TanStack Query, FlashList and expo-image            | Phase 21               | `e0e8b34`                       |
+| The mobile app: catalogue, enrolment, player, tests, messaging, notifications, profile — on `@mma/shared`, TanStack Query, FlashList and expo-image            | Phase 21               | `e0e8b34`                       |
 
 Two changes reach beyond one workspace and are worth knowing about:
 
@@ -157,7 +156,7 @@ closed.
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
 | `og:image` rasterises to a 1200×630 PNG. It was `image/svg+xml`, which Facebook, X, LinkedIn, WhatsApp, Slack and iMessage all reject — every share of every page fell back to a bare text card                                                                        | A2                 |
 | The homepage reads real data through a new public `GET /api/v1/landing`: featured courses, live category counts, the teachers who actually teach here, real aggregates. It had been hardcoded fiction over eleven images hotlinked from a Google AI-Studio scratch CDN | A1                 |
-| 126 validator tests in `@genex/shared`, and Playwright coverage of enrolment and payment. Writing the first caught a live defect: `.partial()` does not strip a `.default()`, so every course patch silently cleared `isExamOnly`                                        | D                  |
+| 126 validator tests in `@mma/shared`, and Playwright coverage of enrolment and payment. Writing the first caught a live defect: `.partial()` does not strip a `.default()`, so every course patch silently cleared `isExamOnly`                                        | D                  |
 | `/login` and `/signup` canonicalise to their `/auth/*` originals instead of each claiming to be one                                                                                                                                                                    | A6                 |
 | Mobile: Manrope and Inter actually bundled and loaded (the type scale was silently falling back to the system font), the boot spinner replaced by a Reanimated skeleton, and Google sign-in added — its absence was a lockout, not a missing convenience               | A3, A4, A5, A8     |
 | Validation red, chart colours and six sectioning dividers back on the theme; error boundaries on the last two routes                                                                                                                                                   | B2, B3, B4         |
@@ -179,18 +178,18 @@ Google account, and an EAS build.
 
 | Change                                                                                                                                                                                                    | Stage      |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| A mobile checkout returns to the app: `callbackPath` added to `createEnrollmentSchema`, stored on the payment and read back at settlement; `apps/web/src/routes/api/payment-return.ts` 302s into `genex://` | 1          |
+| A mobile checkout returns to the app: `callbackPath` added to `createEnrollmentSchema`, stored on the payment and read back at settlement; `apps/web/src/routes/api/payment-return.ts` 302s into `mma://` | 1          |
 | `jest-expo` + `@testing-library/react-native` harness — 60 tests over the pure logic and a smoke render of every screen                                                                                   | 2          |
 | Lectures play in the app: `expo-video`, progress driven from `timeUpdate`, `resolveLectureVideo` deciding stream-vs-embed                                                                                 | 4          |
 | Profile completion is native. A browser opened from the app arrives signed out — the session cookie lives in this app's keychain — so the web form was never reachable                                    | 5          |
 | An `AppState`-driven messaging socket, with the 10s poll as the fallback when it is down                                                                                                                  | 6          |
 | Parity with the web client: lecture comments, course reviews, certificate download and share, notices, bug reports, catalogue price filters                                                               | 7          |
 | Route error boundaries, offline detection (`ApiError.isOffline`), and a 401 clearing the stored session                                                                                                   | 8          |
-| `eas.json` (development/preview/production), `expo-system-ui` so `userInterfaceStyle: light` is honoured on Android, and one application id — `com.genex.app` — on both platforms            | 9          |
+| `eas.json` (development/preview/production), `expo-system-ui` so `userInterfaceStyle: light` is honoured on Android, and one application id — `com.mehedismathacademy.app` — on both platforms            | 9          |
 | Executing all 15 routes through the react-native-web static export found two unhandled rejections no test caught, each of which blanked a screen through its own error boundary                           | 0 (partly) |
-| 8 Playwright assertions over the two hops into the app: the `genex://` allow-list on both routes, a missing payment status defaulting to `pending`, and one-time tokens not mintable over HTTP              | 3 (partly) |
+| 8 Playwright assertions over the two hops into the app: the `mma://` allow-list on both routes, a missing payment status defaulting to `pending`, and one-time tokens not mintable over HTTP              | 3 (partly) |
 
-**The application id is a default, not a decision.** `com.genex.app` replaced the
+**The application id is a default, not a decision.** `com.mehedismathacademy.app` replaced the
 `com.anonymous.*` placeholder `expo prebuild` writes. It is the one field that cannot change once an app is
 listed — confirm it before the first submission.
 
@@ -232,7 +231,7 @@ rather than annotated. What the gates say today:
 | `bun run lint`      | 8/8                                                                 |
 | `bun run typecheck` | 8/8                                                                 |
 | `bun run build`     | 7/7                                                                 |
-| `bun run test`      | **366 pass** — 145 `@genex/api`, 161 `@genex/shared`, 60 `@genex/mobile`  |
+| `bun run test`      | **366 pass** — 145 `@mma/api`, 161 `@mma/shared`, 60 `@mma/mobile`  |
 | `bun run test:e2e`  | 42 assertions across 5 specs — 40 pass, 2 skip with a stated reason |
 
 Counts that the tree disagreed with the plan on, now corrected throughout: 6 migrations over 34 tables (not
@@ -291,7 +290,7 @@ These were the items that cut across the whole codebase.
    TanStack Query for server state and Zustand for global UI state. Consequence: no request dedupe, no
    background refetch, no cache invalidation, hand-rolled loading and error state in every route.
 2. **~~No tests of any kind.~~ Partly addressed.** 84 unit tests now cover commerce, progress, test,
-   course, staff-account, admin-user, and message services, with a `test` script in `@genex/api` and a `test`
+   course, staff-account, admin-user, and message services, with a `test` script in `@mma/api` and a `test`
    task in `turbo.json`. Still missing: API integration tests against a live server, and Playwright E2E.
    Nothing outside `apps/api` has any test coverage.
 3. **Redis caching is almost unused.** `apps/api/src/lib/redis.ts` is consumed only by BullMQ queues
@@ -418,7 +417,7 @@ graph TB
 Actual tree as of the 3 August 2026 verification. Differences from the original plan are called out inline.
 
 ```
-genex/
+mehedi_math_academy/
 ├── apps/
 │   ├── web/                        # TanStack Start frontend (port 3000)
 │   │   ├── e2e/                    # 5 Playwright specs, outside the Turbo test task
@@ -524,7 +523,7 @@ the lockfile, not what the March 2026 plan proposed. Rows where reality diverged
 | Mobile media    | expo-video / expo-file-system / expo-sharing                       | ~57.0.x               | Lecture playback, certificate download, the share sheet                 |
 | Test runners    | bun test (API, shared) / jest-expo (mobile) / Playwright (web E2E) | --                    | Three runners behind one Turbo `test` task, plus `test:e2e`             |
 | WebSocket       | Hono WebSocket                                                     | built-in (`hono/ws`)  | Two separate WS apps, outside the main middleware chain                 |
-| Validation      | Zod                                                                | ^4.4.3                | Shared via `@genex/shared`                                                |
+| Validation      | Zod                                                                | ^4.4.3                | Shared via `@mma/shared`                                                |
 | Logging         | pino                                                               | ^10.3.1               | Structured JSON logs                                                    |
 | Charts          | Recharts                                                           | ^3.10.1               | Bar, Line, Pie in admin analytics                                       |
 | Icons           | lucide-react                                                       | ^1.28.0               |                                                                         |
@@ -764,7 +763,7 @@ erDiagram
   the `admin()` plugin, and `customSession()` exposing `role`, `slug`, `profileCompleted`, `isActive`.
 - Auth rate limits match the plan exactly: 15-minute window, max 5 on `/sign-in/email` and
   `/sign-up/email`, 100 globally, disabled in development.
-- `databaseHooks` generate a unique user slug on creation via `generateUniqueSlug` from `@genex/shared`.
+- `databaseHooks` generate a unique user slug on creation via `generateUniqueSlug` from `@mma/shared`.
 - Role guards live in `apps/api/src/middleware/auth.ts` and `services/auth-guard-service.ts`.
 - `apps/web/src/routes/api/auth/$.ts` mounts the TanStack Start auth handler; `packages/auth/src/client.ts`
   is the browser client.
@@ -824,8 +823,8 @@ erDiagram
   - No spinners, loaders, or "Loading..." text anywhere -- custom skeletons only
 - Implement error boundaries at every route level using TanStack Router's `errorComponent`
 - Configure TanStack Router with route groups: `(public)`, `(auth)`, `(dashboard)`
-- Set up base HTML head with default meta tags: site name "Genex", favicon, viewport, theme-color
-- Configure default `og:site_name` as "Genex" and `og:url` base as `https://genex.com.bd`
+- Set up base HTML head with default meta tags: site name "Mehedi's Math Academy", favicon, viewport, theme-color
+- Configure default `og:site_name` as "Mehedi's Math Academy" and `og:url` base as `https://mehedismathacademy.com`
 
 **Delivered:**
 
@@ -1136,11 +1135,11 @@ erDiagram
 - ~~**The `file-processing` worker was never written.**~~ Written. `workers/file-processing-worker.ts`
   consumes `extract-video-metadata`, parses duration and dimensions with the ISO base media container
   reader in `services/video-metadata.ts` (there is no ffmpeg on the API host), and writes back through
-  `upload-repository`. Run it with `bun run --filter @genex/api worker:file-processing`. It skips cleanly when
+  `upload-repository`. Run it with `bun run --filter @mma/api worker:file-processing`. It skips cleanly when
   S3 is unconfigured, and `apps/api/src/scripts/backfill-video-metadata.ts` covers videos confirmed before
   it existed.
 - ~~No thumbnail variants are generated for course covers.~~ Built. Every resizable image is resized on
-  confirm into the widths in `@genex/shared`'s `imageVariantWidths` (400/800/1200) by `services/image-variants.ts`,
+  confirm into the widths in `@mma/shared`'s `imageVariantWidths` (400/800/1200) by `services/image-variants.ts`,
   stored beside the original as `<name>@<width>.<ext>`, and recorded on `uploads.variant_widths`. The row's
   URL is marked with the widths that exist, which is what lets a client build a `srcset` — a single URL
   string is all that is kept downstream, so there is nothing else to ask.
@@ -1260,7 +1259,7 @@ erDiagram
 - **A mobile checkout returns through a second hop.** `createEnrollmentSchema` takes an optional
   `callbackPath`, stored on the payment and read back at settlement — never from the callback body, which
   is someone else's choice of destination. `apps/web/src/routes/api/payment-return.ts` is where the browser
-  lands before the `genex://` deep link. The origin half (`callbackOrigin`) is still trusted as given; see the
+  lands before the `mma://` deep link. The origin half (`callbackOrigin`) is still trusted as given; see the
   backlog.
 
 ---
@@ -1448,7 +1447,7 @@ erDiagram
   the WebSocket via `notification-realtime-service.ts`.
 - `workers/notification-worker.ts` consumes the queue at concurrency 4 and delivers through
   `notification-fcm-processor.ts` / `fcm-push-service.ts` (firebase-admin 14).
-  Run it with `bun run --filter @genex/api worker:notifications`.
+  Run it with `bun run --filter @mma/api worker:notifications`.
 - Web push: `lib/firebase/web-push.ts` handles the permission prompt and token registration;
   `public/firebase-messaging-sw.js` is the service worker, pulling its config at runtime from
   `GET /api/v1/public/firebase-config` so no keys are baked into the bundle.
@@ -1502,7 +1501,7 @@ erDiagram
   by course, or across all students. `packages/db/src/schema/sms.ts` carries batch and delivery tracking
   with 5 indexes; `utils/phone-bd.ts` normalises Bangladeshi numbers before dispatch.
 - `workers/sms-worker.ts` drains the `sms` queue at concurrency 2 via `sms-batch-processor.ts`.
-  Run it with `bun run --filter @genex/api worker:sms`.
+  Run it with `bun run --filter @mma/api worker:sms`.
 - Noticeboard: `notices` table, `GET|POST /courses/:courseId/notices`, `PUT /notices/:id`,
   `DELETE /notices/:id`, all through `notice-service.ts`.
 - Frontend: `routes/dashboard/admin/sms.tsx` (composer, recipient filters, history with delivery status),
@@ -1582,7 +1581,7 @@ erDiagram
 
 **Status:** Completed
 
-**Goal:** Make every public-facing page on genex.com.bd fully SEO-optimized with dynamic meta tags, Open Graph/Twitter cards, structured data (JSON-LD), sitemap, robots.txt, and performance signals -- ensuring discoverability on Google, Facebook, and other platforms.
+**Goal:** Make every public-facing page on mehedismathacademy.com fully SEO-optimized with dynamic meta tags, Open Graph/Twitter cards, structured data (JSON-LD), sitemap, robots.txt, and performance signals -- ensuring discoverability on Google, Facebook, and other platforms.
 
 **Public pages that require SEO:**
 
@@ -1602,16 +1601,16 @@ erDiagram
   - Create a reusable `seo()` utility function in `lib/seo.ts` that generates meta tags from page-specific data
   - Use TanStack Start's `createFileRoute` with `head` export (or `Meta` component) to inject meta tags per route via SSR
   - Every public route file must export meta/head with: `title`, `description`, `canonical`, `og:`_, `twitter:`_
-  - Title format: `{Page Title} | Genex` (max 60 chars)
+  - Title format: `{Page Title} | Mehedi's Math Academy` (max 60 chars)
   - Description: contextual, 150-160 chars, unique per page
 - **Open Graph and Twitter Cards:**
-  - Default OG image: branded fallback image stored in S3 (1200x630px) with "Genex" branding
+  - Default OG image: branded fallback image stored in S3 (1200x630px) with "Mehedi's Math Academy" branding
   - Course detail pages: use the course cover image as `og:image`, with title and price overlay via a dynamic OG image generation endpoint
   - Teacher profile pages: use teacher photo as `og:image`
   - `og:type`: `website` for static pages, `article` for course detail (or `course` via custom type)
   - Twitter card type: `summary_large_image` for all pages
-  - `og:url`: canonical URL using `https://genex.com.bd/...`
-  - `og:site_name`: `Genex`
+  - `og:url`: canonical URL using `https://mehedismathacademy.com/...`
+  - `og:site_name`: `Mehedi's Math Academy`
 - **Structured Data (JSON-LD):**
   - **Homepage:** `Organization` schema with name, url, logo, social links
   - **Course Detail:** `Course` schema with name, description, provider, offers (price), aggregateRating, instructor
@@ -1630,9 +1629,9 @@ erDiagram
   - `robots.txt` at `/robots.txt`:
     - Allow all public pages
     - Disallow `/dashboard/`_, `/api/`_, `/admin/\`
-    - Reference sitemap: `Sitemap: https://genex.com.bd/sitemap.xml`
+    - Reference sitemap: `Sitemap: https://mehedismathacademy.com/sitemap.xml`
 - **Canonical URLs and Routing:**
-  - Every public page sets `<link rel="canonical" href="...">` with the full `https://genex.com.bd` URL
+  - Every public page sets `<link rel="canonical" href="...">` with the full `https://mehedismathacademy.com` URL
   - Course URLs use slugs: `/courses/hsc-physics-complete-guide` (not UUIDs)
   - Category URLs use slugs: `/categories/hsc`
   - Teacher URLs use slugs: `/teachers/tanvir-hasan`
@@ -1701,7 +1700,7 @@ erDiagram
 - `src/` holds everything reusable: `lib/` (env, api-client, api, auth, session-store, query, payment,
   lecture-video, profile-form, documents, hooks), `components/` (ui.tsx, lecture-player, lecture-comments,
   course-reviews, route-error, google-sign-in-button), and `theme/tokens.ts`.
-- It depends on `@genex/shared` and consumes it unbuilt; `metro.config.js` carries the workspace resolver
+- It depends on `@mma/shared` and consumes it unbuilt; `metro.config.js` carries the workspace resolver
   configuration that makes that work.
 - It pins its own TypeScript (`~6.0.3`) rather than inheriting the root one; `expo install --fix` owns that
   pin and will move it to whatever the installed SDK expects.
@@ -1716,7 +1715,7 @@ erDiagram
   workspaces.
 - `eas.json` exists with development, preview and production profiles, each carrying its own
   `EXPO_PUBLIC_API_ORIGIN` / `EXPO_PUBLIC_WEB_ORIGIN`. `app.json` names the app on both platforms —
-  `com.genex.app` — and lists `expo-system-ui`, without which `userInterfaceStyle: "light"` is
+  `com.mehedismathacademy.app` — and lists `expo-system-ui`, without which `userInterfaceStyle: "light"` is
   a no-op on Android.
 - **Nothing in it has been run on a phone.** All 15 routes do boot in a real browser through the
   react-native-web static export, which is how two unhandled rejections were found — but react-native-web is
@@ -1807,11 +1806,11 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
 **Testing (Progressive, Per Phase):** ✅ load-bearing — 366 tests under `bun run test`, 42 more under
 `bun run test:e2e`
 
-- **145 tests in `@genex/api`** across 13 files: unit tests over commerce, progress, assessment, course,
+- **145 tests in `@mma/api`** across 13 files: unit tests over commerce, progress, assessment, course,
   staff-account, admin-user, message, cache, video-metadata and image-variant logic, plus integration tests
   that drive the real Hono app through `app.request`. The image tests run real pixels through the real
   encoder — a mocked `sharp` would pass while shipping upscaled or wrongly-encoded variants.
-- **161 tests in `@genex/shared`**, one suite beside every validator that carries a rule, plus the two
+- **161 tests in `@mma/shared`**, one suite beside every validator that carries a rule, plus the two
   cross-runtime modules that are not validators: the image-variant URL contract and the progress-chunk
   rounding rules. These schemas are
   the contract in both directions — the API validates requests with them and the web app resolves its
@@ -1829,10 +1828,10 @@ skeleton inline from `isPending`. That is a deliberate amendment, not an acciden
   app. The enrolment and payment specs assert what must never regress — every enrolment and payment
   endpoint refuses an anonymous caller, and a forged gateway callback for an unknown payment is a 404
   rather than a redirect that settles it. `mobile-handoff.spec.ts` asserts `Location` headers, which is why
-  it is E2E and not a unit test, and never follows a redirect — `genex://` is not fetchable.
+  it is E2E and not a unit test, and never follows a redirect — `mma://` is not fetchable.
   They are outside the Turbo `test` task on purpose: that task must run with nothing else on the machine,
   and these need the API, Postgres and Redis.
-- **60 tests in `@genex/mobile`** across 7 suites, on `jest-expo` and `@testing-library/react-native`: the
+- **60 tests in `@mma/mobile`** across 7 suites, on `jest-expo` and `@testing-library/react-native`: the
   pure logic (`resolveOrigins`, `resolveLectureVideo`, the checkout outcome reader, the profile form, the
   cookie parser) plus screen smoke tests that render each route's skeleton, content and empty state.
   `bun test` cannot run that workspace — it has no React Native renderer — so it has its own runner behind
@@ -1996,7 +1995,7 @@ All API calls go through typed functions in `lib/api/`, never raw `ky` calls in 
 ```typescript
 // lib/api/courses.ts
 import { api } from "./client";
-import type { Course, CreateCourseInput } from "@genex/shared";
+import type { Course, CreateCourseInput } from "@mma/shared";
 
 export const coursesApi = {
   list: (params?: { categoryId?: string; page?: number }) =>
@@ -2165,7 +2164,7 @@ rediscovered as a bug.
    `disableClientRequest` check with a valid session cookie all need a Google account and a device.
    (`docs/mobile-plan.md` Stage 3)
 3. **No EAS build has been run.** `eas.json` and the application id exist; nothing has been compiled or
-   submitted. **Confirm `com.genex.app` before the first submission** — it is a reasonable
+   submitted. **Confirm `com.mehedismathacademy.app` before the first submission** — it is a reasonable
    default that replaced a placeholder, not a decision anyone made, and it is the one field that cannot
    change once an app is listed. (`docs/mobile-plan.md` Stage 9)
 

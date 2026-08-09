@@ -15,7 +15,7 @@ import {
   ne,
   or,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 import {
   mapMessage,

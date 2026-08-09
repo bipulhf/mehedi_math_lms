@@ -1,4 +1,4 @@
-import { defaultLocale, isLocale, localeCookieName, type Locale } from "@genex/i18n";
+import { defaultLocale, isLocale, localeCookieName, type Locale } from "@mma/i18n";
 
 import { sendMail } from "./mailer";
 import { renderPasswordResetEmail } from "./templates/password-reset";

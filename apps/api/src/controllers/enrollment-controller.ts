@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 
 import type { CommerceService, PaymentCallbackTarget } from "@/services/commerce-service";
 import type { EnrollmentPdfService } from "@/services/enrollment-pdf-service";

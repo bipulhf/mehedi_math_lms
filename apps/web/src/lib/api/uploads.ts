@@ -1,4 +1,4 @@
-import type { StorageProvider, UploadPurpose, UploadStatus } from "@genex/shared";
+import type { StorageProvider, UploadPurpose, UploadStatus } from "@mma/shared";
 import { genUploader } from "uploadthing/client";
 import type { FileRouter } from "uploadthing/server";
 

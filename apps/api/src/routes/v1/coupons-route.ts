@@ -7,8 +7,8 @@ import {
   listCouponsQuerySchema,
   previewCouponSchema,
   updateCouponSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, couponController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

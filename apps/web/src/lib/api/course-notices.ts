@@ -1,4 +1,4 @@
-import type { CreateCourseNoticeInput, UpdateCourseNoticeInput } from "@genex/shared";
+import type { CreateCourseNoticeInput, UpdateCourseNoticeInput } from "@mma/shared";
 
 import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api/client";
 

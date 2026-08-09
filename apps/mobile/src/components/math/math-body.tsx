@@ -1,4 +1,4 @@
-import { escapeHtmlText, hasMathDelimiters } from "@genex/shared";
+import { escapeHtmlText, hasMathDelimiters } from "@mma/shared";
 import type { JSX } from "react";
 
 import { MathWebView } from "@/src/components/math/math-webview";

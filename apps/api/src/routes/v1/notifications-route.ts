@@ -4,7 +4,7 @@ import {
   notificationIdParamsSchema,
   notificationsListQuerySchema,
   registerFcmDeviceSchema
-} from "@genex/shared";
+} from "@mma/shared";
 
 import { auditLogService, notificationController } from "@/lib/container";
 import { requireAuth } from "@/middleware/auth";

@@ -1,1 +1,1 @@
-export { authClient } from "@genex/auth/client";
+export { authClient } from "@mma/auth/client";

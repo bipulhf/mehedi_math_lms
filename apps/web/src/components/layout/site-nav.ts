@@ -1,4 +1,4 @@
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 export interface SiteNavItem {
   readonly labelKey: MessageKey;
@@ -13,7 +13,7 @@ export interface SiteNavItem {
  * is worse than no nav at all.
  *
  * Four items, not the design's five: লাইভ ব্যাচ is cut with the rest of the
- * live-class feature (GENEX_MIGRATION.md §2).
+ * live-class feature.
  */
 export const siteNavItems: readonly SiteNavItem[] = [
   { labelKey: "nav.courses", to: "/courses" },

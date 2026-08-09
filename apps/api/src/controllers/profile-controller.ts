@@ -3,7 +3,7 @@ import type {
   basicProfileInputSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
 
 import type {

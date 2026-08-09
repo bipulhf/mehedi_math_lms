@@ -11,7 +11,7 @@ export const Route = createFileRoute("/signup")({
   head: () =>
     seo({
       description:
-        "Join Genex to enroll in structured mathematics programs with progress tracking and teacher support.",
+        "Join Mehedi's Math Academy to enroll in structured mathematics programs with progress tracking and teacher support.",
       // /signup is a friendly alias for the same page as /auth/sign-up. Only
       // one of the two may claim to be the original.
       path: "/auth/sign-up",

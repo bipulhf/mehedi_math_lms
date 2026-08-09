@@ -1,4 +1,4 @@
-import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@genex/shared";
+import type { CourseReviewsQuery, CreateCourseReviewInput, UserRole } from "@mma/shared";
 
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { EnrollmentRepository } from "@/repositories/enrollment-repository";

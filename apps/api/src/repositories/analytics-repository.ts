@@ -14,7 +14,7 @@ import {
   sql,
   studentProfiles,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 export interface TimeSeriesPoint {
   period: string;

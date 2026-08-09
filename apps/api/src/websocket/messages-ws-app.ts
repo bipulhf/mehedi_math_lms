@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { upgradeWebSocket } from "hono/bun";
-import type { UserRole, WebsocketClientEvent } from "@genex/shared";
-import { websocketClientEventSchema } from "@genex/shared";
+import type { UserRole, WebsocketClientEvent } from "@mma/shared";
+import { websocketClientEventSchema } from "@mma/shared";
 
 import { messageRealtimeService, messageService } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 import { z } from "zod";
 
 import { useQuery } from "@tanstack/react-query";

@@ -64,7 +64,7 @@ function AppStack(): JSX.Element {
         <Stack.Screen name="change-password" options={{ title: t("password.title") }} />
         <Stack.Screen name="profile-complete" options={{ title: t("profc.title") }} />
         <Stack.Screen name="bug-report" options={{ title: t("bug.title") }} />
-        {/* Deep-link landing pads. Android delivers `genex://…` through Linking
+        {/* Deep-link landing pads. Android delivers `mma://…` through Linking
           as well as resolving the browser session, and Expo Router would
           otherwise route that to +not-found. */}
         <Stack.Screen name="auth-callback" options={{ headerShown: false }} />

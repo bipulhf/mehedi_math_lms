@@ -10,8 +10,8 @@ export interface MessageRealtimeEvent {
   userIds?: readonly string[];
 }
 
-const MESSAGE_REALTIME_CHANNEL = "genex:messages:events";
-const PRESENCE_HASH_KEY = "genex:messages:presence";
+const MESSAGE_REALTIME_CHANNEL = "mma:messages:events";
+const PRESENCE_HASH_KEY = "mma:messages:presence";
 
 interface LocalSocketEntry {
   connectionId: string;
@@ -196,7 +196,7 @@ export class MessageRealtimeService {
    * decrements the Redis presence count for a socket that vanishes with the
    * process rather than through `onClose`/`onError`, so a restart without
    * this leaves every user who was connected at the time stuck "online"
-   * until a human clears `genex:messages:presence` by hand.
+   * until a human clears `mma:messages:presence` by hand.
    */
   public async releaseAllConnections(): Promise<void> {
     const releases = [...this.socketsByUserId.entries()].flatMap(([userId, sockets]) =>

@@ -1,12 +1,12 @@
-# Genex
+# Mehedi's Math Academy
 
-A full-stack Learning Management System (LMS) monorepo for **genex.com.bd**, built with **Bun**, **Turborepo**, **TanStack Start**, **Hono**, **Drizzle ORM**, and **React Native / Expo**.
+A full-stack Learning Management System (LMS) monorepo for **mehedismathacademy.com**, built with **Bun**, **Turborepo**, **TanStack Start**, **Hono**, **Drizzle ORM**, and **React Native / Expo**.
 
 This repository contains the web app, API, mobile app, shared packages, database layer, and internal tooling for the platform.
 
 ## Overview
 
-Genex is designed as a modern multi-platform LMS focused on:
+Mehedi's Math Academy is designed as a modern multi-platform LMS focused on:
 
 - course publishing and structured learning content
 - user authentication and role-based access
@@ -98,7 +98,7 @@ Based on the current schema and route structure, the platform includes support f
 ## Repository Structure
 
 ```text
-genex/
+mehedi_math_academy/
 ├── apps/
 │   ├── api/         (Dockerfile)
 │   ├── mobile/
@@ -479,5 +479,5 @@ watchman shutdown-server   # if you are not running the mobile app
 Running only the workspaces you need also helps:
 
 ```bash
-bun run dev --filter=@genex/web --filter=@genex/api
+bun run dev --filter=@mma/web --filter=@mma/api
 ```

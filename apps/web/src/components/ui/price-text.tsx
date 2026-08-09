@@ -12,11 +12,10 @@ export interface PriceTextProps {
 /**
  * A price, formatted for the reader's locale — ৳5,900, grouped the Bangla way
  * for a Bangla reader. The taka sign sits tight against the number; `formatCurrency` in
- * `@genex/i18n` is the one place that knows why.
+ * `@mma/i18n` is the one place that knows why.
  *
  * There is no struck-through original price: the schema stores one price per
  * course and the discount the design shows has nothing behind it.
- * GENEX_MIGRATION.md §2.
  */
 export function PriceText({ amount, className }: PriceTextProps): JSX.Element {
   const format = useFormat();

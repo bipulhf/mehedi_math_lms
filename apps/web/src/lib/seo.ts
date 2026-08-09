@@ -1,4 +1,4 @@
-import { readImageVariants } from "@genex/shared";
+import { readImageVariants } from "@mma/shared";
 import type { JSX } from "react";
 
 import type { CourseSummary } from "@/lib/api/courses";
@@ -336,7 +336,7 @@ export function catalogItemListFromCourses(
 ): JsonLdRecord {
   return itemListJsonLd(
     "Course catalog",
-    "Published courses at Genex.",
+    "Published courses at Mehedi's Math Academy.",
     courses.map((c) => ({ name: c.title, path: `/courses/${c.slug}` }))
   );
 }

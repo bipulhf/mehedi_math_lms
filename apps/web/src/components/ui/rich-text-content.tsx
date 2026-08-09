@@ -1,4 +1,4 @@
-import { hasMathDelimiters, renderMathInHtml } from "@genex/shared";
+import { hasMathDelimiters, renderMathInHtml } from "@mma/shared";
 import type { JSX } from "react";
 
 import { sanitizeHtml } from "@/lib/html";

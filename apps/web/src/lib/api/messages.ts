@@ -5,7 +5,7 @@ import type {
   messagesConversationQuerySchema,
   reportConversationSchema,
   sendMessageSchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { z } from "zod";
 
 import { apiGet, apiPost } from "@/lib/api/client";

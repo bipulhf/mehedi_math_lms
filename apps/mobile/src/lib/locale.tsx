@@ -1,5 +1,5 @@
-import type { Formatters, Locale, Translator } from "@genex/i18n";
-import { createFormatters, createTranslator, defaultLocale, isLocale } from "@genex/i18n";
+import type { Formatters, Locale, Translator } from "@mma/i18n";
+import { createFormatters, createTranslator, defaultLocale, isLocale } from "@mma/i18n";
 import * as SecureStore from "expo-secure-store";
 import type { JSX, PropsWithChildren } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -12,7 +12,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
  * problem: the app reads the stored locale in an effect and re-renders. The
  * first frame uses the default, which is the language most users want anyway.
  */
-const LOCALE_KEY = "genex.locale";
+const LOCALE_KEY = "mma.locale";
 
 interface LocaleContextValue {
   readonly format: Formatters;

@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/shared`
+# AGENTS.md — `@mma/shared`
 
 The contract layer between the API, the web app, and scripts: Zod validators, shared types, and slug helpers. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -24,7 +24,7 @@ The modules below the validators are not validators, and they are here for the s
 - **Bijoy.** The conversion tables are shared because the web editor and the MCQ option fields both need them, and because they are the part worth testing. `bijoy-char-map.ts` was copied byte-for-byte and contains control characters that do not survive being retyped — copy it, never edit it by hand.
 - **Progress chunks.** DESIGN.md's chunked tracker means turning a percentage into whole blocks, and the rounding rules — some progress never rounds to empty, nearly-done never rounds to full — are a product decision, not a rendering detail. Web and mobile draw different elements from the same numbers.
 
-`src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@genex/shared"` is the normal form. Subpath exports (`@genex/shared/validators/*`, `@genex/shared/types/*`, `@genex/shared/constants/*`) also exist but are rarely used.
+`src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@mma/shared"` is the normal form. Subpath exports (`@mma/shared/validators/*`, `@mma/shared/types/*`, `@mma/shared/constants/*`) also exist but are rarely used.
 
 Zod v4. Only dependency.
 

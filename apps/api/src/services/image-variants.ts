@@ -2,7 +2,7 @@ import {
   imageVariantWidths,
   scriptPageJpegQualityPercent,
   scriptPageMaxEdge
-} from "@genex/shared";
+} from "@mma/shared";
 import sharp, { type Sharp } from "sharp";
 
 export interface GeneratedImageVariant {

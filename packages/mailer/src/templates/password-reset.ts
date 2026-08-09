@@ -1,7 +1,7 @@
-import { createTranslator, defaultLocale, type Locale } from "@genex/i18n";
+import { createTranslator, defaultLocale, type Locale } from "@mma/i18n";
 
 /**
- * The password reset mail, in the Genex palette.
+ * The password reset mail, in the Mehedi's Math Academy palette.
  *
  * Tables and inline styles, because an email client is not a browser: Outlook
  * has no flexbox and Gmail strips `<style>` blocks it dislikes. The colours are

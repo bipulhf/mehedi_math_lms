@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { createBugReportSchema } from "@genex/shared";
+import { createBugReportSchema } from "@mma/shared";
 
 import { auditLogService, bugReportController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

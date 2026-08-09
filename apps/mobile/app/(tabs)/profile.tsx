@@ -1,4 +1,4 @@
-import { locales, localeNames, type Locale } from "@genex/i18n";
+import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/teachers/")({
   head: () =>
     seo({
       description:
-        "Every teacher publishing on Genex — their subjects, course counts and student numbers.",
+        "Every teacher publishing on Mehedi's Math Academy — their subjects, course counts and student numbers.",
       jsonLd: [
         breadcrumbJsonLd([
           { name: "Home", path: "/" },

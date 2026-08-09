@@ -3,7 +3,7 @@ import {
   scriptPageContentType,
   scriptPageFileExtension,
   scriptPageJpegQuality
-} from "@genex/shared";
+} from "@mma/shared";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 

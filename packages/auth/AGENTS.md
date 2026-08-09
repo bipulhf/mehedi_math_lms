@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/auth`
+# AGENTS.md — `@mma/auth`
 
 Better Auth configuration, shared between the web app and the API. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -6,10 +6,10 @@ Better Auth configuration, shared between the web app and the API. Root conventi
 
 | Export | File | Used by |
 | --- | --- | --- |
-| `@genex/auth/server` | `src/server.ts` | `apps/api` (session verification), `tooling/scripts` (`createPasswordHash`) |
-| `@genex/auth/tanstack-server` | `src/tanstack-server.ts` | `apps/web` — serves the Better Auth HTTP handler at `/api/auth/*` |
-| `@genex/auth/client` | `src/client.ts` | `apps/web` browser code (`authClient`) |
-| `@genex/auth` | `src/index.ts` | re-exports `client` + `server` |
+| `@mma/auth/server` | `src/server.ts` | `apps/api` (session verification), `tooling/scripts` (`createPasswordHash`) |
+| `@mma/auth/tanstack-server` | `src/tanstack-server.ts` | `apps/web` — serves the Better Auth HTTP handler at `/api/auth/*` |
+| `@mma/auth/client` | `src/client.ts` | `apps/web` browser code (`authClient`) |
+| `@mma/auth` | `src/index.ts` | re-exports `client` + `server` |
 
 ## Read this before touching the configs
 
@@ -30,20 +30,20 @@ Shared by all server configs:
 - `BETTER_AUTH_URL` points at the **web** origin (`http://localhost:3000` locally), because the handler is mounted in `apps/web`.
 - Google OAuth self-disables when the client id/secret are still `"replace-me"`. Keep new integrations guarded the same way.
 - `trustedOrigins` covers the web app, the API, and Expo dev origins (`localhost:8081`, `exp://127.0.0.1:8081`).
-- Drizzle adapter over `@genex/db`, with the model-name mapping `user → users`, `account → accounts`, `session → sessions`, `verification → verification_tokens`. Changing a table or column name in `@genex/db` means updating this mapping.
+- Drizzle adapter over `@mma/db`, with the model-name mapping `user → users`, `account → accounts`, `session → sessions`, `verification → verification_tokens`. Changing a table or column name in `@mma/db` means updating this mapping.
 - IDs are UUIDs (`advanced.database.generateId: "uuid"`).
 - Email/password enabled, 8–128 chars, `autoSignIn: true`.
-- Password reset: `sendResetPassword` hands the link to `@genex/mailer`, tokens live one hour (`passwordResetExpirySeconds`, shared with the mail so the two cannot disagree), and `revokeSessionsOnPasswordReset` is on — a reset is how somebody takes a lost account back, so every other session goes with it. The mail throws when SMTP is unset, which Better Auth turns into a 500 in the log rather than a silent nothing. The web pages are `apps/web/src/routes/auth/forgot-password.tsx` and `reset-password.tsx`.
+- Password reset: `sendResetPassword` hands the link to `@mma/mailer`, tokens live one hour (`passwordResetExpirySeconds`, shared with the mail so the two cannot disagree), and `revokeSessionsOnPasswordReset` is on — a reset is how somebody takes a lost account back, so every other session goes with it. The mail throws when SMTP is unset, which Better Auth turns into a 500 in the log rather than a silent nothing. The web pages are `apps/web/src/routes/auth/forgot-password.tsx` and `reset-password.tsx`.
 - Rate limiting: 100 requests / 15 min globally, 5 / 15 min on `/sign-in/email`, `/sign-up/email` and `/reset-password`, 3 / 15 min on `/request-password-reset` — that last one sends mail to an address the caller picked, so the global limit would let a script fill somebody's inbox. **Disabled entirely when `NODE_ENV=development`.**
 
 ### Plugins
 
-- `admin({ defaultRole: "STUDENT", adminRoles: ["ADMIN"] })` — role values come from `@genex/shared` (`STUDENT | TEACHER | ACCOUNTANT | ADMIN`).
+- `admin({ defaultRole: "STUDENT", adminRoles: ["ADMIN"] })` — role values come from `@mma/shared` (`STUDENT | TEACHER | ACCOUNTANT | ADMIN`).
 - `customSession(...)` — lifts `role`, `profileCompleted`, and `isActive` from the user onto the **session** object. This is why consumers read `session.session.role`, not `session.user.role`. `src/client.ts` mirrors this with `customSessionClient<ServerAuth>()`, typed against `tanstack-server.ts`.
 
 ### Additional user fields
 
-`slug`, `profileCompleted` (default `false`), `isActive` (default `true`). The latter two are `input: false` — they cannot be set by a client and must be changed server-side. Adding a field means updating `additionalFields` in **both** server configs, the `customSession` callback if it should reach the session, and the `users` table in `@genex/db`.
+`slug`, `profileCompleted` (default `false`), `isActive` (default `true`). The latter two are `input: false` — they cannot be set by a client and must be changed server-side. Adding a field means updating `additionalFields` in **both** server configs, the `customSession` callback if it should reach the session, and the `users` table in `@mma/db`.
 
 ## Exported types
 

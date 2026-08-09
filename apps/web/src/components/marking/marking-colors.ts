@@ -1,4 +1,4 @@
-import type { MarkingColor, MarkingPenWidth } from "@genex/shared";
+import type { MarkingColor, MarkingPenWidth } from "@mma/shared";
 
 /**
  * The Marking palette, as CSS colours.

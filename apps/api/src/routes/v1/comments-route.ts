@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { commentIdParamsSchema, updateCommentSchema } from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+import { commentIdParamsSchema, updateCommentSchema } from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, commentController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

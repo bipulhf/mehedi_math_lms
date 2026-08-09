@@ -60,7 +60,7 @@ export const Route = createFileRoute("/categories/$slug")({
     return seo({
       description:
         (category.description ? stripHtml(category.description).trim() : undefined) ??
-        `Browse published courses tagged under ${category.name} at Genex.`,
+        `Browse published courses tagged under ${category.name} at Mehedi's Math Academy.`,
       jsonLd: [
         catalogItemListFromCourses(courses),
         breadcrumbJsonLd([

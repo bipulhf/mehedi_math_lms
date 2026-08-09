@@ -1,4 +1,4 @@
-import type { MarkingColor, MarkingPenWidth } from "@genex/shared";
+import type { MarkingColor, MarkingPenWidth } from "@mma/shared";
 import type { JSX } from "react";
 
 import type { MarkingTool } from "@/components/marking/marking-layer";

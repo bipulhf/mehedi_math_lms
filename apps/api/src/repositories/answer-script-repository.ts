@@ -10,7 +10,7 @@ import {
   sql,
   uploads,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 /** One photographed page of an Answer Script, with the teacher's Marking. */
 export interface ScriptPageRecord {

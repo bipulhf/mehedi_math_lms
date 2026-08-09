@@ -157,11 +157,11 @@ export function SiteHeader(): JSX.Element {
             className="flex shrink-0 items-center gap-[9px]"
             to="/"
           >
-            <img alt="" className="block h-7 w-auto" src="/brand/genex-mark.png" />
+            <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
             <img
               alt={siteConfig.name}
               className="block h-4 w-auto"
-              src="/brand/genex-wordmark.png"
+              src="/brand/mma-wordmark.png"
             />
           </Link>
 

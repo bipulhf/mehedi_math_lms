@@ -1,4 +1,4 @@
-import { bijoyToUnicode, hasMathDelimiters, isBijoyEncoded } from "@genex/shared";
+import { bijoyToUnicode, hasMathDelimiters, isBijoyEncoded } from "@mma/shared";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";

@@ -8,7 +8,7 @@ import {
   lectureMaterials,
   lectures,
   videoChapters
-} from "@genex/db";
+} from "@mma/db";
 
 export interface ChapterRecord {
   courseId: string;

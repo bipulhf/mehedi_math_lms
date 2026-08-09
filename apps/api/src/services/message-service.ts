@@ -1,4 +1,4 @@
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 
 import type { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import type {

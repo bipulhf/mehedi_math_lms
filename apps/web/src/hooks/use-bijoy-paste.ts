@@ -1,11 +1,11 @@
-import { bijoyToUnicode, isBijoyEncoded } from "@genex/shared";
+import { bijoyToUnicode, isBijoyEncoded } from "@mma/shared";
 import type { ClipboardEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useT } from "@/lib/i18n/locale-context";
 
-const STORAGE_KEY = "genex.bijoy.auto-convert";
+const STORAGE_KEY = "mma.bijoy.auto-convert";
 
 /**
  * Whether pasted Bijoy is converted without being asked.

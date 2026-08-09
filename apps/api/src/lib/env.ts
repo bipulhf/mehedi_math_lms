@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const apiEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  APP_NAME: z.string().default("Genex"),
-  APP_URL: z.url().default("https://genex.com.bd"),
+  APP_NAME: z.string().default("Mehedi's Math Academy"),
+  APP_URL: z.url().default("https://mehedismathacademy.com"),
   API_PUBLIC_URL: z.url().default("http://localhost:3001/api/v1"),
   API_PORT: z.coerce.number().int().positive().default(3001),
   API_HOST: z.string().default("0.0.0.0"),

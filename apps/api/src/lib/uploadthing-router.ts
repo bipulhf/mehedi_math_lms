@@ -1,10 +1,10 @@
-import { auth } from "@genex/auth/server";
+import { auth } from "@mma/auth/server";
 import {
   scriptPageContentType,
   type StorageProvider,
   type UploadKind,
   type UploadPurpose
-} from "@genex/shared";
+} from "@mma/shared";
 import { createUploadthing, type FileRouter, UploadThingError } from "uploadthing/server";
 
 import { AuthGuardService } from "@/services/auth-guard-service";

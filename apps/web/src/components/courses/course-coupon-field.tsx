@@ -2,13 +2,13 @@ import { useMutation } from "@tanstack/react-query";
 import { TicketPercent, X } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
-import type { CouponRejectionReason } from "@genex/shared";
+import type { CouponRejectionReason } from "@mma/shared";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CouponPreview } from "@/lib/api/coupons";
 import { previewCoupon } from "@/lib/api/coupons";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 /** What the page holds once a code has been checked and accepted. */

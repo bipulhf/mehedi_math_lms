@@ -1,5 +1,5 @@
-import { mathSymbolGroups } from "@genex/shared";
-import type { MessageKey } from "@genex/i18n";
+import { mathSymbolGroups } from "@mma/shared";
+import type { MessageKey } from "@mma/i18n";
 import { Search } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";

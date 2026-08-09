@@ -10,7 +10,7 @@ import {
   studentProfiles,
   teacherProfiles,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 export interface CommentRecord {
   content: string;

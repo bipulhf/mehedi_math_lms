@@ -9,13 +9,13 @@ import { expect, test } from "@playwright/test";
  * this, because what is being asserted is what a real HTTP response does with a
  * `Location` header.
  *
- * Redirects are never followed here. `genex://` is not fetchable, and following
+ * Redirects are never followed here. `mma://` is not fetchable, and following
  * would turn a passing assertion into a connection error.
  */
 
 const PAYMENT_ID = "11111111-1111-4111-8111-111111111111";
-const APP_LINK = "genex://payment-callback";
-const AUTH_LINK = "genex://auth-callback";
+const APP_LINK = "mma://payment-callback";
+const AUTH_LINK = "mma://auth-callback";
 
 test.describe("/api/payment-return", () => {
   test("redirects into the app, carrying the gateway's verdict", async ({ request }) => {
@@ -28,7 +28,7 @@ test.describe("/api/payment-return", () => {
 
     const location = new URL(response.headers().location ?? "");
 
-    expect(location.protocol).toBe("genex:");
+    expect(location.protocol).toBe("mma:");
     expect(location.searchParams.get("paymentId")).toBe(PAYMENT_ID);
     expect(location.searchParams.get("status")).toBe("success");
   });
@@ -79,7 +79,7 @@ test.describe("/api/mobile-auth-handoff", () => {
 
     const location = new URL(response.headers().location ?? "");
 
-    expect(location.protocol).toBe("genex:");
+    expect(location.protocol).toBe("mma:");
     // The whole point: no session, no token. Every failure mode reaching the
     // app looks the same, and none of them carries a credential.
     expect(location.searchParams.has("token")).toBe(false);

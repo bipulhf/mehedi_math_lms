@@ -1,4 +1,4 @@
-import type { MarkingColor, MarkingDocument, MarkingPenWidth, MarkingReviewMode } from "@genex/shared";
+import type { MarkingColor, MarkingDocument, MarkingPenWidth, MarkingReviewMode } from "@mma/shared";
 import { useQuery } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 import {
   adminSendNotificationSchema,
   adminSendSmsSchema,
@@ -18,7 +18,7 @@ import {
   rejectCourseSchema,
   updateAdminUserSchema,
   updateAdminUserStatusSchema
-} from "@genex/shared";
+} from "@mma/shared";
 
 import {
   adminDashboardController,

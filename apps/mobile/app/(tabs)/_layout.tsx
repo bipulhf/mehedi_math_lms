@@ -22,14 +22,14 @@ import { colors, fonts, radius } from "@/src/theme/tokens";
  * five characters rendered differently on every Android OEM font.
  */
 
-/** The Genex mark and wordmark from the shared brand set, as in the web shell. */
+/** The Mehedi's Math Academy mark and wordmark from the shared brand set, as in the web shell. */
 function BrandLockup(): JSX.Element {
   return (
     <View style={styles.brand}>
       {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
-      <Image source={require("@/assets/images/genex-mark.png")} style={styles.brandMark} />
+      <Image source={require("@/assets/images/mma-mark.png")} style={styles.brandMark} />
       {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
-      <Image source={require("@/assets/images/genex-wordmark.png")} style={styles.brandWordmark} />
+      <Image source={require("@/assets/images/mma-wordmark.png")} style={styles.brandWordmark} />
     </View>
   );
 }

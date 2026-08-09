@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/web`
+# AGENTS.md — `@mma/web`
 
 TanStack Start (React 19 + Vite 8) web frontend. Root conventions in [`../../AGENTS.md`](../../AGENTS.md) apply here too.
 
@@ -94,7 +94,7 @@ Question text, options and marking guides may contain LaTeX between dollars — 
 
 `sanitizeHtml` first, **then** the maths pass. `RichTextContent` does that, and `MathText` does the same for plain fields like an MCQ option. The KaTeX markup that reaches the page is minted by `src/lib/katex.ts` from a LaTeX string, so no author bytes are re-injected as HTML and the allowlist in `src/lib/html.ts` never has to grow a `span` or a `class`. Rendering anything of the author's with `dangerouslySetInnerHTML` *after* the maths pass would undo that.
 
-Two things that look like polish and are not. A one-line context — the marking workspace's question strip — must pass `mathDisplay="inline"`, or a stored `$$…$$` renders as a centred block and breaks the row. And a label or a truncated row uses `richTextToPlainText` from `@genex/shared`, not `stripHtml`, which would print the raw `$\frac{a}{b}$`.
+Two things that look like polish and are not. A one-line context — the marking workspace's question strip — must pass `mathDisplay="inline"`, or a stored `$$…$$` renders as a centred block and breaks the row. And a label or a truncated row uses `richTextToPlainText` from `@mma/shared`, not `stripHtml`, which would print the raw `$\frac{a}{b}$`.
 
 Bijoy text is converted on paste, in the editor and in `OptionTextInput`, never on save. Every conversion is undoable and the automatic pass can be switched off from the toolbar.
 
@@ -112,7 +112,7 @@ Script Pages are the one uploaded exception. They are stored sized-down with no 
 
 ## Progress
 
-`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@genex/shared`, so web and mobile fill the same number of blocks.
+`ProgressTrack` from `src/components/ui/progress-track.tsx` is the chunked tracker DESIGN.md asks for: `accent` for what is done, `bar-track` for what is not, square chunks, no thin line. Pass `completed` and `total`; a caller holding only a percentage passes 100 as the total. The rounding rules live in `resolveProgressChunks` in `@mma/shared`, so web and mobile fill the same number of blocks.
 
 The course player draws its own instead, and should keep doing so: there each chunk is a specific lecture and the one being watched gets a third colour, which is more than this primitive models.
 
@@ -160,9 +160,9 @@ has none.
 `mobile-handoff.spec.ts` covers the two routes that redirect out of this app and
 into the Expo one. It belongs in E2E rather than in a unit test because what is
 being asserted is a `Location` header on a real response: that each route
-redirects into `genex://` and refuses every target outside the allow-list, that an
+redirects into `mma://` and refuses every target outside the allow-list, that an
 anonymous auth handoff carries an error and never a token, and that one-time
-tokens are not mintable over HTTP. **Redirects are never followed** — `genex://`
+tokens are not mintable over HTTP. **Redirects are never followed** — `mma://`
 is not fetchable, and following would turn a passing assertion into a
 connection error.
 
@@ -173,7 +173,7 @@ cold and pass warm.
 ## File watchers
 
 Packages are consumed as TypeScript source, so the dev server follows the
-`node_modules/@genex/*` symlinks out into `packages/` and watches the real
+`node_modules/@mma/*` symlinks out into `packages/` and watches the real
 files — that is what makes a package edit hot-reload. `server.watch.ignored` in
 `vite.config.ts` keeps it from descending into build output, caches and the
 mobile app on the way.
@@ -192,7 +192,7 @@ cat /proc/sys/fs/inotify/max_user_instances    # watcher *instances* allowed
 thousands between them. Running only the workspaces you need helps:
 
 ```bash
-bun run dev --filter=@genex/web --filter=@genex/api
+bun run dev --filter=@mma/web --filter=@mma/api
 ```
 
 Raising the ceilings is the durable fix and needs root — see the README.
@@ -205,7 +205,7 @@ Never call `fetch` directly for API data. Two clients, for two contexts:
 
 **SSR / route loaders** — `src/lib/ssr-api.ts` (`ssrApiGet`, `ssrApiGetCourses`). It hits the API directly at `VITE_SSR_API_BASE_URL` (default `http://127.0.0.1:3001/api/v1`), bypassing the Vite proxy, and throws `SsrNotFoundError` on 404 so loaders can `throw notFound()`.
 
-Feature modules in `src/lib/api/` unwrap the API envelope and return `response.data`, so components see plain domain types. Add new endpoints there, one module per API feature, and derive input types from the `@genex/shared` Zod schemas rather than redeclaring them:
+Feature modules in `src/lib/api/` unwrap the API envelope and return `response.data`, so components see plain domain types. Add new endpoints there, one module per API feature, and derive input types from the `@mma/shared` Zod schemas rather than redeclaring them:
 
 ```ts
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
@@ -228,7 +228,7 @@ Auth gating is **client-side**, in the layout route. `src/routes/dashboard.tsx` 
 
 ## Auth
 
-`src/lib/auth.ts` re-exports `authClient` from `@genex/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@genex/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
+`src/lib/auth.ts` re-exports `authClient` from `@mma/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@mma/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
 
 Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`. Role lives at `session.session.role`.
 
@@ -242,7 +242,7 @@ Both take the redirect target from a query parameter, so both go through `isAllo
 
 Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. `DESIGN.md` is the authority on what the tokens mean; this section is only about how to reach them from code.
 
-The palette is the Genex warm-paper set — `ink`, `ink-muted`, `muted`, `muted-light`, `muted-faint`, `paper`, `card`, `panel-warm`, `hairline`, `line-strong`, `chip-active`, `placeholder-fill`, `bar-track`, `bar-idle`, and `accent`.
+The palette is the Mehedi's Math Academy warm-paper set — `ink`, `ink-muted`, `muted`, `muted-light`, `muted-faint`, `paper`, `card`, `panel-warm`, `hairline`, `line-strong`, `chip-active`, `placeholder-fill`, `bar-track`, `bar-idle`, and `accent`.
 
 Use the tokens (`bg-paper`, `text-muted`, `border-hairline`) rather than raw Tailwind colours like `bg-gray-100` or an arbitrary `text-[#c4353b]`. Validation text is `text-error` — the one surviving red.
 
@@ -275,7 +275,7 @@ Components use `cva` for variants and `cn()` from `src/lib/utils.ts` to merge cl
 
 Input, textarea, select and password-input all draw their surface from `fieldClassName` in `src/components/ui/field.ts`. They used to be four copies of the same class string, which is how three of them ended up with a focus glow the fourth did not have. Add a field variant there, not in one of the four.
 
-`Button` still accepts `default`, `gradient` and `secondary`, and `Badge` still accepts `blue`, `gray`, `green`, `violet`, `amber` and `red`. Those are compatibility names for screens that have not been rebuilt yet — each resolves to its Genex equivalent and all of them go in Phase 12. New markup uses `ink` / `accent` / `outline` / `ghost` / `accentLink` / `underline`, and `neutral` / `quiet` / `attention` / `faded`.
+`Button` still accepts `default`, `gradient` and `secondary`, and `Badge` still accepts `blue`, `gray`, `green`, `violet`, `amber` and `red`. Those are compatibility names for screens that have not been rebuilt yet — each resolves to its Mehedi's Math Academy equivalent and all of them go in Phase 12. New markup uses `ink` / `accent` / `outline` / `ghost` / `accentLink` / `underline`, and `neutral` / `quiet` / `attention` / `faded`.
 
 Icons: the design uses none — `+`/`–` are text, the play triangle is a `clip-path`, checks are drawn. `lucide-react` stays for dashboard surfaces with no design precedent (messages, admin tooling).
 
@@ -283,7 +283,7 @@ The landing page's feature grid is the one public exception, and it is deliberat
 
 ## Forms
 
-`useZodForm` from `src/lib/forms/use-zod-form.ts` — react-hook-form with a `zodResolver`, taking the schema from `@genex/shared`:
+`useZodForm` from `src/lib/forms/use-zod-form.ts` — react-hook-form with a `zodResolver`, taking the schema from `@mma/shared`:
 
 ```ts
 const form = useZodForm({ schema: createCategorySchema, defaultValues: { ... } });

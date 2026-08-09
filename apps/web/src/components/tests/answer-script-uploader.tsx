@@ -1,4 +1,4 @@
-import { maxScriptPagesPerAnswer } from "@genex/shared";
+import { maxScriptPagesPerAnswer } from "@mma/shared";
 import type { ChangeEvent, JSX } from "react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";

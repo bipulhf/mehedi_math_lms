@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import type { UserRole } from "@genex/shared";
-import { noticeIdParamsSchema, updateCourseNoticeSchema } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
+import { noticeIdParamsSchema, updateCourseNoticeSchema } from "@mma/shared";
 
 import { auditLogService, noticeController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

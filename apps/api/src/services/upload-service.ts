@@ -1,4 +1,4 @@
-import type { AuthUser } from "@genex/auth/server";
+import type { AuthUser } from "@mma/auth/server";
 import {
   buildImageVariantKey,
   scriptPageContentType,
@@ -6,7 +6,7 @@ import {
   type UploadKind,
   type UploadPurpose,
   withImageVariants
-} from "@genex/shared";
+} from "@mma/shared";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";

@@ -37,7 +37,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 3000,
       // Packages are consumed as TypeScript source, so Vite follows the
-      // node_modules/@genex/* symlinks out into packages/ and watches real
+      // node_modules/@mma/* symlinks out into packages/ and watches real
       // files there — which is what makes a package edit hot-reload. What it
       // must not do is descend into build output and caches on the way: those
       // are thousands of files that never trigger a useful reload, and on

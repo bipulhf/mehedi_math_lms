@@ -25,7 +25,7 @@ export const resetPasswordSearchSchema = z.object({
 export const Route = createFileRoute("/auth/reset-password")({
   head: () =>
     seo({
-      description: "Set a new password on your Genex account.",
+      description: "Set a new password on your Mehedi's Math Academy account.",
       path: "/auth/reset-password",
       title: "Set a new password"
     }),
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/auth/reset-password")({
 });
 
 const minPasswordLength = 8;
-/** Kept in step with `passwordResetExpirySeconds` in `@genex/mailer`. */
+/** Kept in step with `passwordResetExpirySeconds` in `@mma/mailer`. */
 const linkExpiryMinutes = 60;
 
 const resetPasswordSchema = z

@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { MarkingReviewMode, UserRole } from "@genex/shared";
+import type { MarkingReviewMode, UserRole } from "@mma/shared";
 
 import type { AnswerScriptService } from "@/services/answer-script-service";
 import type { PaperMarkingService } from "@/services/paper-marking-service";

@@ -16,7 +16,7 @@ import { seo } from "@/lib/seo";
 export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
     seo({
-      description: "Secure email and Google sign-in for Genex.",
+      description: "Secure email and Google sign-in for Mehedi's Math Academy.",
       path: "/auth/sign-in",
       title: "Sign in"
     }),

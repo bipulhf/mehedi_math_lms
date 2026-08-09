@@ -4,8 +4,8 @@ status: accepted
 
 # A coupon is priced at checkout and recorded on the payment
 
-Coupons appeared in the design handoff with nothing behind them
-(GENEX_MIGRATION.md §6). They exist now: a code reduces what a student pays for
+Coupons appeared in the design handoff with nothing behind them. They exist
+now: a code reduces what a student pays for
 one course purchase. The discount is computed by the server when checkout
 starts, written onto the payment row along with the list price and the code as
 typed, and never recomputed afterwards. There is no separate redemption table

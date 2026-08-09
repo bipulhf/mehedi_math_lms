@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import { FormProvider, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import { createCategorySchema } from "@genex/shared";
+import { createCategorySchema } from "@mma/shared";
 
 import { IconPicker } from "@/components/categories/icon-picker";
 import { CategorySelector } from "@/components/categories/category-selector";

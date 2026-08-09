@@ -1,4 +1,4 @@
-import { richTextToPlainText } from "@genex/shared";
+import { richTextToPlainText } from "@mma/shared";
 import { Trash2, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";

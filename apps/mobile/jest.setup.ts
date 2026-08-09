@@ -28,7 +28,7 @@ jest.mock("@react-native-async-storage/async-storage", () =>
 );
 
 jest.mock("expo-linking", () => ({
-  createURL: jest.fn((path: string) => `genex://${path}`)
+  createURL: jest.fn((path: string) => `mma://${path}`)
 }));
 
 jest.mock("expo-web-browser", () => ({

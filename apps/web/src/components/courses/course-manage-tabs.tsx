@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 import { useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";

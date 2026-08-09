@@ -8,7 +8,7 @@ const workspaceRoot = path.resolve(projectRoot, "../..");
 const config = getDefaultConfig(projectRoot);
 
 /**
- * `@genex/shared` is consumed unbuilt — its package `exports` point at `.ts`
+ * `@mma/shared` is consumed unbuilt — its package `exports` point at `.ts`
  * source. Metro will not leave the app directory or compile TypeScript from
  * another package unless it is told to, so both are configured here.
  */

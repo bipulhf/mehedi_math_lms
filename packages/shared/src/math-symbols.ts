@@ -8,7 +8,7 @@
  *
  * `label` is what the button shows — a glyph, not prose, so it needs no
  * translation. `groupKey` is a message key; the Bangla and English group names
- * live in `@genex/i18n`, because this package carries no UI copy.
+ * live in `@mma/i18n`, because this package carries no UI copy.
  */
 
 export interface MathSymbol {

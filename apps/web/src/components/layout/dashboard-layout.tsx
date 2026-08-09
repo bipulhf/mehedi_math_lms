@@ -28,8 +28,8 @@ import { useT } from "@/lib/i18n/locale-context";
 import { listMessageConversations } from "@/lib/api/messages";
 import { queryKeys } from "@/lib/query/keys";
 import { useUiStore } from "@/stores/ui-store";
-import type { MessageKey } from "@genex/i18n";
-import type { UserRole } from "@genex/shared";
+import type { MessageKey } from "@mma/i18n";
+import type { UserRole } from "@mma/shared";
 
 interface DashboardLayoutProps extends PropsWithChildren {
   isLoading?: boolean;

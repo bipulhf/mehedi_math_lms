@@ -65,7 +65,7 @@ export function CertificatePdfDocument({
     <Document>
       <Page size="LETTER" style={styles.page}>
         <Text style={styles.title}>Certificate of Completion</Text>
-        <Text style={styles.subtitle}>{"Genex"}</Text>
+        <Text style={styles.subtitle}>{"Mehedi's Math Academy"}</Text>
         <Text style={styles.label}>This certifies that</Text>
         <Text style={styles.name}>{studentName}</Text>
         <Text style={styles.body}>has successfully completed</Text>

@@ -1,4 +1,4 @@
-import { renderMathInHtml } from "@genex/shared";
+import { renderMathInHtml } from "@mma/shared";
 import katex from "katex";
 import type { JSX } from "react";
 import { useMemo, useState } from "react";

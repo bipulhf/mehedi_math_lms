@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { questionIdParamsSchema, updateQuestionSchema } from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+import { questionIdParamsSchema, updateQuestionSchema } from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, testController } from "@/lib/container";
 import { requireRole } from "@/middleware/auth";

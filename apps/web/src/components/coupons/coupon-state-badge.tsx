@@ -1,8 +1,8 @@
-import type { CouponState } from "@genex/shared";
+import type { CouponState } from "@mma/shared";
 import type { JSX } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 import { useT } from "@/lib/i18n/locale-context";
 
 const stateKeys = {

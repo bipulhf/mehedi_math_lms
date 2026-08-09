@@ -3,12 +3,12 @@ import type {
   StudentProfileInput,
   TeacherProfileInput,
   UserRole
-} from "@genex/shared";
+} from "@mma/shared";
 import {
   basicProfileInputSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
-} from "@genex/shared";
+} from "@mma/shared";
 import type { ZodType } from "zod";
 
 import type { OwnProfile } from "@/src/lib/api";

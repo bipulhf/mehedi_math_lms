@@ -78,7 +78,7 @@ export async function registerFcmDevice(input: {
   await apiPost("notifications/register-device", input);
 }
 
-export const NOTIFICATIONS_EVENT = "genex:notifications-updated";
+export const NOTIFICATIONS_EVENT = "mma:notifications-updated";
 
 export function emitNotificationsUpdated(): void {
   if (typeof window === "undefined") {

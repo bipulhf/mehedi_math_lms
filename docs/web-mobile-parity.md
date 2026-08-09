@@ -9,7 +9,7 @@ trusting the change list.
 with `DESIGN.md` as the authority on what either one is supposed to look like.
 
 The first edition of this document described an app that had received nothing since `36a413e`
-(_feat(mobile): move the app onto the Genex tokens and catalogue (Phase 11)_). The second edition
+(_feat(mobile): move the app onto the Mehedi's Math Academy tokens and catalogue (Phase 11)_). The second edition
 marked every item in the then-current working tree with what the code actually showed and found a
 short residue: six unlocalised files, four tab titles, two stray headings, six raw date calls, nine
 `hairlineWidth` borders, an unextracted filter chip, and an unsettled unread-badge colour. **This
@@ -25,9 +25,9 @@ Legend used throughout:
 | ⬜ | Not started |
 | ⛔ | Out of scope, permanently |
 
-**Gate status as of this snapshot:** `bun run --filter @genex/mobile lint`, `typecheck` and `test`
+**Gate status as of this snapshot:** `bun run --filter @mma/mobile lint`, `typecheck` and `test`
 are all green (lint exit 0, typecheck exit 0, 60 tests across 7 suites), `bun run --filter
-@genex/web lint typecheck build` is green, `bun run --filter @genex/i18n lint typecheck test` is
+@mma/web lint typecheck build` is green, `bun run --filter @mma/i18n lint typecheck test` is
 green (24 tests, 2130 assertions), and `npx expo export --platform web` bundles all 27 routes with
 no errors.
 
@@ -120,7 +120,7 @@ guarantee that a `t(...)` call exists and resolves — not a guarantee that the 
 
 ### 2.2 Design tokens — ✅ the half-migration is finished
 
-`src/theme/tokens.ts` is now 92 lines of Genex values with **no Material aliases**. The acceptance
+`src/theme/tokens.ts` is now 92 lines of Mehedi's Math Academy values with **no Material aliases**. The acceptance
 grep is clean:
 
 ```
@@ -473,22 +473,22 @@ where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`,
 
 ## 8. Brand and app-shell assets — ◐ half done
 
-**Done:** `apps/mobile/assets/images/` now contains `genex-mark.png` and `genex-wordmark.png`, and
+**Done:** `apps/mobile/assets/images/` now contains `mma-mark.png` and `mma-wordmark.png`, and
 `app/(tabs)/_layout.tsx:24` renders the lockup as the catalogue tab's `headerTitle` — mark at 24px,
-wordmark at 15×72, 6px gap. `app.json` names the app `Genex`, slug `genex`, scheme `genex`, bundle
-`com.genex.app`.
+wordmark at 15×72, 6px gap. `app.json` names the app `Mehedi's Math Academy`, slug `mehedis-math-academy`, scheme `mma`, bundle
+`com.mehedismathacademy.app`.
 
 **Not done — the launcher and splash are still the Expo template:**
 
 | `app.json` key | Current value | Should be |
 | --- | --- | --- |
-| `icon` | `./assets/images/icon.png` (template) | generated from the Genex mark |
+| `icon` | `./assets/images/icon.png` (template) | generated from the Mehedi's Math Academy mark |
 | `android.adaptiveIcon.backgroundColor` | `#E6F4FE` (pale blue) | `#FCFBF9` |
-| `android.adaptiveIcon.foregroundImage` | `android-icon-foreground.png` (template) | Genex mark |
+| `android.adaptiveIcon.foregroundImage` | `android-icon-foreground.png` (template) | Mehedi's Math Academy mark |
 | `expo-splash-screen.backgroundColor` | `#faf8ff` (lavender) | `#FCFBF9` |
-| `expo-splash-screen.image` | `splash-icon.png` (template) | Genex mark |
+| `expo-splash-screen.image` | `splash-icon.png` (template) | Mehedi's Math Academy mark |
 
-Neither `#E6F4FE` nor `#faf8ff` appears anywhere in the Genex palette. This is the last thing
+Neither `#E6F4FE` nor `#faf8ff` appears anywhere in the Mehedi's Math Academy palette. This is the last thing
 standing between the app and a build a human can look at without wincing.
 
 ⚠️ `DESIGN.md` §9 warns the current PNGs were traced from a white-background JPG. **Get the vector
@@ -566,7 +566,7 @@ Sizes are rough: **S** ≤ half a day, **M** ≈ a day, **L** ≈ two or more.
 
 | # | Change | Size | Status |
 | --- | --- | --- | --- |
-| E1 | Genex app icon, adaptive icon, splash | S | ⬜ blocked on the vector (§8) |
+| E1 | Mehedi's Math Academy app icon, adaptive icon, splash | S | ⬜ blocked on the vector (§8) |
 | E2 | Brand lockup in the tab header | S | ✅ |
 | E3 | Real icon set for the tab bar | S | ✅ `react-native-svg`, `src/components/tab-icons.tsx` |
 | E4 | Page texture | M | ⬜ pending §11 Q1 |
@@ -600,7 +600,7 @@ against the gate status at the top of this document. What is left is materially 
 - [x] Every list that can be empty has a dashed `EmptyState`.
 - [x] Every route still exports `ErrorBoundary` from `@/src/components/route-error`.
 - [x] `lint`, `typecheck` and the 60 jest-expo tests are green — re-verified this edition, plus
-      `@genex/web lint typecheck build` and `@genex/i18n lint typecheck test`, plus a full
+      `@mma/web lint typecheck build` and `@mma/i18n lint typecheck test`, plus a full
       `expo export --platform web` bundle of all 27 routes.
 - [ ] `bunx expo-doctor` stays at 20/20 — not re-run since the working-tree changes.
 

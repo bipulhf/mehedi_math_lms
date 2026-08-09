@@ -35,7 +35,7 @@ export default defineConfig({
               domain: new URL(baseURL).hostname,
               expires: -1,
               httpOnly: false,
-              name: "genex_locale",
+              name: "mma_locale",
               path: "/",
               sameSite: "Lax",
               secure: false,

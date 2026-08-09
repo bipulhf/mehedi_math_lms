@@ -1,4 +1,4 @@
-import type { SQL } from "@genex/db";
+import type { SQL } from "@mma/db";
 import {
   and,
   count,
@@ -10,8 +10,8 @@ import {
   or,
   smsBatches,
   users
-} from "@genex/db";
-import type { UserRole } from "@genex/shared";
+} from "@mma/db";
+import type { UserRole } from "@mma/shared";
 
 export interface AdminUsersQuery {
   limit: number;

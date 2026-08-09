@@ -1,4 +1,4 @@
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
 import type { CommentRepository} from "@/repositories/comment-repository";

@@ -1,5 +1,5 @@
-import type { SQL } from "@genex/db";
-import { and, auditLogs, count, db, desc, eq, gte, ilike, lte, or, users } from "@genex/db";
+import type { SQL } from "@mma/db";
+import { and, auditLogs, count, db, desc, eq, gte, ilike, lte, or, users } from "@mma/db";
 
 export interface CreateAuditLogInput {
   action: string;

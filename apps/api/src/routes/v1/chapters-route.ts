@@ -9,8 +9,8 @@ import {
   reorderLecturesSchema,
   updateChapterSchema,
   updateMaterialSchema
-} from "@genex/shared";
-import type { UserRole } from "@genex/shared";
+} from "@mma/shared";
+import type { UserRole } from "@mma/shared";
 
 import { auditLogService, contentController } from "@/lib/container";
 import { testController } from "@/lib/container";

@@ -10,7 +10,7 @@ import { mobileEnv } from "@/src/lib/env";
  * read. Here it is worse, because money moves.
  *
  * The gateway's own callbacks are server-to-server and must land on a real
- * origin, so the app cannot hand it an `genex://` URL. Instead checkout tells the
+ * origin, so the app cannot hand it an `mma://` URL. Instead checkout tells the
  * API where to send the *browser* afterwards — a web route that redirects into
  * this app's scheme — and `openAuthSessionAsync` closes the sheet the moment
  * that redirect fires.

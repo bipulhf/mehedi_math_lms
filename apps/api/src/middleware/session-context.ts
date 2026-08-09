@@ -1,4 +1,4 @@
-import { auth } from "@genex/auth/server";
+import { auth } from "@mma/auth/server";
 import type { MiddlewareHandler } from "hono";
 
 import type { AppBindings } from "@/types/app-bindings";

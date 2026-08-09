@@ -1,4 +1,4 @@
-import { resolveProgressChunks } from "@genex/shared";
+import { resolveProgressChunks } from "@mma/shared";
 import type { JSX } from "react";
 
 import { cn } from "@/lib/utils";

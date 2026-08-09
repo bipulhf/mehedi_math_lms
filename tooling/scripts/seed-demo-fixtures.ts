@@ -16,7 +16,7 @@
  */
 
 /** Every demo account shares it. Development only; the script refuses to run elsewhere. */
-export const DEMO_PASSWORD = "genex-demo-2026";
+export const DEMO_PASSWORD = "mma-demo-2026";
 
 export interface LevelFixture {
   readonly description: string;
@@ -122,46 +122,46 @@ export interface TeacherFixture {
 export const demoTeachers: readonly TeacherFixture[] = [
   {
     bio: "নয় বছর ধরে ফিজিক্স পড়াচ্ছি। সূত্র মুখস্থ করানোর চেয়ে কেন সূত্রটা এমন, সেটা বোঝানোতেই বেশি সময় দিই — একবার বুঝে গেলে আর ভুলবে না।",
-    email: "tanvir.hasan@genex.demo",
-    imageSeed: "genex-teacher-tanvir",
+    email: "tanvir.hasan@mehedismathacademy.demo",
+    imageSeed: "mma-teacher-tanvir",
     name: "তানভীর হাসান",
     phone: "01711-000001",
     qualifications: "বুয়েট, মেকানিক্যাল ইঞ্জিনিয়ারিং",
     slug: "tanvir-hasan",
-    socialLinks: "https://facebook.com/genex.demo/tanvir",
+    socialLinks: "https://facebook.com/mma.demo/tanvir",
     specializations: "ফিজিক্স · ভর্তি পরীক্ষা"
   },
   {
     bio: "রসায়ন ভয়ের বিষয় না। বিক্রিয়াগুলোর পেছনে একটা গল্প আছে, সেটা ধরতে পারলে বাকিটা সহজ।",
-    email: "nusrat.jahan@genex.demo",
-    imageSeed: "genex-teacher-nusrat",
+    email: "nusrat.jahan@mehedismathacademy.demo",
+    imageSeed: "mma-teacher-nusrat",
     name: "নুসরাত জাহান",
     phone: "01711-000002",
     qualifications: "ঢাকা বিশ্ববিদ্যালয়, রসায়ন",
     slug: "nusrat-jahan",
-    socialLinks: "https://facebook.com/genex.demo/nusrat",
+    socialLinks: "https://facebook.com/mma.demo/nusrat",
     specializations: "কেমিস্ট্রি · বায়োলজি"
   },
   {
     bio: "I teach mathematics the way I wish someone had taught me: slowly, with every step written down, and no jumps that only make sense to the person already holding the answer.",
-    email: "rafiul.karim@genex.demo",
-    imageSeed: "genex-teacher-rafiul",
+    email: "rafiul.karim@mehedismathacademy.demo",
+    imageSeed: "mma-teacher-rafiul",
     name: "Rafiul Karim",
     phone: "01711-000003",
     qualifications: "MSc Mathematics, University of Dhaka",
     slug: "rafiul-karim",
-    socialLinks: "https://linkedin.com/in/genex-demo-rafiul",
+    socialLinks: "https://linkedin.com/in/mma-demo-rafiul",
     specializations: "গণিত · মক টেস্ট"
   },
   {
     bio: "Six years building software, four of them teaching it. Every lesson ends with something that runs.",
-    email: "sadia.rahman@genex.demo",
-    imageSeed: "genex-teacher-sadia",
+    email: "sadia.rahman@mehedismathacademy.demo",
+    imageSeed: "mma-teacher-sadia",
     name: "Sadia Rahman",
     phone: "01711-000004",
     qualifications: "BSc CSE, SUST · Senior Engineer",
     slug: "sadia-rahman",
-    socialLinks: "https://github.com/genex-demo-sadia",
+    socialLinks: "https://github.com/mma-demo-sadia",
     specializations: "প্রোগ্রামিং · ফ্রিল্যান্সিং"
   }
 ];
@@ -178,7 +178,7 @@ export interface StudentFixture {
 export const demoStudents: readonly StudentFixture[] = [
   {
     classOrGrade: "দ্বাদশ",
-    email: "sabbir.ahmed@genex.demo",
+    email: "sabbir.ahmed@mehedismathacademy.demo",
     institution: "নটর ডেম কলেজ",
     name: "সাব্বির আহমেদ",
     phone: "01811-000001",
@@ -186,7 +186,7 @@ export const demoStudents: readonly StudentFixture[] = [
   },
   {
     classOrGrade: "একাদশ",
-    email: "ayesha.siddika@genex.demo",
+    email: "ayesha.siddika@mehedismathacademy.demo",
     institution: "ভিকারুননিসা নূন স্কুল অ্যান্ড কলেজ",
     name: "আয়েশা সিদ্দিকা",
     phone: "01811-000002",
@@ -194,7 +194,7 @@ export const demoStudents: readonly StudentFixture[] = [
   },
   {
     classOrGrade: "দ্বাদশ",
-    email: "mahin.chowdhury@genex.demo",
+    email: "mahin.chowdhury@mehedismathacademy.demo",
     institution: "চট্টগ্রাম কলেজ",
     name: "মাহিন চৌধুরী",
     phone: "01811-000003",
@@ -202,7 +202,7 @@ export const demoStudents: readonly StudentFixture[] = [
   },
   {
     classOrGrade: "Class 12",
-    email: "tania.akter@genex.demo",
+    email: "tania.akter@mehedismathacademy.demo",
     institution: "Holy Cross College",
     name: "Tania Akter",
     phone: "01811-000004",
@@ -210,7 +210,7 @@ export const demoStudents: readonly StudentFixture[] = [
   },
   {
     classOrGrade: "দশম",
-    email: "imran.hossain@genex.demo",
+    email: "imran.hossain@mehedismathacademy.demo",
     institution: "রাজশাহী কলেজিয়েট স্কুল",
     name: "ইমরান হোসেন",
     phone: "01811-000005",
@@ -218,7 +218,7 @@ export const demoStudents: readonly StudentFixture[] = [
   },
   {
     classOrGrade: "Graduate",
-    email: "faria.noor@genex.demo",
+    email: "faria.noor@mehedismathacademy.demo",
     institution: "BRAC University",
     name: "Faria Noor",
     phone: "01811-000006",
@@ -366,7 +366,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "বুয়েট, চুয়েট ও কুয়েট ভর্তি পরীক্ষার ফিজিক্স অংশের পূর্ণাঙ্গ প্রস্তুতি। প্রতিটি অধ্যায় শেষে পরীক্ষা, আর প্রশ্ন করার সুযোগ তো আছেই।",
     enrolledStudentCount: 6,
-    imageSeed: "genex-course-physics",
+    imageSeed: "mma-course-physics",
     isExamOnly: false,
     price: "5900.00",
     reviewComments: [
@@ -417,7 +417,7 @@ export const demoCourses: readonly CourseFixture[] = [
     ],
     description: "এইচএসসি রসায়ন প্রথম পত্রের পূর্ণ সিলেবাস, বোর্ড প্রশ্নের ধরন ধরে ধরে।",
     enrolledStudentCount: 5,
-    imageSeed: "genex-course-chemistry",
+    imageSeed: "mma-course-chemistry",
     isExamOnly: false,
     price: "3200.00",
     reviewComments: [
@@ -478,7 +478,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "Calculus from the definition of a limit to definite integrals, with every step written out. Built for students who have been told they are 'not maths people'.",
     enrolledStudentCount: 4,
-    imageSeed: "genex-course-calculus",
+    imageSeed: "mma-course-calculus",
     isExamOnly: false,
     price: "4500.00",
     reviewComments: [
@@ -542,7 +542,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "শূন্য থেকে শুরু করে একটা চালু ওয়েবসাইট — প্রতিটা ক্লাস শেষে হাতে কিছু একটা থাকবে যা সত্যিই চলে।",
     enrolledStudentCount: 6,
-    imageSeed: "genex-course-webdev",
+    imageSeed: "mma-course-webdev",
     isExamOnly: false,
     price: "2900.00",
     reviewComments: [
@@ -586,7 +586,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "প্রতি সপ্তাহে একটা পূর্ণাঙ্গ মক টেস্ট, সাথে ভুলগুলোর বিশ্লেষণ। কোনো লেকচার নেই — শুধু পরীক্ষা।",
     enrolledStudentCount: 3,
-    imageSeed: "genex-course-mocktest",
+    imageSeed: "mma-course-mocktest",
     isExamOnly: true,
     price: "1500.00",
     reviewComments: [
@@ -610,7 +610,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "Finding clients on Upwork and Fiverr, pricing work so it is worth doing, and delivering it without losing the client.",
     enrolledStudentCount: 2,
-    imageSeed: "genex-course-freelancing",
+    imageSeed: "mma-course-freelancing",
     isExamOnly: false,
     price: "1900.00",
     reviewComments: ["Got my first client in three weeks.", "The pricing module alone paid for the course."],
@@ -643,7 +643,7 @@ export const demoCourses: readonly CourseFixture[] = [
     ],
     description: "এইচএসসি জীববিজ্ঞান প্রথম পত্র — এখনো তৈরি হচ্ছে।",
     enrolledStudentCount: 0,
-    imageSeed: "genex-course-biology",
+    imageSeed: "mma-course-biology",
     isExamOnly: false,
     price: "3400.00",
     reviewComments: [],
@@ -658,7 +658,7 @@ export const demoCourses: readonly CourseFixture[] = [
     description:
       "A combined admission preparation track. Submitted for review and waiting on approval.",
     enrolledStudentCount: 0,
-    imageSeed: "genex-course-admission",
+    imageSeed: "mma-course-admission",
     isExamOnly: false,
     price: "6500.00",
     reviewComments: [],

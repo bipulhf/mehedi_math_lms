@@ -15,7 +15,7 @@ export const paymentStatusSchema = z.enum(["PENDING", "SUCCESS", "FAILED", "REFU
  * protocol-relative URL that `new URL()` resolves to another origin.
  *
  * A query string is allowed, because the mobile app carries its deep link
- * through here (`/api/payment-return?redirect=genex://payment-callback`) and the
+ * through here (`/api/payment-return?redirect=mma://payment-callback`) and the
  * gateway's own `paymentId` and `status` are merged in alongside it.
  */
 const callbackPathSchema = z

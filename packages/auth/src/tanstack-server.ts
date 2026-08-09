@@ -5,13 +5,13 @@ import type { UserWithRole } from "better-auth/plugins/admin";
 import { customSession } from "better-auth/plugins/custom-session";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { accounts, db, sessions, users, verificationTokens } from "@genex/db";
-import { passwordResetExpirySeconds, sendPasswordResetEmail } from "@genex/mailer";
-import * as schema from "@genex/db/schema";
+import { accounts, db, sessions, users, verificationTokens } from "@mma/db";
+import { passwordResetExpirySeconds, sendPasswordResetEmail } from "@mma/mailer";
+import * as schema from "@mma/db/schema";
 import { z } from "zod";
 
 const authEnvSchema = z.object({
-  APP_URL: z.url().default("https://genex.com.bd"),
+  APP_URL: z.url().default("https://mehedismathacademy.com"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
   BETTER_AUTH_URL: z.url().default("http://localhost:3001"),
   GOOGLE_CLIENT_ID: z.string().min(1).default("replace-me"),
@@ -29,7 +29,7 @@ const trustedOrigins = [
   "exp://127.0.0.1:8081",
   // The Expo app's deep-link scheme (app.json `scheme`). The mobile Google
   // flow finishes by redirecting the in-app browser back into the app.
-  "genex://"
+  "mma://"
 ];
 
 const isGoogleConfigured =
@@ -43,7 +43,7 @@ interface AuthUserFields extends UserWithRole {
 }
 
 export const auth = betterAuth({
-  appName: "Genex",
+  appName: "Mehedi's Math Academy",
   baseURL: parsedAuthEnv.BETTER_AUTH_URL,
   secret: parsedAuthEnv.BETTER_AUTH_SECRET,
   trustedOrigins,
@@ -74,7 +74,7 @@ export const auth = betterAuth({
     // signed out on their other devices.
     revokeSessionsOnPasswordReset: true,
     // Throws when SMTP is unset or the relay refuses. That is deliberate --
-    // `@genex/mailer` explains why a swallowed send is the worse failure --
+    // `@mma/mailer` explains why a swallowed send is the worse failure --
     // and Better Auth turns it into a 500 the operator sees in the log.
     sendResetPassword: async ({ user, url }, request) => {
       await sendPasswordResetEmail({

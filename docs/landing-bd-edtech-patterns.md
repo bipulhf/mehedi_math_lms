@@ -12,7 +12,7 @@ already uses were read section by section in August 2026:
 | Mojaru | Kids, cadet, olympiad | `mojaru.com` |
 | Chorcha | Practice and mock tests | `chorcha.net` |
 
-Genex sits closest to 10 Minute School, Shikho and Mojaru: school-level academic
+Mehedi's Math Academy sits closest to 10 Minute School, Shikho and Mojaru: school-level academic
 courses sold to a student and their guardian, in Bangla, with the exam as the
 thing being prepared for.
 
@@ -62,7 +62,7 @@ on at least three of them.
 14. **App download band** with store badges and a rating.
 15. **Bangla-first copy** with English left for numerals and product names.
 
-## What Genex adopts
+## What Mehedi's Math Academy adopts
 
 Adopted because the product genuinely delivers it:
 
@@ -78,15 +78,15 @@ Adopted because the product genuinely delivers it:
   certificate on completion. Every tile maps to a shipped feature.
 - **Numbered "how it works"** — account, enrol, study, sit the exams.
 
-## What Genex does not adopt, and why
+## What Mehedi's Math Academy does not adopt, and why
 
 - **Press, investor and partner logos** — there are none. A fabricated logo
   wall is the fastest way to lose the trust the rest of the page is buying.
 - **App download band** — the Expo app is not on either store yet. Add the band
   the day the store links exist.
 - **Struck-through "original" prices and discount percentages** — the schema
-  holds one price per course. `GENEX_MIGRATION.md` §2 already recorded this.
-- **A free-demo booking form** — Genex has no counselling desk to route it to.
+  holds one price per course.
+- **A free-demo booking form** — Mehedi's Math Academy has no counselling desk to route it to.
   The free rung here is the preview classes every course already keeps open.
 - **Countdown and seasonal offer banners** — no campaign engine behind them.
 - **A counts strip** (§3), and the closing call-to-action band with it. Both

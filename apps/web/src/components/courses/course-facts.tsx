@@ -8,7 +8,7 @@ import { hueForIndex, spectrumClasses } from "@/lib/spectrum";
  * The numbers a buyer asks for, on one line under the hero.
  *
  * Every one is read off `course.stats` — there is no "6 months", no seat count
- * and no batch date, because no column holds them (GENEX_MIGRATION.md §2). A
+ * and no batch date, because no column holds them. A
  * figure with nothing behind it is dropped rather than printed as zero.
  */
 export function CourseFacts({

@@ -1,6 +1,6 @@
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 import type { z } from "zod";
-import type { saveSubmissionAnswersSchema, submitTestSchema } from "@genex/shared";
+import type { saveSubmissionAnswersSchema, submitTestSchema } from "@mma/shared";
 
 import type { AnswerScriptRepository } from "@/repositories/answer-script-repository";
 import type { ContentRepository } from "@/repositories/content-repository";

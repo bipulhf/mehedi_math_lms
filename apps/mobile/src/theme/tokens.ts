@@ -1,5 +1,5 @@
 /**
- * The Genex palette, transcribed from `apps/web/src/styles/app.css` into plain
+ * The Mehedi's Math Academy palette, transcribed from `apps/web/src/styles/app.css` into plain
  * values React Native can use. `DESIGN.md` is the authority; this file only
  * restates it in a form Metro can bundle.
  */

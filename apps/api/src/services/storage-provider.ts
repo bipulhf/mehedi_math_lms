@@ -1,4 +1,4 @@
-import type { StorageProvider } from "@genex/shared";
+import type { StorageProvider } from "@mma/shared";
 
 export interface PreparedUpload {
   id: string;

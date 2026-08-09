@@ -6,7 +6,7 @@ import {
   markingDocumentVersion,
   type MarkingPenWidth,
   type MarkingStamp
-} from "@genex/shared";
+} from "@mma/shared";
 import type { JSX, PointerEvent as ReactPointerEvent } from "react";
 import { useRef, useState } from "react";
 

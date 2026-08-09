@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
-import type { Locale } from "@genex/i18n";
-import { defaultLocale, isLocale, localeCookieName } from "@genex/i18n";
+import type { Locale } from "@mma/i18n";
+import { defaultLocale, isLocale, localeCookieName } from "@mma/i18n";
 
 /**
  * The locale has to be known before the first byte is rendered, or the page
@@ -11,7 +11,7 @@ import { defaultLocale, isLocale, localeCookieName } from "@genex/i18n";
  *
  * `createIsomorphicFn` keeps the server implementation — and the
  * `@tanstack/react-start/server` import it needs — out of the browser bundle.
- * The cookie's name is `@genex/i18n`'s, because the mailer reads it too.
+ * The cookie's name is `@mma/i18n`'s, because the mailer reads it too.
  */
 export { localeCookieName };
 

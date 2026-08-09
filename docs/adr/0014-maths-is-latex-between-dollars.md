@@ -11,7 +11,7 @@ the storage format changed and the sanitiser allowlist did not open up.
 
 ## Context
 
-Genex sells maths courses and its exams are maths exams, but until now a teacher
+Mehedi's Math Academy sells maths courses and its exams are maths exams, but until now a teacher
 could not write a fraction. Question text is TipTap HTML sanitised against a
 sixteen-tag allowlist (`apps/api/src/lib/html.ts`), MCQ option text is a plain
 string, and both are rendered on the web, in the Expo app, and flattened to
@@ -81,7 +81,7 @@ options, which are plain, needing a second mechanism.
   single field may ask for — twenty thousand characters, sixty-four formulas, a
   thousand characters each.
 - **The app carries 360 KB of inlined font CSS** so maths renders with no
-  network. Regenerate it with `bun run --filter @genex/scripts build:katex-assets`
+  network. Regenerate it with `bun run --filter @mma/scripts build:katex-assets`
   after upgrading KaTeX.
 - **`stripHtml` is no longer right for a label.** A truncated row would read
   `Find $\frac{a}{b}$ when…`; `richTextToPlainText` gives `Find a/b when…`.

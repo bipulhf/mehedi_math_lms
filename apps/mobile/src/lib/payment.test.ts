@@ -9,7 +9,7 @@ import { buildPaymentCallbackPath, readCheckoutOutcome } from "@/src/lib/payment
 
 describe("buildPaymentCallbackPath", () => {
   test("is a path, so the API cannot be pointed at another origin", () => {
-    expect(buildPaymentCallbackPath("genex://payment-callback")).toMatch(/^\/api\/payment-return\?/);
+    expect(buildPaymentCallbackPath("mma://payment-callback")).toMatch(/^\/api\/payment-return\?/);
   });
 
   test("encodes the deep link, so its own scheme does not break the query", () => {
@@ -22,7 +22,7 @@ describe("buildPaymentCallbackPath", () => {
 
 describe("readCheckoutOutcome", () => {
   test("a settled payment is paid, and carries the id the API stamped on it", () => {
-    expect(readCheckoutOutcome("genex://payment-callback?status=success&paymentId=pay-1")).toEqual({
+    expect(readCheckoutOutcome("mma://payment-callback?status=success&paymentId=pay-1")).toEqual({
       kind: "paid",
       paymentId: "pay-1"
     });
@@ -31,13 +31,13 @@ describe("readCheckoutOutcome", () => {
   test("a cancelled checkout is not a failure", () => {
     // The enrol button stays available and no banner appears. Backing out of a
     // gateway is a decision.
-    expect(readCheckoutOutcome("genex://payment-callback?status=cancel")).toEqual({
+    expect(readCheckoutOutcome("mma://payment-callback?status=cancel")).toEqual({
       kind: "cancelled"
     });
   });
 
   test("anything else is a failure the student can read", () => {
-    const outcome = readCheckoutOutcome("genex://payment-callback?status=fail&paymentId=pay-1");
+    const outcome = readCheckoutOutcome("mma://payment-callback?status=fail&paymentId=pay-1");
 
     expect(outcome.kind).toBe("failed");
   });
@@ -45,6 +45,6 @@ describe("readCheckoutOutcome", () => {
   test("a callback with no status at all is a failure rather than a silent success", () => {
     // The API always sets one. If it is missing, something rewrote the URL, and
     // granting access on that basis would be the worst possible default.
-    expect(readCheckoutOutcome("genex://payment-callback").kind).toBe("failed");
+    expect(readCheckoutOutcome("mma://payment-callback").kind).toBe("failed");
   });
 });

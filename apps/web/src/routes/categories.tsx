@@ -21,7 +21,7 @@ export const Route = createFileRoute("/categories")({
 
     return seo({
       description:
-        "Browse hierarchical math and science categories that organize every course in Genex.",
+        "Browse hierarchical math and science categories that organize every course in Mehedi's Math Academy.",
       jsonLd: [
         organizationJsonLd(),
         itemListJsonLd(

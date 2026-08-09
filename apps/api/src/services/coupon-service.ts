@@ -3,7 +3,7 @@ import type {
   CouponRejectionReason,
   CouponState,
   UserRole
-} from "@genex/shared";
+} from "@mma/shared";
 
 import type { CourseRepository } from "@/repositories/course-repository";
 import type {

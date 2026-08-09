@@ -15,7 +15,7 @@ import type {
   submitTestSchema,
   updateQuestionSchema,
   updateTestSchema
-} from "@genex/shared";
+} from "@mma/shared";
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
 

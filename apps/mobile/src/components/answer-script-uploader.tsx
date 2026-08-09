@@ -1,4 +1,4 @@
-import { maxScriptPagesPerAnswer } from "@genex/shared";
+import { maxScriptPagesPerAnswer } from "@mma/shared";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { useState } from "react";

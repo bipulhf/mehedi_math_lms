@@ -13,7 +13,7 @@
  * both, and a catalogue seeded entirely in one language hides every place the
  * layout only fits the other.
  */
-import { createPasswordHash } from "@genex/auth/server";
+import { createPasswordHash } from "@mma/auth/server";
 import {
   accounts,
   and,
@@ -34,7 +34,7 @@ import {
   testQuestions,
   tests,
   users
-} from "@genex/db";
+} from "@mma/db";
 
 import {
   DEMO_PASSWORD,
@@ -157,8 +157,8 @@ async function upsertUser(input: {
 }
 
 async function main(): Promise<void> {
-  // Levels are root categories, subjects are their children. GENEX_MIGRATION.md
-  // decision 2 — one tree, two axes, no new column.
+  // Levels are root categories, subjects are their children — one tree, two
+  // axes, no new column.
   const levelIds = new Map<string, string>();
 
   for (const [index, level] of levelCategories.entries()) {
@@ -448,7 +448,7 @@ async function main(): Promise<void> {
           paidAt: new Date(),
           provider: "SSLCOMMERZ",
           status: "SUCCESS",
-          transactionId: `GENEX-DEMO-${courseId.slice(0, 8)}-${userId.slice(0, 8)}`,
+          transactionId: `MMA-DEMO-${courseId.slice(0, 8)}-${userId.slice(0, 8)}`,
           userId
         })
         .onConflictDoNothing();

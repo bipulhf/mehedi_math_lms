@@ -1,4 +1,4 @@
-import { bugReports, count, courses, db, enrollments, eq, payments, sql, users } from "@genex/db";
+import { bugReports, count, courses, db, enrollments, eq, payments, sql, users } from "@mma/db";
 
 export interface AdminDashboardStatsRecord {
   activeCourses: number;

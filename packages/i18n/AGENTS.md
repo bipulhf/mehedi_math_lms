@@ -1,4 +1,4 @@
-# AGENTS.md — `@genex/i18n`
+# AGENTS.md — `@mma/i18n`
 
 The bilingual catalogue and every locale-aware formatter. Imported by
 `apps/web` and `apps/mobile` so both format identically. Root conventions in

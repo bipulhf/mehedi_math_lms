@@ -1,4 +1,4 @@
-import { asc, categories, count, courses, db, eq } from "@genex/db";
+import { asc, categories, count, courses, db, eq } from "@mma/db";
 
 export interface CategoryRecord {
   createdAt: Date;

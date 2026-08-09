@@ -1,5 +1,5 @@
-import { and, asc, db, eq, isNull, uploads } from "@genex/db";
-import type { StorageProvider, UploadKind, UploadPurpose, UploadStatus } from "@genex/shared";
+import { and, asc, db, eq, isNull, uploads } from "@mma/db";
+import type { StorageProvider, UploadKind, UploadPurpose, UploadStatus } from "@mma/shared";
 
 export interface UploadRecord {
   confirmedAt: Date | null;

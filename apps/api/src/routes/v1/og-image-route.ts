@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { slugParamsSchema } from "@genex/shared";
+import { slugParamsSchema } from "@mma/shared";
 
 import { ogImageService } from "@/lib/container";
 import type { AppBindings } from "@/types/app-bindings";

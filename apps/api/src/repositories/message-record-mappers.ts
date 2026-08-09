@@ -4,7 +4,7 @@
  * and `conversation-report-repository.ts` read them, and because they are the
  * one part of the feature with no query in it.
  */
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 
 export interface ParticipantUserRow {
   email: string;

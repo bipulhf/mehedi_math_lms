@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { confirmUploadSchema, createPresignedUploadSchema, idSchema } from "@genex/shared";
+import { confirmUploadSchema, createPresignedUploadSchema, idSchema } from "@mma/shared";
 
 import { auditLogService, uploadController } from "@/lib/container";
 import { env } from "@/lib/env";

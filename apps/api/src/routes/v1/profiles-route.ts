@@ -1,12 +1,12 @@
 import { Hono } from "hono";
-import type { UserRole } from "@genex/shared";
+import type { UserRole } from "@mma/shared";
 import {
   basicProfileInputSchema,
   profileIdParamsSchema,
   slugParamsSchema,
   studentProfileInputSchema,
   teacherProfileInputSchema
-} from "@genex/shared";
+} from "@mma/shared";
 
 import { auditLogService, profileController } from "@/lib/container";
 import { requireAuth } from "@/middleware/auth";

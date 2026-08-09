@@ -8,7 +8,7 @@ import type { CouponPreview, CouponRejectionReason } from "@/src/lib/api";
 import { previewCoupon } from "@/src/lib/api";
 import { useFormat, useT } from "@/src/lib/locale";
 import { colors, spacing } from "@/src/theme/tokens";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 /** What the screen holds once a code has been checked and accepted. */
 export interface AppliedCoupon {

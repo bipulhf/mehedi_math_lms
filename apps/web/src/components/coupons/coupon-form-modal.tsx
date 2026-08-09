@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import type { CouponKind } from "@genex/shared";
+import type { CouponKind } from "@mma/shared";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

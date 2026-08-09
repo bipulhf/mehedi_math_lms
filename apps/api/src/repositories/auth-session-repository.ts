@@ -1,5 +1,5 @@
-import type { UserRole } from "@genex/shared";
-import { db, eq, sessions, users } from "@genex/db";
+import type { UserRole } from "@mma/shared";
+import { db, eq, sessions, users } from "@mma/db";
 
 interface UserAuthStateRecord {
   isActive: boolean;

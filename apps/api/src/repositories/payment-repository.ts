@@ -1,4 +1,4 @@
-import { and, db, desc, eq, payments, sql } from "@genex/db";
+import { and, db, desc, eq, payments, sql } from "@mma/db";
 
 export interface PaymentRecord {
   /** The Payable: what the gateway was asked to collect, after any coupon. */

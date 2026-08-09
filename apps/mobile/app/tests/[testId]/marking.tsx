@@ -3,8 +3,8 @@ import type {
   MarkingDocument,
   MarkingPenWidth,
   MarkingReviewMode
-} from "@genex/shared";
-import { markingDocumentVersion } from "@genex/shared";
+} from "@mma/shared";
+import { markingDocumentVersion } from "@mma/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";

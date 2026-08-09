@@ -1,6 +1,6 @@
 import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router";
 import type { JSX } from "react";
-import type { MessageKey } from "@genex/i18n";
+import type { MessageKey } from "@mma/i18n";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { AuthLayout } from "@/components/layout/auth-layout";

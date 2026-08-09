@@ -1,4 +1,4 @@
-import { hasMathDelimiters } from "@genex/shared";
+import { hasMathDelimiters } from "@mma/shared";
 import type { JSX } from "react";
 import { useWindowDimensions } from "react-native";
 import RenderHTML, { type HTMLSource } from "react-native-render-html";

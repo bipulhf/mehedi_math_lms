@@ -52,7 +52,7 @@ describe("createEnrollmentSchema", () => {
     // The mobile app carries its deep link here, so a query string is allowed.
     expect(
       createEnrollmentSchema.safeParse({
-        callbackPath: "/api/payment-return?redirect=genex%3A%2F%2Fpayment-callback",
+        callbackPath: "/api/payment-return?redirect=mma%3A%2F%2Fpayment-callback",
         courseId: UUID
       }).success
     ).toBe(true);

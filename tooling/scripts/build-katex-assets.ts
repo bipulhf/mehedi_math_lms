@@ -78,7 +78,7 @@ async function main(): Promise<void> {
  *
  * KaTeX's stylesheet with its woff2 faces inlined, so the WebView that renders
  * maths needs no network. Regenerate after upgrading katex:
- *   bun run --filter @genex/scripts build:katex-assets
+ *   bun run --filter @mma/scripts build:katex-assets
  */
 
 export const katexCss = ${JSON.stringify(inlined)};

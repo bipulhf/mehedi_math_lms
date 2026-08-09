@@ -19,7 +19,7 @@ import { queryKeys } from "@/lib/query/keys";
  *
  * The revenue figure is **gross course revenue**, not a payout. There is no
  * revenue-share model in the schema, so the design's "70% তোমার" split and its
- * payout table are cut — GENEX_MIGRATION.md §2.
+ * payout table are cut.
  */
 export function TeacherOverview({ name }: { name: string }): JSX.Element {
   const t = useT();

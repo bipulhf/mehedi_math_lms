@@ -1,4 +1,4 @@
-import { emptyMarkingDocument, type MarkingDocument, readMarkingDocument } from "@genex/shared";
+import { emptyMarkingDocument, type MarkingDocument, readMarkingDocument } from "@mma/shared";
 
 import type { ScriptPageRecord } from "@/repositories/answer-script-repository";
 import type { SubmissionSummaryRecord } from "@/repositories/test-repository";

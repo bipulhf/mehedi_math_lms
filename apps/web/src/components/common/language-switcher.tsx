@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { locales, localeNames } from "@genex/i18n";
+import { locales, localeNames } from "@mma/i18n";
 
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";

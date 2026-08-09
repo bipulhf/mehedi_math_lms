@@ -1,4 +1,4 @@
-# Genex
+# Mehedi's Math Academy
 
 An online learning platform where teachers publish courses and students enrol, study, and are assessed.
 This glossary is the project's ubiquitous language. It defines what terms *mean*, never how they are built.

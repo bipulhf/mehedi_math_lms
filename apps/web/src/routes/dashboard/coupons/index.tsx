@@ -4,8 +4,8 @@ import { Plus, Search, TicketPercent } from "lucide-react";
 import type { JSX } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { CouponState, UserRole } from "@genex/shared";
-import type { MessageKey } from "@genex/i18n";
+import type { CouponState, UserRole } from "@mma/shared";
+import type { MessageKey } from "@mma/i18n";
 
 import { CouponFormModal, type CouponFormValues } from "@/components/coupons/coupon-form-modal";
 import { CouponTable } from "@/components/coupons/coupon-table";

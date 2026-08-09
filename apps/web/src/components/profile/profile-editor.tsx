@@ -3,7 +3,7 @@ import {
   studentProfileInputSchema,
   teacherProfileInputSchema,
   type UserRole
-} from "@genex/shared";
+} from "@mma/shared";
 import type { JSX } from "react";
 import { useState } from "react";
 import type { FieldErrors } from "react-hook-form";

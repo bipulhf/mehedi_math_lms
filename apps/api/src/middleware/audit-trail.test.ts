@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { auditLogs, db, eq, users } from "@genex/db";
+import { auditLogs, db, eq, users } from "@mma/db";
 import { Hono } from "hono";
 
 import { auditLogService } from "@/lib/container";

@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowRight, Check, Search } from "lucide-react";
-import type { Translator } from "@genex/i18n";
+import type { Translator } from "@mma/i18n";
 
 import { CategorySelector } from "@/components/categories/category-selector";
 import { ImageCropUploader } from "@/components/uploads/image-crop-uploader";
