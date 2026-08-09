@@ -1,4 +1,5 @@
 import { Resvg } from "@resvg/resvg-js";
+import { readFileSync } from "node:fs";
 
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { ProfileRepository } from "@/repositories/profile-repository";
@@ -8,6 +9,10 @@ export type PngBytes = Uint8Array<ArrayBuffer>;
 
 export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
+
+const brandMarkDataUri = `data:image/png;base64,${readFileSync(
+  new URL("../assets/mma-mark.png", import.meta.url)
+).toString("base64")}`;
 
 function escapeSvgText(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -32,6 +37,7 @@ function renderOgSvg(primary: string, secondary: string | null): string {
        more predictably than a gradient does. -->
   <rect width="${OG_IMAGE_WIDTH}" height="${OG_IMAGE_HEIGHT}" fill="#fcfbf9"/>
   <rect x="0" y="0" width="${OG_IMAGE_WIDTH}" height="8" fill="#ee5622"/>
+  <image href="${brandMarkDataUri}" x="980" y="72" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
   <text x="80" y="220" fill="#23211e" font-family="Helvetica,Arial,sans-serif" font-size="54" font-weight="500">${p}</text>
   ${
     s.length > 0

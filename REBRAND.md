@@ -22,9 +22,9 @@ Status key: **BLOCKED** needs a decision or an asset from the client ·
 
 | # | Decision | Why it blocks | Owner |
 | --- | --- | --- | --- |
-| 1 | **The Bangla name.** `জেনেক্স` is on screen right now in the default locale. What replaces it — a transliteration (`মেহেদীস ম্যাথ একাডেমি`), a translation (`মেহেদীর গণিত একাডেমি`), or the Latin name left as-is inside Bangla copy? | Six strings in `bn.ts` and one test. Bangla is the default locale, so this is the name most visitors see. | Client |
-| 2 | **Logo artwork.** There is no Mehedi's Math Academy mark or wordmark in the repo. The four files under `apps/web/public/brand/` are the Genex logo with new filenames. | Every header, footer, favicon, OG card, email and the lecture-player watermark. | Client / designer |
-| 3 | **Palette.** `#EE5622` orange, warm paper `#FCFBF9`, ink `#23211E` — this is the Genex palette from `design_handoff_genex/`. Keep it, or re-key the accent to the academy's own colour? | Everything visual. Keeping it is a legitimate answer; it just has to be a decision rather than an accident. | Client |
+| 1 | **The Bangla name.** Chosen: `মেহেদীর গণিত একাডেমি`. | Six strings in `bn.ts` and one test. Bangla is the default locale, so this is the name most visitors see. | DONE |
+| 2 | **Logo artwork.** Supplied: full academy lockup, mark, favicon and founder portrait. | Every header, footer, favicon, OG card, email and the lecture-player watermark. | DONE |
+| 3 | **Palette.** Chosen: keep `#EE5622` orange, warm paper `#FCFBF9`, and ink `#23211E`. | Everything visual. The academy deliberately adopted the warm-paper handoff palette. | DONE |
 | 4 | **Live domain and mailbox.** Code now points at `mehedismathacademy.com` and `support@mehedismathacademy.com`. Neither is confirmed registered or routed. | DNS, TLS, OAuth redirect URIs, SSLCommerz store config, SMTP sender, sitemap and canonical URLs. | Client |
 
 A short name is worth deciding alongside #1 — see §4.2, where the long name
@@ -34,79 +34,66 @@ costs 16 characters of every page title.
 
 ## 2. Logo and imagery
 
-### 2.1 The brand files are Genex artwork under new names
+### 2.1 Academy artwork — DONE
 
-`8f27922` renamed the files and left the pixels alone. This was deliberate — no
-replacement art exists — but it means the site still *shows* the Genex logo.
+Supplied artwork replaced the old Genex pixels. Source files are processed to
+transparent PNGs for the web, mobile and API bundles.
 
 | File | Size | What it actually depicts |
 | --- | --- | --- |
-| `apps/web/public/brand/mma-mark.png` | 361×360 | Orange **G** enclosing a black play triangle |
-| `apps/web/public/brand/mma-wordmark.png` | 958×210 | The word **GENEX**, black, italic condensed, reversed E |
-| `apps/web/public/brand/mma-mark-light.png` | 361×360 | Same G, white knockout |
-| `apps/web/public/brand/mma-wordmark-light.png` | 958×210 | Same GENEX, white knockout |
-| `apps/web/src/assets/mma-mark.png` | 361×360 | Duplicate of the mark, imported by bundler |
-| `apps/mobile/assets/images/mma-mark.png` | 361×360 | Duplicate of the mark |
-| `apps/mobile/assets/images/mma-wordmark.png` | 958×210 | Duplicate of the wordmark |
+| `apps/web/public/brand/mma-mark.png` | 220×220 | Academy mark |
+| `apps/web/public/brand/mma-logo.png` | 500×500 | Full academy lockup |
+| `apps/web/public/brand/mehedi-bhai.jpeg` | 640×640 | Founder portrait |
+| `apps/web/src/assets/mma-mark.png` | 220×220 | Mark imported by bundler |
+| `apps/mobile/assets/images/mma-mark.png` | 220×220 | Mobile mark |
+| `apps/mobile/assets/images/mma-logo.png` | 500×500 | Mobile full lockup |
+| `apps/api/src/assets/mma-mark.png` | 220×220 | Mark embedded in OG cards |
 
-`DESIGN.md:263-265` describes them honestly — it still says the wordmark reads
-"GENEX". Update that section in the same change that replaces the art, not
-before.
+`DESIGN.md:259-273` describes supplied artwork and its use.
 
-**Needed from the client:** a mark and a wordmark as vector (SVG or AI/EPS),
-plus white-knockout variants. The current PNGs were traced from a
-white-background JPG, which `DESIGN.md:270-271` already flags as a shipping blocker.
-Export targets once the vector arrives: mark at 361×360 and wordmark at 958×210
-to drop in without touching the lockup CSS, or new sizes plus a pass over the
-nine call sites in §2.2.
+No white-knockout variant was supplied; no dark-surface lockup currently uses one.
 
-### 2.2 Where the logo is rendered — BLOCKED on #2
+### 2.2 Where the logo is rendered — DONE
 
 | Surface | File | Detail |
 | --- | --- | --- |
-| Marketing header | `apps/web/src/components/layout/site-header.tsx:160,164` | mark 28px + wordmark 16px, 9px gap |
-| Dashboard shell | `apps/web/src/components/layout/app-shell.tsx:93,97` | mark 24px + wordmark 15px |
-| Auth screens | `apps/web/src/components/layout/auth-layout.tsx:50,51` | mark 28px + wordmark 16px |
-| Footer | `apps/web/src/components/layout/site-footer.tsx:28,32` | mark 28px + wordmark 16px |
-| Favicon | `apps/web/src/routes/__root.tsx:58` | `/brand/mma-mark.png`, `type="image/png"` |
+| Marketing header | `apps/web/src/components/layout/site-header.tsx` | full lockup at 56px |
+| Dashboard shell | `apps/web/src/components/layout/app-shell.tsx` | full lockup at 44px |
+| Auth screens | `apps/web/src/components/layout/auth-layout.tsx` | full lockup at 56px |
+| Footer | `apps/web/src/components/layout/site-footer.tsx` | full lockup at 56px |
+| Favicon | `apps/web/src/routes/__root.tsx` | `/favicon.ico` plus Apple and manifest links |
 | Lecture-player watermark | `apps/web/src/components/media/lecture-player.tsx:20,127` | 20–24px, 35% opacity, top-left of video |
 | SMS composer preview | `apps/web/src/routes/dashboard/admin/sms.tsx:22` | imported mark |
 | Notification composer preview | `apps/web/src/routes/dashboard/notifications/send.tsx:31` | imported mark |
-| Mobile tab-bar header | `apps/mobile/app/(tabs)/_layout.tsx:30,32` | mark + wordmark lockup |
+| Mobile tab-bar header | `apps/mobile/app/(tabs)/_layout.tsx` | full lockup at 48px |
 
-All nine read from the same two files. Replacing the PNGs in place updates every
-one of them with no code change.
+Mark-only surfaces continue using `mma-mark.png`.
 
-### 2.3 Mobile app icons were never branded at all — READY
+### 2.3 Mobile app icons — DONE
 
-These are still the stock Expo template assets. They were not Genex and they are
-not Mehedi's Math Academy; they are the blue chevron and the grey target that
-`create-expo-app` ships.
+All Expo template artwork has been replaced with generated assets from the
+supplied academy mark.
 
 | File | Size | Current content | Needed |
 | --- | --- | --- | --- |
-| `apps/mobile/assets/images/icon.png` | 1024×1024 | Expo blue chevron on pale blue | iOS app icon, 1024×1024, no alpha, no rounding |
-| `apps/mobile/assets/images/splash-icon.png` | 1024×1024 | Expo grey concentric-circle target | Splash mark, transparent, renders at 200px wide |
-| `apps/mobile/assets/images/android-icon-foreground.png` | 512×512 | Expo default | Adaptive-icon foreground, safe zone 66% of canvas |
-| `apps/mobile/assets/images/android-icon-background.png` | 512×512 | Expo default | Flat brand background |
-| `apps/mobile/assets/images/android-icon-monochrome.png` | 432×432 | Expo default | Single-colour silhouette for Android 13 themed icons |
-| `apps/mobile/assets/images/favicon.png` | 48×48 | Expo default | Expo-web favicon |
+| `apps/mobile/assets/images/icon.png` | 1024×1024 | Academy mark on paper | iOS app icon |
+| `apps/mobile/assets/images/splash-icon.png` | 1024×1024 | Transparent academy mark | Splash mark |
+| `apps/mobile/assets/images/android-icon-foreground.png` | 512×512 | Academy mark | Adaptive-icon foreground |
+| `apps/mobile/assets/images/android-icon-background.png` | 512×512 | Academy paper | Flat brand background |
+| `apps/mobile/assets/images/android-icon-monochrome.png` | 432×432 | Ink academy silhouette | Android 13 themed icon |
+| `apps/mobile/assets/images/favicon.png` | 48×48 | Academy mark on paper | Expo-web favicon |
 
-Two colours in `apps/mobile/app.json` are also Expo defaults and are off-palette:
+Mobile colors now use academy paper:
 
-- `android.adaptiveIcon.backgroundColor: "#E6F4FE"` — pale blue. Should be a
-  palette value (`#FCFBF9` paper, or the accent).
-- `expo-splash-screen.backgroundColor: "#faf8ff"` — lavender. Same.
+- `android.adaptiveIcon.backgroundColor: "#FCFBF9"`.
+- `expo-splash-screen.backgroundColor: "#FCFBF9"`.
 
 Compare `--color-paper: #fcfbf9` in `apps/web/src/styles/app.css:35`. Neither
 Expo default appears anywhere in the design system.
 
-### 2.4 Web has no installable-app identity — READY
+### 2.4 Web installable-app identity — DONE
 
-There is no `manifest.webmanifest`, no `apple-touch-icon`, and no maskable icon.
-`apps/web/src/routes/__root.tsx:58` declares a single PNG favicon. On iOS,
-"Add to Home Screen" currently produces a screenshot thumbnail with the browser
-title. Add, once the mark exists:
+Web now ships a manifest, Apple touch icon, maskable icon, and favicon:
 
 - `apps/web/public/manifest.webmanifest` with `name`, `short_name`,
   `theme_color: "#fcfbf9"` (matching `__root.tsx:44`), `background_color`, and
@@ -126,24 +113,20 @@ orphaned files and can be deleted if the landing page no longer uses them.
 
 ## 3. The name in copy
 
-### 3.1 Bangla still says জেনেক্স — BLOCKED on #1
+### 3.1 Bangla brand copy — DONE
 
-This is the most visible remaining defect. Bangla is the default locale
-(`packages/i18n/src/locales.ts:10`), so an unauthenticated first-time visitor sees
-"জেনেক্স" in the footer and on the homepage today.
+Bangla is the default locale (`packages/i18n/src/locales.ts:10`). All brand copy
+now uses `মেহেদীর গণিত একাডেমি`.
 
 | File:line | Key | Current value |
 | --- | --- | --- |
-| `packages/i18n/src/messages/bn.ts:86` | `brand.name` | `জেনেক্স` |
-| `packages/i18n/src/messages/bn.ts:335` | `email.resetSubject` | `জেনেক্স — পাসওয়ার্ড বদলানোর লিংক` |
-| `packages/i18n/src/messages/bn.ts:340` | `footer.about` | `জেনেক্স` |
-| `packages/i18n/src/messages/bn.ts:342` | `footer.copyright` | `© {year} জেনেক্স` |
-| `packages/i18n/src/messages/bn.ts:355` | `home.whyEyebrow` | `কেন জেনেক্স` |
-| `packages/i18n/src/messages/bn.ts:1300` | `about.body1` | `জেনেক্স তৈরি হয়েছে একটা সহজ কারণে…` |
-| `packages/mailer/src/templates/password-reset.test.ts:23` | — | asserts the subject contains `জেনেক্স` |
+| `packages/i18n/src/messages/bn.ts` | `brand.name` | `মেহেদীর গণিত একাডেমি` |
+| `packages/i18n/src/messages/bn.ts` | `email.resetSubject` | Academy name plus reset copy |
+| `packages/i18n/src/messages/bn.ts` | `footer.*`, `home.whyEyebrow`, `about.body1` | Academy name in each surface |
+| `packages/mailer/src/templates/password-reset.test.ts` | — | asserts the Bangla academy name |
 
-The test at the bottom is what will fail first and is the reason this cannot be
-a silent find-and-replace: it encodes the old name as an expectation.
+The mailer test pins the selected Bangla name so future copy changes cannot
+silently reintroduce the old brand.
 
 `design_handoff_genex/` has nine more files containing `জেনেক্স`. Leave them —
 that directory is the vendor handoff the current UI was built from, and editing
@@ -163,19 +146,15 @@ Already correct as of `8f27922`, listed here so the audit is complete:
 - `apps/web/src/components/certificates/certificate-pdf-document.tsx:68`
 - `apps/api/src/services/og-image-service.ts:42,72,100`
 
-### 3.3 The wordmark's alt text is never localised — READY
+### 3.3 Logo alt text — DONE
 
-`siteConfig.name` is a hardcoded English constant, and it is what four layout
-components pass as the image `alt` and `aria-label`:
+The four layout components now pass `t("brand.name")` for image `alt` and
+`aria-label` values:
 
 - `site-header.tsx:156,162` · `app-shell.tsx:92,95` ·
   `auth-layout.tsx:49,51` · `site-footer.tsx:27,30`
 
-A screen reader in Bangla hears the English name. The `brand.name` i18n key
-exists for exactly this and is currently used in only one place —
-`packages/mailer/src/templates/password-reset.ts:65`. Switch the four layout
-components to `t("brand.name")` once decision #1 lands, and the Bangla and
-English surfaces agree.
+Bangla and English screen-reader surfaces now match visible branding.
 
 ---
 
@@ -199,7 +178,7 @@ Everything above resolves against `siteConfig.url`. If decision #4 picks a
 domain other than `mehedismathacademy.com`, change `apps/web/src/lib/site.ts:5`
 and `packages/shared/src/constants/app.ts:3` and the whole surface follows.
 
-### 4.2 The long name costs 16 characters of every page title — READY
+### 4.2 Page-title budget — DONE
 
 `buildDocumentTitle` in `apps/web/src/lib/seo.ts:70-76` caps a document title at
 60 characters and reserves the tail for the site name:
@@ -215,8 +194,9 @@ truncate 16 characters earlier, and course titles are the longest titles on the
 site — a 45-character course name that used to render whole now ends in an
 ellipsis in the search result.
 
-`siteConfig.shortName` (`site.ts:3`) exists for this and is currently a copy of
-the full name, so it does nothing. Three options:
+`siteConfig.shortName` is now `MMA`, and `buildDocumentTitle` uses it for the
+suffix. The full name remains in Open Graph metadata and Organization JSON-LD.
+Three options were considered:
 
 1. Set `shortName` to something short and use it in `buildDocumentTitle` —
    restores most of the budget, and the full name still carries `og:site_name`
@@ -225,9 +205,9 @@ the full name, so it does nothing. Three options:
    character count, so 60 is already conservative; 65–70 is defensible.
 3. Accept the truncation.
 
-Option 1 is the right one, and it needs a short name from decision #1.
+Option 1 is implemented.
 
-### 4.3 OG card art is text-only and hardcoded — READY
+### 4.3 OG card art — DONE
 
 `apps/api/src/services/og-image-service.ts` renders an SVG and rasterises it to
 a 1200×630 PNG. Three things in it are brand:
@@ -241,9 +221,8 @@ a 1200×630 PNG. Three things in it are brand:
   courses and academic clarity." and teacher cards read
   "Teacher · Mehedi's Math Academy".
 
-The card carries no logo. Once the mark exists, embedding it as a base64 data
-URI in the SVG is the natural improvement — `Resvg` will rasterise it with the
-rest.
+The supplied mark is embedded as a base64 data URI in the SVG. `Resvg` rasterises
+it with the rest of the card.
 
 The default card is memoised in `defaultPngCache` (`:63,71`) for the process
 lifetime, so changing the art needs an API restart, not just a redeploy of the
@@ -273,10 +252,10 @@ Not code, but part of "everything":
 
 ## 5. Visual language
 
-### 5.1 The palette is Genex's, and the comments now claim otherwise — BLOCKED on #3
+### 5.1 Adopted palette — DONE
 
-`8f27922` rewrote the comment above the palette without touching a single hex.
-Two files now assert something untrue:
+The academy adopted the existing warm-paper handoff palette deliberately. These
+comments and tokens now describe an intentional decision:
 
 - `apps/web/src/styles/app.css:26` — "Mehedi's Math Academy palette. DESIGN.md §2
   is the authority; this is its encoding." The values below it are the handoff's
@@ -286,10 +265,7 @@ Two files now assert something untrue:
 
 `DESIGN.md` §1–§2 describes the same system, sourced from `design_handoff_genex/`.
 
-If decision #3 keeps the palette, these comments become true by adoption and the
-only change needed is a line in `DESIGN.md` saying the academy adopted the
-handoff's palette deliberately. If it changes, the accent is the single token to
-re-key:
+If palette changes later, the accent is the single token to re-key:
 
 - `apps/web/src/styles/app.css:54` — `--color-accent: #ee5622`
 - `apps/web/src/styles/app.css:73` — `--color-spectrum-ember: #ee5622`
@@ -341,11 +317,11 @@ Also update:
 
 | Surface | File | State |
 | --- | --- | --- |
-| Password-reset email body | `packages/mailer/src/templates/password-reset.ts:65` | Renders `t("brand.name")` — correct in English, `জেনেক্স` in Bangla. Blocked on #1. Carries no logo; add one once #2 lands, as a hosted absolute URL — email clients do not render bundler imports and most block inline SVG. |
-| Password-reset subject | `packages/i18n/src/messages/{en,bn}.ts:333/335` | English done, Bangla blocked on #1. |
+| Password-reset email body | `packages/mailer/src/templates/password-reset.ts` | Localized brand and hosted academy logo. |
+| Password-reset subject | `packages/i18n/src/messages/{en,bn}.ts` | Academy name in both locales. |
 | SMTP sender name | `.env.example:103`, `.env.docker.example:110` | `SMTP_FROM="replace-me"`. The comment above it shows the intended shape. Blocked on #4. |
-| Completion certificate | `apps/web/src/components/certificates/certificate-pdf-document.tsx:68` | Name correct. No logo — a certificate is the one document most likely to be printed and shown to someone, so it should carry the mark. Blocked on #2. |
-| Push notifications | `apps/web/public/firebase-messaging-sw.js` | Declares no icon or badge, so the browser shows its own default. Adding `icon` and `badge` is blocked on #2. |
+| Completion certificate | `apps/web/src/components/certificates/certificate-pdf-document.tsx` | Academy lockup included. |
+| Push notifications | `apps/api/src/services/fcm-push-service.ts` | Web push icon and badge configured. |
 | SMS | `.env.example:112` | `ONECODESOFT_SENDER_ID="replace-me"` — the alphanumeric sender shown on the handset. Blocked on #4. |
 
 ---

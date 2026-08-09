@@ -1,5 +1,7 @@
-import { Document, Page, StyleSheet, Text } from "@react-pdf/renderer";
+import { Document, Image, Page, StyleSheet, Text } from "@react-pdf/renderer";
 import type { ReactElement } from "react";
+
+import mmaLogo from "@/assets/mma-logo.png";
 
 const styles = StyleSheet.create({
   page: {
@@ -47,6 +49,13 @@ const styles = StyleSheet.create({
     color: "#59596b",
     fontFamily: "Helvetica",
     fontSize: 10
+  },
+  logo: {
+    alignSelf: "center",
+    height: 96,
+    marginBottom: 24,
+    objectFit: "contain",
+    width: 96
   }
 });
 
@@ -64,6 +73,7 @@ export function CertificatePdfDocument({
   return (
     <Document>
       <Page size="LETTER" style={styles.page}>
+        <Image src={mmaLogo} style={styles.logo} />
         <Text style={styles.title}>Certificate of Completion</Text>
         <Text style={styles.subtitle}>{"Mehedi's Math Academy"}</Text>
         <Text style={styles.label}>This certifies that</Text>

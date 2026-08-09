@@ -471,29 +471,24 @@ where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`,
 
 ---
 
-## 8. Brand and app-shell assets — ◐ half done
+## 8. Brand and app-shell assets — ✅ done
 
-**Done:** `apps/mobile/assets/images/` now contains `mma-mark.png` and `mma-wordmark.png`, and
-`app/(tabs)/_layout.tsx:24` renders the lockup as the catalogue tab's `headerTitle` — mark at 24px,
-wordmark at 15×72, 6px gap. `app.json` names the app `Mehedi's Math Academy`, slug `mehedis-math-academy`, scheme `mma`, bundle
+**Done:** `apps/mobile/assets/images/` contains the processed `mma-mark.png` and `mma-logo.png`, and
+`app/(tabs)/_layout.tsx:24` renders the full lockup as the catalogue tab's `headerTitle`. `app.json`
+names the app `Mehedi's Math Academy`, slug `mehedis-math-academy`, scheme `mma`, bundle
 `com.mehedismathacademy.app`.
 
-**Not done — the launcher and splash are still the Expo template:**
+Launcher, splash, adaptive icon, monochrome icon and Expo-web favicon now use the supplied mark:
 
 | `app.json` key | Current value | Should be |
 | --- | --- | --- |
-| `icon` | `./assets/images/icon.png` (template) | generated from the Mehedi's Math Academy mark |
-| `android.adaptiveIcon.backgroundColor` | `#E6F4FE` (pale blue) | `#FCFBF9` |
-| `android.adaptiveIcon.foregroundImage` | `android-icon-foreground.png` (template) | Mehedi's Math Academy mark |
-| `expo-splash-screen.backgroundColor` | `#faf8ff` (lavender) | `#FCFBF9` |
-| `expo-splash-screen.image` | `splash-icon.png` (template) | Mehedi's Math Academy mark |
+| `icon` | `./assets/images/icon.png` | Supplied academy mark on paper |
+| `android.adaptiveIcon.backgroundColor` | `#FCFBF9` | Academy paper |
+| `android.adaptiveIcon.foregroundImage` | `android-icon-foreground.png` | Academy mark |
+| `expo-splash-screen.backgroundColor` | `#FCFBF9` | Academy paper |
+| `expo-splash-screen.image` | `splash-icon.png` | Academy mark |
 
-Neither `#E6F4FE` nor `#faf8ff` appears anywhere in the Mehedi's Math Academy palette. This is the last thing
-standing between the app and a build a human can look at without wincing.
-
-⚠️ `DESIGN.md` §9 warns the current PNGs were traced from a white-background JPG. **Get the vector
-from the client before generating icon sets** — an icon is expensive to change once a store listing
-exists. This is why E1 is still open rather than merely unfinished.
+Neither Expo default color remains in the mobile app.
 
 ---
 

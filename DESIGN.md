@@ -259,17 +259,16 @@ motion.
 
 ## 9. Assets
 
-`apps/web/public/brand/` holds the logo:
+`apps/web/public/brand/` holds the academy artwork:
 
-- `mma-mark.png` (361×360, transparent) — orange **G** with a black play triangle. Light backgrounds.
-- `mma-wordmark.png` (958×210, transparent) — "GENEX", black, italic condensed with a reversed E.
-- `mma-mark-light.png`, `mma-wordmark-light.png` — white-knockout, for dark backgrounds.
+- `mma-mark.png` (220×220, transparent) — the academy's M mark with lightning and bulb.
+- `mma-logo.png` (500×500, transparent) — the full Mehedi's Math Academy lockup.
+- `mehedi-bhai.jpeg` (640×640) — founder portrait used on the About page.
 
-Header lockup: mark at `28px` high (26px in app shells) plus wordmark at `16px`
-(15px), `9px` gap, both `display: block`.
+Headers use the full square lockup at `56px` (44px in app shells). The mark-only
+asset handles favicon, app icons, previews and the lecture watermark.
 
-> ⚠️ These were traced from a white-background JPG. Get the original vector from
-> the client before shipping.
+The supplied PNG artwork is processed to transparency before use.
 
 Photography, thumbnails and avatars fall back to `#F1EEE9` rectangles with an
 Archivo caption. Keep the aspect ratios.

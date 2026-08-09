@@ -157,11 +157,10 @@ export function SiteHeader(): JSX.Element {
             className="flex shrink-0 items-center gap-[9px]"
             to="/"
           >
-            <img alt="" className="block h-7 w-auto" src="/brand/mma-mark.png" />
             <img
               alt={t("brand.name")}
-              className="block h-4 w-auto"
-              src="/brand/mma-wordmark.png"
+              className="block size-14 object-contain"
+              src="/brand/mma-logo.png"
             />
           </Link>
 

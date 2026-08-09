@@ -1306,6 +1306,10 @@ export const en: Readonly<Record<MessageKey, string>> = {
     "Mehedi's Math Academy exists for one reason: a good teacher's class should not be out of reach because of where you live. Buy a course and its classes, notes and tests are yours, with no expiry.",
   "about.body2":
     "Behind every course there is a teacher, and behind them the messaging, notices and assessment tools that keep a batch running.",
+  "about.founderAlt": "Mehedi Bhai",
+  "about.founderBody": "The academy exists to make mathematics simple, clear and within reach for every learner.",
+  "about.founderEyebrow": "Founder",
+  "about.founderName": "Mehedi Bhai",
   "contact.title": "Contact us",
   "contact.address": "Address:",
   "contact.helpline": "Helpline:",

@@ -61,6 +61,12 @@ export class FcmPushService {
           body: input.body,
           title: input.title
         },
+        webpush: {
+          notification: {
+            badge: "https://mehedismathacademy.com/brand/mma-mark.png",
+            icon: "https://mehedismathacademy.com/brand/mma-mark.png"
+          }
+        },
         tokens: [...input.tokens]
       });
     } catch (error) {

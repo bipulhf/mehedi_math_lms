@@ -54,8 +54,9 @@ export const Route = createRootRoute({
       }
     ],
     links: [
-      // The traced PNG mark, until the client supplies the original vector.
-      { rel: "icon", href: "/brand/mma-mark.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.ico" },
+      { rel: "apple-touch-icon", href: "/brand/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       {
         as: "font",
         crossOrigin: "anonymous",

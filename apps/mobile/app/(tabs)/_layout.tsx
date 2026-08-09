@@ -27,9 +27,7 @@ function BrandLockup(): JSX.Element {
   return (
     <View style={styles.brand}>
       {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
-      <Image source={require("@/assets/images/mma-mark.png")} style={styles.brandMark} />
-      {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
-      <Image source={require("@/assets/images/mma-wordmark.png")} style={styles.brandWordmark} />
+      <Image source={require("@/assets/images/mma-logo.png")} style={styles.brandLogo} />
     </View>
   );
 }
@@ -142,7 +140,6 @@ const styles = StyleSheet.create({
     top: -4
   },
   badgeText: { color: colors.card, fontFamily: fonts.displayBold, fontSize: 10 },
-  brand: { alignItems: "center", flexDirection: "row", gap: 6 },
-  brandMark: { height: 24, width: 24 },
-  brandWordmark: { height: 15, width: 72 }
+  brand: { alignItems: "center" },
+  brandLogo: { height: 48, width: 48 }
 });

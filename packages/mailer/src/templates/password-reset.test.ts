@@ -14,6 +14,7 @@ describe("renderPasswordResetEmail", () => {
     // The href and the pasteable copy, plus the plain-text part a client that
     // refuses HTML falls back to.
     expect(html).toContain(`href="${url}"`);
+    expect(html).toContain('src="https://mehedismathacademy.com/brand/mma-logo.png"');
     expect(text).toContain(url);
   });
 

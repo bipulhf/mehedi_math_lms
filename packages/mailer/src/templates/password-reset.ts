@@ -46,7 +46,9 @@ export function renderPasswordResetEmail(input: PasswordResetEmailInput): Render
   const t = createTranslator(input.locale ?? defaultLocale);
   const name = input.name.trim().length > 0 ? input.name.trim() : t("email.resetFallbackName");
   const expiry = t("email.resetExpiry", { minutes: input.expiryMinutes });
+  const logoUrl = new URL("/brand/mma-logo.png", input.resetUrl).toString();
   const safeUrl = escapeHtml(input.resetUrl);
+  const safeLogoUrl = escapeHtml(logoUrl);
 
   const html = `<!doctype html>
 <html lang="${input.locale ?? defaultLocale}">
@@ -62,7 +64,7 @@ export function renderPasswordResetEmail(input: PasswordResetEmailInput): Render
           <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:520px;background:${card};border:1px solid ${hairline};">
             <tr>
               <td style="padding:28px 32px 0 32px;">
-                <p style="margin:0;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:${mutedLight};">${escapeHtml(t("brand.name"))}</p>
+                <img alt="${escapeHtml(t("brand.name"))}" height="72" src="${safeLogoUrl}" style="display:block;height:72px;width:72px;object-fit:contain;" width="72" />
                 <h1 style="margin:12px 0 0 0;font-size:24px;font-weight:500;line-height:1.3;color:${ink};">${escapeHtml(t("email.resetHeading"))}</h1>
               </td>
             </tr>
