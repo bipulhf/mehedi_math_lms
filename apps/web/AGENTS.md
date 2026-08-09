@@ -259,6 +259,7 @@ Four rules from `DESIGN.md` that this codebase gets wrong most often:
 
 - **Ink is default.** Paper must be explicitly declared for light/print surfaces.
 - **Rounded plates.** Cards use `14px`, slabs `18px`, pills `100px`, controls `8px`.
+- **No shadows.** Depth comes from surface contrast, hairlines and colour blocks.
 - **Motion has a budget.** Marketing uses documented rise/fade/marquee/floaty
   effects; every effect stops under `prefers-reduced-motion`.
 - **Surface contrast matters.** Portals and dialogs declare their surface rather

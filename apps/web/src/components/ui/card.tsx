@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Surface-aware rounded plate. Ink surfaces use translucent panels; paper uses
- * solid cards. Hover changes border and shadow without moving content.
+ * solid cards. Hover changes border without moving content.
  *
  * Header, content and footer step from `p-4` to `p-6` at `sm`. This is the most
  * repeated padding in the app, and 24px a side inside a 16px page gutter left a
@@ -18,7 +18,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-md)] border border-hairline bg-card shadow-[0_18px_60px_-40px_rgba(0,207,255,0.55)] transition-[border-color,box-shadow] duration-200 hover:border-brand-cyan/50",
+        "rounded-[var(--radius-md)] border border-hairline bg-card transition-colors duration-200 hover:border-brand-cyan/50",
         className
       )}
       {...props}

@@ -124,8 +124,7 @@ and check both locales at every breakpoint.
 - Radius: `14px` cards, `18px` slabs, `100px` pills, `8px` controls unless a
   component needs a smaller radius for dense data.
 - Borders: alpha hairlines on ink, neutral hairlines on paper.
-- Shadows are restrained depth cues for raised controls and plates; never use
-  heavy blurred shadows as the primary hierarchy.
+- No shadows. Depth comes from surface contrast, borders and colour blocks.
 
 ---
 
@@ -147,7 +146,7 @@ colour, opacity and scale transitions are allowed when they communicate state.
 ### Cards
 
 Cards are rounded plates: `14px` radius, ink-alpha fill on ink and solid white on
-paper. Use a restrained shadow or border to separate a plate from its surface.
+paper. Use border and surface contrast to separate a plate from its surface.
 
 ### Pills
 
@@ -263,7 +262,7 @@ formatters are shared so web and mobile agree.
 
 - Don't make paper the global default.
 - Don't use cyan, orange or yellow outside their semantic roles.
-- Don't add heavy decorative gradients or shadows that compete with content.
+- Don't add shadows anywhere. Use borders, surface contrast and colour blocks.
 - Don't animate without a reduced-motion fallback.
 - Don't use a rainbow status palette; see §2.
 - Don't hardcode a count that could be derived.

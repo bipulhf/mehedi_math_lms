@@ -263,7 +263,7 @@ function SendNotificationPage(): JSX.Element {
                       className={cn(
                         "flex-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
                         targetMode === "role"
-                          ? "bg-card text-ink shadow-xs"
+                           ? "bg-card text-ink"
                           : "text-muted hover:text-ink"
                       )}
                       onClick={() => setTargetMode("role")}
@@ -277,7 +277,7 @@ function SendNotificationPage(): JSX.Element {
                     className={cn(
                       "flex-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
                       targetMode === "course"
-                        ? "bg-card text-ink shadow-xs"
+                         ? "bg-card text-ink"
                         : "text-muted hover:text-ink"
                     )}
                     onClick={() => setTargetMode("course")}
@@ -290,7 +290,7 @@ function SendNotificationPage(): JSX.Element {
                     className={cn(
                       "flex-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
                       targetMode === "users"
-                        ? "bg-card text-ink shadow-xs"
+                         ? "bg-card text-ink"
                         : "text-muted hover:text-ink"
                     )}
                     onClick={() => setTargetMode("users")}
@@ -368,7 +368,7 @@ function SendNotificationPage(): JSX.Element {
                     value={userSearch}
                   />
                   {userSearch.trim().length > 0 && (
-                    <div className="absolute z-10 mt-1 w-full border border-hairline bg-card shadow-md">
+                     <div className="absolute z-10 mt-1 w-full border border-hairline bg-card">
                       {userSearchMatches.length > 0 ? (
                         userSearchMatches.map((user) => (
                           <button

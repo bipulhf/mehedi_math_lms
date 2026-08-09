@@ -189,7 +189,7 @@ export function NotificationBell(): JSX.Element | null {
         <div
           className={cn(
             "absolute right-0 z-50 mt-3 w-[min(100vw-1.5rem,24rem)]",
-            "rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-3 shadow-[0_18px_38px_-20px_rgba(0,207,255,0.35)]"
+            "rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-3"
           )}
           onClick={(event) => event.stopPropagation()}
         >

@@ -139,7 +139,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
                     className={cn(
                       "flex flex-col items-center justify-center aspect-square rounded-2xl border transition-all duration-300 group/icon-btn",
                       selectedIcon === iconName
-                        ? "bg-ink/10 border-ink/30 text-ink shadow-sm"
+                         ? "bg-ink/10 border-ink/30 text-ink"
                         : "bg-chip-active/30 border-hairline/10 hover:border-ink/2 text-ink/60 hover:text-ink"
                     )}
                   >

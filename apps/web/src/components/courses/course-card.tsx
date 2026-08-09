@@ -41,7 +41,7 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
   const meta = courseMetaParts(course.stats, t, format);
 
   const cardClass =
-    "group flex h-full flex-col border border-hairline bg-card transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-md";
+    "group flex h-full flex-col border border-hairline bg-card transition-colors duration-300 hover:border-line-strong";
 
   const body = (
     <>
@@ -179,7 +179,7 @@ export function CourseListCard({ course }: { course: CourseSummary }): JSX.Eleme
 
   return (
     <Link
-      className="group flex h-full flex-col border border-hairline bg-card transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-md sm:flex-row"
+      className="group flex h-full flex-col border border-hairline bg-card transition-colors duration-300 hover:border-line-strong sm:flex-row"
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >

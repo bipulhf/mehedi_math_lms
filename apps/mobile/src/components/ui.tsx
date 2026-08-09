@@ -15,7 +15,7 @@ import {
 } from "react-native";
 
 import { useFormat } from "@/src/lib/locale";
-import { colors, fonts, radius, shadow, spacing, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
 
 /**
  * The primitives every screen is built from. Deliberately small: the web app's
@@ -623,7 +623,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.square,
     borderWidth: 1,
     padding: spacing.lg,
-    ...shadow.card
   },
   cover: { width: "100%" },
   coverFallback: { backgroundColor: colors.placeholderFill, width: "100%" },

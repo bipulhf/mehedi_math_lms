@@ -473,7 +473,7 @@ function AdminUsersPage(): JSX.Element {
                             className={cn(
                               "size-2 rounded-full",
                               user.isActive
-                                ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+                                 ? "bg-green-500"
                                 : "bg-red-500"
                             )}
                           />
@@ -538,7 +538,7 @@ function AdminUsersPage(): JSX.Element {
                             disabled={isOwn}
                             onClick={() => handleStatusToggle(user)}
                             className={cn(
-                              "size-9 rounded-xl transition-all shadow-sm",
+                               "size-9 rounded-xl transition-colors",
                               user.isActive
                                 ? "hover:bg-red-50 hover:text-red-500"
                                 : "hover:bg-green-50 hover:text-green-500"

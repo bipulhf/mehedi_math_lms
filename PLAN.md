@@ -802,7 +802,7 @@ erDiagram
   - Primary colors: `--color-primary` (#000000), `--color-on-primary-container` (#028fb0), `--color-secondary-container` (#6063ee)
   - Typography: Manrope (display/headlines) + Inter (body/labels)
   - Radius tokens: DEFAULT (0.25rem), md (0.375rem)
-  - Shadow system: tinted shadows using `rgba(19, 27, 46, 0.08)`, ghost borders at 15% opacity
+  - Shadow system: none; depth uses surface contrast and ghost borders at 15% opacity
   - "No-Line Rule" enforced via surface layering, not borders
   - Signature CTA gradient: `primary` to `on-primary-container`
   - Frosted navigation: 80% opacity + 24px backdrop-blur

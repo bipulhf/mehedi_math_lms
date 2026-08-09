@@ -89,11 +89,3 @@ export const typography = {
   label: { fontFamily: fonts.monoLabel, fontSize: 12, letterSpacing: 0.72, lineHeight: 16 },
   title: { fontFamily: fonts.displaySemiBold, fontSize: 20, lineHeight: 27 }
 } as const;
-
-/**
- * No shadows. DESIGN.md §1 — depth comes from hairlines, and a card is a
- * hairline border on white.
- */
-export const shadow = {
-  card: {}
-} as const;

@@ -109,8 +109,7 @@ function RootComponent(): JSX.Element {
           position="top-right"
           toastOptions={{
             classNames: {
-              toast:
-                "!bg-card !text-ink !shadow-[0_16px_38px_-20px_rgba(19,27,46,0.22)]",
+              toast: "!bg-card !text-ink",
               description: "!text-ink/66",
               title: "!font-semibold"
             }
