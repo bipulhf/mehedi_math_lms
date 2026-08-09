@@ -250,7 +250,7 @@ export function ImageCropUploader({
       ) : null}
       {cropModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-           <div className="w-full max-w-4xl rounded-[var(--radius-md)] border border-hairline bg-background p-4">
+           <div className="w-full max-w-4xl rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-4">
             <div className="space-y-4">
               <div className="relative h-[55vh] overflow-hidden rounded-(--radius) bg-black">
                 <Cropper

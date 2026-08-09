@@ -562,7 +562,7 @@ function AdminCoursesPage(): JSX.Element {
       {rejectTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div
-            className="relative w-full max-w-lg rounded-[var(--radius-md)] border border-hairline bg-background p-4 sm:p-6 lg:p-8"
+            className="relative w-full max-w-lg rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-4 sm:p-6 lg:p-8"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
