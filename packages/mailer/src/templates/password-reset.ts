@@ -10,13 +10,13 @@ import { createTranslator, defaultLocale, type Locale } from "@mma/i18n";
  * duplicated, and it is duplicated with the token names beside it.
  */
 
-const ink = "#23211e";
-const muted = "#6b6763";
-const mutedLight = "#8a857d";
-const paper = "#fcfbf9";
+const ink = "#0d0d0d";
+const muted = "#5f6368";
+const mutedLight = "#73777d";
+const paper = "#ffffff";
 const card = "#ffffff";
-const hairline = "#e8e4de";
-const accent = "#ee5622";
+const hairline = "#dfe3e8";
+const accent = "#ffa500";
 
 const fontStack = "'Hind Siliguri', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 

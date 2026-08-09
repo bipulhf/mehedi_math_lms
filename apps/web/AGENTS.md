@@ -242,22 +242,30 @@ Both take the redirect target from a query parameter, so both go through `isAllo
 
 Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. `DESIGN.md` is the authority on what the tokens mean; this section is only about how to reach them from code.
 
-The palette is the Mehedi's Math Academy warm-paper set — `ink`, `ink-muted`, `muted`, `muted-light`, `muted-faint`, `paper`, `card`, `panel-warm`, `hairline`, `line-strong`, `chip-active`, `placeholder-fill`, `bar-track`, `bar-idle`, and `accent`.
+Target theme is reference project's ink-first academy system — `ink`, `paper`,
+`panel`, `muted-panel`, `body`, `faint`, `hairline`, `line-firm`, `brand-cyan`,
+`brand-orange`, `brand-yellow`, and `error`. Current warm-paper tokens remain
+compatibility aliases only until migration completes.
 
-Use the tokens (`bg-paper`, `text-muted`, `border-hairline`) rather than raw Tailwind colours like `bg-gray-100` or an arbitrary `text-[#c4353b]`. Validation text is `text-error` — the one surviving red.
+Use surface-aware tokens and `data-surface="ink|paper"` rather than raw Tailwind
+colours or arbitrary hex values. Validation text is `text-error`.
 
-**The accent is a variable.** `--color-accent` has four shipped alternates. Never type `#EE5622` into a component.
+**Brand colours are variables.** Cyan is primary, orange is decisive action, and
+yellow is highlight/formula. Never type their hex values into a component.
 
 Recharts is the one exception to token discipline, and only because it writes colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The values the charts need are mirrored as literals in `src/lib/chart-theme.ts` — add to that file rather than retyping a hex in a route.
 
 Four rules from `DESIGN.md` that this codebase gets wrong most often:
 
-- **Hairlines are the sectioning tool.** `1px #E8E4DE` everywhere. The old "No-Line Rule" is gone.
-- **No shadows.** Not on cards, not on buttons, not on modals.
-- **No animation.** Colour and border transitions on hover, nothing else. Nothing lifts, scales or fades in.
-- **Cards are square.** `4px` is for buttons and inputs; `100px` for pills; `0` for cards.
+- **Ink is default.** Paper must be explicitly declared for light/print surfaces.
+- **Rounded plates.** Cards use `14px`, slabs `18px`, pills `100px`, controls `8px`.
+- **Motion has a budget.** Marketing uses documented rise/fade/marquee/floaty
+  effects; every effect stops under `prefers-reduced-motion`.
+- **Surface contrast matters.** Portals and dialogs declare their surface rather
+  than inheriting a page's text colour accidentally.
 
-Fonts: `font-body` (Hind Siliguri) for everything, `font-mono-label` (Archivo) for Latin numerals, IDs and small all-caps labels.
+Fonts: Geist for Latin UI, Hind Siliguri for Bangla display, Solaiman Lipi for
+Bangla body, and Georgia for formulas.
 
 ## Phones
 

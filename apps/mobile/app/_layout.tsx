@@ -42,9 +42,9 @@ function AppStack(): JSX.Element {
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
-          contentStyle: { backgroundColor: colors.paper },
+          contentStyle: { backgroundColor: colors.background },
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.paper },
+          headerStyle: { backgroundColor: colors.background },
           headerTintColor: colors.ink,
           headerTitleStyle: { fontFamily: fonts.displayBold }
         }}

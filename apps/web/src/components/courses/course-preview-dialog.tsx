@@ -56,7 +56,8 @@ function LectureBody({ lecture }: { lecture: CourseLecturePreview }): JSX.Elemen
  * `isPreview` reach it — the body arrives from a public endpoint that refuses
  * anything else, so an open dialog can never show a paid lesson.
  *
- * DESIGN.md §6: square card, hairline border, no shadow and no motion.
+ * The preview is an ink plate over a black scrim, with a mobile-first scrollable
+ * body.
  */
 export function CoursePreviewDialog({ lessonId, onClose }: CoursePreviewDialogProps): JSX.Element | null {
   const t = useT();
@@ -94,13 +95,13 @@ export function CoursePreviewDialog({ lessonId, onClose }: CoursePreviewDialogPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:items-center"
+       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center"
       onClick={onClose}
     >
       <div
         aria-labelledby="course-preview-title"
         aria-modal="true"
-        className="w-full max-w-3xl border border-hairline bg-card p-5 sm:p-6"
+         className="w-full max-w-3xl rounded-[var(--radius-md)] border border-hairline bg-background p-5 shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)] sm:p-6"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >

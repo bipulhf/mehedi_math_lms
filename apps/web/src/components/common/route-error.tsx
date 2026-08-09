@@ -9,7 +9,7 @@ export function RouteErrorView({ error, reset }: ErrorComponentProps): JSX.Eleme
   const t = useT();
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center bg-paper px-4 py-10">
+    <div className="flex min-h-[60vh] items-center justify-center bg-background px-4 py-10">
       <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>{t("error.title")}</CardTitle>

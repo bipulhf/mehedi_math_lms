@@ -25,7 +25,7 @@ app/                     Expo Router file routes. (tabs)/ is the signed-in shell
 src/lib/                 env, api-client, api, auth, session-store, query, hooks
 src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
 src/components/*.tsx     Composed pieces: lecture player, comments, reviews, route error
-src/theme/tokens.ts      The Digital Atelier palette, radii, spacing and type scale
+src/theme/tokens.ts      The ink-first academy palette, radii, spacing and type scale
 ```
 
 `app/` holds routes only. Anything reusable belongs in `src/` — including the
@@ -66,14 +66,14 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 
 ## Design tokens and locale
 
-`src/theme/tokens.ts` restates `DESIGN.md` in values Metro can bundle — the
-Mehedi's Math Academy warm-paper palette, square cards, 4px on buttons and inputs, and no
-shadows (`shadow.card` is an empty object kept only so screens that spread it
-still compile). The Material token names below it are compatibility aliases and
-go when the screens using them are rebuilt.
+`src/theme/tokens.ts` must restate `DESIGN.md` in values Metro can bundle — the
+ink-first academy palette, cyan/orange/yellow roles, rounded plates, and surface
+contrast. Current warm-paper values are compatibility aliases during migration.
+The Material token names below it are compatibility aliases and go when screens
+using them are rebuilt.
 
-Type is Hind Siliguri for everything set in words and Archivo for Latin
-numerals, ids and small all-caps labels. Several `fonts` entries deliberately
+Type is Hind Siliguri for Bangla display, Solaiman Lipi for Bangla body, and
+Geist/Archivo for Latin numerals, ids and small all-caps labels. Several `fonts` entries deliberately
 map to the same family: React Native does not synthesise a bold for a custom
 family on Android, so `fontWeight` over a family name silently renders regular
 — reach for a family, never a weight.

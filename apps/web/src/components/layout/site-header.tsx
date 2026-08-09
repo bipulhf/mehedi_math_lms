@@ -145,7 +145,7 @@ export function SiteHeader(): JSX.Element {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 border-b border-hairline bg-paper",
+        "sticky top-0 z-40 border-b border-hairline bg-panel-warm",
         "transition-transform duration-200 ease-out motion-reduce:transition-none",
         isHidden ? "-translate-y-full" : "translate-y-0"
       )}
@@ -248,7 +248,7 @@ export function SiteHeader(): JSX.Element {
 
       <div
         className={cn(
-          "border-t border-hairline bg-paper lg:hidden",
+          "border-t border-hairline bg-panel-warm lg:hidden",
           isDrawerOpen ? "block" : "hidden"
         )}
         id="site-header-drawer"

@@ -68,7 +68,7 @@ export default function TabsLayout(): JSX.Element {
     <Tabs
       screenOptions={{
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.paper },
+        headerStyle: { backgroundColor: colors.background },
         headerTitleStyle: { fontFamily: fonts.displayBold },
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.muted,

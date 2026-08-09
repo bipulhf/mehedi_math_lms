@@ -22,66 +22,46 @@
 }
 
 @theme {
-  /* ------------------------------------------------------------------
-   * Mehedi's Math Academy palette. DESIGN.md §2 is the authority; this is its encoding.
-   * ------------------------------------------------------------------ */
-  --color-ink: #23211e;
-  --color-ink-muted: #4a453f;
-  --color-muted: #6b6763;
-  --color-muted-light: #8a857d;
-  --color-muted-faint: #a8a29a;
-  --color-placeholder: #b4aea6;
+  /* Semantic aliases preserve existing markup while surfaces migrate. */
+  --color-ink: #ffffff;
+  --color-ink-muted: rgba(255, 255, 255, 0.72);
+  --color-muted: rgba(255, 255, 255, 0.64);
+  --color-muted-light: rgba(255, 255, 255, 0.52);
+  --color-muted-faint: rgba(255, 255, 255, 0.4);
+  --color-placeholder: rgba(255, 255, 255, 0.38);
 
-  --color-paper: #fcfbf9;
-  --color-card: #ffffff;
-  --color-panel-warm: #f7f5f1;
-  --color-row-hover: #fbf9f6;
-  --color-placeholder-fill: #f1eee9;
-  --color-chip-active: #efebe4;
+  --color-paper: #ffffff;
+  --color-card: rgba(255, 255, 255, 0.04);
+  --color-panel-warm: #171717;
+  --color-row-hover: rgba(0, 207, 255, 0.08);
+  --color-placeholder-fill: #1e1e1e;
+  --color-chip-active: rgba(0, 207, 255, 0.14);
 
-  --color-hairline: #e8e4de;
-  --color-hairline-faint: #f0ede7;
-  --color-hairline-fainter: #f5f1ec;
-  --color-line-strong: #c9c3bb;
-  --color-dot-idle: #ddd8d1;
+  --color-hairline: rgba(255, 255, 255, 0.14);
+  --color-hairline-faint: rgba(255, 255, 255, 0.09);
+  --color-hairline-fainter: rgba(255, 255, 255, 0.05);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-dot-idle: rgba(255, 255, 255, 0.24);
 
-  --color-bar-track: #f1eee9;
-  --color-bar-idle: #e4ded5;
+  --color-bar-track: rgba(255, 255, 255, 0.1);
+  --color-bar-idle: rgba(255, 255, 255, 0.22);
 
-  /* The one saturated colour. Four alternates ship with the design —
-   * #EE5622, #23211E, #1F6F5C, #3B5BA5 — so never type the hex into a
-   * component. DESIGN.md §2. */
-  --color-accent: #ee5622;
+  --color-accent: #00cfff;
+  --color-brand-cyan: #00cfff;
+  --color-brand-orange: #ffa500;
+  --color-brand-yellow: #fff200;
+  --color-action-foreground: #0d0d0d;
+  --color-background: #0d0d0d;
+  --color-error: #ff6257;
+  --color-online: #00cfff;
 
-  /* The only red that survives. Validation text, and nothing else. */
-  --color-error: #ba1a1a;
-
-  /* An explicit exception to the rule above: online presence, and nothing
-   * else. */
-  --color-online: #22c55e;
-
-  /* ------------------------------------------------------------------
-   * The spectrum. Six hues used at low strength for categorisation only --
-   * a tinted chip, an icon, a rule. Never a large fill, never body text.
-   * ADR-0011 amends DESIGN.md §2, which had one accent and nothing else.
-   *
-   * Two of these are the handoff's own accent alternates, and the rest are
-   * pitched to sit beside #EE5622 at the same warmth rather than to stand out
-   * from it: this is meant to read as a printed workbook with coloured tabs,
-   * not as a dashboard with a legend.
-   * ------------------------------------------------------------------ */
-  --color-spectrum-ember: #ee5622;
-  --color-spectrum-teal: #1f6f5c;
-  --color-spectrum-indigo: #3b5ba5;
-  --color-spectrum-violet: #6d4aa6;
-  --color-spectrum-amber: #b4801c;
-  --color-spectrum-rose: #b84a62;
-
-  /* A second explicit exception: MCQ correctness on exam results screens
-   * (the correct option and a correct pick are green, a wrong pick is
-   * --color-error), and nothing else. Reuses one of the four approved accent
-   * alternates rather than introducing a new hue. */
-  --color-correct: #1f6f5c;
+  --color-spectrum-ember: #ffa500;
+  --color-spectrum-teal: #00cfff;
+  --color-spectrum-indigo: #00cfff;
+  --color-spectrum-violet: #ffa500;
+  --color-spectrum-amber: #fff200;
+  --color-spectrum-rose: #ff6257;
+  --color-correct: #00cfff;
 
   /* ------------------------------------------------------------------
    * Type
@@ -91,25 +71,59 @@
   --font-mono-label: "Archivo", ui-sans-serif, system-ui, sans-serif;
 
   /* ------------------------------------------------------------------
-   * Shape. Cards are square; 4px is for buttons and inputs. DESIGN.md §5.
+   * Shape. Controls are soft; cards and slabs use larger plates.
    * ------------------------------------------------------------------ */
-  --radius: 0.25rem;
-  --radius-md: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.875rem;
   --radius-pill: 6.25rem;
 
-  /* Motion is off inside the app shell — DESIGN.md §1, the client rejected a
-   * livelier direction as visually stressful. The public marketing pages are
-   * the one exception, and a deliberate one: ADR-0012. Their keyframes live at
-   * the bottom of this file and every one of them is switched off under
-   * prefers-reduced-motion.
-   *
-   * Display type, marketing only. Fluid, and far larger than anything the app
-   * shell uses. DESIGN.md §4 still governs everything behind the login. */
+  /* Fluid display scale from reference theme. */
   --text-display: clamp(2rem, 1.1rem + 3.6vw, 3.5rem);
   --text-display-lg: clamp(2.5rem, 1.2rem + 5vw, 4.75rem);
 }
 
 @layer base {
+  :root,
+  [data-surface="ink"] {
+    --color-ink: #ffffff;
+    --color-ink-muted: rgba(255, 255, 255, 0.72);
+    --color-muted: rgba(255, 255, 255, 0.64);
+    --color-muted-light: rgba(255, 255, 255, 0.52);
+    --color-muted-faint: rgba(255, 255, 255, 0.4);
+    --color-placeholder: rgba(255, 255, 255, 0.38);
+    --color-paper: #ffffff;
+    --color-card: rgba(255, 255, 255, 0.04);
+    --color-panel-warm: #171717;
+    --color-row-hover: rgba(0, 207, 255, 0.08);
+    --color-placeholder-fill: #1e1e1e;
+    --color-chip-active: rgba(0, 207, 255, 0.14);
+    --color-hairline: rgba(255, 255, 255, 0.14);
+    --color-hairline-faint: rgba(255, 255, 255, 0.09);
+    --color-hairline-fainter: rgba(255, 255, 255, 0.05);
+    --color-line-strong: rgba(255, 255, 255, 0.2);
+    --color-dot-idle: rgba(255, 255, 255, 0.24);
+  }
+
+  [data-surface="paper"] {
+    --color-ink: #0d0d0d;
+    --color-ink-muted: rgba(13, 13, 13, 0.72);
+    --color-muted: rgba(13, 13, 13, 0.62);
+    --color-muted-light: rgba(13, 13, 13, 0.5);
+    --color-muted-faint: rgba(13, 13, 13, 0.42);
+    --color-placeholder: rgba(13, 13, 13, 0.4);
+    --color-paper: #ffffff;
+    --color-card: #fafafa;
+    --color-panel-warm: #f4f4f4;
+    --color-row-hover: rgba(0, 207, 255, 0.08);
+    --color-placeholder-fill: #eeeeee;
+    --color-chip-active: rgba(0, 207, 255, 0.12);
+    --color-hairline: rgba(13, 13, 13, 0.1);
+    --color-hairline-faint: rgba(13, 13, 13, 0.07);
+    --color-hairline-fainter: rgba(13, 13, 13, 0.04);
+    --color-line-strong: rgba(13, 13, 13, 0.18);
+    --color-dot-idle: rgba(13, 13, 13, 0.2);
+  }
+
   * {
     box-sizing: border-box;
     /* Firefox + modern Chromium's standard scrollbar properties. Every
@@ -151,29 +165,15 @@
   }
 
   html {
-    background: var(--color-paper);
+    background: #0d0d0d;
     color: var(--color-ink);
     font-family: var(--font-body);
   }
 
-  /* The page texture: a 27px dot grid plus three corner washes — orange,
-   * sage, blue. DESIGN.md §3. It lives on the body so that every page gets
-   * it once; translucent panels sit on top and let it show through. */
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: var(--color-paper);
-    background-image:
-      radial-gradient(#ede6dd 1px, transparent 1px),
-      radial-gradient(920px 550px at 92% -8%, rgba(238, 86, 34, 0.05), transparent 70%),
-      radial-gradient(780px 470px at -3% 40%, rgba(31, 111, 92, 0.045), transparent 72%),
-      radial-gradient(870px 520px at 100% 90%, rgba(59, 91, 165, 0.04), transparent 70%);
-    background-size:
-      27px 27px,
-      auto,
-      auto,
-      auto;
-    background-attachment: fixed;
+    background-color: #0d0d0d;
     color: var(--color-ink);
     font-family: var(--font-body);
     text-rendering: optimizeLegibility;
@@ -186,7 +186,7 @@
   }
 
   a:hover {
-    color: var(--color-accent);
+    color: var(--color-brand-cyan);
   }
 
   button,
@@ -225,13 +225,11 @@
     cursor: not-allowed;
   }
 
-  /* Long paragraphs are weight 300 and headings 500 — never 700+, the calm
-   * register depends on it. DESIGN.md §4. */
   h1,
   h2,
   h3,
   h4 {
-    font-weight: 500;
+    font-weight: 700;
     text-wrap: pretty;
   }
 
@@ -240,7 +238,7 @@
   }
 
   ::selection {
-    background: rgba(238, 86, 34, 0.16);
+    background: rgba(0, 207, 255, 0.2);
   }
 }
 

@@ -11,8 +11,8 @@ interface AuthLayoutProps extends PropsWithChildren {
 }
 
 /**
- * Sign-in and sign-up layout. Feature showcase on desktop, crisp form card,
- * warm paper background, hairline rules, doodles, full i18n support, and site footer.
+ * Sign-in and sign-up layout. Feature showcase on desktop, crisp ink panel,
+ * cyan/orange accents, full i18n support, and site footer.
  */
 export function AuthLayout({ children, description, title }: AuthLayoutProps): JSX.Element {
   const t = useT();
@@ -37,7 +37,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
   ];
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-paper">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background" data-surface="ink">
       {/* Background Doodles */}
       <DotPatch className="-left-4 top-24 hidden opacity-60 lg:block" />
       <QuarterArc className="bottom-20 right-24 hidden opacity-70 lg:block" />

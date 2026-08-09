@@ -250,7 +250,7 @@ function MyCoursesPage(): JSX.Element {
       {certificatePreview && session ? (
         <Suspense
           fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
               <div className="h-[70vh] w-full max-w-4xl border border-hairline bg-placeholder-fill" />
             </div>
           }

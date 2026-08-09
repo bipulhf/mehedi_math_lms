@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
   dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
   dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
-  flex: { backgroundColor: colors.paper, flex: 1 },
+  flex: { backgroundColor: colors.background, flex: 1 },
   form: { gap: spacing.lg }
 });
 

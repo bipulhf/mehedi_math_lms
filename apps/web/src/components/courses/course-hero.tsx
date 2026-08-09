@@ -118,7 +118,7 @@ export function CourseHero({
                 cover because that is where they are already looking. */}
             {firstPreviewLessonId === null ? null : (
               <button
-                className="absolute inset-x-3 bottom-3 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-pill)] border border-hairline bg-paper px-5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
+                className="absolute inset-x-3 bottom-3 flex min-h-11 items-center justify-center gap-2.5 rounded-[var(--radius-pill)] border border-brand-orange bg-brand-orange px-5 text-base text-action-foreground transition-colors hover:bg-brand-orange/90"
                 onClick={() => onPreview(firstPreviewLessonId)}
                 type="button"
               >

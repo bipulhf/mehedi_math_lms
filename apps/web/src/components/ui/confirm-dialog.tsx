@@ -18,8 +18,8 @@ export interface ConfirmDialogProps {
 }
 
 /**
- * A modal replacement for `window.confirm`. DESIGN.md §6: square card, hairline
- * border, no shadows, and no motion — nothing below animates in.
+ * A modal replacement for `window.confirm`, rendered as a rounded ink plate on
+ * a black scrim.
  *
  * A `dangerous` confirm is rendered as an ink button with the tinted `error`
  * outline rather than a hard red fill; the design keeps one saturated colour
@@ -41,9 +41,9 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:items-center sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center sm:p-6">
       <div
-        className="w-full max-w-md border border-hairline bg-card p-5 sm:p-6"
+        className="w-full max-w-md rounded-[var(--radius-md)] border border-hairline bg-background p-5 shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)] sm:p-6"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === "Escape") {

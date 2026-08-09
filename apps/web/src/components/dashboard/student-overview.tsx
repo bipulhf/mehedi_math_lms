@@ -69,7 +69,7 @@ export function StudentOverview({ name }: { name: string }): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <section className="border border-ink bg-ink p-6 text-paper sm:p-8 lg:p-10">
+      <section className="border border-brand-cyan/40 bg-panel-warm p-6 text-ink sm:p-8 lg:p-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="label-mono text-xs uppercase tracking-[0.2em] text-paper/55">

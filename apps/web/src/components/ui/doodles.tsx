@@ -36,7 +36,7 @@ export function DotPatch({ className }: { className?: string }): JSX.Element {
       aria-hidden="true"
       className={cn("pointer-events-none absolute size-28", className)}
       style={{
-        backgroundImage: "radial-gradient(#E2DDD6 1.5px, transparent 1.5px)",
+         backgroundImage: "radial-gradient(rgba(0, 207, 255, .45) 1.5px, transparent 1.5px)",
         backgroundSize: "15px 15px"
       }}
     />
@@ -49,7 +49,7 @@ export function QuarterArc({ className }: { className?: string }): JSX.Element {
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute size-16 rounded-full border-[1.5px] border-[#E6E0D8]",
+         "pointer-events-none absolute size-16 rounded-full border-[1.5px] border-white/20",
         "border-r-transparent border-t-transparent",
         className
       )}
@@ -65,9 +65,9 @@ export function DiamondTrio({ className }: { className?: string }): JSX.Element 
       aria-hidden="true"
       className={cn("pointer-events-none absolute flex items-center gap-1.5", className)}
     >
-      {["#E6DFD6", "#EBE4DB", "#F0EAE2"].map((tint) => (
+      {["#00CFFF", "#FFA500", "#FFF200"].map((tint) => (
         <span
-          className="size-[7px]"
+        className="size-[7px]"
           key={tint}
           style={{ backgroundColor: tint, transform: "rotate(45deg)" }}
         />
@@ -83,8 +83,8 @@ export function HatchedRule({ className }: { className?: string }): JSX.Element 
       aria-hidden="true"
       className={cn("pointer-events-none block h-1.5 w-full", className)}
       style={{
-        backgroundImage:
-          "repeating-linear-gradient(45deg, #EAE3DA 0 2px, transparent 2px 8px)"
+         backgroundImage:
+           "repeating-linear-gradient(45deg, rgba(0, 207, 255, .35) 0 2px, transparent 2px 8px)"
       }}
     />
   );

@@ -50,7 +50,7 @@ function MessageBubble({ message }: { message: ThreadMessage }): JSX.Element {
         message.isHidden
           ? "border-dashed border-dot-idle bg-panel-warm text-muted"
           : message.isOwn
-            ? "ml-auto border-ink bg-ink text-paper"
+            ? "ml-auto border-brand-cyan bg-brand-cyan text-action-foreground"
             : "border-hairline bg-card text-ink",
         message.isHidden && message.isOwn ? "ml-auto" : undefined
       )}

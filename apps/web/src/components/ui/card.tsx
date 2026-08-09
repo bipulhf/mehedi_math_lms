@@ -3,12 +3,8 @@ import type { HTMLAttributes, JSX, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Square, solid white, one hairline. DESIGN.md §6.
- *
- * The missing radius and missing shadow are both deliberate. Depth on this
- * surface comes from the page texture showing through translucent panels, and
- * a card is what sits solidly on top of it. Hover raises the border to
- * `line-strong`; nothing lifts or scales.
+ * Surface-aware rounded plate. Ink surfaces use translucent panels; paper uses
+ * solid cards. Hover changes border and shadow without moving content.
  *
  * Header, content and footer step from `p-4` to `p-6` at `sm`. This is the most
  * repeated padding in the app, and 24px a side inside a 16px page gutter left a
@@ -21,7 +17,10 @@ export function Card({
 }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>): JSX.Element {
   return (
     <div
-      className={cn("border border-hairline bg-card transition-colors duration-150", className)}
+      className={cn(
+        "rounded-[var(--radius-md)] border border-hairline bg-card shadow-[0_18px_60px_-40px_rgba(0,207,255,0.55)] transition-[border-color,box-shadow] duration-200 hover:border-brand-cyan/50",
+        className
+      )}
       {...props}
     >
       {children}
@@ -48,7 +47,7 @@ export function CardTitle({
 }: PropsWithChildren<HTMLAttributes<HTMLHeadingElement>>): JSX.Element {
   return (
     <h3
-      className={cn("text-xl font-medium leading-snug text-ink sm:text-2xl", className)}
+      className={cn("text-xl font-bold leading-snug text-ink sm:text-2xl", className)}
       {...props}
     >
       {children}
@@ -62,7 +61,7 @@ export function CardDescription({
   ...props
 }: PropsWithChildren<HTMLAttributes<HTMLParagraphElement>>): JSX.Element {
   return (
-    <p className={cn("text-base font-light leading-relaxed text-muted", className)} {...props}>
+    <p className={cn("text-base leading-relaxed text-muted", className)} {...props}>
       {children}
     </p>
   );

@@ -42,6 +42,11 @@ Related documents: [`DESIGN.md`](../DESIGN.md) (visual language), [`mobile-plan.
 (how the app got here, and what is still unverified on hardware),
 [`apps/mobile/AGENTS.md`](../apps/mobile/AGENTS.md) (workspace rules that constrain every fix below).
 
+**Theme migration note:** `DESIGN.md` now targets the ink-first reference theme
+from `../mehedi_bhai/`. Sections below describe current warm-paper code parity and
+remain useful as migration inventory; they are not permission to extend legacy
+visual tokens.
+
 ---
 
 ## 1. What each app is today

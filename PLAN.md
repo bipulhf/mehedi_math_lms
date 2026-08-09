@@ -5,7 +5,7 @@
 
 ---
 name: LMS Platform Build Plan
-overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the "Digital Atelier" design system specified in DESIGN.md.
+overview: A 21-phase plan to build "Mehedi's Math Academy" (mehedismathacademy.com) -- a full-stack LMS with a Turborepo monorepo containing a TanStack Start web frontend, Hono API backend, shared packages, and a React Native mobile app -- following the ink-first academy theme specified in DESIGN.md.
 lastAudited: 2026-08-03
 lastImplemented: 2026-08-03
 todos:
@@ -22,7 +22,7 @@ todos:
     content: "Phase 4: Authentication System (Better Auth + Drizzle + Google OAuth + role-based middleware)"
     status: completed
   - id: phase-05
-    content: "Phase 5: Frontend Foundation -- TanStack Start + Digital Atelier Design System"
+    content: "Phase 5: Frontend Foundation -- TanStack Start + ink-first academy theme"
     status: completed
   - id: phase-06
     content: "Phase 6: User and Profile Management (role-specific profiles, first-login prompt)"
@@ -462,7 +462,7 @@ mehedi_math_academy/
 │       │                           #   lecture-video, profile-form, documents, hooks (+ tests)
 │       ├── src/components/         # ui.tsx primitives, lecture-player, lecture-comments,
 │       │                           #   course-reviews, route-error, google-sign-in-button
-│       ├── src/theme/tokens.ts     # Digital Atelier palette, radii, spacing, type scale
+│       ├── src/theme/tokens.ts     # ink-first palette, radii, spacing, type scale
 │       ├── eas.json                # development / preview / production build profiles
 │       └── jest.config.mjs jest.setup.ts
 ├── packages/
@@ -790,7 +790,7 @@ erDiagram
 
 **Status:** Completed
 
-**Goal:** Set up the TanStack Start web app with Tailwind CSS v4, shadcn/ui, and implement the "Digital Atelier" design system from [DESIGN.md](DESIGN.md).
+**Goal:** Set up the TanStack Start web app with Tailwind CSS v4, shadcn/ui, and implement the ink-first academy theme from [DESIGN.md](DESIGN.md).
 
 **Key tasks:**
 
@@ -828,7 +828,7 @@ erDiagram
 
 **Delivered:**
 
-- TanStack Start + React 19.2 on Vite 8, Tailwind v4 via `@tailwindcss/vite` with all Digital Atelier
+- TanStack Start + React 19.2 on Vite 8, Tailwind v4 via `@tailwindcss/vite` with all ink-first academy
   tokens declared in `styles/app.css` `@theme` (no `tailwind.config`).
 - shadcn/ui initialised (`components.json`); 9 primitives vendored into `components/ui/`: badge, button,
   card, input, label, password-input, select, skeleton, textarea.

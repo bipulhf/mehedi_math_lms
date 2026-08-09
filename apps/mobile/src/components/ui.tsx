@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     lineHeight: typography.body.lineHeight
   },
   bodyMuted: { color: colors.muted },
-  buttonAccent: { backgroundColor: colors.accent },
+  buttonAccent: { backgroundColor: colors.brandOrange },
   buttonAccentLink: {
     alignItems: "center",
     backgroundColor: "transparent",
@@ -589,8 +589,8 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonGhost: { backgroundColor: "transparent" },
-  buttonInk: { backgroundColor: colors.ink },
-  buttonLabel: { fontFamily: fonts.displaySemiBold },
+  buttonInk: { backgroundColor: colors.brandCyan },
+  buttonLabel: { color: colors.actionForeground, fontFamily: fonts.displaySemiBold },
   buttonLabelAccentLink: { color: colors.accent },
   buttonLabelGhost: { color: colors.muted },
   buttonLabelInk: { color: colors.ink },
@@ -620,6 +620,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderColor: colors.hairline,
+    borderRadius: radius.square,
     borderWidth: 1,
     padding: spacing.lg,
     ...shadow.card
@@ -692,7 +693,7 @@ const styles = StyleSheet.create({
   presenceDot: { backgroundColor: colors.dotIdle, borderRadius: radius.full, height: 8, width: 8 },
   presenceDotOnline: { backgroundColor: colors.online },
   price: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: typography.title.fontSize },
-  screen: { backgroundColor: colors.paper, flex: 1 },
+  screen: { backgroundColor: colors.background, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
   sectionHeading: { gap: spacing.sm },
   skeleton: { backgroundColor: colors.placeholderFill, borderRadius: radius.sm },

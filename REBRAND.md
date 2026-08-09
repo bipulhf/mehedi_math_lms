@@ -24,7 +24,7 @@ Status key: **BLOCKED** needs a decision or an asset from the client ·
 | --- | --- | --- | --- |
 | 1 | **The Bangla name.** Chosen: `মেহেদীর গণিত একাডেমি`. | Six strings in `bn.ts` and one test. Bangla is the default locale, so this is the name most visitors see. | DONE |
 | 2 | **Logo artwork.** Supplied: full academy lockup, mark, favicon and founder portrait. | Every header, footer, favicon, OG card, email and the lecture-player watermark. | DONE |
-| 3 | **Palette.** Chosen: keep `#EE5622` orange, warm paper `#FCFBF9`, and ink `#23211E`. | Everything visual. The academy deliberately adopted the warm-paper handoff palette. | DONE |
+| 3 | **Palette.** Updated target: ink `#0D0D0D`, cyan `#00CFFF`, orange `#FFA500`, yellow `#FFF200`, with paper as an explicit contrast surface. | Everything visual. Reference theme selected; web and mobile token migration remains. | IN PROGRESS |
 | 4 | **Live domain and mailbox.** Code now points at `mehedismathacademy.com` and `support@mehedismathacademy.com`. Neither is confirmed registered or routed. | DNS, TLS, OAuth redirect URIs, SSLCommerz store config, SMTP sender, sitemap and canonical URLs. | Client |
 
 A short name is worth deciding alongside #1 — see §4.2, where the long name
@@ -252,26 +252,24 @@ Not code, but part of "everything":
 
 ## 5. Visual language
 
-### 5.1 Adopted palette — DONE
+### 5.1 Reference theme palette — IN PROGRESS
 
-The academy adopted the existing warm-paper handoff palette deliberately. These
-comments and tokens now describe an intentional decision:
+The reference project in `../mehedi_bhai/` defines the next visual direction:
+ink-first surfaces, cyan primary, orange action, yellow highlights, rounded
+plates, and controlled marketing motion. `DESIGN.md` now records this target.
+Web and mobile CSS/token migration remains.
 
-- `apps/web/src/styles/app.css:26` — "Mehedi's Math Academy palette. DESIGN.md §2
-  is the authority; this is its encoding." The values below it are the handoff's
-  orange-on-warm-paper scheme.
-- `apps/mobile/src/theme/tokens.ts:2` — "The Mehedi's Math Academy palette,
-  transcribed from `apps/web/src/styles/app.css`."
+- `apps/web/src/styles/app.css` currently encodes the legacy warm-paper scheme.
+- `apps/mobile/src/theme/tokens.ts` currently mirrors that legacy scheme.
 
-`DESIGN.md` §1–§2 describes the same system, sourced from `design_handoff_genex/`.
+`DESIGN.md` §1–§2 records the new reference theme from `../mehedi_bhai/`.
 
-If palette changes later, the accent is the single token to re-key:
+Target tokens to add/re-key:
 
-- `apps/web/src/styles/app.css:54` — `--color-accent: #ee5622`
-- `apps/web/src/styles/app.css:73` — `--color-spectrum-ember: #ee5622`
-- `apps/mobile/src/theme/tokens.ts:7` — `accent: "#ee5622"`
-- `packages/mailer/src/templates/password-reset.ts:19` — `const accent = "#ee5622"`
-- `apps/api/src/services/og-image-service.ts:34` — the OG top rule
+- `apps/web/src/styles/app.css` — ink/paper surface tokens plus cyan/orange/yellow brand tokens
+- `apps/mobile/src/theme/tokens.ts` — matching React Native surface and brand tokens
+- `packages/mailer/src/templates/password-reset.ts` — email-safe brand colors
+- `apps/api/src/services/og-image-service.ts` — ink card and brand accents
 
 The design system's own rule (`app.css:51-53`) is that the hex is never typed
 into a component, and those five are the complete set of places it legitimately

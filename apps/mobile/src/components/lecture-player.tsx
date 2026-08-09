@@ -131,7 +131,7 @@ export function LecturePlayer({
 const styles = StyleSheet.create({
   external: { gap: spacing.md },
   stage: {
-    backgroundColor: colors.ink,
+    backgroundColor: colors.background,
     borderRadius: radius.sm,
     overflow: "hidden"
   },

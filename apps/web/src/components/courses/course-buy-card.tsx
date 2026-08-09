@@ -257,7 +257,7 @@ export function CourseMobileBuyBar(props: CourseActionProps): JSX.Element | null
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-paper lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-panel-warm lg:hidden">
       <div className="flex items-center gap-4 px-4 py-3 sm:px-8">
         {/* The Payable, once a code is applied: the bar and the card must never
             quote two different numbers for the same purchase. */}

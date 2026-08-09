@@ -1,34 +1,32 @@
 # Design System Specification: Mehedi's Math Academy
 
-The visual language for **Mehedi's Math Academy**, a Bangla-first coaching platform. Derived
-from the design handoff in `design_handoff_genex/`, which the academy deliberately adopted
-as its warm-paper palette and which stays the authority on pixel-level questions this
-document does not answer.
+The visual language for **Mehedi's Math Academy**, a Bangla-first coaching platform.
+This specification now follows the reference implementation in `../mehedi_bhai/`:
+dark-first academy surfaces, electric cyan, orange action colour, rounded plates,
+and editorial motion. The current warm-paper implementation is a migration source,
+not the final visual authority.
 
-This replaces the previous "Digital Atelier" system wholesale. That system was
-built on tonal layering, gradients, shadows and a prohibition on 1px borders.
-Mehedi's Math Academy is the opposite on every one of those axes. If you find a rule from the
-old system still quoted somewhere in the codebase, it is stale — fix it.
+Until migration completes, existing token names may remain as compatibility aliases.
+New UI work follows this document and must not extend the old warm-paper palette.
 
 ---
 
 ## 1. Creative north star
 
-**Calm paper.** The client rejected a livelier earlier direction as visually
-stressful. What replaced it reads like a well-set printed workbook: warm paper,
-hairline rules, generous space, and a single orange accent used sparingly enough
-that it still means something when it appears.
+**Night classroom.** Default surface is near-black ink. Cyan marks active learning,
+orange marks the action a section is asking for, and yellow marks ideas, formulas
+and moments worth remembering. Paper is an intentional contrast surface, not the
+page default.
 
 Three rules carry most of the weight:
 
-1. **No shadows.** Depth comes from the background washes and hairlines.
-2. **No animation** *inside the app shell*. Colour and border transitions on
-   hover, nothing else — no parallax, no entrance animation, nothing lifts or
-   scales. The public marketing pages are the one exception, and a recorded one:
-   ADR-0012.
-3. **Accent discipline.** The accent appears roughly 6–10 times per page, never
-   as a large fill on a marketing page. In an app shell, exactly one button is
-   accent.
+1. **Ink first.** `data-surface="ink"` is default. Use `data-surface="paper"`
+   for sign-in sheets, print views and other deliberate light surfaces.
+2. **Three-colour hierarchy.** Cyan is the primary interactive accent, orange is
+   the decisive CTA/action colour, and yellow is reserved for highlights and ideas.
+3. **Motion with restraint.** Marketing may use rise, fade-up, marquee and floaty
+   effects. App surfaces use short colour, border and opacity transitions. Every
+   animation must stop under `prefers-reduced-motion`.
 
 ---
 
@@ -36,110 +34,79 @@ Three rules carry most of the weight:
 
 | Token | Hex | Use |
 | --- | --- | --- |
-| Ink | `#23211E` | primary text, primary buttons, dark surfaces |
-| Ink muted | `#4A453F` | body text inside cards, list rows |
-| Muted | `#6B6763` | secondary text, nav items, descriptions |
-| Muted light | `#8A857D` | labels, meta, table headers |
-| Muted faint | `#A8A29A` | timestamps, counters, disabled text |
-| Placeholder text | `#B4AEA6` | input placeholders, empty preview text |
-| Paper | `#FCFBF9` | page background base |
-| Card | `#FFFFFF` | cards, tables, panels |
-| Panel warm | `#F7F5F1` | footer and closing bands, row hover on light |
-| Row hover | `#FBF9F6` | table row hover inside white cards |
-| Placeholder fill | `#F1EEE9` | image, avatar and thumbnail placeholders |
-| Chip active | `#EFEBE4` | selected pill, active nav item background |
-| Hairline | `#E8E4DE` | every 1px divider and card border |
-| Hairline faint | `#F0EDE7` / `#F5F1EC` | dividers inside cards, between table rows |
-| Line strong | `#C9C3BB` | underlined text links, secondary button border |
-| Dot idle | `#DDD8D1` | unselected indicator dots, dashed borders |
-| Bar track | `#F1EEE9` | progress and chart track |
-| Bar idle | `#E4DED5` | non-peak chart bars |
-| **Accent** | `#EE5622` | active dots, enrol links, peak chart bar, alerts, checkbox fill, one primary CTA per app shell |
+| Ink | `#0D0D0D` | default page, app shell and footer surface |
+| Paper | `#FFFFFF` | explicit light surface and print output |
+| Panel | `#171717` | raised ink panels and dialogs |
+| Muted panel | `#1E1E1E` | secondary ink surface and footer gradient stop |
+| Body text | `rgba(255,255,255,.64)` | running copy on ink |
+| Faint text | `rgba(255,255,255,.40)` | metadata and supporting labels |
+| Hairline | `rgba(255,255,255,.14)` | ink dividers and borders |
+| Firm line | `rgba(255,255,255,.20)` | focused and emphasized borders |
+| **Cyan** | `#00CFFF` | primary links, active tabs, focus rings, positive emphasis |
+| **Orange** | `#FFA500` | primary CTA, section action, warning emphasis |
+| **Yellow** | `#FFF200` | formulas, ideas and highlight moments |
+| Error | `#FF6257` | validation and destructive feedback |
 
-**Dark actions are Ink, not accent.** The accent is for marking, not for
-filling.
+**Cyan is primary on ink.** Orange owns the single decisive action in a section.
+On paper, cyan is used for rules and fills rather than low-contrast body text.
 
-### The spectrum
+### Accent roles
 
-Six hues sit beside the accent — ember, teal, indigo, violet, amber, rose — used
-only at tint strength (a 10% wash with a 25% hairline, a coloured icon, a 2px
-rule) and only to tell *kinds* of thing apart: a sidebar row, a subject, a kind
-of exam, one number in a row of numbers. They never fill a surface, never colour
-body text, and never stand in for the accent. Statuses keep the rules below
-unchanged. See ADR-0011, and reach for them through `src/lib/spectrum.ts` rather
-than naming a token in a component.
+Do not create a rainbow status palette. Cyan, orange and yellow carry semantic
+roles. Tints use alpha on the same colour (`bg-brand-cyan/10`,
+`border-brand-orange/30`) rather than introducing near-duplicate hex values.
 
 ### The accent is a variable
 
-The handoff ships four alternates — `#EE5622` (default), `#23211E`, `#1F6F5C`,
-`#3B5BA5`. Implement it as a theme value. Never hardcode the orange.
+Implement brand colours as theme values. Never hardcode cyan, orange or yellow in
+component markup. Surface tokens must resolve from `data-surface`, not from a
+global light/dark toggle.
 
 ### Status colours
 
-There is no red/green/amber status palette. Statuses are drawn with the muted
-scale plus the accent for the one that needs attention:
-
-- neutral / success / settled → `Muted` text on `Chip active`
-- needs attention (stuck payment, licence expiring, pending approval) → accent text
-- withdrawn / refunded / archived → `Muted faint`
-
-Validation errors are the one exception and stay `#BA1A1A`.
+Success uses cyan. Attention uses orange. Highlights use yellow. Destructive and
+validation states use `#FF6257`. Keep status text readable against both surfaces.
 
 ---
 
-## 3. Page background
+## 3. Surface model
 
-Applied once, at the outermost container, by the shared `PageBackground`:
+Every major region declares a surface. `ink` is default; `paper` is explicit.
+The surface owns semantic tokens so dialogs, menus and portals do not inherit
+the wrong contrast from their trigger.
 
-```css
-background-color: #FCFBF9;
-background-image:
-  radial-gradient(#EDE6DD 1px, transparent 1px),
-  radial-gradient(920px 550px at 92% -8%, rgba(238, 86, 34, .05), transparent 70%),
-  radial-gradient(780px 470px at -3% 40%, rgba(31, 111, 92, .045), transparent 72%),
-  radial-gradient(870px 520px at 100% 90%, rgba(59, 91, 165, .04), transparent 70%);
-background-size: 27px 27px, auto, auto, auto;
+```tsx
+<section data-surface="ink">...</section>
+<section data-surface="paper">...</section>
 ```
 
-A 27px dot grid plus three corner washes — orange, sage, blue.
-
-Panels sitting **on** that background are translucent white so the texture shows
-through:
-
-| Surface | Value |
-| --- | --- |
-| Sidebars, filter rails | `rgba(255,255,255,.5)` |
-| Right rails (buy column, builder preview) | `rgba(255,255,255,.45)` |
-| Full-width bands | `rgba(255,255,255,.55)` |
-| Sticky headers | `rgba(252,251,249,.78)` marketing, `.82` app shells |
-
-Cards **inside** those areas are solid `#FFFFFF` with a `1px #E8E4DE` border.
+Ink surfaces use `#0D0D0D` with `#171717` panels and white-alpha text. Paper
+surfaces use white with near-black text. Avoid global `.dark` toggles for product
+surfaces; region identity must remain stable.
 
 ---
 
 ## 4. Typography
 
-- **Hind Siliguri** — body, UI, headings. Weights 300, 400, 500, 600.
-- **Archivo** — Latin numerals, IDs, small all-caps labels. Weights 400–600.
+- **Geist** — Latin UI and display text. Weights 400–700.
+- **Hind Siliguri** — Bangla display text and headings. Weights 400–700.
+- **Solaiman Lipi** — Bangla running copy. Weights 400 and 700.
+- **Georgia** — formulas and mathematical identity text.
 
-Long paragraphs are weight **300**. Headings are **500** and never 700+ — the
-calm register depends on it. `letter-spacing: -.01em` on headings ≥32px,
-`text-wrap: pretty` on long paragraphs.
+Body copy stays 400. Display headings may reach 700 for a confident editorial
+voice. Use `text-wrap: pretty` for long copy and keep Bengali text unconstrained.
 
 | Role | Size / weight / line-height |
 | --- | --- |
-| Marketing h1 | 44–54px / 500 / 1.25 |
-| Dashboard h1 | 34px / 500 / 1.3 |
-| Section h2 | 30–38px / 500 / 1.3–1.35 |
-| Card or row title | 20–24px / 500 / 1.35 |
-| Sub-head (h3) | 22–23px / 500 |
-| Lead paragraph | 19–20px / 300 / 1.85 |
-| Body | 17–18px / 300 / 1.8–1.9 |
-| Table cell | 17px / 300–400 |
-| Nav item | 17px / 400 |
-| Label, meta | 15–16px / 300–500 |
-| Stat number | 26–30px / 500 |
-| Archivo label | 11–14px, `letter-spacing: .06em` |
+| Marketing hero | `clamp(34px, 6.2vw, 92px)` / 700 / 1.02 |
+| Wordmark display | `clamp(34px, 10.4vw, 176px)` / 700 / 1.02 |
+| Section h2 | `clamp(28px, 3.2vw, 56px)` / 700 / 1.08 |
+| Card title | `clamp(22px, 2vw, 32px)` / 700 / 1.15 |
+| Lead paragraph | `clamp(16px, 1.3vw, 20px)` / 400 / 1.7 |
+| Body | `clamp(15px, 1.1vw, 17px)` / 400 / 1.72 |
+| UI action | `clamp(16px, 1.15vw, 18px)` / 600 / 1.2 |
+| Eyebrow | `clamp(11px, .85vw, 13px)` / 600 / 1.4 |
+| Formula | `clamp(22px, 2.8vw, 46px)` / Georgia / 1.2 |
 
 Those are the desktop sizes. See §8 for how they scale down.
 
@@ -151,12 +118,14 @@ and check both locales at every breakpoint.
 
 ## 5. Spacing, radius, shape
 
-- Section padding: marketing `56px` horizontal / `56–96px` vertical; dashboards `34–40px`.
-- Header height: `82px` marketing, `74px` app shells. Sidebar `238px`. Right rails `380–396px`. Filter rail `296px`.
-- Gaps: `8–10px` chips, `18–24px` cards, `48–72px` big columns. Use flex/grid `gap`, never margins.
-- Radius: `4px` buttons and inputs, `100px` pills, `50%` dots and avatars, `3px` checkboxes. **Cards are square — 0px.**
-- Borders: `1px #E8E4DE` default, `1.5px` on decorative rings and step circles, `1px dashed #DDD8D1` on advisory and upload boxes.
-- **No shadows anywhere.**
+- Page gutter: `clamp(16px, 3.2vw, 52px)`.
+- Section spacing: `clamp(72px, 8.5vw, 140px)`.
+- Grid gap: `clamp(14px, 1.8vw, 28px)`; split gap: `clamp(24px, 4vw, 72px)`.
+- Radius: `14px` cards, `18px` slabs, `100px` pills, `8px` controls unless a
+  component needs a smaller radius for dense data.
+- Borders: alpha hairlines on ink, neutral hairlines on paper.
+- Shadows are restrained depth cues for raised controls and plates; never use
+  heavy blurred shadows as the primary hierarchy.
 
 ---
 
@@ -166,33 +135,34 @@ and check both locales at every breakpoint.
 
 | Variant | Style |
 | --- | --- |
-| `ink` | `#23211E` fill, paper text, 4px radius. The default primary. |
-| `outline` | transparent, `1px #C9C3BB` border, Ink text |
-| `ghost` | no fill, Muted text; `#F7F5F1` on hover |
-| `accent` | accent fill. **One per app shell**, no more |
-| `accentLink` | accent text with a trailing arrow, no fill — the "enrol" affordance |
+| `cyan` | `#00CFFF` fill, ink text. Primary interactive action on ink. |
+| `orange` | `#FFA500` fill, ink text. One decisive CTA per section. |
+| `outline` | transparent, cyan or alpha hairline border, foreground text |
+| `ghost` | transparent, muted text; alpha panel on hover |
+| `link` | cyan text with underline or trailing arrow |
 
-No gradients, no shadows, no transform on hover.
+Use gradients only for atmospheric background washes and footer depth. Short
+colour, opacity and scale transitions are allowed when they communicate state.
 
 ### Cards
 
-Square, solid white, `1px #E8E4DE`. Hover raises the border to `#C9C3BB` and
-nothing else moves.
+Cards are rounded plates: `14px` radius, ink-alpha fill on ink and solid white on
+paper. Use a restrained shadow or border to separate a plate from its surface.
 
 ### Pills
 
-Unselected: transparent with a `1px #E8E4DE` border. Selected: `#EFEBE4` fill,
-Ink text, no border change. 100px radius.
+Unselected: transparent with an alpha hairline. Selected: cyan or orange tint,
+foreground text, 100px radius.
 
 ### Inputs
 
-4px radius, `1px #E8E4DE`, white fill, `#B4AEA6` placeholder. Focus darkens the
-border to `#C9C3BB`. No glow.
+`8px` radius, surface-aware panel fill, alpha hairline and muted placeholder.
+Focus uses a cyan ring on ink and a visible orange/cyan border on paper.
 
 ### Tabs
 
-2px accent bottom border on the active tab, Ink label. Inactive tabs are Muted
-with no border.
+2px cyan bottom border on the active tab, foreground label. Inactive tabs are
+muted with no border.
 
 ### Accordions
 
@@ -201,13 +171,13 @@ edge. One item open by default.
 
 ### Tables
 
-White card, `1px #E8E4DE` outer border, `1px #F5F1EC` between rows. Header cells
-are Muted light, 15–16px. Row hover `#FBF9F6`.
+Surface-aware plate, alpha hairline outer border, alpha row dividers. Header cells
+are faint, 13–16px. Row hover uses a cyan or white-alpha wash.
 
 ### Progress
 
-Chunked, not a thin line. Filled chunks in the accent, track in `#F1EEE9`,
-square chunks with a small gap. The chunk-count rounding lives in
+Chunked, not a thin line. Filled chunks use cyan, action milestones use orange,
+track uses white-alpha, with a small gap. The chunk-count rounding lives in
 `resolveProgressChunks` in shared code so web and mobile fill the same number.
 
 ### Counters
@@ -218,22 +188,23 @@ A counter that can drift out of step with what it counts is a bug.
 
 ### Empty states
 
-A dashed `1px #DDD8D1` box with a Muted sentence. Every list that can be empty
+A dashed alpha-hairline box with a muted sentence. Every list that can be empty
 needs one.
 
 ---
 
 ## 7. Doodles
 
-Decorative, subtle, all CSS — no illustration files. A small reused set:
+Decorative, contextual, mostly CSS. Use the supplied mark and founder image as
+identity assets; use these effects for the public marketing surfaces:
 
-1. **Hand-drawn ring** around one word in a heading — absolutely positioned span, `border: 2px solid <accent>`, `border-radius: 50%`, `opacity: .32–.4`, `rotate(-3deg)`, `pointer-events: none`, inset `-12px` horizontally.
-2. **Dot patch** — `radial-gradient(#E2DDD6 1.5px, transparent 1.5px)` at `15px 15px`, roughly 100–130px square, in a section corner.
-3. **Quarter arc** — 64–76px circle, `1.5px solid #E6E0D8` with top and right border colours transparent, rotated about -24deg.
-4. **Diamond trio** — three 7px squares rotated 45°, tints `#E6DFD6`, `#EBE4DB`, `#F0EAE2`.
-5. **Hatched rule** above closing bands — `repeating-linear-gradient(45deg, #EAE3DA 0 2px, transparent 2px 8px)`, 6px tall.
-6. **Circled step number** — 44px circle, `1.5px #E8E4DE`, accent numeral.
-7. **Play glyph** — `clip-path: polygon(0 0, 100% 50%, 0 100%)` on a small div. No icon font.
+1. **Cyan/orange rule** — a short 2–3px line under a page eyebrow or beside a CTA.
+2. **Atmospheric wash** — blurred cyan or orange radial gradient on an ink slab;
+   never use it as content fill.
+3. **Marquee** — repeated academy statements or course categories, 46s linear;
+   stop under reduced motion.
+4. **Rise / fade-up** — public content enters with a single staggered sequence.
+5. **Formula accent** — Georgia italic display text for mathematical identity.
 
 Any section owning a doodle is `position: relative; overflow: hidden`.
 
@@ -252,8 +223,8 @@ responsive**, mobile-first, with 1440px as the desktop target.
 - Section padding steps down: `56px` → `24px` at the small breakpoint.
 - Display type steps down: marketing h1 `54px` → `32px`, dashboard h1 `34px` → `26px`.
 
-Nothing about the calm register changes on mobile. Still no shadows, still no
-motion.
+The ink-first register remains on mobile. Reduce decoration and motion, preserve
+44px touch targets, and keep all text within the fluid gutter.
 
 ---
 
@@ -270,8 +241,8 @@ asset handles favicon, app icons, previews and the lecture watermark.
 
 The supplied PNG artwork is processed to transparency before use.
 
-Photography, thumbnails and avatars fall back to `#F1EEE9` rectangles with an
-Archivo caption. Keep the aspect ratios.
+Photography, thumbnails and avatars use surface-aware placeholder panels. Keep
+the founder portrait square and do not crop the face on narrow screens.
 
 ---
 
@@ -290,11 +261,10 @@ formatters are shared so web and mobile agree.
 
 ## 11. Don'ts
 
-- Don't add a shadow. Not a subtle one either.
-- Don't animate. No entrance, no lift, no scale, no spinner.
-- Don't round a card.
-- Don't use the accent as a large fill on a marketing page.
-- Don't hardcode the accent hex — it is a theme variable with four alternates.
-- Don't reach for a red/green status palette; see §2.
+- Don't make paper the global default.
+- Don't use cyan, orange or yellow outside their semantic roles.
+- Don't add heavy decorative gradients or shadows that compete with content.
+- Don't animate without a reduced-motion fallback.
+- Don't use a rainbow status palette; see §2.
 - Don't hardcode a count that could be derived.
 - Don't constrain text to a fixed width — Bangla is longer than English.

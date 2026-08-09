@@ -4,39 +4,43 @@
  * restates it in a form Metro can bundle.
  */
 export const colors = {
-  accent: "#ee5622",
-  barIdle: "#e4ded5",
-  barTrack: "#f1eee9",
-  card: "#ffffff",
-  chipActive: "#efebe4",
-  /** MCQ correctness on exam results screens, and nothing else — see app.css. */
-  correct: "#1f6f5c",
-  dotIdle: "#ddd8d1",
-  error: "#ba1a1a",
-  hairline: "#e8e4de",
-  hairlineFaint: "#f0ede7",
-  ink: "#23211e",
-  inkMuted: "#4a453f",
-  lineStrong: "#c9c3bb",
-  muted: "#6b6763",
-  mutedFaint: "#a8a29a",
-  mutedLight: "#8a857d",
-  online: "#22c55e",
-  panelWarm: "#f7f5f1",
-  paper: "#fcfbf9",
-  placeholder: "#b4aea6",
-  placeholderFill: "#f1eee9",
-  rowHover: "#fbf9f6"
+  accent: "#00cfff",
+  actionForeground: "#0d0d0d",
+  background: "#0d0d0d",
+  barIdle: "rgba(255, 255, 255, 0.22)",
+  barTrack: "rgba(255, 255, 255, 0.1)",
+  brandCyan: "#00cfff",
+  brandOrange: "#ffa500",
+  brandYellow: "#fff200",
+  card: "rgba(255, 255, 255, 0.04)",
+  chipActive: "rgba(0, 207, 255, 0.14)",
+  correct: "#00cfff",
+  dotIdle: "rgba(255, 255, 255, 0.24)",
+  error: "#ff6257",
+  hairline: "rgba(255, 255, 255, 0.14)",
+  hairlineFaint: "rgba(255, 255, 255, 0.09)",
+  ink: "#ffffff",
+  inkMuted: "rgba(255, 255, 255, 0.72)",
+  lineStrong: "rgba(255, 255, 255, 0.2)",
+  muted: "rgba(255, 255, 255, 0.64)",
+  mutedFaint: "rgba(255, 255, 255, 0.4)",
+  mutedLight: "rgba(255, 255, 255, 0.52)",
+  online: "#00cfff",
+  panelWarm: "#171717",
+  paper: "#ffffff",
+  placeholder: "rgba(255, 255, 255, 0.38)",
+  placeholderFill: "#1e1e1e",
+  rowHover: "rgba(0, 207, 255, 0.08)"
 } as const;
 
 /**
- * Cards are square and buttons are 4px. `pill` is for pills and chips, `full`
- * for dots and avatars — the only round things in the design.
+ * Cards are rounded plates and buttons are soft controls. `pill` is for pills
+ * and chips, `full` for dots and avatars.
  */
 export const radius = {
   pill: 100,
-  sm: 4,
-  square: 0,
+  sm: 8,
+  square: 14,
   full: 999
 } as const;
 
@@ -58,8 +62,8 @@ export const spacing = {
  * for a custom family on Android, so `fontWeight: "700"` over a family name
  * silently renders regular. Reach for a family here instead of a weight.
  *
- * Everything set in words is Hind Siliguri — the design uses one family for
- * that. Archivo is only for Latin numerals, ids and small all-caps labels.
+ * Bangla display uses Hind Siliguri. Latin numerals, ids and small all-caps
+ * labels use Archivo until Geist is bundled for native surfaces.
  */
 export const fonts = {
   body: "HindSiliguri_300Light",

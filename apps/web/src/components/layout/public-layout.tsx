@@ -29,7 +29,7 @@ export function PublicLayout({
   title
 }: PublicLayoutProps): JSX.Element {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col" data-surface="ink">
       <SiteHeader />
 
       {title === undefined ? null : (

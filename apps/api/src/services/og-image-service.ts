@@ -32,20 +32,19 @@ function renderOgSvg(primary: string, secondary: string | null): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${OG_IMAGE_WIDTH}" height="${OG_IMAGE_HEIGHT}" viewBox="0 0 ${OG_IMAGE_WIDTH} ${OG_IMAGE_HEIGHT}">
-  <!-- Warm paper, ink text, one accent rule. DESIGN.md §2 — no gradient, and
-       the accent appears once. Flat fills also survive rasterisation to PNG
-       more predictably than a gradient does. -->
-  <rect width="${OG_IMAGE_WIDTH}" height="${OG_IMAGE_HEIGHT}" fill="#fcfbf9"/>
-  <rect x="0" y="0" width="${OG_IMAGE_WIDTH}" height="8" fill="#ee5622"/>
+   <!-- Ink surface, cyan rule, and one academy mark. Flat fills survive
+        rasterisation to PNG more predictably than a gradient does. -->
+  <rect width="${OG_IMAGE_WIDTH}" height="${OG_IMAGE_HEIGHT}" fill="#0d0d0d"/>
+  <rect x="0" y="0" width="${OG_IMAGE_WIDTH}" height="8" fill="#00cfff"/>
   <image href="${brandMarkDataUri}" x="980" y="72" width="140" height="140" preserveAspectRatio="xMidYMid meet"/>
-  <text x="80" y="220" fill="#23211e" font-family="Helvetica,Arial,sans-serif" font-size="54" font-weight="500">${p}</text>
+  <text x="80" y="220" fill="#ffffff" font-family="Helvetica,Arial,sans-serif" font-size="54" font-weight="700">${p}</text>
   ${
     s.length > 0
-      ? `<text x="80" y="300" fill="#6b6763" font-family="Helvetica,Arial,sans-serif" font-size="28">${s}</text>`
+      ? `<text x="80" y="300" fill="#a3a3a3" font-family="Helvetica,Arial,sans-serif" font-size="28">${s}</text>`
       : ""
   }
-  <rect x="80" y="520" width="${OG_IMAGE_WIDTH - 160}" height="1" fill="#e8e4de"/>
-  <text x="80" y="570" fill="#8a857d" font-family="Helvetica,Arial,sans-serif" font-size="22" letter-spacing="2">MEHEDI&apos;S MATH ACADEMY</text>
+  <rect x="80" y="520" width="${OG_IMAGE_WIDTH - 160}" height="1" fill="rgba(255,255,255,0.14)"/>
+  <text x="80" y="570" fill="#a3a3a3" font-family="Helvetica,Arial,sans-serif" font-size="22" letter-spacing="2">MEHEDI&apos;S MATH ACADEMY</text>
 </svg>`;
 }
 

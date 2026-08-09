@@ -357,17 +357,17 @@ export default function LearningScreen(): JSX.Element {
 const styles = StyleSheet.create({
   coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xxl },
   emptyWrap: { padding: spacing.lg },
-  hero: { backgroundColor: colors.ink, gap: spacing.md, padding: spacing.xl },
+  hero: { backgroundColor: colors.background, gap: spacing.md, padding: spacing.xl },
   heroButton: {
     alignSelf: "flex-start",
-    borderColor: colors.lineStrong,
+    borderColor: colors.brandCyan,
     borderRadius: 4,
     borderWidth: 1,
     marginTop: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md
   },
-  heroButtonLabel: { color: colors.paper, fontFamily: fonts.bodySemiBold, fontSize: 15 },
+  heroButtonLabel: { color: colors.brandCyan, fontFamily: fonts.bodySemiBold, fontSize: 15 },
   heroEyebrow: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
@@ -375,13 +375,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.72,
     textTransform: "uppercase"
   },
-  heroLead: { color: colors.paper, fontFamily: fonts.body, fontSize: 16, lineHeight: 25, opacity: 0.7 },
-  heroTitle: { color: colors.paper, fontFamily: fonts.displaySemiBold, fontSize: 28, lineHeight: 36 },
+  heroLead: { color: colors.ink, fontFamily: fonts.body, fontSize: 16, lineHeight: 25, opacity: 0.7 },
+  heroTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 28, lineHeight: 36 },
   list: { paddingBottom: spacing.lg },
   listFooter: { height: spacing.xxl },
   metric: { flex: 1, gap: spacing.xs },
   metricLabel: { color: colors.mutedFaint, fontFamily: fonts.body, fontSize: 14 },
-  metricValue: { color: colors.paper, fontFamily: fonts.displaySemiBold, fontSize: 24 },
+  metricValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 24 },
   metrics: { borderTopColor: colors.muted, borderTopWidth: 1, flexDirection: "row", gap: spacing.md, paddingTop: spacing.lg },
   padded: { padding: spacing.lg },
   paymentAction: { color: colors.accent, fontFamily: fonts.bodySemiBold, fontSize: 14, marginTop: spacing.xs },

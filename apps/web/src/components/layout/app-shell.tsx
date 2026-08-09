@@ -73,8 +73,8 @@ export function AppShell({
   }, [router.state.location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b border-hairline bg-paper/82">
+    <div className="flex min-h-screen flex-col" data-surface="ink">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-panel-warm/95">
         <div className="flex h-[74px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <button
             aria-expanded={isDrawerOpen}
@@ -120,7 +120,7 @@ export function AppShell({
         {isDrawerOpen ? (
           <button
             aria-label={t("common.close")}
-            className="fixed inset-0 z-30 bg-ink/30 lg:hidden"
+            className="fixed inset-0 z-30 bg-black/70 lg:hidden"
             onClick={() => setIsDrawerOpen(false)}
             type="button"
           />

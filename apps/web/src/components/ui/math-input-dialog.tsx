@@ -125,7 +125,7 @@ export function MathInputDialog({
 
         <div className="space-y-2">
           <p className="label-mono text-xs uppercase text-muted-faint">{t("math.preview")}</p>
-          <div className="min-h-16 border border-hairline bg-paper px-4 py-3">
+           <div className="min-h-16 rounded-[var(--radius)] border border-hairline bg-panel-warm px-4 py-3">
             {preview === null ? (
               <p className="text-sm text-muted-faint">{t("math.empty")}</p>
             ) : (

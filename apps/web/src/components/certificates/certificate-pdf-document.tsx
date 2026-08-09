@@ -9,31 +9,31 @@ const styles = StyleSheet.create({
     padding: 72
   },
   title: {
-    color: "#262633",
+    color: "#0d0d0d",
     fontFamily: "Helvetica-Bold",
     fontSize: 22,
     marginBottom: 8
   },
   subtitle: {
-    color: "#59596b",
+    color: "#5f6368",
     fontFamily: "Helvetica",
     fontSize: 12,
     marginBottom: 48
   },
   label: {
-    color: "#262633",
+    color: "#0d0d0d",
     fontFamily: "Helvetica",
     fontSize: 11,
     marginBottom: 8
   },
   name: {
-    color: "#262633",
+    color: "#0d0d0d",
     fontFamily: "Helvetica-Bold",
     fontSize: 16,
     marginBottom: 32
   },
   body: {
-    color: "#262633",
+    color: "#0d0d0d",
     fontFamily: "Helvetica",
     fontSize: 11,
     marginBottom: 8
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginTop: 4
   },
   issued: {
-    color: "#59596b",
+    color: "#5f6368",
     fontFamily: "Helvetica",
     fontSize: 10
   },

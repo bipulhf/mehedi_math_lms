@@ -11,8 +11,8 @@ export interface ModalProps {
 }
 
 /**
- * A centred modal on the ink scrim. Square card, hairline border, no shadow and
- * no motion, matching the top-level design and `ConfirmDialog`. Closes on
+ * A centered modal on the ink scrim. Rounded ink plate with cyan focus language.
+ * Closes on
  * Escape or a click on the scrim — never on a click inside the panel.
  */
 export function Modal({
@@ -31,7 +31,7 @@ export function Modal({
       // Top-aligned on a phone and centred from `sm` up: a modal taller than a
       // short viewport has to scroll from its own first line, and centring it
       // puts the title above the top edge where it cannot be reached.
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:items-center sm:p-6"
+       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 sm:items-center sm:p-6"
       onClick={onClose}
       onKeyDown={(event) => {
         if (event.key === "Escape") {
@@ -43,7 +43,7 @@ export function Modal({
       <div
         aria-label={title}
         aria-modal="true"
-        className={cn("w-full max-w-md border border-hairline bg-card p-5 sm:p-6", className)}
+         className={cn("w-full max-w-md rounded-[var(--radius-md)] border border-hairline bg-background p-5 shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)] sm:p-6", className)}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >

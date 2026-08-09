@@ -55,7 +55,7 @@ export function CertificatePreviewDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[calc(var(--radius)-0.125rem)] bg-chip-active">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--radius-md)] bg-background shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)]">
         <div className="flex items-center justify-between gap-3 border-b border-hairline/15 px-4 py-3">
           <p className="font-semibold text-ink">{title}</p>
           <div className="flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export function CertificatePreviewDialog({
             <Button type="button" variant="outline" onClick={onClose}>{t("common.close")}</Button>
           </div>
         </div>
-        <div className="min-h-[70vh] flex-1 bg-chip-active">
+        <div className="min-h-[70vh] flex-1 bg-background">
           <PDFViewer
             className="h-[70vh] w-full border-0"
             showToolbar={false}

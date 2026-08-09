@@ -42,7 +42,7 @@ export const Route = createRootRoute({
       },
       {
         name: "theme-color",
-        content: "#fcfbf9"
+        content: "#0d0d0d"
       },
       {
         property: "og:site_name",
