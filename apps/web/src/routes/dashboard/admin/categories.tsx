@@ -388,7 +388,7 @@ function AdminCategoriesPage(): JSX.Element {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-in fade-in">
           <div
-            className="relative w-full max-w-lg rounded-[var(--radius-md)] border border-hairline bg-background p-4 shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)] animate-in zoom-in-95 sm:p-6 lg:p-8"
+            className="relative w-full max-w-lg rounded-[var(--radius-md)] border border-hairline bg-background p-4 animate-in zoom-in-95 sm:p-6 lg:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}

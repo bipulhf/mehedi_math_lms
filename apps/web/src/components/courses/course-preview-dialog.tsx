@@ -101,7 +101,7 @@ export function CoursePreviewDialog({ lessonId, onClose }: CoursePreviewDialogPr
       <div
         aria-labelledby="course-preview-title"
         aria-modal="true"
-         className="w-full max-w-3xl rounded-[var(--radius-md)] border border-hairline bg-background p-5 shadow-[0_24px_80px_-40px_rgba(0,207,255,0.6)] sm:p-6"
+         className="w-full max-w-3xl rounded-[var(--radius-md)] border border-hairline bg-background p-5 sm:p-6"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >

@@ -57,7 +57,7 @@ export function ChunkedProgressBar({
               lectureProgress?.isCompleted
                 ? "bg-accent"
                 : isCurrent
-                  ? "bg-ink/45"
+                  ? "bg-black/45"
                   : "bg-chip-active"
             }`}
           />

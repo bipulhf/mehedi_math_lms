@@ -170,11 +170,11 @@ function CourseSlide({
           would flatten the photograph the slide exists to show. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-transparent"
+         className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-r from-ink/75 via-ink/20 to-transparent"
+         className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/20 to-transparent"
       />
 
       <div className="relative flex h-full items-end">
