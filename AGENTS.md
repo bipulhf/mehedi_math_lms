@@ -90,6 +90,7 @@ Enforced by `packages/config/tsconfig.base.json` and the shared ESLint config:
 
 ## Reference documents
 
+- `REBRAND.md` — what is left of the rename to Mehedi's Math Academy: the artwork, the Bangla copy, the palette and the SEO surfaces the mechanical rename did not touch. Read it before changing anything branded.
 - `PLAN.md` — phased build roadmap (large; aspirational, not a spec of current state)
 - `docs/mobile-plan.md` — the staged plan for `apps/mobile`, from "it compiles" to a shippable build
 - `DESIGN.md` — the Mehedi's Math Academy design system. Authoritative on visuals.
