@@ -1,5 +1,5 @@
-import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -27,7 +27,7 @@ import {
   Title
 } from "@/src/components/ui";
 import {
-  getCourse,
+  getCourseBySlugOrId,
   getCourseOutline,
   getMyCourseEnrollment,
   type CourseOutlineChapter
@@ -67,19 +67,23 @@ export default function CourseDetailScreen(): JSX.Element {
   // enrol call both need what the coupon resolved to.
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
-  const [courseQuery, outlineQuery, enrollmentQuery] = useQueries({
-    queries: [
-      { queryFn: () => getCourse(courseId), queryKey: queryKeys.course(courseId) },
-      { queryFn: () => getCourseOutline(courseId), queryKey: queryKeys.courseContent(courseId) },
-      {
-        enabled: isStudent && session !== null,
-        queryFn: () => getMyCourseEnrollment(courseId),
-        queryKey: queryKeys.enrollment(courseId)
-      }
-    ]
+  const courseQuery = useQuery({
+    queryFn: () => getCourseBySlugOrId(courseId),
+    queryKey: queryKeys.courseBySlug(courseId)
   });
 
   const course = courseQuery?.data ?? null;
+  const resolvedCourseId = course?.id ?? "";
+  const outlineQuery = useQuery({
+    enabled: resolvedCourseId.length > 0,
+    queryFn: () => getCourseOutline(resolvedCourseId),
+    queryKey: queryKeys.courseContent(resolvedCourseId)
+  });
+  const enrollmentQuery = useQuery({
+    enabled: isStudent && session !== null && resolvedCourseId.length > 0,
+    queryFn: () => getMyCourseEnrollment(resolvedCourseId),
+    queryKey: queryKeys.enrollment(resolvedCourseId)
+  });
   const chapters: readonly CourseOutlineChapter[] = outlineQuery?.data ?? [];
   const enrollment = enrollmentQuery?.data ?? null;
   const hasAccess = Boolean(enrollment?.accessGranted);
@@ -105,7 +109,7 @@ export default function CourseDetailScreen(): JSX.Element {
   const collapseAll = (): void => setOpenChapterIds(new Set());
 
   const enrol = useMutation({
-    mutationFn: () => startCheckout(courseId, appliedCoupon?.code),
+    mutationFn: () => startCheckout(course?.id ?? courseId, appliedCoupon?.code),
     onError: (mutationError: Error) => {
       setError(mutationError.message);
     },
@@ -120,13 +124,13 @@ export default function CourseDetailScreen(): JSX.Element {
         return;
       }
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollment(courseId) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollment(course?.id ?? courseId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments() });
-      router.push({ params: { courseId }, pathname: "/learn/[courseId]" });
+      router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
     }
   });
 
-  const openPlayer = (): void => router.push({ params: { courseId }, pathname: "/learn/[courseId]" });
+  const openPlayer = (): void => router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
 
   if (courseQuery?.isPending) {
     return <ScreenSkeleton rows={4} />;
@@ -204,7 +208,7 @@ export default function CourseDetailScreen(): JSX.Element {
           {canApplyCoupon ? (
             <CourseCouponField
               applied={appliedCoupon}
-              courseId={courseId}
+              courseId={resolvedCourseId}
               onApplied={setAppliedCoupon}
               publicCode={course.publicCoupon?.code ?? null}
             />
@@ -276,7 +280,7 @@ export default function CourseDetailScreen(): JSX.Element {
                           key={lesson.id}
                           onPress={() =>
                             router.push({
-                              params: { courseId, lectureId: lesson.id },
+                               params: { courseId: course.slug, lectureId: lesson.id },
                               pathname: "/courses/[courseId]/preview/[lectureId]"
                             })
                           }
@@ -299,20 +303,34 @@ export default function CourseDetailScreen(): JSX.Element {
           )
         ) : null}
 
-        {tab === "reviews" ? <CourseReviews canReview={hasAccess} courseId={courseId} /> : null}
+        {tab === "reviews" ? <CourseReviews canReview={hasAccess} courseId={resolvedCourseId} /> : null}
 
         {tab === "teacher" ? (
           <Card style={{ gap: spacing.md }}>
             {course.teachers.map((teacher) => (
-              <View key={teacher.id} style={styles.teacherRow}>
-                <Avatar name={teacher.name} photo={teacher.profilePhoto} />
-                <View style={styles.teacherText}>
-                  <Body>{teacher.name}</Body>
-                  {teacher.role === "OWNER" ? (
-                    <Caption>{t("detail.owner")}</Caption>
-                  ) : null}
+              teacher.slug ? (
+                <Link
+                  asChild
+                  href={{ params: { slug: teacher.slug }, pathname: "/teachers/[slug]" }}
+                  key={teacher.id}
+                >
+                  <Pressable style={styles.teacherRow}>
+                    <Avatar name={teacher.name} photo={teacher.profilePhoto} />
+                    <View style={styles.teacherText}>
+                      <Body>{teacher.name}</Body>
+                      {teacher.role === "OWNER" ? <Caption>{t("detail.owner")}</Caption> : null}
+                    </View>
+                  </Pressable>
+                </Link>
+              ) : (
+                <View key={teacher.id} style={styles.teacherRow}>
+                  <Avatar name={teacher.name} photo={teacher.profilePhoto} />
+                  <View style={styles.teacherText}>
+                    <Body>{teacher.name}</Body>
+                    {teacher.role === "OWNER" ? <Caption>{t("detail.owner")}</Caption> : null}
+                  </View>
                 </View>
-              </View>
+              )
             ))}
           </Card>
         ) : null}

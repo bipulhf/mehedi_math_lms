@@ -11,6 +11,7 @@ export const queryKeys = {
   conversation: (conversationId: string) => ["messages", "thread", conversationId] as const,
   conversations: () => ["messages", "conversations"] as const,
   course: (courseId: string) => ["courses", courseId] as const,
+  courseBySlug: (slug: string) => ["courses", "slug", slug] as const,
   courseContent: (courseId: string) => ["content", courseId] as const,
   courseNotices: (courseId: string) => ["notices", courseId] as const,
   courseProgress: (courseId: string) => ["progress", courseId] as const,
@@ -34,6 +35,8 @@ export const queryKeys = {
   testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
   myTestSubmissions: (testId: string) => ["tests", testId, "my-attempts"] as const,
   testSubmission: (submissionId: string) => ["tests", "submission", submissionId] as const,
+  teacher: (slug: string) => ["teachers", slug] as const,
+  teachers: () => ["teachers"] as const,
   unreadNotifications: () => ["notifications", "unread"] as const
 } as const;
 

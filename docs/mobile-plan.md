@@ -229,8 +229,8 @@ So the form is native, which is what the alternative in this plan proposed for a
 - `app/profile-complete.tsx` renders it, reports one message per field, and invalidates both the
   profile and the **session** on save, because `profileCompleted` lives on the session and the shell
   reads it.
-- `profilePhoto` is deliberately absent: it needs the signed-upload flow the web app has and this one
-  does not, and it is optional in every schema. A profile completed here keeps whatever photo it had.
+- `profilePhoto` uses the native signed S3 image flow. The form uploads a square image, then sends its
+  URL with the role-specific profile payload.
 
 This also fixed a live bug: `OwnProfile` in `src/lib/api.ts` described a flat `{ email, id, name,
 isProfileComplete, role }` that the API has never returned. The profile screen was silently falling
@@ -337,8 +337,7 @@ directory afterwards.
 
 - **Teacher and admin tooling on mobile.** The app is a student client. Course authoring, moderation
   queues and analytics stay on the web.
-- **Uploads from the app.** Two features are shaped by its absence — no profile photo, no bug-report
-  screenshot. Adding it means the signed-upload flow, an image picker, and permissions on two
-  platforms.
+- **Course authoring uploads from the app.** Student profile photos and bug-report screenshots are
+  supported through the signed image flow; course materials and authoring remain web-only.
 - **Offline _writes_.** Reading offline is in scope. A queue of pending mutations is a different and
   much larger product.

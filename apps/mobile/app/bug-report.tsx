@@ -10,6 +10,7 @@ import {
   Button,
   Caption,
   Card,
+  CoverImage,
   EmptyState,
   ErrorNotice,
   Field,
@@ -19,6 +20,7 @@ import {
   Title
 } from "@/src/components/ui";
 import { createBugReport, listMyBugReports } from "@/src/lib/api";
+import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { HtmlContent } from "@/src/components/html-content";
@@ -30,8 +32,8 @@ import { colors, spacing } from "@/src/theme/tokens";
  * a screen that will not scroll, a payment that stranded — was reportable only
  * from a laptop, which is exactly where the problem is not happening.
  *
- * `screenshotUrl` is part of the API's schema and deliberately not sent: it
- * needs the signed-upload flow the web app has and this one does not.
+ * Screenshots use same signed S3 upload flow as profile photos, then travel with
+ * report payload so admin can reproduce visual bugs.
  */
 
 /**
@@ -50,6 +52,7 @@ export default function BugReportScreen(): JSX.Element {
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
 
   const { data: reports = [], isPending } = useQuery({
     enabled: Boolean(session),
@@ -65,8 +68,19 @@ export default function BugReportScreen(): JSX.Element {
     onSuccess: async () => {
       setTitle("");
       setDescription("");
+      setScreenshotUrl(null);
       setHasSubmitted(true);
       await queryClient.invalidateQueries({ queryKey: queryKeys.bugReports() });
+    }
+  });
+  const uploadScreenshot = useMutation({
+    mutationFn: () => pickAndUploadImage({ maxWidth: 1600, purpose: "BUG_SCREENSHOT" }),
+    onError: (cause: Error) => setError(cause.message),
+    onSuccess: (url) => {
+      if (url !== null) {
+        setScreenshotUrl(url);
+        setError(null);
+      }
     }
   });
 
@@ -120,6 +134,16 @@ export default function BugReportScreen(): JSX.Element {
                 <Caption>{t("bug.charFloor", { count: DESCRIPTION_FLOOR })}</Caption>
               </View>
             </View>
+            <Button
+              isBusy={uploadScreenshot.isPending}
+              label={t("bug.chooseScreenshot")}
+              onPress={() => {
+                setError(null);
+                uploadScreenshot.mutate();
+              }}
+              variant="outline"
+            />
+            {screenshotUrl ? <CoverImage height={180} uri={screenshotUrl} /> : null}
           </Card>
 
           <Button
@@ -128,7 +152,11 @@ export default function BugReportScreen(): JSX.Element {
             label={t("bug.send")}
             onPress={() => {
               setError(null);
-              submit.mutate({ description: description.trim(), title: title.trim() });
+              submit.mutate({
+                description: description.trim(),
+                screenshotUrl: screenshotUrl ?? undefined,
+                title: title.trim()
+              });
             }}
           />
 
@@ -155,6 +183,7 @@ export default function BugReportScreen(): JSX.Element {
                   </Badge>
                   <Caption>{format.date(report.createdAt)}</Caption>
                 </View>
+                {report.screenshotUrl ? <CoverImage height={160} uri={report.screenshotUrl} /> : null}
                 {report.adminNotes ? (
                   <>
                     <View style={{ height: spacing.md }} />

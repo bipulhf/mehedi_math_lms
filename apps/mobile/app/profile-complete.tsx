@@ -7,6 +7,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "re
 
 import {
   Body,
+  Avatar,
   Button,
   Caption,
   Card,
@@ -17,6 +18,7 @@ import {
   ScreenSkeleton
 } from "@/src/components/ui";
 import { getOwnProfile, updateOwnProfile } from "@/src/lib/api";
+import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useT } from "@/src/lib/locale";
 import { profileFormShape, profileFormValues, validateProfileForm } from "@/src/lib/profile-form";
 import { queryKeys } from "@/src/lib/query";
@@ -52,12 +54,16 @@ export default function ProfileCompleteScreen(): JSX.Element {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [hasLoadedProfile, setHasLoadedProfile] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Filled once, from whatever the profile already holds. Re-running on every
     // refetch would overwrite what the student is in the middle of typing.
     if (profile !== null && !hasLoadedProfile) {
       setValues(profileFormValues(profile, role));
+      setPhotoUrl(
+        profile.user.image ?? profile.studentProfile?.profilePhoto ?? profile.teacherProfile?.profilePhoto ?? null
+      );
       setHasLoadedProfile(true);
     }
   }, [hasLoadedProfile, profile, role]);
@@ -73,6 +79,17 @@ export default function ProfileCompleteScreen(): JSX.Element {
       await queryClient.invalidateQueries({ queryKey: queryKeys.profile() });
       await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
       router.back();
+    }
+  });
+  const uploadPhoto = useMutation({
+    mutationFn: () =>
+      pickAndUploadImage({ aspect: [1, 1], maxWidth: 1200, purpose: "PROFILE_PHOTO" }),
+    onError: (error: Error) => setSubmitError(error.message),
+    onSuccess: (url) => {
+      if (url !== null) {
+        setPhotoUrl(url);
+        setSubmitError(null);
+      }
     }
   });
 
@@ -98,7 +115,11 @@ export default function ProfileCompleteScreen(): JSX.Element {
     setErrors(result.errors);
 
     if (result.values !== null) {
-      save.mutate(result.values);
+      save.mutate(
+        role === "STUDENT" || role === "TEACHER"
+          ? { ...result.values, profilePhoto: photoUrl ?? "" }
+          : result.values
+      );
     }
   };
 
@@ -114,6 +135,26 @@ export default function ProfileCompleteScreen(): JSX.Element {
           <Body muted>{t("profile.completeLead")}</Body>
 
           {submitError ? <ErrorNotice message={submitError} /> : null}
+
+          {role === "STUDENT" || role === "TEACHER" ? (
+            <Card style={styles.photoCard}>
+              <Avatar name={values.name ?? session.user.name} photo={photoUrl} size={96} />
+              <View style={styles.photoText}>
+                <Body>{t("profile.photo")}</Body>
+                <Caption>{t("profile.photoLead")}</Caption>
+                <Button
+                  isBusy={uploadPhoto.isPending}
+                  label={t("profile.choosePhoto")}
+                  onPress={() => {
+                    setSubmitError(null);
+                    uploadPhoto.mutate();
+                  }}
+                  size="sm"
+                  variant="outline"
+                />
+              </View>
+            </Card>
+          ) : null}
 
           <Card style={styles.form}>
             {fields.map((field) => (
@@ -152,7 +193,9 @@ const styles = StyleSheet.create({
   fieldError: { paddingTop: spacing.xs },
   flex: { flex: 1 },
   form: { gap: spacing.lg },
-  multiline: { minHeight: 96, paddingTop: spacing.md, textAlignVertical: "top" }
+  multiline: { minHeight: 96, paddingTop: spacing.md, textAlignVertical: "top" },
+  photoCard: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
+  photoText: { flex: 1, gap: spacing.xs }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

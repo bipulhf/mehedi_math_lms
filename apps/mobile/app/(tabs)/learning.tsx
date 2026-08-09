@@ -109,7 +109,7 @@ const EnrollmentRow = memo(function EnrollmentRow({
       ) : (
         <Link
           asChild
-          href={{ params: { courseId: enrollment.course.id }, pathname: "/courses/[courseId]" }}
+          href={{ params: { courseId: enrollment.course.slug }, pathname: "/courses/[courseId]" }}
         >
           {card}
         </Link>
@@ -226,7 +226,7 @@ function StudentDashboardHeader({
           {awaitingPayment.slice(0, 2).map((enrollment) => (
             <Link
               asChild
-              href={{ params: { courseId: enrollment.course.id }, pathname: "/courses/[courseId]" }}
+              href={{ params: { courseId: enrollment.course.slug }, pathname: "/courses/[courseId]" }}
               key={enrollment.id}
             >
               <Pressable style={styles.paymentItem}>

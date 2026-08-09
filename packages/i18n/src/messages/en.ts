@@ -83,6 +83,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "brand.name": "Mehedi's Math Academy",
 
   "bug.charFloor": "At least {count} characters.",
+  "bug.chooseScreenshot": "Attach screenshot",
   "bug.doPlaceholder": "I tapped Enrol on the Higher Maths course and the browser opened, then…",
   "bug.doTitle": "What you did, and what happened",
   "bug.emptyLead": "Anything you send will be listed here with its status.",
@@ -739,6 +740,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "profile.photo": "Profile photo",
   "profile.session": "Session",
   "profile.completeFormLead": "Only your full name is required. Everything else can wait.",
+  "profile.choosePhoto": "Choose photo",
+  "profile.photoLead": "A clear square photo helps teachers recognise you.",
   "editor.title": "Course title",
   "editor.category": "Subject",
   "editor.price": "Price (BDT)",

@@ -86,6 +86,7 @@ export const bn = {
   "brand.name": "মেহেদীর গণিত একাডেমি",
 
   "bug.charFloor": "অন্তত {count} অক্ষর।",
+  "bug.chooseScreenshot": "স্ক্রিনশট দাও",
   "bug.doPlaceholder": "হায়ার ম্যাথ কোর্সে ভর্তি ট্যাপ করলাম আর ব্রাউজার খুলল, তারপর…",
   "bug.doTitle": "কী করলে আর কী হলো",
   "bug.emptyLead": "পাঠানো সব রিপোর্ট অবস্থা-সহ এখানে দেখাবে।",
@@ -738,6 +739,8 @@ export const bn = {
   "profile.photo": "ছবি",
   "profile.session": "সেশন",
   "profile.completeFormLead": "শুধু পুরো নাম দরকার। বাকিটা পরে দিলেও চলবে।",
+  "profile.choosePhoto": "ছবি বেছে নাও",
+  "profile.photoLead": "পরিষ্কার বর্গাকার ছবি থাকলে শিক্ষক তোমাকে সহজে চিনতে পারবেন।",
   "editor.title": "কোর্সের নাম",
   "editor.category": "বিষয়",
   "editor.price": "দাম (৳)",

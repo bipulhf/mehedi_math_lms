@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import {
+  Avatar,
   Badge,
   Body,
   Button,
@@ -89,9 +90,17 @@ export default function ProfileScreen(): JSX.Element {
           </Card>
         ) : (
           <Card>
-            <Title>{profile?.user.name ?? session.user.name}</Title>
-            <View style={{ height: spacing.xs }} />
-            <Body muted>{profile?.user.email ?? session.user.email}</Body>
+            <View style={styles.profileIdentity}>
+              <Avatar
+                name={profile?.user.name ?? session.user.name}
+                photo={profile?.user.image ?? profile?.studentProfile?.profilePhoto ?? profile?.teacherProfile?.profilePhoto ?? null}
+                size={72}
+              />
+              <View style={styles.profileText}>
+                <Title>{profile?.user.name ?? session.user.name}</Title>
+                <Body muted>{profile?.user.email ?? session.user.email}</Body>
+              </View>
+            </View>
             {phone ? (
               <>
                 <View style={{ height: spacing.xs }} />
@@ -121,6 +130,15 @@ export default function ProfileScreen(): JSX.Element {
           <Title>{t("locale.label")}</Title>
           <View style={{ height: spacing.md }} />
           <LanguageSwitcher />
+        </Card>
+
+        <Card>
+          <Title>{t("about.title")}</Title>
+          <View style={{ height: spacing.lg }} />
+          <View style={styles.infoActions}>
+            <Button label={t("about.title")} onPress={() => router.push("/about")} variant="outline" />
+            <Button label={t("contact.title")} onPress={() => router.push("/contact")} variant="outline" />
+          </View>
         </Card>
 
         <Card>
@@ -205,7 +223,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm
   },
   languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
-  languageRow: { flexDirection: "row", gap: spacing.sm }
+  languageRow: { flexDirection: "row", gap: spacing.sm },
+  infoActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  profileIdentity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  profileText: { flex: 1, gap: spacing.xs }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

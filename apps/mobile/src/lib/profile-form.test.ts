@@ -45,10 +45,10 @@ describe("profileFormShape", () => {
     expect(keysFor("ADMIN")).toEqual(["name"]);
   });
 
-  test("no role's form offers a photo, because there is no upload flow here", () => {
-    for (const role of ["STUDENT", "TEACHER", "ADMIN", "ACCOUNTANT"] as const) {
-      expect(profileFormShape(role).fields.map((field) => field.key)).not.toContain("profilePhoto");
-    }
+  test("photo stays outside text fields and is handled by the upload control", () => {
+    expect(profileFormShape("STUDENT").fields.map((field) => field.key)).not.toContain("profilePhoto");
+    expect(profileFormShape("TEACHER").fields.map((field) => field.key)).not.toContain("profilePhoto");
+    expect(profileFormShape("ADMIN").fields.map((field) => field.key)).toEqual(["name"]);
   });
 });
 

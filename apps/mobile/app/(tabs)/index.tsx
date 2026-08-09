@@ -66,7 +66,7 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
   const meta = courseMetaParts(course, t, format);
 
   return (
-    <Link asChild href={{ params: { courseId: course.id }, pathname: "/courses/[courseId]" }}>
+    <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}>
       <Pressable style={styles.row}>
         <Card>
           <View>

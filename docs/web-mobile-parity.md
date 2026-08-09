@@ -192,8 +192,8 @@ handlers) are listed once at the end rather than line by line.
 | `/courses` | `app/(tabs)/index.tsx` | ✅ Parity, incl. level/subject split, sort, free-only, teacher avatars |
 | `/courses/$slug` | `app/courses/[courseId].tsx` | ◐ Feature parity; **still addressed by id, web by slug** — §11 Q6 |
 | `/categories`, `/categories/$slug` | — | ⛔ Mobile expresses categories as the level/subject chip pair |
-| `/teachers`, `/teachers/$slug` | — | ⬜ Absent. Mobile shows avatar + name, no link — §11 Q4 |
-| `/about`, `/contact` | — | ⛔ Web only |
+| `/teachers`, `/teachers/$slug` | `app/teachers/index.tsx`, `app/teachers/[slug].tsx` | ✅ Public directory and profile |
+| `/about`, `/contact` | `app/about.tsx`, `app/contact.tsx` | ✅ Native public surfaces |
 | `/auth/sign-in` | `app/sign-in.tsx` | ✅ Rebuilt against the web redesign |
 | `/auth/sign-up` | `app/sign-up.tsx` | ✅ Rebuilt |
 | `/dashboard` (student overview) | resume card in `(tabs)/learning.tsx:141` | ✅ Settled as a card, not a sixth tab (§11 Q3) |
@@ -202,10 +202,10 @@ handlers) are listed once at the end rather than line by line.
 | `/dashboard/tests/$testId` | `app/tests/[testId].tsx` (369 lines) | ✅ One-at-a-time, autosave, auto-submit |
 | `/dashboard/tests/$testId/results/$submissionId` | `app/tests/[testId]/results/[submissionId].tsx` | ✅ |
 | `/dashboard/messages` | `(tabs)/messages.tsx` + `messages/[conversationId].tsx` + `messages/new.tsx` | ✅ Can now start a conversation |
-| `/dashboard/profile` | `(tabs)/profile.tsx` + `app/change-password.tsx` | ◐ Password change ✅; **photo upload absent** — §11 Q5 |
+| `/dashboard/profile` | `(tabs)/profile.tsx` + `app/change-password.tsx` | ✅ Password change and profile photo upload |
 | `/dashboard/profile-complete` | `app/profile-complete.tsx` | ✅ (not localised — §2.1) |
 | `/dashboard/payments` | `app/payments.tsx` | ✅ |
-| `/dashboard/bugs`, `/dashboard/bugs/report` | `app/bug-report.tsx` | ◐ List + form + `adminNotes` + `priority` ✅; **no screenshot upload** — §11 Q5 |
+| `/dashboard/bugs`, `/dashboard/bugs/report` | `app/bug-report.tsx` | ✅ List, form, screenshot upload, notes and priority |
 | notification bell (in `AppShell`) | `app/(tabs)/notifications.tsx` | ✅ Mark-all-read + tap-to-navigate |
 | — | `app/courses/[courseId]/preview/[lectureId].tsx` | ✅ Mobile-only full-screen preview route |
 | — | `app/auth-callback.tsx`, `app/payment-callback.tsx` | ✅ Mobile-only deep-link landing pads |
@@ -608,12 +608,9 @@ against the gate status at the top of this document. What is left is materially 
 
 ## 11. Decisions still open
 
-**Q1 — Does `DESIGN.md` §1 "no animation, no shadow" still stand?** ⬜ open, now one-sided.
-Mobile complied: the skeleton pulse is gone and nothing animates. Web still ships five `@keyframes`,
-`.hover-lift` with a `box-shadow`, `hover:-translate-y-1 hover:shadow-md` on `CourseCard`, and a
-shadowed notification panel. *Recommendation unchanged:* amend `DESIGN.md` to permit the entrance
-fades web actually uses, keep "no shadow" and "nothing lifts", remove the web `hover-lift`. Blocks
-E4 and the web cleanup.
+**Q1 — Does `DESIGN.md` §1 "no animation, no shadow" still stand?** ✅ settled.
+No shadows remain in web or mobile UI. Marketing motion remains documented and
+disabled under reduced-motion; app surfaces use state transitions only.
 
 **Q2 — Doodles on mobile.** ◐ half-answered. The tab bar got a real `react-native-svg` icon set
 (E3 ✅), so the OEM-font problem is gone. The decorative set — ringed word, ringed play glyph, dot
@@ -623,22 +620,14 @@ only (a rotated bordered `View` and a triangle); skip the rest.
 **Q3 — Does mobile get a home tab?** ✅ **decided: no.** The resume card sits at the top of
 "My courses" (`app/(tabs)/learning.tsx:141`) and the catalogue stays the landing tab.
 
-**Q4 — Public/marketing surfaces on mobile.** ⬜ open. Teacher detail is still absent; the teacher
-tab on course detail shows an `Avatar` and a name with nothing to tap, so it no longer dead-ends
-into a broken link — it simply does not link. Adding it needs `GET /profiles/teachers/by-slug/:slug`
-wrapped (§7). *Recommendation unchanged:* teacher detail only, the rest stays on web.
+**Q4 — Public/marketing surfaces on mobile.** ✅ settled. Teacher directory/profile,
+About and Contact routes now exist. Teacher rows in course detail link to slug profiles.
 
-**Q5 — Uploads.** ⬜ open, and now the only capability gap left. No profile photo
-(`src/lib/profile-form.ts:82` documents the omission), no bug screenshot. Both are optional in the
-shared schemas, so nothing is broken — but a student photographing a bug on the device where it
-happened is the natural flow. Needs the signed-upload flow, an image picker, and permissions on two
-platforms. *Recommendation:* its own stage, after the §10 residue.
+**Q5 — Uploads.** ✅ settled. Native signed S3 upload now handles profile photos
+and bug screenshots through the existing image-picker flow.
 
-**Q6 — Course addressing.** ⬜ **open and now urgent.** Web routes by slug, mobile by id, and
-notifications on mobile route by id (`app/(tabs)/notifications.tsx:94`). `slug` is already present on
-`CourseSummary` and `CourseDetail` in the mobile types, so the change is routing-only — but every
-stored deep link is invalidated the day it happens, and notification payloads are already in flight.
-*Decide before the first store build.*
+**Q6 — Course addressing.** ✅ settled. Public course links use slugs and detail
+resolution keeps ID fallback for existing notification/deep links.
 
 ---
 

@@ -7,6 +7,7 @@ import type {
 } from "@mma/shared";
 
 import {
+  ApiError,
   apiDelete,
   apiGet,
   apiGetPaginated,
@@ -55,6 +56,50 @@ export interface CourseTeacher {
   profilePhoto: string | null;
   role?: "OWNER" | "TEACHER";
   slug: string | null;
+}
+
+export interface TeacherDirectoryEntry {
+  bio: string | null;
+  courseCount: number;
+  id: string;
+  name: string;
+  profilePhoto: string | null;
+  slug: string;
+  specializations: string | null;
+  studentCount: number;
+}
+
+export interface TeacherCourseSummary {
+  coverImageUrl: string | null;
+  description: string;
+  id: string;
+  price: string;
+  reviewAverage: number | null;
+  reviewCount: number;
+  slug: string;
+  title: string;
+}
+
+export interface PublicTeacherProfile {
+  courses: readonly TeacherCourseSummary[];
+  metrics: {
+    publishedCourseCount: number;
+    reviewAverage: number | null;
+    reviewCount: number;
+  };
+  teacherProfile: {
+    bio: string | null;
+    phone: string | null;
+    profilePhoto: string | null;
+    qualifications: string | null;
+    socialLinks: string | null;
+    specializations: string | null;
+  } | null;
+  user: {
+    image: string | null;
+    name: string;
+    slug: string | null;
+  };
 }
 
 export interface CourseDetail extends CourseSummary {
@@ -459,6 +504,22 @@ export async function getCourse(courseId: string): Promise<CourseDetail> {
   return apiGet<CourseDetail>(`courses/${courseId}`);
 }
 
+export async function getCourseBySlug(slug: string): Promise<CourseDetail> {
+  return apiGet<CourseDetail>(`courses/by-slug/${encodeURIComponent(slug)}`);
+}
+
+export async function getCourseBySlugOrId(value: string): Promise<CourseDetail> {
+  try {
+    return await getCourseBySlug(value);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return getCourse(value);
+    }
+
+    throw error;
+  }
+}
+
 export async function getCourseContent(courseId: string): Promise<readonly ContentChapter[]> {
   return apiGet<readonly ContentChapter[]>(`courses/${courseId}/content`);
 }
@@ -740,9 +801,18 @@ export async function listCourseNotices(courseId: string): Promise<readonly Cour
 
 export async function createBugReport(input: {
   description: string;
+  screenshotUrl?: string | undefined;
   title: string;
 }): Promise<BugReportRecord> {
   return apiPost<typeof input, BugReportRecord>("bugs", input);
+}
+
+export async function listPublicTeachers(): Promise<readonly TeacherDirectoryEntry[]> {
+  return apiGet<readonly TeacherDirectoryEntry[]>("profiles/teachers");
+}
+
+export async function getPublicTeacherBySlug(slug: string): Promise<PublicTeacherProfile> {
+  return apiGet<PublicTeacherProfile>(`profiles/teachers/by-slug/${encodeURIComponent(slug)}`);
 }
 
 export async function listMyBugReports(): Promise<readonly BugReportRecord[]> {

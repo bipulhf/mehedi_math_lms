@@ -135,7 +135,7 @@ These were the three deliberate boundaries. All three are closed, and how they w
 
 ## Boundaries that remain
 
-- **No uploads.** Two features are shaped by its absence: the profile form has no photo field, and a bug report carries no screenshot. Both are optional in the shared schemas. Adding uploads means the signed-upload flow, an image picker and permissions on two platforms.
+- **Uploads are image-only.** Profile photos and bug screenshots use the signed S3 flow. Course authoring uploads and arbitrary file management remain web-only.
 - **No teacher or admin tooling.** This is a student client. Authoring, moderation and analytics stay on the web.
 - **No offline writes.** The persisted cache makes reading offline work; a queue of pending mutations is a different product.
 

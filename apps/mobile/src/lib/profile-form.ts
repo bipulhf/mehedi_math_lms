@@ -79,9 +79,8 @@ export function profileFormShape(role: UserRole): ProfileFormShape {
 }
 
 /**
- * `profilePhoto` is deliberately absent: uploading one needs the signed-upload
- * flow the web app has and this one does not, and it is optional in every
- * schema. A profile completed here keeps whatever photo it already had.
+ * Profile photos are uploaded by the native profile screen through the signed
+ * image flow, then sent as `profilePhoto` with the role-specific form payload.
  */
 export function profileFormValues(
   profile: OwnProfile | null,
