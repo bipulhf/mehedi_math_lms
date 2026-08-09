@@ -23,7 +23,7 @@ export interface SeoHeadInput {
 }
 
 const MAX_DESC = 160;
-const MAX_DOC_TITLE = 60;
+const MAX_DOC_TITLE = 80;
 const OG_IMAGE_ENDPOINT = "/api/v1/og-image/";
 const OG_IMAGE_HEIGHT = "630";
 const OG_IMAGE_WIDTH = "1200";
@@ -68,7 +68,7 @@ export function buildMetaDescription(text: string): string {
 }
 
 export function buildDocumentTitle(pageTitle: string): string {
-  const suffix = ` | ${siteConfig.shortName}`;
+  const suffix = ` | ${siteConfig.name}`;
   const maxPage = MAX_DOC_TITLE - suffix.length;
   const trimmed = pageTitle.trim();
   const page = trimmed.length > maxPage ? `${trimmed.slice(0, maxPage - 1).trimEnd()}…` : trimmed;

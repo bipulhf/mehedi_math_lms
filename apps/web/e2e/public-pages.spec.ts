@@ -10,7 +10,7 @@ test.describe("public pages", () => {
   test("the landing page renders and carries its organisation metadata", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page).toHaveTitle(/MMA/i);
+    await expect(page).toHaveTitle(/Mehedi's Math Academy/i);
     await expect(page.getByRole("navigation").first()).toBeVisible();
 
     const structuredData = page.locator('script[type="application/ld+json"]').first();

@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { LandingSnapshot } from "@/lib/api/landing";
 import { faqPageJsonLd, itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
@@ -23,6 +22,7 @@ import { FormulaBandSection } from "@/features/landing/components/formula-band-s
 import { FormulaMarqueeSection } from "@/features/landing/components/formula-marquee-section";
 import { HowItWorksSection } from "@/features/landing/components/how-it-works-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
+import { LandingSkeleton } from "@/features/landing/components/landing-skeleton";
 import { LevelPickerSection } from "@/features/landing/components/level-picker-section";
 import { MathRailSection } from "@/features/landing/components/math-rail-section";
 import { PlatformFeaturesSection } from "@/features/landing/components/platform-features-section";
@@ -74,9 +74,7 @@ export const Route = createFileRoute("/")({
 function HomePageSkeleton(): JSX.Element {
   return (
     <PublicLayout>
-      {/* The carousel is full-bleed, so its placeholder is too — a contained
-          block here and a full-width slide after the loader lands is a jump. */}
-      <Skeleton className="h-[30rem] w-full sm:h-[34rem] lg:h-[40rem]" />
+      <LandingSkeleton />
     </PublicLayout>
   );
 }
