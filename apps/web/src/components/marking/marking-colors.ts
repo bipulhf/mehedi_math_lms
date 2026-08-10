@@ -1,4 +1,4 @@
-import type { MarkingColor, MarkingPenWidth } from "@genex/shared";
+import type { MarkingColor } from "@genex/shared";
 
 /**
  * The Marking palette, as CSS colours.
@@ -13,11 +13,4 @@ export const markingColorHex: Record<MarkingColor, string> = {
   BLUE: "#1D4ED8",
   GREEN: "#15803D",
   RED: "#DC2626"
-};
-
-/** Stroke width as a fraction of the page's shorter edge, so it scales with zoom. */
-export const markingPenWidthRatio: Record<MarkingPenWidth, number> = {
-  MEDIUM: 0.004,
-  THICK: 0.008,
-  THIN: 0.002
 };

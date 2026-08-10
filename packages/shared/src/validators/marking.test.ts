@@ -4,12 +4,13 @@ import {
   emptyMarkingDocument,
   markingDocumentSchema,
   markingDocumentVersion,
-  readMarkingDocument
+  readMarkingDocument,
+  resolveStrokeWidthRatio
 } from "./marking";
 
-function stroke(points: Array<{ x: number; y: number }>) {
+function stroke(points: Array<{ x: number; y: number }>, width: unknown = "MEDIUM") {
   return {
-    elements: [{ color: "RED", id: "s1", kind: "STROKE", points, width: "MEDIUM" }],
+    elements: [{ color: "RED", id: "s1", kind: "STROKE", points, width }],
     version: markingDocumentVersion
   };
 }
@@ -48,6 +49,29 @@ describe("markingDocumentSchema", () => {
         version: markingDocumentVersion
       }).success
     ).toBe(false);
+  });
+
+  test("a stroke's width accepts a continuous ratio from the slider, in range", () => {
+    expect(markingDocumentSchema.safeParse(stroke([{ x: 0.5, y: 0.5 }], 0.005)).success).toBe(true);
+    expect(markingDocumentSchema.safeParse(stroke([{ x: 0.5, y: 0.5 }], 0.001)).success).toBe(false);
+    expect(markingDocumentSchema.safeParse(stroke([{ x: 0.5, y: 0.5 }], 0.02)).success).toBe(false);
+  });
+
+  test("a stroke's width still accepts the old THIN/MEDIUM/THICK enum", () => {
+    expect(markingDocumentSchema.safeParse(stroke([{ x: 0.5, y: 0.5 }], "THIN")).success).toBe(true);
+    expect(markingDocumentSchema.safeParse(stroke([{ x: 0.5, y: 0.5 }], "HUGE")).success).toBe(false);
+  });
+});
+
+describe("resolveStrokeWidthRatio", () => {
+  test("a number passes straight through", () => {
+    expect(resolveStrokeWidthRatio(0.006)).toBe(0.006);
+  });
+
+  test("the old enum resolves to the ratio it always meant", () => {
+    expect(resolveStrokeWidthRatio("THIN")).toBe(0.002);
+    expect(resolveStrokeWidthRatio("MEDIUM")).toBe(0.004);
+    expect(resolveStrokeWidthRatio("THICK")).toBe(0.008);
   });
 });
 

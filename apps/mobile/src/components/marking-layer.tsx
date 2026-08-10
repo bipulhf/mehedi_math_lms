@@ -1,16 +1,19 @@
 import {
+  resolveStrokeWidthRatio,
   type MarkingColor,
   type MarkingDocument,
   type MarkingElement,
   markingDocumentVersion,
-  type MarkingPenWidth,
-  type MarkingStamp
+  type MarkingStamp,
+  type MarkingStrokeWidth
 } from "@genex/shared";
 import type { JSX } from "react";
 import { useMemo, useRef, useState } from "react";
-import { PanResponder, StyleSheet, View } from "react-native";
+import { PanResponder, StyleSheet, TextInput, View } from "react-native";
 import { Image } from "expo-image";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
+
+import { colors, radius, spacing } from "@/src/theme/tokens";
 
 export type MarkingTool = "PEN" | "ERASER" | "NOTE" | MarkingStamp;
 
@@ -19,11 +22,12 @@ interface MarkingLayerProps {
   marking: MarkingDocument;
   /** Absent means the page is only being read — a student's view of their result. */
   onChange?: ((next: MarkingDocument) => void) | undefined;
-  onNoteRequested?: ((point: { x: number; y: number }) => void) | undefined;
   pageHeight: number;
   pageUrl: string;
   pageWidth: number;
-  penWidth: MarkingPenWidth;
+  penWidth: MarkingStrokeWidth;
+  /** Only shown while placing text, which only an editable layer can do. */
+  textPlaceholder?: string | undefined;
   tool: MarkingTool;
   width: number;
 }
@@ -33,12 +37,6 @@ const colorHex: Record<MarkingColor, string> = {
   BLUE: "#1D4ED8",
   GREEN: "#15803D",
   RED: "#DC2626"
-};
-
-const penWidthRatio: Record<MarkingPenWidth, number> = {
-  MEDIUM: 0.004,
-  THICK: 0.008,
-  THIN: 0.002
 };
 
 const stampGlyph: Record<MarkingStamp, string> = {
@@ -62,11 +60,11 @@ export function MarkingLayer({
   color,
   marking,
   onChange,
-  onNoteRequested,
   pageHeight,
   pageUrl,
   pageWidth,
   penWidth,
+  textPlaceholder = "",
   tool,
   width
 }: MarkingLayerProps): JSX.Element {
@@ -74,10 +72,44 @@ export function MarkingLayer({
   const height = width * aspect;
   const [draftPoints, setDraftPoints] = useState<{ x: number; y: number }[]>([]);
   const draftRef = useRef<{ x: number; y: number }[]>([]);
+  const [pendingText, setPendingText] = useState<{ x: number; y: number } | null>(null);
+  const [textDraft, setTextDraft] = useState("");
+  // Submitting (return key) fires both onSubmitEditing and, right after,
+  // onBlur — both against the same pre-clear render, so without this a
+  // single Enter press would commit the text twice.
+  const hasCommittedTextRef = useRef(false);
   const isEditable = onChange !== undefined;
 
   const commit = (elements: readonly MarkingElement[]): void => {
     onChange?.({ elements: [...elements], version: markingDocumentVersion });
+  };
+
+  const commitText = (): void => {
+    if (hasCommittedTextRef.current) {
+      return;
+    }
+
+    hasCommittedTextRef.current = true;
+
+    const trimmed = textDraft.trim();
+
+    if (pendingText && trimmed.length > 0) {
+      commit([
+        ...marking.elements,
+        {
+          color,
+          fontSize: 0.025,
+          id: nextElementId("note"),
+          kind: "NOTE",
+          text: trimmed.slice(0, 500),
+          x: pendingText.x,
+          y: pendingText.y
+        }
+      ]);
+    }
+
+    setPendingText(null);
+    setTextDraft("");
   };
 
   const toNormalised = (x: number, y: number): { x: number; y: number } => ({
@@ -90,6 +122,10 @@ export function MarkingLayer({
       PanResponder.create({
         onMoveShouldSetPanResponder: () => isEditable && tool === "PEN",
         onPanResponderGrant: (event) => {
+          if (pendingText) {
+            return;
+          }
+
           const point = toNormalised(event.nativeEvent.locationX, event.nativeEvent.locationY);
 
           if (tool === "PEN") {
@@ -99,7 +135,8 @@ export function MarkingLayer({
           }
 
           if (tool === "NOTE") {
-            onNoteRequested?.(point);
+            hasCommittedTextRef.current = false;
+            setPendingText(point);
             return;
           }
 
@@ -169,7 +206,7 @@ export function MarkingLayer({
         },
         onStartShouldSetPanResponder: () => isEditable
       }),
-    [color, height, isEditable, marking.elements, onNoteRequested, penWidth, tool, width]
+    [color, height, isEditable, marking.elements, pendingText, penWidth, tool, width]
   );
 
   const renderElement = (element: MarkingElement): JSX.Element => {
@@ -182,7 +219,7 @@ export function MarkingLayer({
           stroke={colorHex[element.color]}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={penWidthRatio[element.width] * Math.min(width, height) * 10}
+          strokeWidth={resolveStrokeWidthRatio(element.width) * Math.min(width, height) * 10}
         />
       );
     }
@@ -213,10 +250,35 @@ export function MarkingLayer({
             stroke={colorHex[color]}
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={penWidthRatio[penWidth] * Math.min(width, height) * 10}
+            strokeWidth={resolveStrokeWidthRatio(penWidth) * Math.min(width, height) * 10}
           />
         ) : null}
       </Svg>
+      {pendingText ? (
+        <TextInput
+          autoFocus
+          onBlur={commitText}
+          onChangeText={setTextDraft}
+          onSubmitEditing={commitText}
+          placeholder={textPlaceholder}
+          placeholderTextColor={colors.placeholder}
+          style={[styles.textInput, { left: pendingText.x * width, top: pendingText.y * height }]}
+          value={textDraft}
+        />
+      ) : null}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  textInput: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairline,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: colors.ink,
+    minWidth: 140,
+    padding: spacing.sm,
+    position: "absolute"
+  }
+});
