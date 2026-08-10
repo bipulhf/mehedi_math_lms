@@ -342,6 +342,11 @@ export default function CoursePlayerScreen(): JSX.Element {
       ),
     [progress?.lectures]
   );
+  // Deliberately does not promote, mirroring the API: completion is caused by
+  // the student finishing every lecture, never inferred while progress is
+  // still loading. ADR-0005.
+  const isCourseCompleted =
+    progress !== null && progress.totalLectures > 0 && progress.completedLectures === progress.totalLectures;
 
   const testsByChapterId = useMemo(
     () => new Map(assessments.map((chapter) => [chapter.chapterId, chapter.tests] as const)),
@@ -384,6 +389,8 @@ export default function CoursePlayerScreen(): JSX.Element {
     ? (chapters.find((chapter) => chapter.id === selectedItem.chapterId) ?? null)
     : null;
   const selectedIndex = navigationItems.findIndex((item) => item.id === selectedItemId);
+  const selectedLectureProgress =
+    progress?.lectures.find((lecture) => lecture.lectureId === selectedLecture?.id) ?? null;
 
   useEffect(() => {
     if (navigationItems.length === 0 || selectedItemId !== null) {
@@ -446,8 +453,8 @@ export default function CoursePlayerScreen(): JSX.Element {
         <Card>
           <View style={styles.badgesRow}>
             {course?.category ? <Badge>{course.category.name}</Badge> : null}
-            <Badge tone={progress?.isCourseCompleted ? "neutral" : "quiet"}>
-              {progress?.isCourseCompleted ? t("player.courseCompleted") : t("player.inProgress")}
+            <Badge tone={isCourseCompleted ? "neutral" : "quiet"}>
+              {isCourseCompleted ? t("player.courseCompleted") : t("player.inProgress")}
             </Badge>
           </View>
           <View style={{ height: spacing.md }} />
@@ -461,7 +468,7 @@ export default function CoursePlayerScreen(): JSX.Element {
             <StatCard label={t("player.lectures")} value={progress?.totalLectures ?? lectures.length} />
             <StatCard
               label={t("mine.progress")}
-              value={format.percent(progress?.progressPercentage ?? 0)}
+              value={format.percent(progress?.completionPercentage ?? 0)}
             />
             <StatCard
               label={t("player.assessments")}
@@ -537,8 +544,10 @@ export default function CoursePlayerScreen(): JSX.Element {
               {selectedLecture.videoDuration ? ` · ${t("course.minutes", { count: selectedLecture.videoDuration })}` : ""}
             </Caption>
             <LectureBody
+              courseId={courseId}
               isCompleted={completedIds.has(selectedLecture.id)}
               isMarking={complete.isPending}
+              lastViewedAt={selectedLectureProgress?.lastViewedAt ?? null}
               lecture={selectedLecture}
               onMarkComplete={() => complete.mutate(selectedLecture.id)}
             />
@@ -657,17 +666,23 @@ export default function CoursePlayerScreen(): JSX.Element {
 }
 
 function LectureBody({
+  courseId,
   isCompleted,
   isMarking,
+  lastViewedAt,
   lecture,
   onMarkComplete
 }: {
+  courseId: string;
   isCompleted: boolean;
   isMarking: boolean;
+  lastViewedAt: string | null;
   lecture: ContentLecture;
   onMarkComplete: () => void;
 }): JSX.Element {
   const t = useT();
+  const format = useFormat();
+  const router = useRouter();
   const pdf = getPdfMaterial(lecture);
 
   return (
@@ -701,13 +716,23 @@ function LectureBody({
         />
       )}
 
-      <Button
-        disabled={isCompleted}
-        isBusy={isMarking}
-        label={isCompleted ? t("player.watchedDone") : isMarking ? t("player.savingProgress") : t("player.watched")}
-        onPress={onMarkComplete}
-        variant={isCompleted ? "outline" : "ink"}
-      />
+      <View style={styles.badgesRow}>
+        <Button
+          disabled={isCompleted}
+          isBusy={isMarking}
+          label={isCompleted ? t("player.watchedDone") : isMarking ? t("player.savingProgress") : t("player.watched")}
+          onPress={onMarkComplete}
+          variant={isCompleted ? "outline" : "ink"}
+        />
+        <Button
+          label={t("player.overview")}
+          onPress={() => router.push({ params: { courseId }, pathname: "/courses/[courseId]" })}
+          variant="outline"
+        />
+      </View>
+      {lastViewedAt ? (
+        <Caption tone="faint">{t("player.lastViewed", { date: format.dateTime(lastViewedAt) })}</Caption>
+      ) : null}
     </View>
   );
 }

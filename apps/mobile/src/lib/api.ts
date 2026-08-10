@@ -226,12 +226,22 @@ export interface CourseLecturePreview {
   videoUrl: string | null;
 }
 
+export interface CourseProgressLectureItem {
+  chapterId: string;
+  completedAt: string | null;
+  isCompleted: boolean;
+  lastViewedAt: string | null;
+  lectureId: string;
+}
+
 export interface CourseProgressResponse {
   completedLectures: number;
-  isCourseCompleted: boolean;
-  lectures: readonly { isCompleted: boolean; lectureId: string }[];
+  completionPercentage: number;
+  courseId: string;
+  enrollmentId: string;
+  enrollmentStatus: "ACTIVE" | "CANCELLED" | "COMPLETED";
+  lectures: readonly CourseProgressLectureItem[];
   nextLectureId: string | null;
-  progressPercentage: number;
   totalLectures: number;
 }
 

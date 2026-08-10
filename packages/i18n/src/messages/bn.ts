@@ -960,6 +960,7 @@ export const bn = {
   "player.navigator": "কোর্সের তালিকা",
   "player.noVideoSource": "এই ক্লাসের জন্য এখনো কোনো ভিডিও যোগ করা হয়নি।",
   "player.overview": "কোর্স পরিচিতি",
+  "player.lastViewed": "সবশেষ দেখেছ {date}",
   "player.assessment": "পরীক্ষা",
   "player.passing": "পাশ নম্বর",
   "player.openAssessment": "পরীক্ষা খোল",
