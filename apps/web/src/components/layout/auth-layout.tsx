@@ -38,19 +38,38 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background" data-surface="ink">
+      {/* Atmosphere — DESIGN.md §2 sanctions a gradient wash for exactly this,
+          never as a literal panel. Two blobs is the whole budget. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-56 -top-56 size-[38rem] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(0,207,255,0.14), transparent 70%)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-48 bottom-0 size-[34rem] rounded-full blur-3xl"
+        style={{ background: "radial-gradient(circle, rgba(255,165,0,0.12), transparent 70%)" }}
+      />
+
       {/* Background Doodles */}
       <DotPatch className="-left-4 top-24 hidden opacity-60 lg:block" />
       <QuarterArc className="bottom-20 right-24 hidden opacity-70 lg:block" />
       <DiamondTrio className="left-1/3 top-16 hidden opacity-60 lg:block" />
 
       {/* Header Bar */}
-      <header className="mx-auto flex w-full max-w-[90rem] items-center justify-between px-4 py-6 sm:px-8 lg:px-14">
-        <Link aria-label={t("brand.name")} className="flex items-center" to="/">
+      <header className="relative mx-auto flex w-full max-w-[90rem] items-center justify-between px-4 py-6 sm:px-8 lg:px-14">
+        <Link aria-label={t("brand.name")} className="flex items-center gap-2.5" to="/">
           <img
             alt={t("brand.name")}
             className="block size-14 object-contain"
             src="/brand/mma-logo.png"
           />
+          <span className="hidden flex-col leading-tight sm:flex">
+            <span className="text-lg font-medium text-ink">{t("brand.name")}</span>
+            <span className="label-mono text-[10px] tracking-[0.22em] text-accent">
+              MATH ACADEMY
+            </span>
+          </span>
         </Link>
         <Link
           className="border-b border-line-strong pb-0.5 text-base text-ink transition-colors hover:border-accent hover:text-accent"
