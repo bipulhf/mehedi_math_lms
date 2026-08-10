@@ -1,35 +1,11 @@
 import type { JSX } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
 
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
+import { SeriesLineChart } from "@/components/charts/line-chart";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { CouponDetail } from "@/lib/api/coupons";
-import { chartTheme } from "@/lib/chart-theme";
 import { useFormat, useT } from "@/lib/i18n/locale-context";
-
-function ChartFrame({
-  children,
-  title
-}: {
-  children: JSX.Element;
-  title: string;
-}): JSX.Element {
-  return (
-    <div className="border border-hairline bg-card p-4 sm:p-6">
-      <h2 className="text-base font-medium text-ink">{title}</h2>
-      <div className="mt-4 h-56 w-full">{children}</div>
-    </div>
-  );
-}
 
 /**
  * Redemptions per day, and — for a Platform Coupon — which courses they landed
@@ -40,53 +16,31 @@ export function CouponCharts({ coupon }: { coupon: CouponDetail }): JSX.Element 
   const t = useT();
   const format = useFormat();
   const series = coupon.redemptionSeries.map((point) => ({
-    count: point.count,
-    label: format.date(point.date)
+    label: format.date(point.date),
+    value: point.count
   }));
   const breakdown = coupon.courseBreakdown.map((row) => ({
-    count: row.count,
-    label: row.courseTitle
+    label: row.courseTitle,
+    value: row.count
   }));
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <ChartFrame title={t("coupon.chartTitle")}>
+      <ChartFrame height={224} isEmpty={series.length === 0} title={t("coupon.chartTitle")}>
         {series.length === 0 ? (
           <EmptyState message={t("coupon.redemptionsEmpty")} />
         ) : (
-          <ResponsiveContainer height="100%" width="100%">
-            <LineChart data={series} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-              <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
-              <XAxis axisLine={false} dataKey="label" fontSize={10} tickLine={false} />
-              <YAxis allowDecimals={false} axisLine={false} fontSize={10} tickLine={false} width={28} />
-              <Tooltip />
-              <Line
-                dataKey="count"
-                dot={{ fill: chartTheme.accent, r: 3, stroke: chartTheme.dotStroke, strokeWidth: 2 }}
-                stroke={chartTheme.accent}
-                strokeWidth={2}
-                type="monotone"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <SeriesLineChart ariaLabel={t("coupon.chartTitle")} data={series} height={224} />
         )}
       </ChartFrame>
 
       {/* A single-course coupon has one bar and nothing to compare it with. */}
       {coupon.course === null ? (
-        <ChartFrame title={t("coupon.breakdownTitle")}>
+        <ChartFrame height={224} isEmpty={breakdown.length === 0} title={t("coupon.breakdownTitle")}>
           {breakdown.length === 0 ? (
             <EmptyState message={t("coupon.redemptionsEmpty")} />
           ) : (
-            <ResponsiveContainer height="100%" width="100%">
-              <BarChart data={breakdown} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
-                <XAxis axisLine={false} dataKey="label" fontSize={10} tickLine={false} />
-                <YAxis allowDecimals={false} axisLine={false} fontSize={10} tickLine={false} width={28} />
-                <Tooltip />
-                <Bar dataKey="count" fill={chartTheme.accent} />
-              </BarChart>
-            </ResponsiveContainer>
+            <SeriesBarChart ariaLabel={t("coupon.breakdownTitle")} data={breakdown} height={224} />
           )}
         </ChartFrame>
       ) : null}

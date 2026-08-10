@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RevenueBars } from "@/components/dashboard/revenue-bars";
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesHorizontalBarChart } from "@/components/charts/horizontal-bar-chart";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -148,7 +150,20 @@ export function AdminOverview(): JSX.Element {
         </div>
       </div>
 
-      {analytics ? <RevenueBars points={analytics.revenueTrend} title={t("dash.statRevenue")} /> : null}
+      {analytics ? (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <RevenueBars points={analytics.revenueTrend} title={t("dash.statRevenue")} />
+          {analytics.demographics.length > 1 ? (
+            <ChartFrame height={192} title={t("an.distribution")}>
+              <SeriesHorizontalBarChart
+                ariaLabel={t("an.distribution")}
+                data={analytics.demographics.map((d) => ({ label: d.label, value: d.count }))}
+                height={192}
+              />
+            </ChartFrame>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="space-y-3">
         <SectionHeading

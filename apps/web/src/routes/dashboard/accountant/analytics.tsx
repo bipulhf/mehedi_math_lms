@@ -5,23 +5,16 @@ import { useEffect, useMemo } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
+import { SeriesHorizontalBarChart } from "@/components/charts/horizontal-bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AccountantAnalyticsOverview } from "@/lib/api/analytics";
 import { getAccountantAnalyticsOverview } from "@/lib/api/analytics";
-import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
 
 export const Route = createFileRoute("/dashboard/accountant/analytics")({
   head: () =>
@@ -33,8 +26,6 @@ export const Route = createFileRoute("/dashboard/accountant/analytics")({
   component: AccountantAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);
-
-const chartStroke = chartTheme.accent;
 
 function AccountantAnalyticsPage(): JSX.Element {
   const t = useT();
@@ -107,54 +98,28 @@ function AccountantAnalyticsPage(): JSX.Element {
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t("an.revenueByCourse")}</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[360px]">
-            {data.revenueByCourse.length === 0 ? (
-              <p className="text-sm text-ink/62">{t("an.noRevenue")}</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={data.revenueByCourse.map((r) => ({
-                    label: r.courseTitle.slice(0, 24),
-                    value: r.revenue
-                  }))}
-                  layout="vertical"
-                  margin={{ bottom: 8, left: 8, right: 16, top: 8 }}
-                >
-                  <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-                  <XAxis fontSize={11} type="number" />
-                  <YAxis dataKey="label" fontSize={10} type="category" width={100} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill={chartStroke} radius={[0, 6, 6, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <ChartFrame height={360} title={t("an.revenueByCourse")}>
+          {data.revenueByCourse.length === 0 ? (
+            <p className="text-sm text-ink/62">{t("an.noRevenue")}</p>
+          ) : (
+            <SeriesHorizontalBarChart
+              ariaLabel={t("an.revenueByCourse")}
+              data={data.revenueByCourse.map((r) => ({
+                label: r.courseTitle.slice(0, 24),
+                value: r.revenue
+              }))}
+              height={360}
+            />
+          )}
+        </ChartFrame>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t("an.statusMix")}</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[360px]">
-            {statusChart.length === 0 ? (
-              <p className="text-sm text-ink/62">{t("an.noPayments")}</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statusChart} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                  <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-                  <XAxis dataKey="label" fontSize={11} />
-                  <YAxis fontSize={11} width={40} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill={chartStroke} radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <ChartFrame height={360} title={t("an.statusMix")}>
+          {statusChart.length === 0 ? (
+            <p className="text-sm text-ink/62">{t("an.noPayments")}</p>
+          ) : (
+            <SeriesBarChart ariaLabel={t("an.statusMix")} data={statusChart} height={360} />
+          )}
+        </ChartFrame>
       </div>
     </div>
   );

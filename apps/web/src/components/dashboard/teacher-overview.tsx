@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RevenueBars } from "@/components/dashboard/revenue-bars";
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesLineChart } from "@/components/charts/line-chart";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -39,6 +41,10 @@ export function TeacherOverview({ name }: { name: string }): JSX.Element {
   }
 
   const revenue = data.revenueTrend.reduce((total, point) => total + point.value, 0);
+  const enrollmentSeries = [...data.enrollmentTrend].reverse().map((point) => ({
+    label: point.period,
+    value: point.value
+  }));
 
   return (
     <div className="space-y-8">
@@ -61,7 +67,14 @@ export function TeacherOverview({ name }: { name: string }): JSX.Element {
         <StatCard hue="violet" label={t("dash.statLessons")} value={format.number(data.lectureCount)} />
       </div>
 
-      <RevenueBars points={data.revenueTrend} title={t("dash.statRevenue")} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <RevenueBars points={data.revenueTrend} title={t("dash.statRevenue")} />
+        {enrollmentSeries.length > 1 ? (
+          <ChartFrame height={192} title={t("an.enrollmentTrend")}>
+            <SeriesLineChart ariaLabel={t("an.enrollmentTrend")} data={enrollmentSeries} height={192} />
+          </ChartFrame>
+        ) : null}
+      </div>
 
       <div className="space-y-4">
         <SectionHeading title={t("dash.topCourses")} />

@@ -5,27 +5,18 @@ import { useEffect, useMemo } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
+import { SeriesHorizontalBarChart } from "@/components/charts/horizontal-bar-chart";
+import { SeriesLineChart } from "@/components/charts/line-chart";
 import { Badge } from "@/components/ui/badge";
 import { ProgressTrack } from "@/components/ui/progress-track";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { AdminAnalyticsOverview } from "@/lib/api/analytics";
 import { getAdminAnalyticsOverview } from "@/lib/api/analytics";
-import { chartTheme } from "@/lib/chart-theme";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
 import { TrendingUp, DollarSign, Target, PieChart, Activity } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
 
 export const Route = createFileRoute("/dashboard/admin/analytics")({
   head: () =>
@@ -37,8 +28,6 @@ export const Route = createFileRoute("/dashboard/admin/analytics")({
   component: AdminAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);
-
-const chartStroke = chartTheme.accent;
 
 function AdminAnalyticsPage(): JSX.Element {
   const t = useT();
@@ -129,23 +118,7 @@ function AdminAnalyticsPage(): JSX.Element {
             </div>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <defs>
-                   <linearGradient id="enrollSmooth" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartStroke} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={chartStroke} stopOpacity={0}/>
-                   </linearGradient>
-                </defs>
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} opacity={0.5} />
-                <XAxis dataKey="label" fontSize={10} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
-                <YAxis fontSize={10} width={40} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
-                <Tooltip 
-                   contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px' }}
-                />
-                <Line dataKey="value" dot={{ r: 3, fill: chartStroke, strokeWidth: 1.5, stroke: '#fff' }} stroke={chartStroke} strokeWidth={2} type="monotone" />
-              </LineChart>
-            </ResponsiveContainer>
+            <SeriesLineChart ariaLabel={t("an.enrollmentTrend")} data={enrollmentSeries} height={256} />
           </div>
         </div>
 
@@ -160,18 +133,7 @@ function AdminAnalyticsPage(): JSX.Element {
             </div>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} opacity={0.5} />
-                <XAxis dataKey="label" fontSize={10} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
-                <YAxis fontSize={10} width={48} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
-                <Tooltip 
-                   cursor={{fill: 'rgba(0,0,0,0.02)'}}
-                   contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px' }}
-                />
-                <Bar dataKey="value" fill={chartStroke} radius={[4, 4, 0, 0]} barSize={24} />
-              </BarChart>
-            </ResponsiveContainer>
+            <SeriesBarChart ariaLabel={t("an.revenue")} data={revenueSeries} height={256} />
           </div>
         </div>
       </div>
@@ -230,22 +192,11 @@ function AdminAnalyticsPage(): JSX.Element {
           {data.demographics.length === 0 ? (
             <div className="h-full flex items-center justify-center text-xs italic text-muted-faint">{t("an.noDistribution")}</div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data.demographics.map((d) => ({ label: d.label, value: d.count }))}
-                layout="vertical"
-                margin={{ bottom: 8, left: 60, right: 24, top: 8 }}
-              >
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" horizontal={false} opacity={0.5} />
-                <XAxis fontSize={10} type="number" axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.4}} />
-                <YAxis dataKey="label" fontSize={10} type="category" width={60} axisLine={false} tickLine={false} tick={{fill: 'currentColor', opacity: 0.8}} />
-                <Tooltip 
-                   cursor={{fill: 'rgba(0,0,0,0.02)'}}
-                   contentStyle={{ backgroundColor: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '4px' }}
-                />
-                <Bar dataKey="value" fill={chartStroke} radius={[0, 4, 4, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
+            <SeriesHorizontalBarChart
+              ariaLabel={t("an.distribution")}
+              data={data.demographics.map((d) => ({ label: d.label, value: d.count }))}
+              height={320}
+            />
           )}
         </div>
       </div>

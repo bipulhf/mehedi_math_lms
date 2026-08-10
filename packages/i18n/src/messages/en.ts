@@ -304,6 +304,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "dash.paymentAttention": "Payment needed",
   "dash.paymentAttentionLead": "Finish payment for {count} course(s) to start learning.",
   "dash.progress": "{done}/{total} classes · {percent}",
+  "dash.progressByCourse": "Progress by course",
   "dash.quickActions": "Quick actions",
   "dash.resume": "Where you left off",
   "dash.statCourses": "Courses",

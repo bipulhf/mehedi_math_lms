@@ -306,6 +306,7 @@ export const bn = {
   "dash.paymentAttention": "পেমেন্ট বাকি",
   "dash.paymentAttentionLead": "{count}টি কোর্সে পেমেন্ট শেষ করলে পড়া শুরু করতে পারবে।",
   "dash.progress": "{done}/{total} ক্লাস · {percent}",
+  "dash.progressByCourse": "কোর্স অনুযায়ী অগ্রগতি",
   "dash.quickActions": "দ্রুত কাজ",
   "dash.resume": "যেখানে থেমেছিলে",
   "dash.statCourses": "কোর্স",
