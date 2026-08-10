@@ -950,6 +950,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "player.externalVideoLead":
     "This lecture is hosted on a video site, so it opens in the browser rather than in the player.",
   "player.playerTitle": "Course player",
+  "player.play": "Play",
+  "player.pause": "Pause",
+  "player.fullscreen": "Fullscreen",
   "an.loadFailed": "Could not load the numbers.",
   "an.teacherTitle": "My analytics",
   "an.enrollments": "Enrolments",
