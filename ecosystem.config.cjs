@@ -4,7 +4,7 @@ module.exports = {
       name: "mma-api",
       script: "bun",
       args: "src/index.ts",
-      cwd: "/root/mehedi_lms/apps/api", // path to your project
+      cwd: "/root/mehedi_math_lms/apps/api", // path to your project
       interpreter: "none",
       watch: false, // disable in production
       env: {
@@ -15,15 +15,15 @@ module.exports = {
       autorestart: true,
       restart_delay: 5000,
       log_date_format: "YYYY-MM-DD HH:mm Z",
-      error_file: "/root/mehedi_lms/logs/api-err.log",
-      out_file: "/root/mehedi_lms/logs/api-out.log",
+      error_file: "/root/mehedi_math_lms/logs/api-err.log",
+      out_file: "/root/mehedi_math_lms/logs/api-out.log",
       merge_logs: true
     },
     {
       name: "mma-web",
       script: "bun",
       args: "server.ts",
-      cwd: "/root/mehedi_lms/apps/web", // path to your project
+      cwd: "/root/mehedi_math_lms/apps/web", // path to your project
       interpreter: "none",
       watch: false, // disable in production
       wait_ready: false,
@@ -38,8 +38,8 @@ module.exports = {
       autorestart: true,
       restart_delay: 5000,
       log_date_format: "YYYY-MM-DD HH:mm Z",
-      error_file: "/root/mehedi_lms/logs/web-err.log",
-      out_file: "/root/mehedi_lms/logs/web-out.log",
+      error_file: "/root/mehedi_math_lms/logs/web-err.log",
+      out_file: "/root/mehedi_math_lms/logs/web-out.log",
       merge_logs: true
     }
   ]
