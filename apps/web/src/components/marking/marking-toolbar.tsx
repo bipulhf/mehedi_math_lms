@@ -1,4 +1,10 @@
-import type { MarkingColor, MarkingPenWidth } from "@mma/shared";
+import {
+  markingStrokeWidthMax,
+  markingStrokeWidthMin,
+  resolveStrokeWidthRatio,
+  type MarkingColor,
+  type MarkingStrokeWidth
+} from "@mma/shared";
 import type { JSX } from "react";
 
 import type { MarkingTool } from "@/components/marking/marking-layer";
@@ -10,10 +16,10 @@ interface MarkingToolbarProps {
   canUndo: boolean;
   color: MarkingColor;
   onColorChange: (color: MarkingColor) => void;
-  onPenWidthChange: (width: MarkingPenWidth) => void;
+  onPenWidthChange: (width: number) => void;
   onToolChange: (tool: MarkingTool) => void;
   onUndo: () => void;
-  penWidth: MarkingPenWidth;
+  penWidth: MarkingStrokeWidth;
   tool: MarkingTool;
 }
 
@@ -24,11 +30,10 @@ const stampTools: readonly { label: string; value: MarkingTool }[] = [
 ];
 
 const colors: readonly MarkingColor[] = ["RED", "GREEN", "BLUE", "BLACK"];
-const widths: readonly { label: string; value: MarkingPenWidth }[] = [
-  { label: "S", value: "THIN" },
-  { label: "M", value: "MEDIUM" },
-  { label: "L", value: "THICK" }
-];
+
+/** The thumb dot scales between these two pixel sizes across the slider's range. */
+const thumbPreviewMinPx = 4;
+const thumbPreviewMaxPx = 18;
 
 /** The whole marking kit: what to draw with, in what colour, and how to take it back. */
 export function MarkingToolbar({
@@ -45,9 +50,13 @@ export function MarkingToolbar({
   const tools: readonly { label: string; value: MarkingTool }[] = [
     { label: t("marking.pen"), value: "PEN" },
     ...stampTools,
-    { label: t("marking.note"), value: "NOTE" },
+    { label: t("marking.text"), value: "NOTE" },
     { label: t("marking.erase"), value: "ERASER" }
   ];
+  const widthRatio = resolveStrokeWidthRatio(penWidth);
+  const widthFraction =
+    (widthRatio - markingStrokeWidthMin) / (markingStrokeWidthMax - markingStrokeWidthMin);
+  const thumbPreviewPx = thumbPreviewMinPx + widthFraction * (thumbPreviewMaxPx - thumbPreviewMinPx);
 
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-[var(--radius)] border border-hairline bg-panel-warm p-2">
@@ -81,18 +90,22 @@ export function MarkingToolbar({
         ))}
       </div>
       <span aria-hidden="true" className="h-6 w-px bg-hairline" />
-      <div className="flex items-center gap-1">
-        {widths.map((item) => (
-          <Button
-            key={item.value}
-            size="xs"
-            type="button"
-            variant={penWidth === item.value ? "ink" : "outline"}
-            onClick={() => onPenWidthChange(item.value)}
-          >
-            {item.label}
-          </Button>
-        ))}
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          className="shrink-0 rounded-full bg-ink"
+          style={{ height: thumbPreviewPx, width: thumbPreviewPx }}
+        />
+        <input
+          aria-label={t("marking.penWidth")}
+          className="w-20 accent-(--secondary-container)"
+          max={markingStrokeWidthMax}
+          min={markingStrokeWidthMin}
+          step={0.0005}
+          type="range"
+          value={widthRatio}
+          onChange={(event) => onPenWidthChange(Number(event.target.value))}
+        />
       </div>
       <Button
         className="ml-auto"

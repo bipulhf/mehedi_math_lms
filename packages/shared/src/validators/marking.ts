@@ -15,11 +15,41 @@ export const markingDocumentVersion = 1;
 
 export const markingColorValues = ["RED", "GREEN", "BLUE", "BLACK"] as const;
 export const markingStampValues = ["TICK", "CROSS", "HALF"] as const;
+/** @deprecated Kept only so a stroke saved before the continuous slider still reads. */
 export const markingPenWidthValues = ["THIN", "MEDIUM", "THICK"] as const;
 
 export const markingColorSchema = z.enum(markingColorValues);
 export const markingStampSchema = z.enum(markingStampValues);
+/** @deprecated See `markingPenWidthValues`. */
 export const markingPenWidthSchema = z.enum(markingPenWidthValues);
+
+/**
+ * Stroke width as a fraction of the page's shorter edge, so it scales with
+ * zoom. The bounds a bit wider than the old THIN/THICK so the slider has real
+ * travel at both ends.
+ */
+export const markingStrokeWidthMin = 0.0015;
+export const markingStrokeWidthMax = 0.012;
+const markingStrokeWidthRatioSchema = z.number().min(markingStrokeWidthMin).max(markingStrokeWidthMax);
+
+/**
+ * A stroke's width, old or new: the fixed THIN/MEDIUM/THICK enum a stroke
+ * drawn before the slider was saved with, or the continuous ratio a slider
+ * produces now. `resolveStrokeWidthRatio` turns either into the one number
+ * rendering needs — nothing downstream should switch on which shape it got.
+ */
+export const markingStrokeWidthSchema = z.union([markingPenWidthSchema, markingStrokeWidthRatioSchema]);
+
+/** The ratios the three fixed sizes always meant, for strokes saved under them. */
+const legacyPenWidthRatio: Record<MarkingPenWidth, number> = {
+  MEDIUM: 0.004,
+  THICK: 0.008,
+  THIN: 0.002
+};
+
+export function resolveStrokeWidthRatio(width: MarkingStrokeWidth): number {
+  return typeof width === "number" ? width : legacyPenWidthRatio[width];
+}
 
 /** A point on the page, 0-1 from the top-left corner. */
 const normalisedCoordinateSchema = z.number().min(0).max(1);
@@ -36,7 +66,7 @@ const strokeElementSchema = z.object({
   id: elementIdSchema,
   kind: z.literal("STROKE"),
   points: z.array(markingPointSchema).min(1).max(2000),
-  width: markingPenWidthSchema
+  width: markingStrokeWidthSchema
 });
 
 const stampElementSchema = z.object({
@@ -91,5 +121,6 @@ export function readMarkingDocument(value: unknown): MarkingDocument {
 export type MarkingColor = z.infer<typeof markingColorSchema>;
 export type MarkingStamp = z.infer<typeof markingStampSchema>;
 export type MarkingPenWidth = z.infer<typeof markingPenWidthSchema>;
+export type MarkingStrokeWidth = z.infer<typeof markingStrokeWidthSchema>;
 export type MarkingElement = z.infer<typeof markingElementSchema>;
 export type MarkingDocument = z.infer<typeof markingDocumentSchema>;

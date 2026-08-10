@@ -1,4 +1,4 @@
-import type { MarkingColor, MarkingDocument, MarkingPenWidth, MarkingReviewMode } from "@mma/shared";
+import type { MarkingColor, MarkingDocument, MarkingReviewMode } from "@mma/shared";
 import { useQuery } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -89,7 +89,7 @@ export function MarkingWorkspace({
   const [markingByPageId, setMarkingByPageId] = useState<Record<string, MarkingDocument>>({});
   const [tool, setTool] = useState<MarkingTool>("PEN");
   const [color, setColor] = useState<MarkingColor>("RED");
-  const [penWidth, setPenWidth] = useState<MarkingPenWidth>("MEDIUM");
+  const [penWidth, setPenWidth] = useState(0.004);
   const [isBusy, setIsBusy] = useState(false);
   const pendingSaveRef = useRef<Map<string, number>>(new Map());
 

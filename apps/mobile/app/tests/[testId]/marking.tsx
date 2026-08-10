@@ -1,10 +1,5 @@
-import type {
-  MarkingColor,
-  MarkingDocument,
-  MarkingPenWidth,
-  MarkingReviewMode
-} from "@mma/shared";
-import { markingDocumentVersion } from "@mma/shared";
+import type { MarkingColor, MarkingDocument, MarkingReviewMode } from "@mma/shared";
+import { markingStrokeWidthMax, markingStrokeWidthMin } from "@mma/shared";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
@@ -13,6 +8,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimension
 
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer, type MarkingTool } from "@/src/components/marking-layer";
+import { PenWidthSlider } from "@/src/components/pen-width-slider";
 import { Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import type { MarkingAnswerView } from "@/src/lib/api";
 import {
@@ -66,11 +62,7 @@ export default function MarkingScreen(): JSX.Element {
   const [markingByPageId, setMarkingByPageId] = useState<Record<string, MarkingDocument>>({});
   const [tool, setTool] = useState<MarkingTool>("PEN");
   const [color, setColor] = useState<MarkingColor>("RED");
-  const [penWidth] = useState<MarkingPenWidth>("MEDIUM");
-  const [pendingNote, setPendingNote] = useState<{ pageId: string; x: number; y: number } | null>(
-    null
-  );
-  const [noteText, setNoteText] = useState("");
+  const [penWidth, setPenWidth] = useState(0.004);
   const [isBusy, setIsBusy] = useState(false);
   const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -211,37 +203,6 @@ export default function MarkingScreen(): JSX.Element {
     }
   };
 
-  const addNote = (): void => {
-    if (!pendingNote || noteText.trim().length === 0) {
-      setPendingNote(null);
-      setNoteText("");
-      return;
-    }
-
-    const current = markingByPageId[pendingNote.pageId] ?? {
-      elements: [],
-      version: markingDocumentVersion
-    };
-
-    queueMarkingSave(pendingNote.pageId, {
-      elements: [
-        ...current.elements,
-        {
-          color,
-          fontSize: 0.025,
-          id: `note-${Math.random().toString(36).slice(2, 10)}`,
-          kind: "NOTE",
-          text: noteText.trim().slice(0, 500),
-          x: pendingNote.x,
-          y: pendingNote.y
-        }
-      ],
-      version: markingDocumentVersion
-    });
-    setPendingNote(null);
-    setNoteText("");
-  };
-
   if (isPending) {
     return (
       <Screen>
@@ -335,6 +296,15 @@ export default function MarkingScreen(): JSX.Element {
                 />
               ))}
             </View>
+            <View style={styles.row}>
+              <PenWidthSlider
+                accessibilityLabel={t("marking.penWidth")}
+                max={markingStrokeWidthMax}
+                min={markingStrokeWidthMin}
+                onChange={setPenWidth}
+                value={penWidth}
+              />
+            </View>
 
             {activeAnswer.markingGuide ? (
               <View style={styles.guide}>
@@ -349,29 +319,15 @@ export default function MarkingScreen(): JSX.Element {
                 key={page.id}
                 marking={markingByPageId[page.id] ?? page.marking}
                 onChange={(next) => queueMarkingSave(page.id, next)}
-                onNoteRequested={(point) => setPendingNote({ pageId: page.id, ...point })}
                 pageHeight={page.height ?? 0}
                 pageUrl={page.fileUrl}
                 pageWidth={page.width ?? 0}
                 penWidth={penWidth}
+                textPlaceholder={t("marking.text")}
                 tool={tool}
                 width={pageWidth}
               />
             ))}
-
-            {pendingNote ? (
-              <View style={styles.row}>
-                <TextInput
-                  autoFocus
-                  onChangeText={setNoteText}
-                  placeholder={t("marking.note")}
-                  placeholderTextColor={colors.placeholder}
-                  style={styles.noteInput}
-                  value={noteText}
-                />
-                <Button label={t("marking.note")} onPress={addNote} size="sm" />
-              </View>
-            ) : null}
 
             <View style={styles.row}>
               <TextInput
@@ -406,15 +362,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: colors.ink,
     minWidth: 80,
-    padding: spacing.sm
-  },
-  noteInput: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    color: colors.ink,
-    flex: 1,
     padding: spacing.sm
   },
   queueRow: {

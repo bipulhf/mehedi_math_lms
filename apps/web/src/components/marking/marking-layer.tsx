@@ -1,16 +1,17 @@
 import {
   emptyMarkingDocument,
+  resolveStrokeWidthRatio,
   type MarkingColor,
   type MarkingDocument,
   type MarkingElement,
   markingDocumentVersion,
-  type MarkingPenWidth,
-  type MarkingStamp
+  type MarkingStamp,
+  type MarkingStrokeWidth
 } from "@mma/shared";
 import type { JSX, PointerEvent as ReactPointerEvent } from "react";
 import { useRef, useState } from "react";
 
-import { markingColorHex, markingPenWidthRatio } from "@/components/marking/marking-colors";
+import { markingColorHex } from "@/components/marking/marking-colors";
 
 export type MarkingTool = "PEN" | "ERASER" | "NOTE" | MarkingStamp;
 
@@ -22,7 +23,7 @@ interface MarkingLayerProps {
   pageHeight: number;
   pageUrl: string;
   pageWidth: number;
-  penWidth: MarkingPenWidth;
+  penWidth: MarkingStrokeWidth;
   tool: MarkingTool;
 }
 
@@ -63,7 +64,7 @@ export function MarkingLayer({
   const aspect = pageWidth > 0 && pageHeight > 0 ? pageHeight / pageWidth : 1.4142;
   const viewWidth = 100;
   const viewHeight = 100 * aspect;
-  const strokeWidth = markingPenWidthRatio[penWidth] * Math.min(viewWidth, viewHeight) * 10;
+  const strokeWidth = resolveStrokeWidthRatio(penWidth) * Math.min(viewWidth, viewHeight) * 10;
 
   const toNormalised = (event: ReactPointerEvent<HTMLDivElement>): { x: number; y: number } => {
     const bounds = surfaceRef.current?.getBoundingClientRect();
@@ -176,7 +177,7 @@ export function MarkingLayer({
           stroke={markingColorHex[element.color]}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={markingPenWidthRatio[element.width] * Math.min(viewWidth, viewHeight) * 10}
+          strokeWidth={resolveStrokeWidthRatio(element.width) * Math.min(viewWidth, viewHeight) * 10}
           {...eraserProps}
         />
       );
@@ -274,7 +275,7 @@ export function MarkingLayer({
           <input
             autoFocus
             className="h-8 rounded-[var(--radius)] border border-line-strong bg-paper px-2 text-xs text-ink"
-            placeholder="Note"
+            placeholder="Text"
             value={pendingNote.text}
             onChange={(event) =>
               setPendingNote((note) => (note ? { ...note, text: event.target.value } : note))
