@@ -20,6 +20,7 @@ import { FaqSection } from "@/features/landing/components/faq-section";
 import { CourseCarouselSection } from "@/features/landing/components/course-carousel-section";
 import { FormulaBandSection } from "@/features/landing/components/formula-band-section";
 import { FormulaMarqueeSection } from "@/features/landing/components/formula-marquee-section";
+import { HeroSection } from "@/features/landing/components/hero-section";
 import { HowItWorksSection } from "@/features/landing/components/how-it-works-section";
 import { InstructorsSection } from "@/features/landing/components/instructors-section";
 import { LandingSkeleton } from "@/features/landing/components/landing-skeleton";
@@ -84,13 +85,14 @@ function HomePage(): JSX.Element {
 
   return (
     <PublicLayout>
-      {/* Catalogue first, persuasion after it — the order the researched
-          Bangladeshi platforms converge on (docs/landing-bd-edtech-patterns.md).
-          There is no hero: the page opens on a course filling the width, then
-          says where to start, what a course contains, what happens after
-          paying, who teaches it, who rates it, and the questions that block a
-          purchase. It ends on the FAQ — the closing band was removed with the
-          hero, so the last thing before the footer is an answer.
+      {/* A hero opens the page, then the catalogue, then persuasion — the
+          hero was reintroduced at the owner's request; the rest of the order
+          still follows the researched Bangladeshi platforms
+          (docs/landing-bd-edtech-patterns.md). The hero's spotlight is the
+          same admin-curated top course the carousel below leads with — no
+          struck-through price and no invented "seats left" urgency, because
+          nothing in the schema backs either. The page still ends on the FAQ,
+          an answer rather than a closing CTA band.
 
           The math-edtech identity is layered in two places: a formula band
           sits between the catalogue and the level picker, declaring the
@@ -98,6 +100,7 @@ function HomePage(): JSX.Element {
           branches of school mathematics; a thin marquee of identities runs
           across the page between the level picker and the platform features,
           the kind of running band that a textbook chapter opens with. */}
+      <HeroSection spotlightCourse={snapshot.courses[0]} />
       <CourseCarouselSection courses={snapshot.courses} />
       <SubjectRailSection categories={snapshot.categories} />
       <FormulaBandSection />

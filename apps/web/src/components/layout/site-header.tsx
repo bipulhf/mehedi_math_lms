@@ -150,41 +150,48 @@ export function SiteHeader(): JSX.Element {
         isHidden ? "-translate-y-full" : "translate-y-0"
       )}
     >
-      <div className="mx-auto flex h-20 w-full max-w-[90rem] items-center justify-between gap-6 px-4 sm:px-8 lg:h-[82px] lg:px-14">
-        <div className="flex min-w-0 items-center gap-8">
-          <Link
-            aria-label={t("brand.name")}
-            className="flex shrink-0 items-center gap-[9px]"
-            to="/"
-          >
-            <img
-              alt={t("brand.name")}
-              className="block size-14 object-contain"
-              src="/brand/mma-logo.png"
-            />
-          </Link>
+      <div className="relative mx-auto flex h-20 w-full max-w-[90rem] items-center justify-between gap-4 px-4 sm:px-8 lg:h-[82px] lg:px-14">
+        <Link
+          aria-label={t("brand.name")}
+          className="flex min-w-0 shrink-0 items-center gap-2.5"
+          to="/"
+        >
+          <img
+            alt={t("brand.name")}
+            className="block size-14 shrink-0 object-contain"
+            src="/brand/mma-logo.png"
+          />
+          <span className="hidden flex-col truncate leading-tight sm:flex">
+            <span className="truncate text-lg font-medium text-ink">{t("brand.name")}</span>
+            <span className="label-mono text-[10px] tracking-[0.22em] text-accent">
+              MATH ACADEMY
+            </span>
+          </span>
+        </Link>
 
-          {/* Pills, not bare text: the active page carries the `chip active`
-              fill the design reserves for exactly this. DESIGN.md §2. */}
-          <nav className="hidden items-center gap-1 lg:flex">
-            {siteNavItems.map((item) => (
-              <Link
-                aria-current={isActive(item) ? "page" : undefined}
-                className={cn(
-                  "rounded-[var(--radius-pill)] px-3.5 py-2 text-base transition-colors",
-                  isActive(item)
-                    ? "bg-chip-active text-ink"
-                    : "text-muted hover:bg-panel-warm hover:text-ink"
-                )}
-                key={`${item.to}-${item.labelKey}`}
-                search={item.search}
-                to={item.to}
-              >
-                {t(item.labelKey)}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        {/* Pills in a capsule, not bare text: the active page carries the
+            `chip active` fill the design reserves for exactly this.
+            DESIGN.md §2. Centred on the bar rather than tucked beside the
+            logo, so it reads as the header's own row, not an extension of
+            the brand mark. */}
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-[var(--radius-pill)] border border-hairline bg-ink/5 p-1.5 lg:flex">
+          {siteNavItems.map((item) => (
+            <Link
+              aria-current={isActive(item) ? "page" : undefined}
+              className={cn(
+                "rounded-[var(--radius-pill)] px-3.5 py-2 text-base whitespace-nowrap transition-colors",
+                isActive(item)
+                  ? "bg-chip-active text-ink"
+                  : "text-muted hover:bg-ink/8 hover:text-ink"
+              )}
+              key={`${item.to}-${item.labelKey}`}
+              search={item.search}
+              to={item.to}
+            >
+              {t(item.labelKey)}
+            </Link>
+          ))}
+        </nav>
 
         <div className="flex shrink-0 items-center gap-4">
           <a

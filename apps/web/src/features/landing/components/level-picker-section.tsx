@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 
 import { Reveal } from "@/components/marketing/reveal";
-import { DotRow } from "@/components/ui/dot-row";
+import { FilterPill } from "@/components/ui/pill";
 import { PriceText } from "@/components/ui/price-text";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { LandingSection } from "@/features/landing/components/landing-section";
@@ -19,8 +19,8 @@ interface LevelPickerSectionProps {
 }
 
 /**
- * "তুমি কোন লেভেলে?" — levels on the left, the courses under the selected one
- * on the right.
+ * "তুমি কোন লেভেলে?" — a row of level tabs, the courses under the selected
+ * one below.
  *
  * The landing snapshot only returns root categories, which is exactly the level
  * axis. Filtering is by category slug rather than id because that is what the
@@ -41,33 +41,33 @@ export function LevelPickerSection({
       : courses.filter((course) => course.category.slug === levelSlug)
   ).slice(0, VISIBLE_COURSES);
 
-  const selected = categories.find((category) => category.slug === levelSlug);
-
   return (
     <LandingSection description={t("home.levelLead")} title={t("home.levelTitle")} tone="warm">
-      <div className="grid gap-10 lg:grid-cols-[340px_1fr] lg:gap-16">
+      <div className="space-y-8">
         <Reveal>
-          <div>
-            <DotRow
-              isSelected={levelSlug === null}
-              label={t("courses.allLevels")}
-              onSelect={() => setLevelSlug(null)}
-            />
+          <div className="flex flex-wrap gap-2">
+            <FilterPill isSelected={levelSlug === null} onClick={() => setLevelSlug(null)}>
+              {t("courses.allLevels")}
+              <span className="label-mono ml-2 text-xs opacity-60">
+                {format.number(courses.length)}
+              </span>
+            </FilterPill>
             {categories.map((category) => (
-              <DotRow
-                count={format.number(category.courseCount)}
+              <FilterPill
                 isSelected={category.slug === levelSlug}
                 key={category.id}
-                label={category.name}
-                onSelect={() => setLevelSlug(category.slug)}
-              />
+                onClick={() => setLevelSlug(category.slug)}
+              >
+                {category.name}
+                <span className="label-mono ml-2 text-xs opacity-60">
+                  {format.number(category.courseCount)}
+                </span>
+              </FilterPill>
             ))}
           </div>
         </Reveal>
 
         <div className="space-y-2">
-          <h3 className="text-xl font-medium text-ink">{selected?.name ?? t("nav.courses")}</h3>
-
           <div>
             {visible.map((course, index) => (
               <Reveal delayMs={index * 70} key={course.id}>

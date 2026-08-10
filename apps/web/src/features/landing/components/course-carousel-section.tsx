@@ -18,13 +18,11 @@ function riseDelay(delayMs: number): CSSProperties {
 }
 
 /**
- * The page opens on the catalogue itself: one course filling the width, its
- * details written over the picture rather than beside it.
+ * One course filling the width, its details written over the picture rather
+ * than beside it — the catalogue itself, right under the hero.
  *
- * There is no hero above this and no card grid below it — the courses are the
- * only thing at the top of the page, which is what the owner asked for and what
- * 10 Minute School does with its class cards.
- * `docs/landing-bd-edtech-patterns.md` §4.
+ * There is still no card grid below it: 10 Minute School's rotating class
+ * card is the pattern this follows. `docs/landing-bd-edtech-patterns.md` §4.
  */
 export function CourseCarouselSection({
   courses
