@@ -1,7 +1,8 @@
-import type { createBannerSchema, updateBannerSchema } from "@mma/shared";
+import type { BannerPreset, createBannerSchema, updateBannerSchema } from "@mma/shared";
 import type { z } from "zod";
 
 import { buildCacheIndex, buildCacheKey, cacheTtlSeconds, invalidateCacheIndex, readThrough } from "@/lib/cache";
+import { sanitizeHtml } from "@/lib/html";
 import type { BannerRecord, BannerRepository } from "@/repositories/banner-repository";
 import { NotFoundError } from "@/utils/errors";
 
@@ -12,6 +13,7 @@ type CreateBannerInput = z.infer<typeof createBannerSchema>;
 type UpdateBannerInput = z.infer<typeof updateBannerSchema>;
 
 export interface Banner {
+  backgroundPreset: BannerPreset;
   createdAt: string;
   id: string;
   isActive: boolean;
@@ -33,6 +35,7 @@ function normalizeOptionalString(value: string | undefined): string | null {
 
 function mapBanner(record: BannerRecord): Banner {
   return {
+    backgroundPreset: record.backgroundPreset,
     createdAt: record.createdAt.toISOString(),
     id: record.id,
     isActive: record.isActive,
@@ -80,10 +83,11 @@ export class BannerService {
 
   public async createBanner(input: CreateBannerInput): Promise<Banner> {
     const createdBanner = await this.bannerRepository.create({
+      backgroundPreset: input.backgroundPreset,
       isActive: input.isActive,
       linkLabel: normalizeOptionalString(input.linkLabel),
       linkUrl: normalizeOptionalString(input.linkUrl),
-      message: input.message.trim()
+      message: sanitizeHtml(input.message.trim())
     });
 
     await this.invalidateBannerCache();
@@ -99,6 +103,7 @@ export class BannerService {
     }
 
     const updatedBanner = await this.bannerRepository.update(id, {
+      backgroundPreset: input.backgroundPreset ?? currentBanner.backgroundPreset,
       isActive: input.isActive ?? currentBanner.isActive,
       linkLabel:
         input.linkLabel === undefined
@@ -106,7 +111,8 @@ export class BannerService {
           : normalizeOptionalString(input.linkLabel),
       linkUrl:
         input.linkUrl === undefined ? currentBanner.linkUrl : normalizeOptionalString(input.linkUrl),
-      message: input.message?.trim() ?? currentBanner.message
+      message:
+        input.message === undefined ? currentBanner.message : sanitizeHtml(input.message.trim())
     });
 
     if (!updatedBanner) {

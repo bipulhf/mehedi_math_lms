@@ -1,6 +1,8 @@
 import { banners, db, desc, eq } from "@mma/db";
+import type { BannerPreset } from "@mma/shared";
 
 export interface BannerRecord {
+  backgroundPreset: BannerPreset;
   createdAt: Date;
   id: string;
   isActive: boolean;
@@ -11,6 +13,7 @@ export interface BannerRecord {
 }
 
 export interface CreateBannerInput {
+  backgroundPreset: BannerPreset;
   isActive: boolean;
   linkLabel: string | null;
   linkUrl: string | null;
@@ -20,6 +23,7 @@ export interface CreateBannerInput {
 export type UpdateBannerInput = CreateBannerInput;
 
 const bannerColumns = {
+  backgroundPreset: banners.backgroundPreset,
   createdAt: banners.createdAt,
   id: banners.id,
   isActive: banners.isActive,
@@ -55,6 +59,7 @@ export class BannerRepository {
     const rows = await db
       .insert(banners)
       .values({
+        backgroundPreset: input.backgroundPreset,
         isActive: input.isActive,
         linkLabel: input.linkLabel,
         linkUrl: input.linkUrl,
@@ -75,6 +80,7 @@ export class BannerRepository {
     const rows = await db
       .update(banners)
       .set({
+        backgroundPreset: input.backgroundPreset,
         isActive: input.isActive,
         linkLabel: input.linkLabel,
         linkUrl: input.linkUrl,

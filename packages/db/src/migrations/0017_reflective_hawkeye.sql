@@ -1,0 +1,2 @@
+CREATE TYPE "public"."banner_preset" AS ENUM('INK', 'ORANGE', 'CYAN', 'YELLOW', 'SPECTRUM');--> statement-breakpoint
+ALTER TABLE "banners" ADD COLUMN "background_preset" "banner_preset" DEFAULT 'INK' NOT NULL;
