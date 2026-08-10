@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 
 import {
   Body,
@@ -13,7 +13,13 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { createLectureComment, listLectureComments, type LectureComment } from "@/src/lib/api";
+import {
+  createLectureComment,
+  deleteLectureComment,
+  listLectureComments,
+  updateLectureComment,
+  type LectureComment
+} from "@/src/lib/api";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -36,35 +42,103 @@ function CommentBody({ comment }: { comment: LectureComment }): JSX.Element {
   return <Body>{comment.content}</Body>;
 }
 
-function CommentThread({
+function CommentEntry({
   comment,
-  onReply
+  isUpdating,
+  onDelete,
+  onReply,
+  onUpdate
 }: {
   comment: LectureComment;
-  onReply: (parentId: string) => void;
+  isUpdating: boolean;
+  onDelete: (id: string) => void;
+  onReply?: (parentId: string) => void;
+  onUpdate: (id: string, content: string) => void;
 }): JSX.Element {
   const t = useT();
   const format = useFormat();
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(comment.content ?? "");
+
+  const confirmDelete = (): void => {
+    Alert.alert(
+      t("disc.delete"),
+      "Delete this comment? Replies keep their own author and stay visible.",
+      [
+        { style: "cancel", text: t("action.cancel") },
+        { onPress: () => onDelete(comment.id), style: "destructive", text: t("disc.delete") }
+      ]
+    );
+  };
 
   return (
-    <View style={styles.thread}>
-      <View style={styles.comment}>
-        <View style={styles.commentHeader}>
-          <Caption>{comment.user.name}</Caption>
-          <Caption>{format.date(comment.createdAt)}</Caption>
-        </View>
-        <CommentBody comment={comment} />
-        {comment.isDeleted ? null : (
-          <Button label={t("disc.reply")} onPress={() => onReply(comment.id)} variant="ghost" />
-        )}
+    <View style={styles.comment}>
+      <View style={styles.commentHeader}>
+        <Caption>{comment.user.name}</Caption>
+        <Caption>{format.date(comment.createdAt)}</Caption>
       </View>
+
+      {isEditing ? (
+        <View style={styles.composer}>
+          <Field label={t("disc.editPlaceholder")} multiline onChangeText={setDraft} style={styles.multiline} value={draft} />
+          <View style={styles.editActions}>
+            <Button
+              disabled={draft.trim().length === 0}
+              isBusy={isUpdating}
+              label={t("action.save")}
+              onPress={() => {
+                onUpdate(comment.id, draft.trim());
+                setIsEditing(false);
+              }}
+            />
+            <Button label={t("action.cancel")} onPress={() => setIsEditing(false)} variant="ghost" />
+          </View>
+        </View>
+      ) : (
+        <CommentBody comment={comment} />
+      )}
+
+      {comment.isDeleted || isEditing ? null : (
+        <View style={styles.actionsRow}>
+          {onReply ? <Button label={t("disc.reply")} onPress={() => onReply(comment.id)} variant="ghost" /> : null}
+          {comment.isEditable ? (
+            <>
+              <Button
+                label={t("action.edit")}
+                onPress={() => {
+                  setDraft(comment.content ?? "");
+                  setIsEditing(true);
+                }}
+                variant="ghost"
+              />
+              <Button label={t("disc.delete")} onPress={confirmDelete} variant="ghost" />
+            </>
+          ) : null}
+        </View>
+      )}
+    </View>
+  );
+}
+
+function CommentThread({
+  comment,
+  isUpdating,
+  onDelete,
+  onReply,
+  onUpdate
+}: {
+  comment: LectureComment;
+  isUpdating: boolean;
+  onDelete: (id: string) => void;
+  onReply: (parentId: string) => void;
+  onUpdate: (id: string, content: string) => void;
+}): JSX.Element {
+  return (
+    <View style={styles.thread}>
+      <CommentEntry comment={comment} isUpdating={isUpdating} onDelete={onDelete} onReply={onReply} onUpdate={onUpdate} />
       {comment.replies.map((reply) => (
         <View key={reply.id} style={styles.reply}>
-          <View style={styles.commentHeader}>
-            <Caption>{reply.user.name}</Caption>
-            <Caption>{format.date(reply.createdAt)}</Caption>
-          </View>
-          <CommentBody comment={reply} />
+          <CommentEntry comment={reply} isUpdating={isUpdating} onDelete={onDelete} onUpdate={onUpdate} />
         </View>
       ))}
     </View>
@@ -96,6 +170,21 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
     onSuccess: async () => {
       setDraft("");
       setReplyTo(null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.lectureComments(lectureId) });
+    }
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ content, id }: { content: string; id: string }) =>
+      updateLectureComment(id, content),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.lectureComments(lectureId) });
+    }
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => deleteLectureComment(id),
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.lectureComments(lectureId) });
     }
   });
@@ -147,7 +236,14 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
         <Body muted>{t("comment.empty")}</Body>
       ) : (
         comments.map((comment) => (
-          <CommentThread comment={comment} key={comment.id} onReply={setReplyTo} />
+          <CommentThread
+            comment={comment}
+            isUpdating={update.isPending}
+            key={comment.id}
+            onDelete={(id) => remove.mutate(id)}
+            onReply={setReplyTo}
+            onUpdate={(id, content) => update.mutate({ content, id })}
+          />
         ))
       )}
     </Card>
@@ -155,9 +251,11 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
 }
 
 const styles = StyleSheet.create({
+  actionsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   comment: { gap: spacing.xs },
   commentHeader: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
   composer: { gap: spacing.md, paddingBottom: spacing.lg },
+  editActions: { flexDirection: "row", gap: spacing.sm },
   multiline: { minHeight: 80, paddingTop: spacing.md, textAlignVertical: "top" },
   reply: {
     borderLeftColor: colors.hairline,
