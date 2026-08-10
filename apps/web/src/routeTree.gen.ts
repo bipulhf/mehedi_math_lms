@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EmbedPlayerRouteImport } from './routes/embed-player'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -108,6 +109,11 @@ const ContactRoute = ContactRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmbedPlayerRoute = EmbedPlayerRouteImport.update({
+  id: '/embed-player',
+  path: '/embed-player',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -457,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/embed-player': typeof EmbedPlayerRoute
   '/login': typeof LoginRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
@@ -528,6 +535,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
+  '/embed-player': typeof EmbedPlayerRoute
   '/login': typeof LoginRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
@@ -601,6 +609,7 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/embed-player': typeof EmbedPlayerRoute
   '/login': typeof LoginRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
@@ -675,6 +684,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/contact'
     | '/dashboard'
+    | '/embed-player'
     | '/login'
     | '/robots.txt'
     | '/signup'
@@ -746,6 +756,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/contact'
+    | '/embed-player'
     | '/login'
     | '/robots.txt'
     | '/signup'
@@ -818,6 +829,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/contact'
     | '/dashboard'
+    | '/embed-player'
     | '/login'
     | '/robots.txt'
     | '/signup'
@@ -891,6 +903,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRouteWithChildren
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  EmbedPlayerRoute: typeof EmbedPlayerRoute
   LoginRoute: typeof LoginRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
@@ -947,6 +960,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/embed-player': {
+      id: '/embed-player'
+      path: '/embed-player'
+      fullPath: '/embed-player'
+      preLoaderRoute: typeof EmbedPlayerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1554,6 +1574,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRouteWithChildren,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  EmbedPlayerRoute: EmbedPlayerRoute,
   LoginRoute: LoginRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,

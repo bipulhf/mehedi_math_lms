@@ -915,7 +915,6 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "player.notices": "Notices",
   "player.navigator": "Course contents",
   "player.noVideoSource": "This lecture has no video source yet.",
-  "player.openVideo": "Open the video",
   "player.overview": "Course overview",
   "player.assessment": "Test",
   "player.passing": "Pass mark",
@@ -947,8 +946,6 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "player.noVideo": "This lecture has no video attached.",
   "player.videoBroken":
     "This video could not be loaded. Its link may have expired — reopen the course to get a fresh one.",
-  "player.externalVideoLead":
-    "This lecture is hosted on a video site, so it opens in the browser rather than in the player.",
   "player.playerTitle": "Course player",
   "player.play": "Play",
   "player.pause": "Pause",

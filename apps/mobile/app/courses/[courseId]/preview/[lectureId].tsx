@@ -88,6 +88,7 @@ export default function PreviewScreen(): JSX.Element {
             onWatched={() => {
               // A preview has no progress to record.
             }}
+            title={lecture.title}
             videoUrl={lecture.videoUrl}
           />
         )}

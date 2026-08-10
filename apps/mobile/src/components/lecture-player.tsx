@@ -1,21 +1,22 @@
 import { useEvent } from "expo";
 import { useVideoPlayer, VideoView, type VideoPlayer } from "expo-video";
-import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { VideoControls } from "@/src/components/lecture-player-controls";
-import { Body, Button, Caption, ErrorNotice } from "@/src/components/ui";
+import { Caption, ErrorNotice } from "@/src/components/ui";
+import { mobileEnv } from "@/src/lib/env";
 import { resolveLectureVideo } from "@/src/lib/lecture-video";
 import { useT } from "@/src/lib/locale";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { colors, radius } from "@/src/theme/tokens";
 
 /**
- * Lecture playback. A course is mostly video, so the app plays it rather than
- * pointing at the web — but only what it can play; `lecture-video.ts` decides
- * which of the two a lecture is.
+ * Lecture playback. `expo-video` plays a media file directly; a YouTube/Vimeo
+ * page goes through the web app's vidstack player in a `WebView` instead, but
+ * inline here, never a separate browser tab. `lecture-video.ts` decides which
+ * of the two a lecture is.
  */
 
 /**
@@ -185,41 +186,20 @@ function StreamPlayer({
 }
 
 /**
- * A YouTube/Vimeo lecture, played inline through the provider's own `/embed/`
- * page instead of `expo-video` — that page ships its own play/pause/seek
- * chrome, so it needs none of `StreamPlayer`'s controls or watched-progress
- * wiring. `player.watched` (the manual button in the parent screen) is how
- * these lectures get marked complete.
- *
- * Navigating the `WebView` straight to the provider's `/embed/` URL makes it
- * the top-level document, and YouTube's player checks `window.top ===
- * window.self` to decide whether it is actually embedded — failing that
- * check is what produces its "configuration error" screen. Wrapping it in a
- * real `<iframe>` on a page of our own, the same trick `MathWebView` uses,
- * keeps the player genuinely embedded.
+ * A YouTube/Vimeo lecture. `expo-video` has no decoder for a provider page,
+ * and the app bundles no vidstack of its own, so this points a `WebView` at
+ * the web app's `/embed-player` route — the exact same `LecturePlayer`
+ * (vidstack) the web client uses, with the same provider auto-detection, same
+ * controls. `player.watched` (the manual button in the parent screen) is how
+ * these lectures get marked complete; there is no progress event to hook.
  */
-function escapeHtmlAttribute(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+function buildEmbedPlayerUrl(videoUrl: string, title: string): string {
+  const params = new URLSearchParams({ src: videoUrl, title });
+
+  return `${mobileEnv.webOrigin}/embed-player?${params.toString()}`;
 }
 
-function buildEmbedDocument(embedUrl: string): string {
-  return `<!doctype html>
-<html><head>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<style>html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
-iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }</style>
-</head><body>
-<iframe allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen src="${escapeHtmlAttribute(embedUrl)}"></iframe>
-</body></html>`;
-}
-
-function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
-  const document = useMemo(() => buildEmbedDocument(embedUrl), [embedUrl]);
-
+function EmbedPlayer({ title, videoUrl }: { title: string; videoUrl: string }): JSX.Element {
   return (
     <View style={styles.stage}>
       <WebView
@@ -227,8 +207,7 @@ function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
         allowsInlineMediaPlayback
         domStorageEnabled
         mediaPlaybackRequiresUserAction={false}
-        originWhitelist={["*"]}
-        source={{ html: document }}
+        source={{ uri: buildEmbedPlayerUrl(videoUrl, title) }}
         style={styles.video}
       />
     </View>
@@ -238,10 +217,12 @@ function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
 export function LecturePlayer({
   isCompleted,
   onWatched,
+  title,
   videoUrl
 }: {
   isCompleted: boolean;
   onWatched: () => void;
+  title: string;
   videoUrl: string | null;
 }): JSX.Element {
   const t = useT();
@@ -252,29 +233,13 @@ export function LecturePlayer({
   }
 
   if (source.kind === "embed") {
-    return <EmbedPlayer embedUrl={source.embedUrl} />;
-  }
-
-  if (source.kind === "external") {
-    return (
-      <View style={styles.external}>
-        <Body muted>{t("player.externalVideoLead")}</Body>
-        <Button
-          label={t("player.openVideo")}
-          onPress={() => {
-            void WebBrowser.openBrowserAsync(source.url);
-          }}
-          variant="outline"
-        />
-      </View>
-    );
+    return <EmbedPlayer title={title} videoUrl={source.url} />;
   }
 
   return <StreamPlayer isCompleted={isCompleted} onWatched={onWatched} uri={source.uri} />;
 }
 
 const styles = StyleSheet.create({
-  external: { gap: spacing.md },
   stage: {
     backgroundColor: colors.background,
     borderRadius: radius.sm,

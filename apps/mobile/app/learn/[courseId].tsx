@@ -587,6 +587,7 @@ function LectureBody({
         <LecturePlayer
           isCompleted={isCompleted}
           onWatched={onMarkComplete}
+          title={lecture.title}
           videoUrl={lecture.videoUrl}
         />
       )}
