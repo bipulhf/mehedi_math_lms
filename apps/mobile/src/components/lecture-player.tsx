@@ -2,7 +2,7 @@ import { useEvent } from "expo";
 import { useVideoPlayer, VideoView, type VideoPlayer } from "expo-video";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 
@@ -135,6 +135,19 @@ function StreamPlayer({
     void videoViewRef.current?.enterFullscreen();
   }, []);
 
+  // Opening a lecture is opening it to watch, not to preview at postcard
+  // size — fullscreen (and the landscape rotation that comes with it) starts
+  // immediately rather than waiting for a tap on the button above. A native
+  // call, not a DOM Fullscreen API request, so it isn't subject to the
+  // browser rule that fullscreen needs a user gesture.
+  useEffect(() => {
+    videoViewRef.current?.enterFullscreen().catch(() => {
+      // Silent: an auto-attempt failing (view not ready yet, platform
+      // declines it) should fall back to the inline player, not surface an
+      // error for something the student never asked for directly.
+    });
+  }, []);
+
   if (hasFailed) {
     return <ErrorNotice message={t("player.videoBroken")} />;
   }
@@ -177,8 +190,36 @@ function StreamPlayer({
  * chrome, so it needs none of `StreamPlayer`'s controls or watched-progress
  * wiring. `player.watched` (the manual button in the parent screen) is how
  * these lectures get marked complete.
+ *
+ * Navigating the `WebView` straight to the provider's `/embed/` URL makes it
+ * the top-level document, and YouTube's player checks `window.top ===
+ * window.self` to decide whether it is actually embedded — failing that
+ * check is what produces its "configuration error" screen. Wrapping it in a
+ * real `<iframe>` on a page of our own, the same trick `MathWebView` uses,
+ * keeps the player genuinely embedded.
  */
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function buildEmbedDocument(embedUrl: string): string {
+  return `<!doctype html>
+<html><head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<style>html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }</style>
+</head><body>
+<iframe allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen src="${escapeHtmlAttribute(embedUrl)}"></iframe>
+</body></html>`;
+}
+
 function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
+  const document = useMemo(() => buildEmbedDocument(embedUrl), [embedUrl]);
+
   return (
     <View style={styles.stage}>
       <WebView
@@ -186,7 +227,8 @@ function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
         allowsInlineMediaPlayback
         domStorageEnabled
         mediaPlaybackRequiresUserAction={false}
-        source={{ uri: embedUrl }}
+        originWhitelist={["*"]}
+        source={{ html: document }}
         style={styles.video}
       />
     </View>
