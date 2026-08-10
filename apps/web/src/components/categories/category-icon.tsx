@@ -1,5 +1,6 @@
-import * as LucideIcons from "lucide-react";
 import type { JSX, ReactNode } from "react";
+
+import { categoryIcons } from "@/components/categories/category-icons";
 
 /**
  * A category's `icon` field is a Lucide component name (picked from
@@ -8,8 +9,6 @@ import type { JSX, ReactNode } from "react";
  * and the public category pages so all three agree on what an unknown or
  * empty name renders as: `fallback`, not a silent gap.
  */
-const icons = LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>;
-
 export function CategoryIcon({
   className,
   fallback = null,
@@ -19,7 +18,7 @@ export function CategoryIcon({
   fallback?: ReactNode;
   icon: string | null;
 }): JSX.Element | ReactNode {
-  const IconComp = icon ? icons[icon] : undefined;
+  const IconComp = icon ? categoryIcons[icon] : undefined;
 
   return IconComp ? <IconComp className={className} /> : fallback;
 }

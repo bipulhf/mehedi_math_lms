@@ -103,7 +103,7 @@ export function AppShell({
           <div className="flex shrink-0 items-center gap-3">
             {primaryAction}
             <LanguageSwitcher className="hidden md:inline-flex" />
-            <NotificationBell />
+            {isLoading ? null : <NotificationBell />}
             <button
               className="min-h-11 px-2 text-base text-muted transition-colors hover:text-ink disabled:opacity-55"
               disabled={isSigningOut}
