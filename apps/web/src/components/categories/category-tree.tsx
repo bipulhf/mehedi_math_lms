@@ -1,10 +1,10 @@
 import { GripVertical, Pencil, Plus, Trash2, Layers3 } from "lucide-react";
-import * as LucideIcons from "lucide-react";
 import type { DragEvent, JSX } from "react";
 
 import type { CategoryNode } from "@/lib/api/categories";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CategoryIcon } from "@/components/categories/category-icon";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
 import { RichTextContent } from "@/components/ui/rich-text-content";
@@ -52,9 +52,6 @@ function CategoryTreeItem({
     event.preventDefault();
   };
 
-  const icons = LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>;
-  const IconComp = icons[category.icon || ""] || null;
-
   return (
     <div className="space-y-3">
       <div
@@ -79,9 +76,7 @@ function CategoryTreeItem({
             </div>
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-3">
-                {IconComp && (
-                  <IconComp className="size-5 text-ink" />
-                )}
+                <CategoryIcon className="size-5 text-ink" icon={category.icon} />
                 <p className="font-body font-medium text-ink text-lg tracking-tight">
                   {category.name}
                 </p>

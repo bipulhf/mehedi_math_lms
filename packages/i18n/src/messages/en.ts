@@ -1216,6 +1216,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "cat.noCourses": "No published course in this category yet.",
   "cat.viewCourses": "See the courses in this category",
   "cat.exploreLead": "Browse courses by category.",
+  "cat.courseCount": "{count} courses",
+  "cat.noCourseCount": "No courses yet",
   "contact.email": "Email:",
   "contact.site": "Site:",
   "contact.lead": "We read every note from students, guardians and schools.",

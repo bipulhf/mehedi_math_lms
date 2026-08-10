@@ -1212,6 +1212,8 @@ export const bn = {
   "cat.noCourses": "এই ক্যাটাগরিতে এখনো কোনো কোর্স প্রকাশিত হয়নি।",
   "cat.viewCourses": "এই ক্যাটাগরির কোর্স দেখ",
   "cat.exploreLead": "ক্যাটাগরি ধরে ধরে কোর্স খোঁজ।",
+  "cat.courseCount": "{count}টি কোর্স",
+  "cat.noCourseCount": "এখনো কোনো কোর্স নেই",
   "contact.email": "ইমেইল:",
   "contact.site": "ওয়েবসাইট:",
   "contact.lead": "শিক্ষার্থী, অভিভাবক আর স্কুল — সবার কথাই আমরা পড়ি।",
