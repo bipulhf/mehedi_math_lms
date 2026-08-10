@@ -1,10 +1,11 @@
 import { resolveLectureVideo } from "@/src/lib/lecture-video";
 
 /**
- * Which lectures play in the app and which open in the browser. Getting this
- * wrong is silent in both directions: a YouTube link handed to `expo-video`
- * shows a black rectangle, and a media file sent to the browser loses the
- * progress tracking that playback drives.
+ * Which lectures play in the app's own `expo-video` player and which play
+ * through a `WebView` pointed at the provider's `/embed/` page instead.
+ * Getting the split wrong is silent in both directions: a YouTube link handed
+ * to `expo-video` shows a black rectangle, and a media file sent to a
+ * `WebView` loses the progress tracking that playback drives.
  */
 
 describe("resolveLectureVideo", () => {
@@ -22,12 +23,21 @@ describe("resolveLectureVideo", () => {
   });
 
   test.each([
-    "https://www.youtube.com/watch?v=abc123",
-    "https://m.youtube.com/watch?v=abc123",
-    "https://youtu.be/abc123",
-    "https://vimeo.com/123456",
-    "https://player.vimeo.com/video/123456"
-  ])("%s is an embed, so it opens in the browser instead", (url) => {
+    ["https://www.youtube.com/watch?v=abc123", "https://www.youtube.com/embed/abc123?playsinline=1&modestbranding=1&rel=0"],
+    ["https://m.youtube.com/watch?v=abc123", "https://www.youtube.com/embed/abc123?playsinline=1&modestbranding=1&rel=0"],
+    ["https://youtu.be/abc123", "https://www.youtube.com/embed/abc123?playsinline=1&modestbranding=1&rel=0"],
+    ["https://vimeo.com/123456", "https://player.vimeo.com/video/123456?title=0&byline=0&portrait=0"],
+    [
+      "https://player.vimeo.com/video/123456",
+      "https://player.vimeo.com/video/123456?title=0&byline=0&portrait=0"
+    ]
+  ])("%s embeds inline as %s", (url, embedUrl) => {
+    expect(resolveLectureVideo(url)).toEqual({ embedUrl, kind: "embed" });
+  });
+
+  test("an unparseable id on a known host falls back to the browser", () => {
+    const url = "https://youtube.com/";
+
     expect(resolveLectureVideo(url)).toEqual({ kind: "external", url });
   });
 

@@ -4,6 +4,7 @@ import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { WebView } from "react-native-webview";
 
 import { VideoControls } from "@/src/components/lecture-player-controls";
 import { Body, Button, Caption, ErrorNotice } from "@/src/components/ui";
@@ -170,6 +171,28 @@ function StreamPlayer({
   );
 }
 
+/**
+ * A YouTube/Vimeo lecture, played inline through the provider's own `/embed/`
+ * page instead of `expo-video` — that page ships its own play/pause/seek
+ * chrome, so it needs none of `StreamPlayer`'s controls or watched-progress
+ * wiring. `player.watched` (the manual button in the parent screen) is how
+ * these lectures get marked complete.
+ */
+function EmbedPlayer({ embedUrl }: { embedUrl: string }): JSX.Element {
+  return (
+    <View style={styles.stage}>
+      <WebView
+        allowsFullscreenVideo
+        allowsInlineMediaPlayback
+        domStorageEnabled
+        mediaPlaybackRequiresUserAction={false}
+        source={{ uri: embedUrl }}
+        style={styles.video}
+      />
+    </View>
+  );
+}
+
 export function LecturePlayer({
   isCompleted,
   onWatched,
@@ -184,6 +207,10 @@ export function LecturePlayer({
 
   if (source === null) {
     return <Caption>{t("player.noVideo")}</Caption>;
+  }
+
+  if (source.kind === "embed") {
+    return <EmbedPlayer embedUrl={source.embedUrl} />;
   }
 
   if (source.kind === "external") {
