@@ -11,11 +11,14 @@ import { clientEnv } from "@/lib/env";
 let webPushRegistered = false;
 
 export async function tryRegisterWebPush(): Promise<void> {
-  if (typeof window === "undefined" || webPushRegistered) {
-    return;
-  }
-
-  if (!clientEnv.firebaseVapidKey) {
+  if (
+    typeof window === "undefined" ||
+    webPushRegistered ||
+    !clientEnv.firebaseVapidKey ||
+    !("Notification" in window) ||
+    window.Notification.permission !== "granted" ||
+    !("serviceWorker" in navigator)
+  ) {
     return;
   }
 
@@ -33,12 +36,6 @@ export async function tryRegisterWebPush(): Promise<void> {
 
   const app: FirebaseApp =
     getApps().length > 0 ? getApps()[0]! : initializeApp(response.data);
-
-  const permission = await Notification.requestPermission();
-
-  if (permission !== "granted") {
-    return;
-  }
 
   const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
   const messaging = getMessaging(app);
@@ -62,4 +59,22 @@ export async function tryRegisterWebPush(): Promise<void> {
   });
 
   webPushRegistered = true;
+}
+
+export async function requestWebPushPermission(): Promise<NotificationPermission> {
+  if (
+    typeof window === "undefined" ||
+    !clientEnv.firebaseVapidKey ||
+    !("Notification" in window)
+  ) {
+    return "denied";
+  }
+
+  const permission = await window.Notification.requestPermission();
+
+  if (permission === "granted") {
+    await tryRegisterWebPush();
+  }
+
+  return permission;
 }

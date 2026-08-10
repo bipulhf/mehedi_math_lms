@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { ProfilePageSkeleton } from "@/components/profile/profile-editor";
 import { RouteErrorView } from "@/components/common/route-error";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { NotificationPermissionPrompt } from "@/components/notifications/notification-permission-prompt";
 import { useAuthSession } from "@/hooks/use-auth-session";
 import type { UserRole } from "@genex/shared";
 
@@ -43,6 +44,7 @@ function DashboardRoute(): JSX.Element {
 
   return (
     <DashboardLayout role={session.session.role as UserRole}>
+      <NotificationPermissionPrompt />
       <Outlet />
     </DashboardLayout>
   );
