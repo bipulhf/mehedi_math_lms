@@ -25,18 +25,18 @@ function DashboardRoute(): JSX.Element {
     }
 
     if (!session) {
-      void router.navigate({ to: "/auth/sign-in" });
+      void router.navigate({ replace: true, to: "/auth/sign-in" });
       return;
     }
 
     if (!session.session.profileCompleted && location.pathname !== "/dashboard/profile-complete") {
-      void router.navigate({ to: "/dashboard/profile-complete" });
+      void router.navigate({ replace: true, to: "/dashboard/profile-complete" });
     }
   }, [isPending, location.pathname, router, session]);
 
   if (isPending || !session) {
     return (
-      <DashboardLayout isLoading={isPending}>
+      <DashboardLayout isLoading={isPending || !session}>
         <ProfilePageSkeleton />
       </DashboardLayout>
     );

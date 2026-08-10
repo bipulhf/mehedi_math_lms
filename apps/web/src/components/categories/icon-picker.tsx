@@ -1,9 +1,9 @@
-import { Search, X, Grid, Activity } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { Activity, Grid, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { categoryIcons } from "@/components/categories/category-icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -32,21 +32,17 @@ export function IconPicker({ error, name }: IconPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const icons = LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>;
-
   const filteredIcons = useMemo(() => {
-    const allIconNames = Object.keys(icons).filter(
-      (key) => typeof icons[key] === "function" || typeof icons[key] === "object"
-    );
+    const allIconNames = Object.keys(categoryIcons);
 
     if (!searchTerm) return ACADEMIC_ICONS;
 
     return allIconNames.filter((icon) =>
       icon.toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 48);
-  }, [searchTerm, icons]);
+  }, [searchTerm]);
 
-  const SelectedIconComp = icons[selectedIcon] || null;
+  const SelectedIconComp = categoryIcons[selectedIcon] || null;
 
   return (
     <div className="space-y-3">
@@ -123,7 +119,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
 
             <div className="grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-3 max-h-75 overflow-y-auto pr-2 custom-scrollbar">
               {filteredIcons.map((iconName) => {
-                const IconComp = icons[iconName];
+                const IconComp = categoryIcons[iconName];
                 if (!IconComp) return null;
 
                 return (
