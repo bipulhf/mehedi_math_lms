@@ -68,7 +68,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
           </Link>
         </div>
 
-        <div className="flex flex-1 items-center py-4">
+        <div className="flex flex-1 flex-col justify-center pb-8 lg:justify-start lg:pt-10">
           <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-[26rem]">
             <div className="mb-8 space-y-2">
               <h1 className="text-3xl font-medium leading-tight text-ink sm:text-4xl">{title}</h1>
@@ -79,9 +79,11 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
         </div>
       </div>
 
-      {/* Right — warm-tinted showcase panel, lg and up only. */}
+      {/* Right — warm-tinted showcase panel, lg and up only. One centred
+          composition, not two blocks pinned to opposite edges with a void
+          between them. */}
       <div
-        className="relative hidden overflow-hidden border-l border-hairline lg:flex lg:flex-col lg:justify-between lg:gap-10 lg:p-12"
+        className="relative hidden overflow-hidden border-l border-hairline lg:flex lg:flex-col lg:justify-center lg:gap-14 lg:p-12"
         style={{
           background:
             "linear-gradient(165deg, rgba(255,165,0,.16), rgba(255,242,0,.07) 48%, rgba(0,207,255,.12))"
