@@ -108,7 +108,7 @@ export function NotificationBell(): JSX.Element | null {
   }, []);
 
   useEffect(() => {
-    void tryRegisterWebPush();
+    void tryRegisterWebPush().catch(() => undefined);
   }, []);
 
   openRef.current = open;
