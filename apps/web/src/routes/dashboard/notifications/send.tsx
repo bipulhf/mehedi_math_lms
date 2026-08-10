@@ -415,8 +415,11 @@ function SendNotificationPage(): JSX.Element {
             </div>
             <p className="mb-6 text-xs text-muted-faint">{t("notify.previewLead")}</p>
 
-            {/* Sample Push/Dropdown Card */}
-            <div className="border border-hairline bg-paper p-4">
+            {/* Sample Push/Dropdown Card — an explicit paper surface: it mocks
+                a light notification dropdown inside the dashboard's ink
+                surface, so `text-ink`/`text-muted` need to flip to their
+                paper values rather than inherit ink's (white-on-white). */}
+            <div className="border border-hairline bg-paper p-4" data-surface="paper">
               <div className="flex items-start gap-3">
                 <div className="flex size-8 shrink-0 items-center justify-center border border-hairline bg-card">
                   <img alt="" className="size-5" src={mmaMark} />
