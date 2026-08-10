@@ -116,3 +116,13 @@ export const smsRecipientStatusEnum = pgEnum("sms_recipient_status", [
 ]);
 
 export const smsTargetKindEnum = pgEnum("sms_target_kind", ["ALL_STUDENTS", "ROLE", "COURSE"]);
+
+// A curated set of on-brand backgrounds, not a free colour picker -- each one
+// is paired with a text colour that is already known to read on it.
+export const bannerPresetEnum = pgEnum("banner_preset", [
+  "INK",
+  "ORANGE",
+  "CYAN",
+  "YELLOW",
+  "SPECTRUM"
+]);

@@ -8,10 +8,23 @@ import {
 } from "./banners";
 
 describe("createBannerSchema", () => {
-  test("a new banner is active by default", () => {
+  test("a new banner is active by default, with the ink preset", () => {
     expect(createBannerSchema.parse({ message: "20% off all courses" })).toMatchObject({
+      backgroundPreset: "INK",
       isActive: true
     });
+  });
+
+  test("accepts rich text from the message editor", () => {
+    expect(
+      createBannerSchema.safeParse({ message: "<p><strong>Sale</strong> ends soon</p>" }).success
+    ).toBe(true);
+  });
+
+  test("refuses a preset outside the curated set", () => {
+    expect(
+      createBannerSchema.safeParse({ backgroundPreset: "PURPLE", message: "Sale" }).success
+    ).toBe(false);
   });
 
   test("requires a message that survives trimming", () => {

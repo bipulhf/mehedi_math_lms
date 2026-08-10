@@ -1,3 +1,4 @@
+import { richTextToPlainText } from "@genex/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { BadgePercent, Plus } from "lucide-react";
@@ -16,6 +17,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Banner } from "@/lib/api/banners";
 import { createBanner, deleteBanner, listBanners, updateBanner } from "@/lib/api/banners";
+import { bannerPresetStyles } from "@/lib/banner-presets";
 import { useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
@@ -71,7 +73,16 @@ function AdminBannersPage(): JSX.Element {
   const columns = useMemo<readonly DataTableColumn<Banner>[]>(
     () => [
       {
-        cell: (banner) => <p className="max-w-md truncate">{banner.message}</p>,
+        cell: (banner) => (
+          <div className="flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="size-3.5 shrink-0 rounded-full border border-hairline"
+              style={{ background: bannerPresetStyles[banner.backgroundPreset].style.background }}
+            />
+            <p className="max-w-md truncate">{richTextToPlainText(banner.message)}</p>
+          </div>
+        ),
         header: t("admin.banner.colMessage"),
         key: "message"
       },

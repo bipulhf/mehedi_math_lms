@@ -1,3 +1,5 @@
+import type { BannerPreset } from "@genex/shared";
+import { isEmptyRichText } from "@genex/shared";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
@@ -5,12 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import type { Banner } from "@/lib/api/banners";
+import { bannerPresetStyles } from "@/lib/banner-presets";
 import { useT } from "@/lib/i18n/locale-context";
+import { cn } from "@/lib/utils";
+
+const PRESET_ORDER: readonly BannerPreset[] = ["INK", "ORANGE", "CYAN", "YELLOW", "SPECTRUM"];
 
 export interface BannerFormValues {
+  backgroundPreset: BannerPreset;
   isActive: boolean;
   linkLabel: string;
   linkUrl: string;
@@ -36,6 +43,7 @@ export function BannerFormModal({
   const [message, setMessage] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [linkLabel, setLinkLabel] = useState("");
+  const [backgroundPreset, setBackgroundPreset] = useState<BannerPreset>("INK");
   const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,19 +55,20 @@ export function BannerFormModal({
     setMessage(banner?.message ?? "");
     setLinkUrl(banner?.linkUrl ?? "");
     setLinkLabel(banner?.linkLabel ?? "");
+    setBackgroundPreset(banner?.backgroundPreset ?? "INK");
     setIsActive(banner?.isActive ?? true);
     setError(null);
   }, [banner, open]);
 
   const submit = (): void => {
-    if (message.trim().length === 0) {
+    if (isEmptyRichText(message)) {
       setError(t("admin.banner.message"));
 
       return;
     }
 
     setError(null);
-    onSubmit({ isActive, linkLabel: linkLabel.trim(), linkUrl: linkUrl.trim(), message });
+    onSubmit({ backgroundPreset, isActive, linkLabel: linkLabel.trim(), linkUrl: linkUrl.trim(), message });
   };
 
   return (
@@ -78,13 +87,33 @@ export function BannerFormModal({
       >
         <div className="space-y-2">
           <Label htmlFor="banner-message">{t("admin.banner.message")}</Label>
-          <Textarea
+          <RichTextEditor
             error={error ?? undefined}
             id="banner-message"
-            maxLength={500}
-            onChange={(event) => setMessage(event.target.value)}
+            onChange={setMessage}
             value={message}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>{t("admin.banner.background")}</Label>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_ORDER.map((preset) => (
+              <button
+                aria-pressed={backgroundPreset === preset}
+                className={cn(
+                  "rounded-[var(--radius-pill)] border px-4 py-2 text-sm font-medium transition-colors",
+                  backgroundPreset === preset ? "border-line-strong" : "border-hairline opacity-70 hover:opacity-100"
+                )}
+                key={preset}
+                onClick={() => setBackgroundPreset(preset)}
+                style={bannerPresetStyles[preset].style}
+                type="button"
+              >
+                {t(bannerPresetStyles[preset].labelKey)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

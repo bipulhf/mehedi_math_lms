@@ -1,9 +1,10 @@
-import type { createBannerSchema, updateBannerSchema } from "@genex/shared";
+import type { BannerPreset, createBannerSchema, updateBannerSchema } from "@genex/shared";
 import type { z } from "zod";
 
 import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api/client";
 
 export interface Banner {
+  backgroundPreset: BannerPreset;
   createdAt: string;
   id: string;
   isActive: boolean;
