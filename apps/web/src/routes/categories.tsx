@@ -5,15 +5,17 @@ import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
+import { CategoryIcon } from "@/components/categories/category-icon";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { CategoryTreeSkeleton } from "@/components/common/skeletons";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { CategoryNode } from "@/lib/api/categories";
 import { listCategories } from "@/lib/api/categories";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 import { queryKeys } from "@/lib/query/keys";
 import { itemListJsonLd, organizationJsonLd, seo } from "@/lib/seo";
 import { ssrApiGet } from "@/lib/ssr-api";
-import { useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/categories")({
   head: ({ loaderData }) => {
@@ -54,59 +56,71 @@ export const Route = createFileRoute("/categories")({
   )
 });
 
-function PublicCategoryTree({
-  categories,
-  depth = 0
-}: {
-  categories: readonly CategoryNode[];
-  depth?: number;
-}): JSX.Element {
+/**
+ * One top-level category, fully clickable regardless of whether it has
+ * subjects under it — the old tree recursed a full bordered `Card` inside
+ * every parent, so a level with five subjects was five nested cards deep and
+ * a click on the parent itself did nothing at all. `courseCount` is already
+ * the rollup (own courses plus every descendant's), so a level with no
+ * courses tagged directly to it still shows the number that matters.
+ */
+function CategoryCard({ category }: { category: CategoryNode }): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   return (
-    <div className="space-y-4">
-      {categories.map((category) => (
-        <div key={category.id}>
-          {/* Square, like every other card. The inner panel is what carries
-              the nesting, so the outer card is a 1px frame around it. */}
-          <Card className="bg-panel-warm p-1">
-            <div className="bg-card">
-              <CardHeader>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="rounded-full bg-chip-active p-3 text-accent">
-                    <Layers3 className="size-4" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{category.name}</CardTitle>
-                    {category.description ? (
-                      <RichTextContent
-                        className="text-base font-light leading-relaxed text-muted"
-                        html={category.description}
-                      />
-                    ) : (
-                      <CardDescription>{t("cat.fallbackDescription")}</CardDescription>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {category.children.length > 0 ? (
-                  <PublicCategoryTree categories={category.children} depth={depth + 1} />
-                ) : (
-                  <Link
-                    className="text-base text-accent"
-                    to="/categories/$slug"
-                    params={{ slug: category.slug }}
-                  >
-                    {t("cat.viewCourses")} →
-                  </Link>
-                )}
-              </CardContent>
+    <Card className="group flex h-full flex-col overflow-hidden transition-colors hover:border-line-strong">
+      <Link
+        className="flex flex-1 flex-col"
+        params={{ slug: category.slug }}
+        to="/categories/$slug"
+      >
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-chip-active p-3 text-accent">
+                <CategoryIcon
+                  className="size-4"
+                  fallback={<Layers3 className="size-4" />}
+                  icon={category.icon}
+                />
+              </div>
+              <CardTitle className="text-xl transition-colors group-hover:text-accent">
+                {category.name}
+              </CardTitle>
             </div>
-          </Card>
-        </div>
-      ))}
-    </div>
+            <span className="label-mono shrink-0 rounded-full bg-chip-active px-3 py-1 text-xs text-muted">
+              {category.courseCount > 0
+                ? t("cat.courseCount", { count: format.number(category.courseCount) })
+                : t("cat.noCourseCount")}
+            </span>
+          </div>
+          {category.description ? (
+            <RichTextContent
+              className="text-base font-light leading-relaxed text-muted"
+              html={category.description}
+            />
+          ) : (
+            <CardDescription>{t("cat.fallbackDescription")}</CardDescription>
+          )}
+        </CardHeader>
+      </Link>
+
+      {category.children.length > 0 ? (
+        <CardContent className="mt-auto flex flex-wrap gap-2 border-t border-hairline-faint pt-4">
+          {category.children.map((child) => (
+            <Link
+              className="rounded-full border border-hairline px-3 py-1.5 text-sm text-ink transition-colors hover:border-accent hover:text-accent"
+              key={child.id}
+              params={{ slug: child.slug }}
+              to="/categories/$slug"
+            >
+              {child.name}
+            </Link>
+          ))}
+        </CardContent>
+      ) : null}
+    </Card>
   );
 }
 
@@ -128,8 +142,14 @@ function CategoriesPage(): JSX.Element {
       <PublicSection>
         {isLoading ? (
           <CategoryTreeSkeleton rows={6} />
+        ) : categories.length === 0 ? (
+          <EmptyState message={t("cat.dormant")} />
         ) : (
-          <PublicCategoryTree categories={categories} />
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {categories.map((category) => (
+              <CategoryCard category={category} key={category.id} />
+            ))}
+          </div>
         )}
       </PublicSection>
     </PublicLayout>

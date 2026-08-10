@@ -9,6 +9,8 @@ import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
 
 export interface CategoryNode {
   children: readonly CategoryNode[];
+  /** Published courses in this category plus every descendant's. */
+  courseCount: number;
   createdAt: string;
   description: string | null;
   icon: string | null;

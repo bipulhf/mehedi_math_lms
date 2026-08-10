@@ -2,6 +2,7 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { CategoryIcon } from "@/components/categories/category-icon";
 import { CourseGridSkeleton } from "@/components/courses/course-card";
 import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { breadcrumbJsonLd, catalogItemListFromCourses, seo } from "@/lib/seo";
 import { SsrNotFoundError, ssrApiGet, ssrApiGetCourses } from "@/lib/ssr-api";
 import { stripHtml } from "@/lib/html";
 import { siteConfig } from "@/lib/site";
-import { useT } from "@/lib/i18n/locale-context";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 export const Route = createFileRoute("/categories/$slug")({
   loader: async ({ params }) => {
@@ -37,12 +38,19 @@ export const Route = createFileRoute("/categories/$slug")({
       throw notFound();
     }
 
-    const { data: courses } = await ssrApiGetCourses({
-      categoryId: category.id,
-      limit: 48,
-      page: 1,
-      status: "PUBLISHED"
-    });
+    // A course is tagged to exactly one category, almost always a subject
+    // leaf rather than its parent level — so a level page that only asked
+    // for `categoryId: category.id` was correct-looking code that always
+    // returned zero courses the moment a category had children. Fan out
+    // across the category and every direct child instead; the tree is two
+    // levels deep in practice, so this is at most a handful of requests.
+    const categoryIds = [category.id, ...category.children.map((child) => child.id)];
+    const courseLists = await Promise.all(
+      categoryIds.map((categoryId) =>
+        ssrApiGetCourses({ categoryId, limit: 48, page: 1, status: "PUBLISHED" })
+      )
+    );
+    const courses = courseLists.flatMap((result) => result.data).slice(0, 48);
 
     return { category, courses };
   },
@@ -117,6 +125,7 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
 
 function CategoryCoursesPage(): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   const { category, courses } = Route.useLoaderData();
 
@@ -130,11 +139,24 @@ function CategoryCoursesPage(): JSX.Element {
           t("cat.deeperLead")
         )
       }
-      title={category.name}
+      title={
+        <span className="inline-flex items-center gap-3">
+          <CategoryIcon className="size-7 text-accent" icon={category.icon} />
+          {category.name}
+        </span>
+      }
     >
       {/* Same gutter as the page head above it. */}
       <PublicSection className="space-y-6">
-        <BackButton to="/categories" />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <BackButton to="/categories" />
+          <span className="label-mono rounded-full bg-chip-active px-3 py-1 text-xs text-muted">
+            {category.courseCount > 0
+              ? t("cat.courseCount", { count: format.number(category.courseCount) })
+              : t("cat.noCourseCount")}
+          </span>
+        </div>
+
         {category.children.length > 0 ? (
           <div>
             <Card>
@@ -146,11 +168,14 @@ function CategoryCoursesPage(): JSX.Element {
                 {category.children.map((child: CategoryNode) => (
                   <Link
                     key={child.id}
-                    className="rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink"
+                    className="flex items-center gap-2 rounded-full border border-hairline px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
                     to="/categories/$slug"
                     params={{ slug: child.slug }}
                   >
                     {child.name}
+                    <span className="label-mono text-xs font-normal text-muted-faint">
+                      {format.number(child.courseCount)}
+                    </span>
                   </Link>
                 ))}
               </CardContent>

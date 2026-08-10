@@ -178,6 +178,23 @@ export class CategoryRepository {
     return rows[0]?.value ?? 0;
   }
 
+  /**
+   * Published-course counts for every category that has at least one,
+   * exact-match only (a level's own row is nearly always zero — courses are
+   * tagged at the subject leaf). `CategoryService` rolls a parent's total up
+   * from this, which is why this stays a flat per-category map rather than
+   * trying to express the rollup in SQL.
+   */
+  public async courseCountsByCategory(): Promise<ReadonlyMap<string, number>> {
+    const rows = await db
+      .select({ categoryId: courses.categoryId, value: count() })
+      .from(courses)
+      .where(eq(courses.status, "PUBLISHED"))
+      .groupBy(courses.categoryId);
+
+    return new Map(rows.map((row) => [row.categoryId, row.value]));
+  }
+
   public async reorder(items: readonly ReorderCategoryInput[]): Promise<void> {
     await db.transaction(async (transaction) => {
       for (const item of items) {

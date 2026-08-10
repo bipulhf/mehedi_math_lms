@@ -26,6 +26,15 @@ type ReorderCategoriesInput = z.infer<typeof reorderCategoriesSchema>;
 
 export interface CategoryTreeNode {
   children: readonly CategoryTreeNode[];
+  /**
+   * Published courses in this category plus every descendant's — a level
+   * with no courses of its own but five populated subjects reads as 0
+   * otherwise, which is exactly the number a student browsing by level does
+   * not want to see. Only `listCategories` populates the real value; every
+   * other method here returns a single node with no tree to roll up, so it
+   * stays 0.
+   */
+  courseCount: number;
   createdAt: string;
   description: string | null;
   icon: string | null;
@@ -63,6 +72,7 @@ async function createUniqueCategorySlug(
 function mapNode(record: CategoryRecord, children: readonly CategoryTreeNode[]): CategoryTreeNode {
   return {
     children,
+    courseCount: 0,
     createdAt: record.createdAt.toISOString(),
     description: record.description,
     icon: record.icon,
@@ -83,6 +93,23 @@ function buildTree(
   return records
     .filter((record) => record.parentId === parentId)
     .map((record) => mapNode(record, buildTree(records, record.id)));
+}
+
+/** Post-order: a node's count needs its children's counts already rolled up. */
+function applyCourseCounts(
+  nodes: readonly CategoryTreeNode[],
+  countsByCategory: ReadonlyMap<string, number>
+): readonly CategoryTreeNode[] {
+  return nodes.map((node) => {
+    const children = applyCourseCounts(node.children, countsByCategory);
+    const childrenTotal = children.reduce((sum, child) => sum + child.courseCount, 0);
+
+    return {
+      ...node,
+      children,
+      courseCount: (countsByCategory.get(node.id) ?? 0) + childrenTotal
+    };
+  });
 }
 
 export class CategoryService {
@@ -112,11 +139,19 @@ export class CategoryService {
       ? categories
       : categories.filter((category) => category.isActive);
 
+    // Always fresh, never part of the cached tree above: the tree changes by
+    // admin action, but a count is stale the moment any course is
+    // published or unpublished, and that happens far more often.
+    const countsByCategory = await this.categoryRepository.courseCountsByCategory();
+
     if (query.flat) {
-      return visibleCategories.map((category) => mapNode(category, []));
+      return visibleCategories.map((category) => ({
+        ...mapNode(category, []),
+        courseCount: countsByCategory.get(category.id) ?? 0
+      }));
     }
 
-    return buildTree(visibleCategories, null);
+    return applyCourseCounts(buildTree(visibleCategories, null), countsByCategory);
   }
 
   public async getCategoryById(id: string): Promise<CategoryTreeNode> {
