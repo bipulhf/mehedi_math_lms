@@ -14,6 +14,7 @@ export const queryKeys = {
   courseBySlug: (slug: string) => ["courses", "slug", slug] as const,
   courseContent: (courseId: string) => ["content", courseId] as const,
   courseNotices: (courseId: string) => ["notices", courseId] as const,
+  courseOutline: (courseId: string) => ["outline", courseId] as const,
   courseProgress: (courseId: string) => ["progress", courseId] as const,
   courseReviewSummary: (courseId: string) => ["reviews", "summary", courseId] as const,
   courseReviews: (courseId: string) => ["reviews", courseId] as const,

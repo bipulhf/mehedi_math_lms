@@ -78,7 +78,7 @@ export default function CourseDetailScreen(): JSX.Element {
   const outlineQuery = useQuery({
     enabled: resolvedCourseId.length > 0,
     queryFn: () => getCourseOutline(resolvedCourseId),
-    queryKey: queryKeys.courseContent(resolvedCourseId)
+    queryKey: queryKeys.courseOutline(resolvedCourseId)
   });
   const enrollmentQuery = useQuery({
     enabled: isStudent && session !== null && resolvedCourseId.length > 0,
