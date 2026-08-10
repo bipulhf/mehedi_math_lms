@@ -37,6 +37,14 @@ const isGoogleConfigured =
   parsedAuthEnv.GOOGLE_CLIENT_SECRET !== "replace-me";
 const isDevelopment = process.env.NODE_ENV === "development";
 
+// The API and the web app live on sibling subdomains in production (e.g.
+// lms.example.com and api.lms.example.com) -- a host-only cookie set while
+// signing in on the web origin never reaches the API origin. Scoping the
+// cookie to the shared parent domain instead is what lets both see it.
+// `localhost` has no dot to split on, so this is a no-op in development.
+const authHost = new URL(parsedAuthEnv.BETTER_AUTH_URL).hostname;
+const cookieDomain = authHost.split(".").slice(-2).join(".");
+
 interface AuthUserFields extends UserWithRole {
   profileCompleted?: boolean;
   isActive?: boolean;
@@ -61,6 +69,10 @@ export const auth = betterAuth({
   advanced: {
     database: {
       generateId: "uuid"
+    },
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: cookieDomain
     }
   },
   emailAndPassword: {
