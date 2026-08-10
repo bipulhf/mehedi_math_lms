@@ -49,8 +49,18 @@ export function Heading({ children }: { children: ReactNode }): JSX.Element {
 }
 
 /** A card or section title — 20px at weight 500. */
-export function Title({ children }: { children: ReactNode }): JSX.Element {
-  return <Text style={styles.title}>{children}</Text>;
+export function Title({
+  children,
+  numberOfLines
+}: {
+  children: ReactNode;
+  numberOfLines?: number;
+}): JSX.Element {
+  return (
+    <Text numberOfLines={numberOfLines} style={styles.title}>
+      {children}
+    </Text>
+  );
 }
 
 export function Body({
@@ -254,6 +264,61 @@ export function ProgressTrack({
           ]}
         />
       ))}
+    </View>
+  );
+}
+
+export interface StreakDay {
+  isToday: boolean;
+  /** A single-character weekday initial — the strip is 7 chunks wide, not a calendar. */
+  label: string;
+  studied: boolean;
+}
+
+/**
+ * A week of study activity, one square chunk per day, with a streak-count
+ * headline above it. Today gets an accent ring even when not yet studied —
+ * the same "the current one reads differently" idea `ProgressTrack` callers
+ * already use for an in-progress lecture — so the strip never looks like
+ * today simply didn't happen yet.
+ */
+export function StreakTrack({
+  days,
+  label,
+  streakCount
+}: {
+  days: readonly StreakDay[];
+  label: string;
+  streakCount: number;
+}): JSX.Element {
+  return (
+    <View
+      accessibilityLabel={label}
+      accessibilityRole="progressbar"
+      accessibilityValue={{
+        max: days.length,
+        min: 0,
+        now: days.filter((day) => day.studied).length
+      }}
+    >
+      <View style={styles.streakHeader}>
+        <Text style={styles.streakCount}>{streakCount}</Text>
+        <Text style={styles.streakEyebrow}>{label}</Text>
+      </View>
+      <View style={styles.streakRow}>
+        {days.map((day, index) => (
+          <View key={index} style={styles.streakDay}>
+            <View
+              style={[
+                styles.streakChunk,
+                day.studied ? styles.streakChunkFilled : null,
+                day.isToday ? styles.streakChunkToday : null
+              ]}
+            />
+            <Text style={styles.streakEyebrow}>{day.label}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -740,5 +805,24 @@ const styles = StyleSheet.create({
   },
   trackChunkComplete: { backgroundColor: colors.lineStrong },
   trackChunkFilled: { backgroundColor: colors.accent },
-  trackRow: { flexDirection: "row", gap: 3 }
+  trackRow: { flexDirection: "row", gap: 3 },
+  streakChunk: {
+    backgroundColor: colors.barTrack,
+    borderRadius: radius.sm / 2,
+    height: 20,
+    width: "100%"
+  },
+  streakChunkFilled: { backgroundColor: colors.accent },
+  streakChunkToday: { borderColor: colors.accent, borderWidth: 1.5 },
+  streakCount: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 26 },
+  streakDay: { alignItems: "center", flex: 1, gap: spacing.xs },
+  streakEyebrow: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    textTransform: "uppercase"
+  },
+  streakHeader: { alignItems: "baseline", flexDirection: "row", gap: spacing.xs, marginBottom: spacing.sm },
+  streakRow: { flexDirection: "row", gap: 3 }
 });

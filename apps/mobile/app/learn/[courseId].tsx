@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { LectureComments } from "@/src/components/lecture-comments";
 import { LecturePlayer } from "@/src/components/lecture-player";
@@ -35,13 +35,17 @@ import {
 import { ApiError } from "@/src/lib/api-client";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
+import { useRecordStudyActivity } from "@/src/lib/use-streak";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 /**
  * The course player. Lectures and tests are unified into one `sortOrder`-ordered
  * navigator so a class and its chapter's test are a single sequence you move
- * through with prev/next, mirroring the web `course-player.tsx`. Notices are a
- * mode toggle rather than an inline card, and the stats row is `StatCard`s.
+ * through with prev/next, mirroring the web `course-player.tsx`. Picking a
+ * lesson happens in `LessonPickerSheet`, a bottom sheet summoned by a
+ * "Lessons" row rather than a permanent list above the player; what's picked
+ * is then viewed through a three-way About/Notices/Discussion `Tabs`. The
+ * stats row is `StatCard`s.
  */
 
 interface NavigationLectureItem {
@@ -185,6 +189,96 @@ function MaterialLinks({
   );
 }
 
+/**
+ * The lesson picker, as a bottom sheet rather than a permanent block above
+ * the player — Khan Academy's redesign moves exactly this off-screen until
+ * asked for. Built on the core `Modal` (`animationType="slide"`), not a
+ * gesture-driven sheet library: `react-native-reanimated` is a declared
+ * dependency this app has never actually used, its worklet Babel plugin is
+ * unconfigured, and this codebase has never run on real hardware
+ * (`docs/mobile-plan.md` Stage 0) — not the place to debut either for the
+ * first time. `Modal` needs neither.
+ */
+function LessonPickerSheet({
+  chapters,
+  completedIds,
+  navigationItems,
+  onClose,
+  onSelect,
+  openChapterId,
+  onToggleChapter,
+  selectedItemId,
+  visible
+}: {
+  chapters: readonly { id: string; materials: ContentLecture["materials"]; title: string }[];
+  completedIds: ReadonlySet<string>;
+  navigationItems: readonly NavigationItem[];
+  onClose: () => void;
+  onSelect: (itemId: string) => void;
+  onToggleChapter: (chapterId: string) => void;
+  openChapterId: string | null;
+  selectedItemId: string | null;
+  visible: boolean;
+}): JSX.Element {
+  const t = useT();
+
+  return (
+    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.sheetRoot}>
+        <Pressable
+          accessibilityLabel={t("common.close")}
+          accessibilityRole="button"
+          onPress={onClose}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.sheetPanel}>
+          <View style={styles.sheetHandle} />
+          <View style={styles.sheetHeader}>
+            <Title>{t("player.navigator")}</Title>
+            <Pressable
+              accessibilityLabel={t("common.close")}
+              accessibilityRole="button"
+              hitSlop={spacing.sm}
+              onPress={onClose}
+            >
+              <Text style={styles.sheetClose}>&times;</Text>
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.sheetContent}>
+            {chapters.map((chapter) => {
+              const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
+
+              return (
+                <AccordionRow
+                  isOpen={openChapterId === chapter.id}
+                  key={chapter.id}
+                  meta={chapterItems.length}
+                  onToggle={() => onToggleChapter(chapter.id)}
+                  title={chapter.title}
+                >
+                  <View style={{ gap: spacing.xs }}>
+                    {chapterItems.map((item) => (
+                      <ChapterItem
+                        isCompleted={
+                          item.kind === "lecture" && Boolean(completedIds.has(item.lecture.id))
+                        }
+                        isSelected={selectedItemId === item.id}
+                        item={item}
+                        key={item.id}
+                        onSelect={() => onSelect(item.id)}
+                      />
+                    ))}
+                  </View>
+                </AccordionRow>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function CoursePlayerScreen(): JSX.Element {
   const { courseId } = useLocalSearchParams<{ courseId: string }>();
   const router = useRouter();
@@ -193,7 +287,9 @@ export default function CoursePlayerScreen(): JSX.Element {
   const format = useFormat();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [openChapterId, setOpenChapterId] = useState<string | null>(null);
-  const [playerMode, setPlayerMode] = useState<"learn" | "notices">("learn");
+  const [contentTab, setContentTab] = useState<"about" | "discussion" | "notices">("about");
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const recordStudyActivity = useRecordStudyActivity();
 
   const [courseQuery, contentQuery, progressQuery, testsQuery, noticesQuery] = useQueries({
     queries: [
@@ -224,9 +320,17 @@ export default function CoursePlayerScreen(): JSX.Element {
 
   useEffect(() => {
     if (isDenied) {
-      router.replace("/(tabs)/learning");
+      router.replace("/(tabs)");
     }
   }, [isDenied, router]);
+
+  // Opening a lecture is the one unambiguous "studied today" signal this
+  // screen has — idempotent per day, so firing on every mount is fine.
+  useEffect(() => {
+    if (course !== null) {
+      recordStudyActivity();
+    }
+  }, [course, recordStudyActivity]);
 
   const lectures = useMemo(() => chapters.flatMap((chapter) => chapter.lectures), [chapters]);
   const completedIds = useMemo(
@@ -308,8 +412,16 @@ export default function CoursePlayerScreen(): JSX.Element {
     }
   });
 
+  // Switching lessons always lands on "About" — staying on, say, Discussion
+  // would show either the previous lecture's thread or nothing, neither of
+  // which is what picking a new lesson means.
+  const selectItem = (itemId: string | null): void => {
+    setSelectedItemId(itemId);
+    setContentTab("about");
+  };
+
   const goToIndex = (index: number): void => {
-    setSelectedItemId(navigationItems[index]?.id ?? null);
+    selectItem(navigationItems[index]?.id ?? null);
   };
 
   if (isLoading) {
@@ -363,19 +475,32 @@ export default function CoursePlayerScreen(): JSX.Element {
               lectures={lectures}
             />
           ) : null}
-          <View style={{ height: spacing.lg }} />
-          <Tabs
-            label={t("player.navigator")}
-            onChange={setPlayerMode}
-            tabs={[
-              { isActive: playerMode === "learn", label: t("player.lessonsAndTests"), value: "learn" },
-              { isActive: playerMode === "notices", label: t("player.notices"), value: "notices" }
-            ]}
-            value={playerMode}
-          />
         </Card>
 
-        {playerMode === "notices" ? (
+        <Pressable onPress={() => setIsPickerOpen(true)}>
+          <Card>
+            <View style={styles.lessonsTriggerRow}>
+              <View style={styles.lessonsTriggerText}>
+                <Caption tone="faint">{t("player.lessonsAndTests")}</Caption>
+                <Body numberOfLines={1}>{selectedItem?.title ?? t("player.noLectures")}</Body>
+              </View>
+              <Text style={styles.lessonsTriggerChevron}>&#8250;</Text>
+            </View>
+          </Card>
+        </Pressable>
+
+        <Tabs
+          label={t("player.navigator")}
+          onChange={setContentTab}
+          tabs={[
+            { isActive: contentTab === "about", label: t("player.about"), value: "about" },
+            { isActive: contentTab === "notices", label: t("player.notices"), value: "notices" },
+            { isActive: contentTab === "discussion", label: t("disc.title"), value: "discussion" }
+          ]}
+          value={contentTab}
+        />
+
+        {contentTab === "notices" ? (
           notices.length === 0 ? (
             <EmptyState message={t("player.noNotices")} title="" />
           ) : (
@@ -394,48 +519,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           )
         ) : null}
 
-        {playerMode === "learn" ? (
-          <Card>
-            <Title>{t("player.navigator")}</Title>
-            <View style={{ height: spacing.sm }} />
-            {chapters.map((chapter) => {
-              const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
-
-              return (
-                <AccordionRow
-                  isOpen={openChapterId === chapter.id}
-                  key={chapter.id}
-                  meta={chapterItems.length}
-                  onToggle={() =>
-                    setOpenChapterId((current) =>
-                      current === chapter.id && selectedItem?.chapterId !== chapter.id
-                        ? null
-                        : chapter.id
-                    )
-                  }
-                  title={chapter.title}
-                >
-                  <View style={{ gap: spacing.xs }}>
-                    {chapterItems.map((item) => (
-                      <ChapterItem
-                        isCompleted={
-                          item.kind === "lecture" &&
-                          Boolean(completedIds.has(item.lecture.id))
-                        }
-                        isSelected={selectedItemId === item.id}
-                        item={item}
-                        key={item.id}
-                        onSelect={() => setSelectedItemId(item.id)}
-                      />
-                    ))}
-                  </View>
-                </AccordionRow>
-              );
-            })}
-          </Card>
-        ) : null}
-
-        {playerMode === "learn" && selectedLecture !== null && selectedChapter !== null ? (
+        {contentTab === "about" && selectedLecture !== null && selectedChapter !== null ? (
           <Card style={{ gap: spacing.md }}>
             <View style={styles.badgesRow}>
               <Badge>{completedIds.has(selectedLecture.id) ? t("player.watchedDone") : t("player.activeLecture")}</Badge>
@@ -461,7 +545,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           </Card>
         ) : null}
 
-        {playerMode === "learn" && selectedItem?.kind === "test" ? (
+        {contentTab === "about" && selectedItem?.kind === "test" ? (
           <Card style={{ gap: spacing.md }}>
             <View style={styles.badgesRow}>
               <Badge>{t("player.assessment")}</Badge>
@@ -512,7 +596,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           />
         ) : null}
 
-        {playerMode === "learn" && selectedLecture !== null && selectedChapter !== null ? (
+        {contentTab === "about" && selectedLecture !== null && selectedChapter !== null ? (
           <>
             <MaterialLinks
               materials={selectedLecture.materials}
@@ -525,7 +609,13 @@ export default function CoursePlayerScreen(): JSX.Element {
           </>
         ) : null}
 
-        {selectedLecture !== null ? <LectureComments lectureId={selectedLecture.id} /> : null}
+        {contentTab === "discussion" ? (
+          selectedLecture !== null ? (
+            <LectureComments lectureId={selectedLecture.id} />
+          ) : (
+            <EmptyState message={t("player.discussionUnavailable")} title="" />
+          )
+        ) : null}
 
         {selectedItem !== null ? (
           <View style={styles.prevNext}>
@@ -543,6 +633,25 @@ export default function CoursePlayerScreen(): JSX.Element {
           </View>
         ) : null}
       </ScrollView>
+
+      <LessonPickerSheet
+        chapters={chapters}
+        completedIds={completedIds}
+        navigationItems={navigationItems}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={(itemId) => {
+          selectItem(itemId);
+          setIsPickerOpen(false);
+        }}
+        onToggleChapter={(chapterId) =>
+          setOpenChapterId((current) =>
+            current === chapterId && selectedItem?.chapterId !== chapterId ? null : chapterId
+          )
+        }
+        openChapterId={openChapterId}
+        selectedItemId={selectedItemId}
+        visible={isPickerOpen}
+      />
     </Screen>
   );
 }
@@ -628,6 +737,9 @@ const styles = StyleSheet.create({
   },
   itemRowActive: { backgroundColor: colors.chipActive },
   itemRowText: { flex: 1, gap: 2 },
+  lessonsTriggerChevron: { color: colors.mutedFaint, fontSize: 22 },
+  lessonsTriggerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  lessonsTriggerText: { flex: 1, gap: 2 },
   materialRow: {
     alignItems: "center",
     borderColor: colors.hairline,
@@ -643,6 +755,30 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   prevNext: { flexDirection: "row", gap: spacing.md },
+  sheetClose: { color: colors.muted, fontSize: 24, padding: spacing.xs },
+  sheetContent: { padding: spacing.lg },
+  sheetHandle: {
+    alignSelf: "center",
+    backgroundColor: colors.hairline,
+    borderRadius: radius.pill,
+    height: 4,
+    marginTop: spacing.sm,
+    width: 36
+  },
+  sheetHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md
+  },
+  sheetPanel: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radius.square,
+    borderTopRightRadius: radius.square,
+    maxHeight: "75%"
+  },
+  sheetRoot: { backgroundColor: "rgba(0, 0, 0, 0.5)", flex: 1, justifyContent: "flex-end" },
   statsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   textContent: {
     color: colors.ink,

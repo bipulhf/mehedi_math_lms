@@ -8,7 +8,6 @@ import {
   CatalogIcon,
   LearningIcon,
   MessagesIcon,
-  NotificationsIcon,
   ProfileIcon
 } from "@/src/components/tab-icons";
 import { getNotificationUnreadCount, listConversations } from "@/src/lib/api";
@@ -63,6 +62,9 @@ export default function TabsLayout(): JSX.Element {
     (sum, conversation) => sum + conversation.unreadCount,
     0
   );
+  // One badge for the merged Inbox tab -- a student doesn't care which half
+  // of the tab has something new, only that it does.
+  const unreadInbox = unreadMessages + unreadNotifications;
 
   return (
     <Tabs
@@ -82,39 +84,27 @@ export default function TabsLayout(): JSX.Element {
         name="index"
         options={{
           headerTitle: () => <BrandLockup />,
-          tabBarIcon: ({ focused }) => <CatalogIcon focused={focused} />,
-          title: t("nav.courses")
-        }}
-      />
-      <Tabs.Screen
-        name="learning"
-        options={{
           tabBarIcon: ({ focused }) => <LearningIcon focused={focused} />,
-          title: t("nav.myCourses")
+          title: t("nav.home")
         }}
       />
       <Tabs.Screen
-        name="messages"
+        name="explore"
+        options={{
+          tabBarIcon: ({ focused }) => <CatalogIcon focused={focused} />,
+          title: t("nav.explore")
+        }}
+      />
+      <Tabs.Screen
+        name="inbox"
         options={{
           tabBarIcon: ({ focused }) => (
             <View>
               <MessagesIcon focused={focused} />
-              <Badge count={unreadMessages} />
+              <Badge count={unreadInbox} />
             </View>
           ),
-          title: t("nav.messages")
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <View>
-              <NotificationsIcon focused={focused} />
-              <Badge count={unreadNotifications} />
-            </View>
-          ),
-          title: t("nav.notify")
+          title: t("nav.inbox")
         }}
       />
       <Tabs.Screen

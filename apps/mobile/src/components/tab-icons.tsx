@@ -98,29 +98,6 @@ export function MessagesIcon({ focused }: IconProps): JSX.Element {
   );
 }
 
-export function NotificationsIcon({ focused }: IconProps): JSX.Element {
-  return (
-    <Svg height={SIZE} viewBox="0 0 24 24" width={SIZE}>
-      <Path
-        d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
-        fill="none"
-        stroke={strokeColor(focused)}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={STROKE}
-      />
-      <Path
-        d="M13.73 21a2 2 0 0 1-3.46 0"
-        fill="none"
-        stroke={strokeColor(focused)}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={STROKE}
-      />
-    </Svg>
-  );
-}
-
 export function ProfileIcon({ focused }: IconProps): JSX.Element {
   return (
     <Svg height={SIZE} viewBox="0 0 24 24" width={SIZE}>

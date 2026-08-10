@@ -2,7 +2,7 @@ import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
   Avatar,
@@ -15,13 +15,15 @@ import {
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
+  StreakTrack,
   Title
 } from "@/src/components/ui";
 import { getOwnProfile } from "@/src/lib/api";
 import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession, useSignOut } from "@/src/lib/use-session";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { useStreak } from "@/src/lib/use-streak";
+import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 /**
  * Two pills, both always visible, mirroring the web switcher. A single toggle
@@ -52,11 +54,46 @@ function LanguageSwitcher(): JSX.Element {
   );
 }
 
+/**
+ * A grouped settings row — label, chevron, one tap away. What used to be nine
+ * separate bordered cards (each with its own title and a paragraph repeating
+ * what the label already said) is now one list, the OS-settings convention
+ * every reference app in this redesign also lands on. The lead paragraphs
+ * are gone on purpose: a row's destination screen carries whatever context
+ * it needs, and nine explanatory sentences on the way there was the clutter
+ * this consolidation exists to remove.
+ */
+function SettingsRow({
+  isBusy = false,
+  isLast = false,
+  label,
+  onPress
+}: {
+  isBusy?: boolean;
+  isLast?: boolean;
+  label: string;
+  onPress: () => void;
+}): JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ busy: isBusy }}
+      disabled={isBusy}
+      onPress={onPress}
+      style={[styles.settingsRow, isLast ? null : styles.settingsRowDivider]}
+    >
+      <Text style={styles.settingsRowLabel}>{isBusy ? `${label}…` : label}</Text>
+      <Text style={styles.settingsRowChevron}>&#8250;</Text>
+    </Pressable>
+  );
+}
+
 export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
   const signOut = useSignOut();
+  const streak = useStreak();
   const { data: profile, isPending } = useQuery({
     enabled: Boolean(session),
     queryFn: getOwnProfile,
@@ -109,9 +146,15 @@ export default function ProfileScreen(): JSX.Element {
             ) : null}
             <View style={{ height: spacing.md }} />
             <Badge>{session.session.role}</Badge>
+            <View style={styles.identityStreak}>
+              <StreakTrack days={streak.days} label={t("dash.streak")} streakCount={streak.streakCount} />
+            </View>
           </Card>
         )}
 
+        {/* The one row that stays a standalone, emphasised card rather than a
+            settings row -- an incomplete profile blocks the account, and that
+            is not a fact to bury in a list. */}
         <Card>
           <Title>{isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}</Title>
           <View style={{ height: spacing.sm }} />
@@ -126,76 +169,23 @@ export default function ProfileScreen(): JSX.Element {
           />
         </Card>
 
-        <Card>
-          <Title>{t("locale.label")}</Title>
-          <View style={{ height: spacing.md }} />
-          <LanguageSwitcher />
-        </Card>
-
-        <Card>
-          <Title>{t("about.title")}</Title>
-          <View style={{ height: spacing.lg }} />
-          <View style={styles.infoActions}>
-            <Button label={t("about.title")} onPress={() => router.push("/about")} variant="outline" />
-            <Button label={t("contact.title")} onPress={() => router.push("/contact")} variant="outline" />
+        <Card style={styles.settingsCard}>
+          <View style={[styles.settingsRow, styles.settingsRowDivider]}>
+            <Text style={styles.settingsRowLabel}>{t("locale.label")}</Text>
+            <LanguageSwitcher />
           </View>
-        </Card>
-
-        <Card>
-          <Title>{t("profile.reportTitle")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>{t("profile.reportLead")}</Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
-            label={t("profile.reportBug")}
-            onPress={() => router.push("/bug-report")}
-            variant="outline"
-          />
-        </Card>
-
-        <Card>
-          <Title>{t("profile.security")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>{t("profile.securityLead")}</Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
+          <SettingsRow label={t("about.title")} onPress={() => router.push("/about")} />
+          <SettingsRow label={t("contact.title")} onPress={() => router.push("/contact")} />
+          <SettingsRow label={t("profile.reportBug")} onPress={() => router.push("/bug-report")} />
+          <SettingsRow
             label={t("profile.changePassword")}
             onPress={() => router.push("/change-password")}
-            variant="outline"
           />
-        </Card>
-
-        <Card>
-          <Title>{t("profile.paymentTitle")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>{t("profile.paymentLead")}</Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
-            label={t("profile.viewPayments")}
-            onPress={() => router.push("/payments")}
-            variant="outline"
-          />
-        </Card>
-
-        <Card>
-          <Title>{t("nav.messages")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>{t("messages.unavailableLead")}</Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
-            label={t("messages.new")}
-            onPress={() => router.push("/messages/new")}
-            variant="outline"
-          />
-        </Card>
-
-        <Card>
-          <Title>{t("profile.session")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Caption>{t("profile.signedInOn")}</Caption>
-          <View style={{ height: spacing.lg }} />
-          <Button
+          <SettingsRow label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
+          <SettingsRow label={t("messages.new")} onPress={() => router.push("/messages/new")} />
+          <SettingsRow
             isBusy={signOut.isPending}
+            isLast
             label={t("profile.signOut")}
             onPress={() => {
               signOut.mutate(undefined, {
@@ -204,7 +194,6 @@ export default function ProfileScreen(): JSX.Element {
                 }
               });
             }}
-            variant="outline"
           />
         </Card>
       </ScrollView>
@@ -214,6 +203,7 @@ export default function ProfileScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
+  identityStreak: { paddingTop: spacing.lg },
   languagePill: {
     backgroundColor: colors.card,
     borderColor: colors.hairline,
@@ -224,9 +214,20 @@ const styles = StyleSheet.create({
   },
   languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   languageRow: { flexDirection: "row", gap: spacing.sm },
-  infoActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   profileIdentity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
-  profileText: { flex: 1, gap: spacing.xs }
+  profileText: { flex: 1, gap: spacing.xs },
+  settingsCard: { padding: 0 },
+  settingsRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
+  },
+  settingsRowChevron: { color: colors.mutedFaint, fontSize: 20 },
+  settingsRowDivider: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 1 },
+  settingsRowLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 16 }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

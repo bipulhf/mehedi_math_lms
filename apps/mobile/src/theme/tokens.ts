@@ -66,7 +66,10 @@ export const spacing = {
  * labels use Archivo until Geist is bundled for native surfaces.
  */
 export const fonts = {
-  body: "HindSiliguri_300Light",
+  // DESIGN.md §4: "Body copy stays 400" — Light read noticeably thinner than
+  // spec against the ink-first dark background, so `body` and `bodyMedium`
+  // now share the one weight the spec actually calls for.
+  body: "HindSiliguri_400Regular",
   bodyMedium: "HindSiliguri_400Regular",
   bodySemiBold: "HindSiliguri_500Medium",
   displayBold: "HindSiliguri_500Medium",

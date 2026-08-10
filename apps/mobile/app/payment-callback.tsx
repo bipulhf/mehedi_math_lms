@@ -11,5 +11,5 @@ import type { JSX } from "react";
  * where the enrolment queries and the navigation target already live.
  */
 export default function PaymentCallbackScreen(): JSX.Element {
-  return <Redirect href="/(tabs)/learning" />;
+  return <Redirect href="/(tabs)" />;
 }

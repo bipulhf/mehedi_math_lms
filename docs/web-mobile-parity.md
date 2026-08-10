@@ -1,5 +1,36 @@
 # Web ↔ Mobile parity — current state and the mobile work that remains
 
+> **2026-08-10 — mobile nav restructured, this doc not yet re-audited.** The
+> mobile tab bar went from 5 tabs (Catalogue/My Courses/Messages/
+> Notifications/Profile) to 4 (Home/Explore/Inbox/Profile) as the first two
+> phases of a full mobile UX redesign: `(tabs)/index.tsx` is now the former
+> `learning.tsx` dashboard (the new landing tab), `(tabs)/learning.tsx` is
+> gone, the former `(tabs)/index.tsx` catalogue moved to `(tabs)/explore.tsx`,
+> and `(tabs)/messages.tsx` + `(tabs)/notifications.tsx` merged into
+> `(tabs)/inbox.tsx` with a segmented control. Every `(tabs)/index.tsx`,
+> `(tabs)/learning.tsx`, `(tabs)/messages.tsx`, and `(tabs)/notifications.tsx`
+> reference below this point predates that move and is stale — this is a
+> pointer for whoever re-audits next, not a rewrite of the audit itself.
+>
+> **Update, same day — all five redesign phases landed.** Beyond the nav
+> restructure above: (3) Home (`(tabs)/index.tsx`) leads with a resume hero
+> and a new device-local `StreakTrack` (`src/lib/streak.ts` — no server
+> concept of a streak exists yet, this does not survive a reinstall or follow
+> a student to a second device); (4) the lecture player
+> (`app/learn/[courseId].tsx`) moved lesson picking into a `Modal`-based
+> bottom sheet and split the old two-way learn/notices toggle into a
+> three-way About/Notices/Discussion `Tabs`; (5) Explore
+> (`(tabs)/explore.tsx`) collapsed three permanently-visible filter rows
+> behind one toggle, and Profile (`(tabs)/profile.tsx`) collapsed nine
+> bordered cards into one grouped settings list plus a weekly activity strip
+> on the identity card. None of this touched the data layer, auth/payment
+> deep-link handling, test-taking/marking logic, or `LecturePlayer`/
+> `lecture-video.ts` themselves — presentation only, per the redesign plan.
+> Mobile-only additions with no web equivalent yet: the bottom-sheet lesson
+> picker, the streak track, and the grouped settings list. This document's
+> feature/route parity tables below are unaudited against all of the above —
+> still a pointer, not a rewrite.
+
 **Snapshot:** `main` @ `2024f32` (_Refactor validation schemas to use rich text handling_) **plus the
 uncommitted working tree**, now including a second pass that closed the B2/B3/A3/A7 residue this
 document itself called out, plus a fix to messaging presence.

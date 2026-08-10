@@ -7,8 +7,8 @@ import type { CourseSummary, StudentEnrollment } from "@/src/lib/api";
 import * as auth from "@/src/lib/auth";
 import { LocaleProvider } from "@/src/lib/locale";
 
-import CatalogScreen from "@/app/(tabs)/index";
-import LearningScreen from "@/app/(tabs)/learning";
+import CatalogScreen from "@/app/(tabs)/explore";
+import HomeScreen from "@/app/(tabs)/index";
 import ProfileScreen from "@/app/(tabs)/profile";
 
 /**
@@ -130,11 +130,11 @@ describe("catalogue", () => {
   });
 });
 
-describe("learning", () => {
+describe("home", () => {
   test("lists the enrolments", async () => {
     jest.spyOn(api, "listMyEnrollments").mockResolvedValue([ENROLLMENT]);
 
-    renderScreen(<LearningScreen />);
+    renderScreen(<HomeScreen />);
 
     await waitFor(() => {
       expect(screen.getAllByText("Higher Mathematics").length).toBeGreaterThan(0);
@@ -145,7 +145,7 @@ describe("learning", () => {
   test("an account with nothing enrolled is told where to start", async () => {
     jest.spyOn(api, "listMyEnrollments").mockResolvedValue([]);
 
-    renderScreen(<LearningScreen />);
+    renderScreen(<HomeScreen />);
 
     await waitFor(() => {
       expect(screen.getByText("এখনো কোনো কোর্সে ভর্তি হওনি। ক্যাটালগ ঘুরে দেখ।")).toBeTruthy();
@@ -159,7 +159,7 @@ describe("learning", () => {
         { ...ENROLLMENT, completedAt: "2026-02-01T00:00:00.000Z", status: "COMPLETED" }
       ]);
 
-    renderScreen(<LearningScreen />);
+    renderScreen(<HomeScreen />);
 
     await waitFor(() => {
       expect(screen.getByText("সার্টিফিকেট নামাও")).toBeTruthy();

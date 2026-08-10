@@ -2,7 +2,6 @@
 // every weight and italic, and Metro bundles each one it can see — about 10MB
 // of TTF for the six files this app registers.
 import { Archivo_500Medium } from "@expo-google-fonts/archivo/500Medium";
-import { HindSiliguri_300Light } from "@expo-google-fonts/hind-siliguri/300Light";
 import { HindSiliguri_400Regular } from "@expo-google-fonts/hind-siliguri/400Regular";
 import { HindSiliguri_500Medium } from "@expo-google-fonts/hind-siliguri/500Medium";
 import { HindSiliguri_600SemiBold } from "@expo-google-fonts/hind-siliguri/600SemiBold";
@@ -78,11 +77,10 @@ export default function RootLayout(): JSX.Element | null {
   // Created in state, not at module scope: a fast refresh would otherwise keep
   // a client whose cache no longer matches the code that filled it.
   const [queryClient] = useState(createMobileQueryClient);
-  // Four Hind Siliguri weights plus one Archivo. Several `fonts` entries map to
-  // the same family on purpose — the design sets everything in words in one
+  // Three Hind Siliguri weights plus one Archivo. Several `fonts` entries map
+  // to the same family on purpose — the design sets everything in words in one
   // family, and Archivo is only for Latin numerals and small all-caps labels.
   const [fontsLoaded, fontError] = useFonts({
-    [fonts.body]: HindSiliguri_300Light,
     [fonts.bodyMedium]: HindSiliguri_400Regular,
     [fonts.bodySemiBold]: HindSiliguri_500Medium,
     [fonts.displayExtraBold]: HindSiliguri_600SemiBold,
