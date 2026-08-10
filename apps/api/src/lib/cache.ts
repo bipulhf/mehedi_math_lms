@@ -24,6 +24,7 @@ const INDEX_TTL_SECONDS = 24 * 60 * 60;
 
 export const cacheTtlSeconds = {
   analytics: 300,
+  banners: 300,
   categories: 900,
   comments: 60,
   courses: 120

@@ -2,6 +2,7 @@ import { userRoleSchema } from "../types/roles";
 
 export * from "./common";
 export * from "./admin";
+export * from "./banners";
 export * from "./categories";
 export * from "./comments";
 export * from "./content";

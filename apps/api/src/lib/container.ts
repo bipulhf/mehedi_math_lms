@@ -5,6 +5,7 @@ import { AuditLogController } from "@/controllers/audit-log-controller";
 import { AdminDashboardController } from "@/controllers/admin-dashboard-controller";
 import { AdminUserController } from "@/controllers/admin-user-controller";
 import { AuthController } from "@/controllers/auth-controller";
+import { BannerController } from "@/controllers/banner-controller";
 import { BugReportController } from "@/controllers/bug-report-controller";
 import { CategoryController } from "@/controllers/category-controller";
 import { CommentController } from "@/controllers/comment-controller";
@@ -33,6 +34,7 @@ import { AnswerScriptRepository } from "@/repositories/answer-script-repository"
 import { AuditLogRepository } from "@/repositories/audit-log-repository";
 import { AdminUserRepository } from "@/repositories/admin-user-repository";
 import { AuthSessionRepository } from "@/repositories/auth-session-repository";
+import { BannerRepository } from "@/repositories/banner-repository";
 import { BugReportRepository } from "@/repositories/bug-report-repository";
 import { CategoryRepository } from "@/repositories/category-repository";
 import { CommentRepository } from "@/repositories/comment-repository";
@@ -63,6 +65,7 @@ import { AuditLogService } from "@/services/audit-log-service";
 import { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { AdminUserService } from "@/services/admin-user-service";
 import { AuthGuardService } from "@/services/auth-guard-service";
+import { BannerService } from "@/services/banner-service";
 import { BugReportService } from "@/services/bug-report-service";
 import { CategoryService } from "@/services/category-service";
 import { CommentService } from "@/services/comment-service";
@@ -99,6 +102,7 @@ const auditLogRepository = new AuditLogRepository();
 export const auditLogService = new AuditLogService(auditLogRepository);
 const adminUserRepository = new AdminUserRepository();
 const authSessionRepository = new AuthSessionRepository();
+const bannerRepository = new BannerRepository();
 const bugReportRepository = new BugReportRepository();
 const categoryRepository = new CategoryRepository();
 const commentRepository = new CommentRepository();
@@ -154,6 +158,7 @@ const adminUserService = new AdminUserService(
   authSessionRepository,
   staffAccountService
 );
+const bannerService = new BannerService(bannerRepository);
 const bugReportService = new BugReportService(bugReportRepository, notificationService);
 const categoryService = new CategoryService(categoryRepository);
 const commentService = new CommentService(
@@ -254,6 +259,7 @@ export const adminDashboardController = new AdminDashboardController(adminDashbo
 export const adminUserController = new AdminUserController(adminUserService);
 export const authController = new AuthController();
 export { authGuardService };
+export const bannerController = new BannerController(bannerService);
 export const bugReportController = new BugReportController(bugReportService);
 export const categoryController = new CategoryController(categoryService);
 export const commentController = new CommentController(commentService);

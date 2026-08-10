@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
+  BadgePercent,
   BookCopy,
   ChartColumn,
   ClipboardCheck,
@@ -57,6 +58,7 @@ const dashboardNavigation = {
     { icon: ListOrdered, labelKey: "nav.featuredCourses", to: "/dashboard/admin/featured-courses" },
     { icon: Users, labelKey: "nav.users", to: "/dashboard/admin/users" },
     { icon: Layers3, labelKey: "nav.categoryAdmin", to: "/dashboard/admin/categories" },
+    { icon: BadgePercent, labelKey: "nav.banners", to: "/dashboard/admin/banners" },
     { icon: Megaphone, labelKey: "nav.notify", to: "/dashboard/notifications/send" },
     { icon: Smartphone, labelKey: "nav.sms", to: "/dashboard/admin/sms" },
     { icon: AlertTriangle, labelKey: "nav.bugs", to: "/dashboard/admin/bugs" },
