@@ -12,6 +12,7 @@ import {
   EmptyState,
   Heading,
   PriceText,
+  RingedWord,
   Screen,
   ScreenSkeleton,
   Title
@@ -56,7 +57,9 @@ export default function TeacherProfileScreen(): JSX.Element {
         <View style={styles.hero}>
           <Avatar name={profile.user.name} photo={teacherPhoto} size={112} />
           <View style={styles.heroText}>
-            <Heading>{profile.user.name}</Heading>
+            <RingedWord>
+              <Heading>{profile.user.name}</Heading>
+            </RingedWord>
             {profile.teacherProfile?.specializations ? (
               <HtmlContent html={profile.teacherProfile.specializations} muted />
             ) : null}

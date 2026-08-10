@@ -13,6 +13,7 @@ import {
   type TextInputProps,
   type ViewStyle
 } from "react-native";
+import { Polygon, Svg } from "react-native-svg";
 
 import { useFormat } from "@/src/lib/locale";
 import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
@@ -405,6 +406,42 @@ export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
 }
 
 /**
+ * A hand-drawn ring around one word in a heading — the mobile half of
+ * `DESIGN.md` §7's decorative set (web: `components/ui/doodles.tsx`). Fixed
+ * insets around the child rather than a measured box, same as web: it reads
+ * as hand-drawn precisely because it doesn't track the word's exact bounds,
+ * and it survives the word changing length between Bangla and English.
+ */
+export function RingedWord({ children }: { children: ReactNode }): JSX.Element {
+  return (
+    <View style={styles.ringedWordWrap}>
+      {children}
+      <View accessibilityElementsHidden importantForAccessibility="no" style={styles.ringedWordRing} />
+    </View>
+  );
+}
+
+/** The play triangle — a `Polygon`, since React Native has no CSS `clip-path`. */
+function PlayGlyph({ color }: { color: string }): JSX.Element {
+  return (
+    <Svg height={10} style={{ marginLeft: 2 }} viewBox="0 0 10 10" width={10}>
+      <Polygon fill={color} points="0,0 10,5 0,10" />
+    </Svg>
+  );
+}
+
+/** A play glyph inside a hairline ring — the free-lesson and resume marks. */
+export function RingedPlay({ tone = "hairline" }: { tone?: "accent" | "hairline" }): JSX.Element {
+  return (
+    <View
+      style={[styles.ringedPlay, tone === "accent" ? styles.ringedPlayAccent : null]}
+    >
+      <PlayGlyph color={tone === "accent" ? colors.accent : colors.ink} />
+    </View>
+  );
+}
+
+/**
  * A filter chip: `chip-active` fill and border when selected, a hairline card
  * otherwise. The one shape behind every horizontal filter strip — level,
  * subject, free-only, sort — so each stops keeping its own copy of the style.
@@ -757,6 +794,29 @@ const styles = StyleSheet.create({
   presenceDot: { backgroundColor: colors.dotIdle, borderRadius: radius.full, height: 8, width: 8 },
   presenceDotOnline: { backgroundColor: colors.online },
   price: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: typography.title.fontSize },
+  ringedPlay: {
+    alignItems: "center",
+    borderColor: colors.hairline,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    height: 22,
+    justifyContent: "center",
+    width: 22
+  },
+  ringedPlayAccent: { borderColor: colors.accent },
+  ringedWordRing: {
+    borderColor: colors.accent,
+    borderRadius: radius.full,
+    borderWidth: 2,
+    bottom: -2,
+    left: -12,
+    opacity: 0.4,
+    position: "absolute",
+    right: -12,
+    top: -2,
+    transform: [{ rotate: "-3deg" }]
+  },
+  ringedWordWrap: { alignSelf: "flex-start", position: "relative" },
   screen: { backgroundColor: colors.background, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
   sectionHeading: { gap: spacing.sm },

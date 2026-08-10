@@ -20,6 +20,7 @@ import {
   ErrorNotice,
   Heading,
   PriceText,
+  RingedPlay,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
@@ -267,9 +268,12 @@ export default function CourseDetailScreen(): JSX.Element {
                       if (!lesson.isPreview) {
                         return (
                           <View key={lesson.id} style={styles.lessonRow}>
-                            <Body muted numberOfLines={1}>
-                              {lesson.title}
-                            </Body>
+                            <View style={styles.lessonTitle}>
+                              <RingedPlay />
+                              <Body muted numberOfLines={1}>
+                                {lesson.title}
+                              </Body>
+                            </View>
                             <Caption tone="faint">{length ?? ""}</Caption>
                           </View>
                         );
@@ -287,6 +291,7 @@ export default function CourseDetailScreen(): JSX.Element {
                           style={styles.lessonRow}
                         >
                           <View style={styles.lessonTitle}>
+                            <RingedPlay tone="accent" />
                             <Body muted numberOfLines={1}>
                               {lesson.title}
                             </Body>
