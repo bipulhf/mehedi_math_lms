@@ -36,6 +36,7 @@ function buildUpdatePatch(values: CourseEditorValues): UpdateCourseInput {
   if (values.categoryId) patch.categoryId = values.categoryId;
   if (!Number.isNaN(values.price) && values.price >= 0) patch.price = values.price;
   patch.isExamOnly = values.isExamOnly;
+  patch.certificateEnabled = values.certificateEnabled;
   if (values.coverImageUrl !== undefined) patch.coverImageUrl = values.coverImageUrl;
   return patch;
 }
@@ -55,6 +56,7 @@ function createPayload(values: CourseEditorValues): CreateCourseInput | null {
 
   return {
     categoryId: values.categoryId,
+    certificateEnabled: values.certificateEnabled,
     coverImageUrl: values.coverImageUrl,
     description: values.description,
     isExamOnly: values.isExamOnly,
@@ -76,6 +78,7 @@ export const Route = createFileRoute("/dashboard/courses/new")({
 
 const blankCourse: CourseEditorValues = {
   categoryId: "",
+  certificateEnabled: false,
   coverImageUrl: undefined,
   description: "",
   isExamOnly: false,
@@ -174,6 +177,7 @@ function CreateCoursePage(): JSX.Element {
       } else {
         const course = await createCourse({
           categoryId: values.categoryId,
+          certificateEnabled: values.certificateEnabled,
           coverImageUrl: values.coverImageUrl,
           description: values.description,
           isExamOnly: values.isExamOnly,

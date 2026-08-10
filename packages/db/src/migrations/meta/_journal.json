@@ -127,6 +127,13 @@
       "when": 1786368871133,
       "tag": "0017_reflective_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1786371674222,
+      "tag": "0018_parched_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

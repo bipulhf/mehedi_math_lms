@@ -42,6 +42,7 @@ export const Route = createFileRoute("/dashboard/courses/$id/edit")({
 function mapInitialValues(course: CourseDetail): CourseEditorValues {
   return {
     categoryId: course.category.id,
+    certificateEnabled: course.certificateEnabled,
     coverImageUrl: course.coverImageUrl ?? undefined,
     description: course.description,
     isExamOnly: course.isExamOnly,
@@ -60,6 +61,7 @@ function buildUpdatePatch(values: CourseEditorValues): UpdateCourseInput {
   if (values.categoryId) patch.categoryId = values.categoryId;
   if (!Number.isNaN(values.price) && values.price >= 0) patch.price = values.price;
   patch.isExamOnly = values.isExamOnly;
+  patch.certificateEnabled = values.certificateEnabled;
   if (values.coverImageUrl !== undefined) patch.coverImageUrl = values.coverImageUrl;
   return patch;
 }
@@ -119,6 +121,7 @@ function EditCoursePage(): JSX.Element {
     try {
       await updateCourse(id, {
         categoryId: values.categoryId,
+        certificateEnabled: values.certificateEnabled,
         coverImageUrl: values.coverImageUrl,
         description: values.description,
         isExamOnly: values.isExamOnly,

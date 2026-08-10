@@ -48,12 +48,16 @@ export class TestSubmissionService {
    * A graded submission can be the last thing a course was waiting on, so the
    * enrolment is re-evaluated here. For an Exam-Only Course this is the only
    * path to completion — it has no lectures to mark. ADR-0005.
+   *
+   * Returns whether *this call* was the one that crossed the finish line, so
+   * the caller can tell a fresh completion from an enrolment that was already
+   * `COMPLETED` (or still isn't) — the signal a client-side celebration needs.
    */
-  public async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<void> {
+  public async promoteEnrollmentIfFinished(chapterId: string, userId: string): Promise<boolean> {
     const chapter = await this.contentRepository.findChapterById(chapterId);
 
     if (!chapter) {
-      return;
+      return false;
     }
 
     const enrollment = await this.enrollmentRepository.findByUserAndCourse(
@@ -61,11 +65,13 @@ export class TestSubmissionService {
       chapter.courseId
     );
 
-    if (!enrollment) {
-      return;
+    if (!enrollment || enrollment.status === "COMPLETED") {
+      return false;
     }
 
-    await this.progressService.promoteIfFinished(chapter.courseId, enrollment);
+    const promoted = await this.progressService.promoteIfFinished(chapter.courseId, enrollment);
+
+    return promoted.status === "COMPLETED";
   }
 
   /**
@@ -149,7 +155,8 @@ export class TestSubmissionService {
     test: TestRecord,
     attemptNumber: number,
     revealMarking: boolean,
-    summary?: SubmissionSummaryRecord
+    summary?: SubmissionSummaryRecord,
+    courseCompletedJustNow = false
   ): Promise<SubmissionDetail> {
     const answers = await this.testRepository.listAnswersBySubmissionIds([submission.id]);
     const answerViews = await this.buildAnswerViews(answers, revealMarking);
@@ -159,7 +166,13 @@ export class TestSubmissionService {
       userName: ""
     };
 
-    return mapSubmissionDetail(summaryRecord, answerViews, test.passingScore, attemptNumber);
+    return mapSubmissionDetail(
+      summaryRecord,
+      answerViews,
+      test.passingScore,
+      attemptNumber,
+      courseCompletedJustNow
+    );
   }
 
   public async startSubmission(
@@ -290,9 +303,19 @@ export class TestSubmissionService {
         submittedAt: new Date()
       });
 
-      await this.promoteEnrollmentIfFinished(test.chapterId, currentUserId);
+      const courseCompletedJustNow = await this.promoteEnrollmentIfFinished(
+        test.chapterId,
+        currentUserId
+      );
 
-      return this.loadSubmissionDetail(updatedSubmission, test, attemptNumber, true);
+      return this.loadSubmissionDetail(
+        updatedSubmission,
+        test,
+        attemptNumber,
+        true,
+        undefined,
+        courseCompletedJustNow
+      );
     }
 
     const updatedSubmission = await this.testRepository.updateSubmission(submission.id, {

@@ -26,6 +26,7 @@ export interface StudentEnrollment {
     slug: string;
   };
   course: {
+    certificateEnabled: boolean;
     coverImageUrl: string | null;
     id: string;
     price: string;

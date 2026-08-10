@@ -1,6 +1,8 @@
 import { useQueries } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -10,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextContent } from "@/components/ui/rich-text-content";
+import { fireCourseCompletionConfetti } from "@/lib/celebration/course-completion-confetti";
 import type { AssessmentTestDetail, SubmissionDetail } from "@/lib/api/tests";
 import { getSubmissionDetail, getTestDetail } from "@/lib/api/tests";
 import { queryKeys } from "@/lib/query/keys";
@@ -45,6 +48,19 @@ function SubmissionResultPage(): JSX.Element {
   const test: AssessmentTestDetail | null = testQuery?.data ?? null;
   const submission: SubmissionDetail | null = submissionQuery?.data ?? null;
   const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionQuery?.isPending);
+
+  // `courseCompletedJustNow` is only ever true on the single response seeded
+  // right after submitting — a background refetch reads it fresh and gets
+  // `false`. The ref makes sure that doesn't un-fire the celebration.
+  const hasCelebrated = useRef(false);
+
+  useEffect(() => {
+    if (submission?.courseCompletedJustNow && !hasCelebrated.current) {
+      hasCelebrated.current = true;
+      fireCourseCompletionConfetti();
+      toast.success(t("player.courseCompletedToast"));
+    }
+  }, [submission, t]);
 
   if (isLoading || !test || !submission) {
     return (

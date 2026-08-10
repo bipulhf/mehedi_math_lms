@@ -226,6 +226,18 @@ export function CourseEditor({
                 />
               </div>
             </div>
+
+            <div className="flex items-end">
+              <div className="w-full border border-hairline bg-panel-warm/40 p-5">
+                <Switch
+                  description={t("author.certificateEnabledLead")}
+                  disabled={isSaving}
+                  label={t("editor.certificateEnabled")}
+                  onChange={(checked) => setValues((cv) => ({ ...cv, certificateEnabled: checked }))}
+                  value={values.certificateEnabled}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">

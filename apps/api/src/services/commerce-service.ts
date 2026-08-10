@@ -45,6 +45,7 @@ export interface StudentEnrollmentItem {
   };
   completedAt: string | null;
   course: {
+    certificateEnabled: boolean;
     coverImageUrl: string | null;
     id: string;
     price: string;
@@ -199,6 +200,7 @@ function formatEnrollment(record: StudentEnrollmentRecord): FormattedEnrollment 
     },
     completedAt: record.completedAt ? record.completedAt.toISOString() : null,
     course: {
+      certificateEnabled: record.courseCertificateEnabled,
       coverImageUrl: record.courseCoverImageUrl,
       id: record.courseId,
       price: record.coursePrice,

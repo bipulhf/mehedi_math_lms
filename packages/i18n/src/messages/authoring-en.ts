@@ -67,6 +67,7 @@ export const authoringEn: Readonly<Record<keyof typeof authoringBn, string>> = {
   "author.examReady": "Exam details saved",
   "author.examTitlePlaceholder": "For example: End-of-chapter MCQ",
   "author.examOnlyLead": "This course contains exams only, without video or PDF lectures.",
+  "author.certificateEnabledLead": "Students can download a certificate once they finish this course.",
   "author.errorCategory": "Choose a subject",
   "author.errorDescription": "The description must be at least 24 characters",
   "author.errorPrice": "The price cannot be negative",

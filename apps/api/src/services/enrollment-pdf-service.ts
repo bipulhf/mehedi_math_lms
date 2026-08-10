@@ -21,6 +21,10 @@ export class EnrollmentPdfService {
       throw new ValidationError("Certificate is available after you complete the course");
     }
 
+    if (!detail.certificateEnabled) {
+      throw new ValidationError("This course does not offer a certificate");
+    }
+
     const issuedAt = detail.completedAt ?? new Date();
 
     return this.buildCertificateBuffer({

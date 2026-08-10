@@ -38,6 +38,9 @@ export const courses = pgTable(
     price: numeric("price", { precision: 10, scale: 2 }).default("0").notNull(),
     status: courseStatusEnum("status").default("DRAFT").notNull(),
     isExamOnly: boolean("is_exam_only").default(false).notNull(),
+    // Off by default: a certificate is only granted for a course whose
+    // teacher explicitly turned it on, not implied by finishing any course.
+    certificateEnabled: boolean("certificate_enabled").default(false).notNull(),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     rejectedAt: timestamp("rejected_at", { withTimezone: true }),

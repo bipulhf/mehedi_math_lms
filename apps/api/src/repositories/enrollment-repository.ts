@@ -43,6 +43,7 @@ export interface StudentEnrollmentRecord extends EnrollmentRecord {
   categoryName: string;
   categorySlug: string;
   completedLectures: number;
+  courseCertificateEnabled: boolean;
   courseCoverImageUrl: string | null;
   coursePrice: string;
   courseSlug: string;
@@ -71,6 +72,7 @@ export class EnrollmentRepository {
     enrollmentId: string,
     userId: string
   ): Promise<{
+    certificateEnabled: boolean;
     completedAt: Date | null;
     courseTitle: string;
     status: EnrollmentRecord["status"];
@@ -78,6 +80,7 @@ export class EnrollmentRepository {
   } | null> {
     const [row] = await db
       .select({
+        certificateEnabled: courses.certificateEnabled,
         completedAt: enrollments.completedAt,
         courseTitle: courses.title,
         status: enrollments.status,
@@ -94,6 +97,7 @@ export class EnrollmentRepository {
     }
 
     return {
+      certificateEnabled: row.certificateEnabled,
       completedAt: row.completedAt,
       courseTitle: row.courseTitle,
       status: row.status,
@@ -210,6 +214,7 @@ export class EnrollmentRepository {
             and ${courseProgress.isCompleted} = true
         )`,
         completedAt: enrollments.completedAt,
+        courseCertificateEnabled: courses.certificateEnabled,
         courseCoverImageUrl: courses.coverImageUrl,
         courseId: enrollments.courseId,
         coursePrice: courses.price,

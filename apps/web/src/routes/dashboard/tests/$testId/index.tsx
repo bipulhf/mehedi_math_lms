@@ -229,6 +229,11 @@ function StudentTestPage(): JSX.Element {
               }))
       });
       toast.success(t("test.submitted"));
+      // The results page re-fetches by id rather than reusing this response,
+      // so `courseCompletedJustNow` — true only on the submission that just
+      // crossed the finish line — would otherwise be lost the moment it
+      // re-reads. Seeding the cache here is what lets the results page see it.
+      queryClient.setQueryData(queryKeys.tests.submission(result.id), result);
       // The attempt list and the remaining-attempt count both just changed, and
       // this page reads them the moment the reader comes back to it.
       await Promise.all([

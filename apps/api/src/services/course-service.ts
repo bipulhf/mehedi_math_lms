@@ -35,6 +35,7 @@ const COURSE_CACHE_INDEX = buildCacheIndex("courses");
 
 export interface CourseListItem {
   category: CourseRecord["category"];
+  certificateEnabled: boolean;
   coverImageUrl: string | null;
   createdAt: string;
   creator: CourseRecord["creator"];
@@ -83,6 +84,7 @@ function formatPrice(value: number): string {
 function mapCourse(course: CourseRecord): CourseDetailResponse {
   return {
     category: course.category,
+    certificateEnabled: course.certificateEnabled,
     coverImageUrl: course.coverImageUrl,
     createdAt: course.createdAt.toISOString(),
     creator: course.creator,
@@ -471,6 +473,7 @@ export class CourseService {
       // when teachers are first assigned. ADR-0006.
       ownerTeacherId: currentUserRole === "TEACHER" ? currentUserId : null,
       categoryId: input.categoryId,
+      certificateEnabled: input.certificateEnabled,
       coverImageUrl: normalizeOptionalUrl(input.coverImageUrl),
       creatorId: currentUserId,
       description: sanitizeHtml(input.description.trim()),
@@ -529,6 +532,7 @@ export class CourseService {
 
     const updatedCourse = await this.courseRepository.update(id, {
       categoryId: input.categoryId,
+      certificateEnabled: input.certificateEnabled,
       coverImageUrl:
         input.coverImageUrl === undefined ? undefined : normalizeOptionalUrl(input.coverImageUrl),
       description: input.description === undefined ? undefined : sanitizeHtml(input.description.trim()),

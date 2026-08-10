@@ -42,6 +42,7 @@ export interface CourseSummary {
     name: string;
     slug: string;
   };
+  certificateEnabled: boolean;
   coverImageUrl: string | null;
   createdAt: string;
   creator: {

@@ -147,7 +147,7 @@ function MyCoursesPage(): JSX.Element {
               </Button>
             )}
 
-            {enrollment.status === "COMPLETED" && session ? (
+            {enrollment.status === "COMPLETED" && session && enrollment.course.certificateEnabled ? (
               <>
                 <Button
                   onClick={() =>

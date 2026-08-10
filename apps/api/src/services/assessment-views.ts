@@ -119,6 +119,8 @@ export interface SubmissionSummary {
 
 export interface SubmissionDetail extends SubmissionSummary {
   answers: readonly SubmissionAnswerView[];
+  /** True only for the exact submission whose grading just finished the course. */
+  courseCompletedJustNow: boolean;
   gradedById: string | null;
   testId: string;
 }
@@ -216,11 +218,13 @@ export function mapSubmissionDetail(
   record: SubmissionSummaryRecord,
   answers: readonly SubmissionAnswerView[],
   passingScore: number | null,
-  attemptNumber: number
+  attemptNumber: number,
+  courseCompletedJustNow = false
 ): SubmissionDetail {
   return {
     ...mapSubmissionSummary(record, passingScore, attemptNumber),
     answers,
+    courseCompletedJustNow,
     gradedById: record.gradedById,
     testId: record.testId
   };

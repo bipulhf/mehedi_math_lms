@@ -127,7 +127,7 @@ export function CourseBuyCard({
 
   const includes = [
     t("detail.includeLifetime"),
-    t("detail.includeCertificate"),
+    ...(course.certificateEnabled ? [t("detail.includeCertificate")] : []),
     t("detail.includeTests"),
     t("detail.includeMaterials")
   ];

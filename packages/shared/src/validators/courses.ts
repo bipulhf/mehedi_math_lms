@@ -20,6 +20,7 @@ const optionalUrlSchema = z
 
 const courseFieldsSchema = z.object({
   categoryId: idSchema,
+  certificateEnabled: z.boolean(),
   coverImageUrl: optionalUrlSchema,
   description: courseDescriptionSchema,
   isExamOnly: z.boolean(),
@@ -28,6 +29,7 @@ const courseFieldsSchema = z.object({
 });
 
 export const createCourseSchema = courseFieldsSchema.extend({
+  certificateEnabled: z.boolean().default(false),
   isExamOnly: z.boolean().default(false)
 });
 

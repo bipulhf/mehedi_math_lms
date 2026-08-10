@@ -66,6 +66,7 @@ export interface CourseRecord {
     name: string;
     slug: string;
   };
+  certificateEnabled: boolean;
   coverImageUrl: string | null;
   createdAt: Date;
   creator: {
@@ -107,6 +108,7 @@ export interface CourseListQuery {
 
 export interface CreateCourseInput {
   categoryId: string;
+  certificateEnabled: boolean;
   coverImageUrl: string | null;
   creatorId: string;
   description: string;
@@ -121,6 +123,7 @@ export interface CreateCourseInput {
 
 export interface UpdateCourseInput {
   categoryId?: string | undefined;
+  certificateEnabled?: boolean | undefined;
   coverImageUrl?: string | null | undefined;
   description?: string | undefined;
   isExamOnly?: boolean | undefined;
@@ -305,6 +308,7 @@ export class CourseRepository {
       categoryId: string;
       categoryName: string;
       categorySlug: string;
+      certificateEnabled: boolean;
       coverImageUrl: string | null;
       createdAt: Date;
       creatorEmail: string;
@@ -334,6 +338,7 @@ export class CourseRepository {
         name: row.categoryName,
         slug: row.categorySlug
       },
+      certificateEnabled: row.certificateEnabled,
       coverImageUrl: row.coverImageUrl,
       createdAt: row.createdAt,
       creator: {
@@ -366,6 +371,7 @@ export class CourseRepository {
         categoryId: courses.categoryId,
         categoryName: categories.name,
         categorySlug: categories.slug,
+        certificateEnabled: courses.certificateEnabled,
         coverImageUrl: courses.coverImageUrl,
         createdAt: courses.createdAt,
         creatorEmail: users.email,
@@ -435,6 +441,7 @@ export class CourseRepository {
           categoryId: courses.categoryId,
           categoryName: categories.name,
           categorySlug: categories.slug,
+          certificateEnabled: courses.certificateEnabled,
           coverImageUrl: courses.coverImageUrl,
           createdAt: courses.createdAt,
           creatorEmail: users.email,
@@ -488,6 +495,7 @@ export class CourseRepository {
       .insert(courses)
       .values({
         categoryId: input.categoryId,
+        certificateEnabled: input.certificateEnabled,
         coverImageUrl: input.coverImageUrl,
         creatorId: input.creatorId,
         description: input.description,
@@ -532,6 +540,10 @@ export class CourseRepository {
 
     if (input.categoryId !== undefined) {
       values.categoryId = input.categoryId;
+    }
+
+    if (input.certificateEnabled !== undefined) {
+      values.certificateEnabled = input.certificateEnabled;
     }
 
     if (input.coverImageUrl !== undefined) {

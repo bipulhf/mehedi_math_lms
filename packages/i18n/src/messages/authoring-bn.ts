@@ -60,6 +60,7 @@ export const authoringBn = {
   "author.examReady": "পরীক্ষার তথ্য সেভ হয়েছে",
   "author.examTitlePlaceholder": "যেমন: অধ্যায়শেষ এমসিকিউ",
   "author.examOnlyLead": "এই কোর্সে শুধু পরীক্ষা থাকবে, ভিডিও বা পিডিএফ ক্লাস নয়।",
+  "author.certificateEnabledLead": "কোর্স শেষ করলে শিক্ষার্থী সার্টিফিকেট ডাউনলোড করতে পারবে।",
   "author.errorCategory": "একটি বিষয় বাছো",
   "author.errorDescription": "বর্ণনা অন্তত 24 অক্ষরের হতে হবে",
   "author.errorPrice": "দাম শূন্যের কম হতে পারে না",

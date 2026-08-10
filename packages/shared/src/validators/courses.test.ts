@@ -33,8 +33,9 @@ describe("courseStatusSchema", () => {
 });
 
 describe("createCourseSchema", () => {
-  test("accepts a complete course and defaults isExamOnly to false", () => {
+  test("accepts a complete course and defaults isExamOnly/certificateEnabled to false", () => {
     expect(createCourseSchema.parse(validCourse())).toMatchObject({
+      certificateEnabled: false,
       isExamOnly: false,
       price: 1200
     });

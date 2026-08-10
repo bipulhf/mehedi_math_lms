@@ -14,6 +14,7 @@ import {
 } from "@/components/courses/course-player-parts";
 import { LectureDiscussion } from "@/components/courses/lecture-discussion";
 import { LecturePlayer } from "@/components/media/lecture-player";
+import { fireCourseCompletionConfetti } from "@/lib/celebration/course-completion-confetti";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -170,9 +171,14 @@ export function CoursePlayer({
 
     try {
       const nextProgress = await markLectureComplete(selectedLecture.id);
+      const justCompletedCourse =
+        progress.enrollmentStatus !== "COMPLETED" && nextProgress.enrollmentStatus === "COMPLETED";
       setProgress(nextProgress);
 
-      if (!silent) {
+      if (justCompletedCourse) {
+        fireCourseCompletionConfetti();
+        toast.success(t("player.courseCompletedToast"));
+      } else if (!silent) {
         toast.success(t("player.marked"));
       }
     } finally {
