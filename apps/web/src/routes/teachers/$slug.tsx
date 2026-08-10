@@ -5,9 +5,10 @@ import { PublicLayout, PublicSection } from "@/components/layout/public-layout";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Avatar } from "@/components/ui/avatar";
 import { BackButton } from "@/components/ui/back-button";
-import { DotPatch, QuarterArc, RingedWord } from "@/components/ui/doodles";
+import { DotPatch, FaintFormula, QuarterArc, RingedWord } from "@/components/ui/doodles";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PriceText } from "@/components/ui/price-text";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 import { RichTextContent } from "@/components/ui/rich-text-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -153,6 +154,7 @@ function TeacherProfilePage(): JSX.Element {
       <section className="relative overflow-hidden border-b border-hairline">
         <DotPatch className="-left-4 bottom-6 hidden lg:block" />
         <QuarterArc className="right-20 top-12 hidden lg:block" />
+        <FaintFormula className="-bottom-10 right-0 hidden lg:block" glyph="π" rotate={8} />
 
         <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[196px_1fr] lg:px-14 lg:py-20">
           <Avatar
@@ -221,11 +223,15 @@ function TeacherProfilePage(): JSX.Element {
             </DetailBlock>
           ) : null}
           {teacherProfile.socialLinks ? (
-            <DetailBlock title={t("teacher.links")}>{teacherProfile.socialLinks}</DetailBlock>
+            <DetailBlock title={t("teacher.links")}>
+              <RichTextContent html={teacherProfile.socialLinks} />
+            </DetailBlock>
           ) : null}
           {teacherProfile.phone ? (
             <DetailBlock title={t("teacher.phone")}>
-              {format.digits(teacherProfile.phone)}
+              <a className="transition-colors hover:text-accent" href={`tel:${teacherProfile.phone}`}>
+                {format.digits(teacherProfile.phone)}
+              </a>
             </DetailBlock>
           ) : null}
         </PublicSection>
@@ -259,20 +265,37 @@ function TeacherCourseCard({ course }: { course: TeacherCourseSummary }): JSX.El
 
   return (
     <Link
-      className="flex h-full flex-col gap-3 border border-hairline bg-card p-5 transition-colors hover:border-line-strong"
+      className="group flex h-full flex-col border border-hairline bg-card transition-colors hover:border-line-strong"
       params={{ slug: course.slug }}
       to="/courses/$slug"
     >
-      <p className="text-lg font-medium leading-snug text-ink">{course.title}</p>
-      <RichTextContent
-        className="line-clamp-3 text-base font-light leading-relaxed text-muted"
-        html={course.description}
-      />
-      <div className="mt-auto flex items-end justify-between border-t border-hairline-faint pt-4">
-        <PriceText amount={course.price} />
-        <span className="text-sm text-muted-light">
-          {t("course.reviews", { count: format.number(course.reviewCount) })}
-        </span>
+      <div className="relative flex h-[150px] items-center justify-center overflow-hidden bg-placeholder-fill">
+        {course.coverImageUrl ? (
+          <ResponsiveImage
+            alt={course.title}
+            className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 45vw, 100vw"
+            src={course.coverImageUrl}
+          />
+        ) : (
+          <span className="label-mono text-xs uppercase text-muted-faint transition-transform duration-300 group-hover:scale-105">
+            {t("course.noThumbnail")}
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <p className="text-lg font-medium leading-snug text-ink">{course.title}</p>
+        <RichTextContent
+          className="line-clamp-3 text-base font-light leading-relaxed text-muted"
+          html={course.description}
+        />
+        <div className="mt-auto flex items-end justify-between border-t border-hairline-faint pt-4">
+          <PriceText amount={course.price} />
+          <span className="text-sm text-muted-light">
+            {t("course.reviews", { count: format.number(course.reviewCount) })}
+          </span>
+        </div>
       </div>
     </Link>
   );

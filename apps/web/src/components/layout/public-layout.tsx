@@ -2,7 +2,7 @@ import type { JSX, PropsWithChildren, ReactNode } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { DiamondTrio, DotPatch, QuarterArc } from "@/components/ui/doodles";
+import { DiamondTrio, DotPatch, FaintFormula, QuarterArc } from "@/components/ui/doodles";
 import { cn } from "@/lib/utils";
 
 interface PublicLayoutProps extends PropsWithChildren {
@@ -37,6 +37,7 @@ export function PublicLayout({
           <DotPatch className="-right-6 top-6 hidden lg:block" />
           <QuarterArc className="right-32 top-16 hidden lg:block" />
           <DiamondTrio className="bottom-10 right-14 hidden lg:flex" />
+          <FaintFormula className="-bottom-8 -left-4 hidden lg:block" glyph="Σ" />
           <div className="mx-auto w-full max-w-[90rem] space-y-4 px-4 py-12 sm:px-8 lg:px-14 lg:py-16">
             {eyebrow === undefined ? null : (
               <p className="label-mono text-xs uppercase text-muted-faint">{eyebrow}</p>

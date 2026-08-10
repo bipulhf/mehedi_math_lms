@@ -169,3 +169,31 @@ export function MathGlyph({
     </span>
   );
 }
+
+/**
+ * A single formula character, oversized and faded into a section corner —
+ * background texture, not a highlight. `MathGlyph` at full weight is for a
+ * word inline in a sentence; this is the quiet version for empty space.
+ */
+export function FaintFormula({
+  className,
+  glyph,
+  rotate = -6
+}: {
+  className?: string;
+  glyph: string;
+  rotate?: number;
+}): JSX.Element {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "pointer-events-none absolute select-none font-formula text-8xl text-brand-yellow opacity-[0.08] sm:text-9xl",
+        className
+      )}
+      style={{ transform: `rotate(${String(rotate)}deg)` }}
+    >
+      {glyph}
+    </span>
+  );
+}

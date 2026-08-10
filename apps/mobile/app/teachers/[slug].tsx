@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import {
   Avatar,
@@ -68,6 +68,32 @@ export default function TeacherProfileScreen(): JSX.Element {
             <Title>{t("teachers.lead")}</Title>
             <View style={{ height: spacing.sm }} />
             <HtmlContent html={profile.teacherProfile.bio} muted />
+          </Card>
+        ) : null}
+
+        {profile.teacherProfile?.qualifications ? (
+          <Card>
+            <Title>{t("detail.qualifications")}</Title>
+            <View style={{ height: spacing.sm }} />
+            <HtmlContent html={profile.teacherProfile.qualifications} muted />
+          </Card>
+        ) : null}
+
+        {profile.teacherProfile?.socialLinks ? (
+          <Card>
+            <Title>{t("teacher.links")}</Title>
+            <View style={{ height: spacing.sm }} />
+            <HtmlContent html={profile.teacherProfile.socialLinks} muted />
+          </Card>
+        ) : null}
+
+        {profile.teacherProfile?.phone ? (
+          <Card>
+            <Title>{t("teacher.phone")}</Title>
+            <View style={{ height: spacing.sm }} />
+            <Pressable onPress={() => void Linking.openURL(`tel:${profile.teacherProfile?.phone}`)}>
+              <Body muted>{format.digits(profile.teacherProfile.phone)}</Body>
+            </Pressable>
           </Card>
         ) : null}
 
