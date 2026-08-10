@@ -1,41 +1,84 @@
 # Web ↔ Mobile parity — current state and the mobile work that remains
 
-> **2026-08-10 — mobile nav restructured, this doc not yet re-audited.** The
-> mobile tab bar went from 5 tabs (Catalogue/My Courses/Messages/
-> Notifications/Profile) to 4 (Home/Explore/Inbox/Profile) as the first two
-> phases of a full mobile UX redesign: `(tabs)/index.tsx` is now the former
-> `learning.tsx` dashboard (the new landing tab), `(tabs)/learning.tsx` is
-> gone, the former `(tabs)/index.tsx` catalogue moved to `(tabs)/explore.tsx`,
-> and `(tabs)/messages.tsx` + `(tabs)/notifications.tsx` merged into
-> `(tabs)/inbox.tsx` with a segmented control. Every `(tabs)/index.tsx`,
-> `(tabs)/learning.tsx`, `(tabs)/messages.tsx`, and `(tabs)/notifications.tsx`
-> reference below this point predates that move and is stale — this is a
-> pointer for whoever re-audits next, not a rewrite of the audit itself.
+> **2026-08-11 — third edition, full re-audit.** Everything the second
+> edition's note above (now folded into this one) flagged as unaudited has
+> been re-verified by reading the current code and re-running gates, not by
+> trusting commit messages. The two changes that matter most:
 >
-> **Update, same day — all five redesign phases landed.** Beyond the nav
-> restructure above: (3) Home (`(tabs)/index.tsx`) leads with a resume hero
-> and a new device-local `StreakTrack` (`src/lib/streak.ts` — no server
-> concept of a streak exists yet, this does not survive a reinstall or follow
-> a student to a second device); (4) the lecture player
-> (`app/learn/[courseId].tsx`) moved lesson picking into a `Modal`-based
-> bottom sheet and split the old two-way learn/notices toggle into a
-> three-way About/Notices/Discussion `Tabs`; (5) Explore
-> (`(tabs)/explore.tsx`) collapsed three permanently-visible filter rows
-> behind one toggle, and Profile (`(tabs)/profile.tsx`) collapsed nine
-> bordered cards into one grouped settings list plus a weekly activity strip
-> on the identity card. None of this touched the data layer, auth/payment
-> deep-link handling, test-taking/marking logic, or `LecturePlayer`/
-> `lecture-video.ts` themselves — presentation only, per the redesign plan.
-> Mobile-only additions with no web equivalent yet: the bottom-sheet lesson
-> picker, the streak track, and the grouped settings list. This document's
-> feature/route parity tables below are unaudited against all of the above —
-> still a pointer, not a rewrite.
+> **The "student only, permanently" boundary is no longer true.** `d08621e`,
+> `3a29bd7` and `d837943` (2026-08-05 – 2026-08-10) shipped a teacher-facing
+> grading screen to mobile — `app/tests/[testId]/marking.tsx`, reachable only
+> when `session.role === "TEACHER" || "ADMIN"` (`app/tests/[testId].tsx:51`,
+> `:239-247`). It has a claim-locked grading queue for concurrent graders
+> (`getMarkingQueue`/`claimAnswer`/`renewAnswerClaim`/`releaseAnswerClaim`,
+> `src/lib/api.ts:701-715`), the same six annotation tools as web
+> (pen/tick/cross/half/text/eraser, `marking.tsx:36-43` vs
+> `marking-toolbar.tsx:26-55`), the same continuous pen-width slider and the
+> same colours, and the same auto-submit-on-last-mark rule. The one real gap
+> against web: **no Undo** (§6.7 has the detail). §1, §3, §9 and §12 below are
+> corrected accordingly — "no teacher or admin tooling" now names authoring,
+> moderation and analytics specifically, not grading.
+>
+> **`VIDEO_LINK` no longer opens the browser.** `1f5ac8e`, `4531932`,
+> `c6cc2c9` and `06a1584` (2026-08-10) replaced the browser handoff with a
+> `WebView` pointed at the web app's own `/embed-player` vidstack route —
+> inline, auto-fullscreen on mount. Direct media files still play through a
+> native `expo-video` `StreamPlayer` with a new custom control bar
+> (`lecture-player-controls.tsx`). §6.3 has the full breakdown.
+>
+> Also closed since the second edition and now reflected below: the ink-first
+> theme migration on mobile (tokens.ts is dark-first end to end — §4.1), the
+> icon/splash blocker (assets shipped 2026-08-10 — §8), KaTeX math
+> typesetting on mobile via `WebView` (§6.3), student-side coupon application
+> on the course screen matching web (§6.2), and the five-phase nav redesign
+> the second edition's note only pointed at — Home/Explore/Inbox/Profile, now
+> fully re-audited in §3 and §6.1/§6.6 rather than just flagged.
+>
+> **Implementation update, same day.** The four concrete code gaps this edition named —
+> Undo in grading, the `toLocaleDateString()` residue, comment edit/delete UI, and the
+> player's last-viewed timestamp/back-link — are shipped and gate-verified (lint/typecheck/test
+> all green, 65/8). Also closed the same day: `expo-doctor` patch-version drift (9 packages bumped;
+> one `expo-constants` pin is a deliberate root-level `overrides` entry, left alone — §10), the
+> ringed-word and ringed-play doodles ported to mobile (§5, §11 Q2), and the teacher
+> email/WhatsApp "gap" turned out not to be one — web has no such field either (§6.6). Left
+> undone, and why: **B4** genuinely needs a physical device for the Bangla-fit check, not just an
+> emulator; **E4 (page texture)** turned out to be moot — `DESIGN.md`'s current ink-first spec has
+> no texture concept at all, so there's nothing to port (§4.1). Found and fixed along the way:
+> mobile's `CourseProgressResponse` type (`src/lib/api.ts`) didn't match what
+> `GET /courses/:id/progress` actually returns — it declared `isCourseCompleted`/
+> `progressPercentage`, neither of which exists on the wire (the real fields are
+> `completionPercentage` and no completion boolean at all), so two reads in
+> `learn/[courseId].tsx` were silently always-undefined. A type-level `grep` can't catch that kind
+> of gap — only reading the actual response shape does.
+>
+> **B4, partial — a real device pass, not the full checklist.** Ran the app on an actual Android
+> emulator (API 36) against local `apps/api`/`apps/web` dev servers, signed in as a seeded student,
+> and walked Home → Explore → course detail → course player in Bangla. Confirmed on-device, not
+> just in code: the new Home tab (§6.1a, resume hero + `StreakTrack` + summary metrics), the
+> player's last-viewed/back-link additions (§6.3), and `RingedPlay` rendering correctly with the
+> right tone split (accent ring on free/preview lessons, hairline on the rest — §11 Q2).
+> `RingedWord` was not reached live (the in-course "Teacher" tab shown at `courses/[courseId].tsx`
+> doesn't link to the full `teachers/[slug].tsx` profile in this student's path); its correctness
+> rests on typecheck/lint plus the same primitive pattern `RingedPlay` used, confirmed live.
+> **This is not the exhaustive both-locale, every-screen pass B4 calls for** — no English-locale
+> check, no test-taking/grading/messaging screens, one device class, one session. What it caught
+> that no earlier audit pass did: a second real bug. `courses/[courseId].tsx:81` queried
+> `getCourseOutline` (returns `{lessons: [...]}`) under `queryKeys.courseContent(id)` — the *same*
+> cache key `learn/[courseId].tsx` uses for `getCourseContent` (returns `{lectures: [...]}`, no
+> `lessons` field at all). Viewing a course as player then opening its detail page served the
+> wrong cached shape and crashed on `chapter.lessons.length`. Fixed with a dedicated
+> `queryKeys.courseOutline` key (`src/lib/query.ts`); confirmed live, same course, no crash.
+> Also confirmed, separately: Expo Go itself cannot run this app past sign-in on Android — SDK 53+
+> dropped push-notification support from Expo Go entirely, and `use-push-registration.ts` is
+> imported eagerly by Expo Router's tab-route registration (not lazily, only when Inbox opens), so
+> every cold start throws once before recovering via the error boundary. Not a code defect — it's
+> the reason `apps/mobile/AGENTS.md`'s `bun run android` needs a real dev client
+> (`expo run:android` / EAS) for anyone testing this locally, worth a line in that doc separately.
 
-**Snapshot:** `main` @ `2024f32` (_Refactor validation schemas to use rich text handling_) **plus the
-uncommitted working tree**, now including a second pass that closed the B2/B3/A3/A7 residue this
-document itself called out, plus a fix to messaging presence.
-**Verified:** 2026-08-04, by reading the files and re-running the gates after every change, not by
-trusting the change list.
+**Snapshot:** `main` @ `0af502c` (_perf(web): reduce initial load and auth errors_).
+**Verified:** 2026-08-11, third edition — grading/marking tooling, inline video, math typesetting,
+coupons, ink-first theme migration and the five-phase nav redesign all re-read against current code;
+see the note above for what changed since the 2026-08-04 second edition.
 **Scope:** `apps/web` (TanStack Start) compared against `apps/mobile` (Expo SDK 57 / Expo Router),
 with `DESIGN.md` as the authority on what either one is supposed to look like.
 
@@ -57,10 +100,10 @@ Legend used throughout:
 | ⛔ | Out of scope, permanently |
 
 **Gate status as of this snapshot:** `bun run --filter @mma/mobile lint`, `typecheck` and `test`
-are all green (lint exit 0, typecheck exit 0, 60 tests across 7 suites), `bun run --filter
-@mma/web lint typecheck build` is green, `bun run --filter @mma/i18n lint typecheck test` is
-green (24 tests, 2130 assertions), and `npx expo export --platform web` bundles all 27 routes with
-no errors.
+are all green (lint exit 0, typecheck exit 0, **65 tests across 8 suites**, up from 60/7 — the
+grading and marking additions carry their own coverage). Web/i18n gates and `expo export` were not
+re-run this edition; treat those three numbers as carried over from the second edition, not
+re-verified today.
 
 Read it in three passes:
 
@@ -73,10 +116,16 @@ Related documents: [`DESIGN.md`](../DESIGN.md) (visual language), [`mobile-plan.
 (how the app got here, and what is still unverified on hardware),
 [`apps/mobile/AGENTS.md`](../apps/mobile/AGENTS.md) (workspace rules that constrain every fix below).
 
-**Theme migration note:** `DESIGN.md` now targets the ink-first reference theme
-from `../mehedi_bhai/`. Sections below describe current warm-paper code parity and
-remain useful as migration inventory; they are not permission to extend legacy
-visual tokens.
+**Theme migration note — ✅ code is done, `DESIGN.md`'s own prose is not.** `apps/mobile/src/theme/
+tokens.ts` (94 lines) is dark-first end to end and matches `DESIGN.md` §2's palette exactly —
+`background:"#0d0d0d"` (`tokens.ts:9`), `ink:"#ffffff"` (`:22`), `accent:"#00cfff"` (`:7`),
+`hairline:"rgba(255,255,255,.14)"` (`:20`) — and the file's own header comment says it was
+transcribed from `apps/web/src/styles/app.css`. `DESIGN.md:4-9` itself still frames this as an
+in-progress migration ("the current warm-paper implementation is a migration source, not the final
+visual authority... existing token names may remain as compatibility aliases until migration
+completes") — that framing is now stale prose, not a statement about the code. §4 below describes
+the dark palette both apps actually ship, not the old warm-paper one this document described through
+its first two editions.
 
 ---
 
@@ -85,20 +134,21 @@ visual tokens.
 | | `apps/web` | `apps/mobile` |
 | --- | --- | --- |
 | Framework | TanStack Start, React 19, Vite 8 | Expo SDK 57, Expo Router, React Native |
-| Routes / screens | 61 route files (56 `.tsx`) | **23 route files** (was 15) |
-| Source size | ~28,900 lines under `src/` | **~8,570 lines** under `src/` + `app/` (was ~6,400) |
-| Audience | student, teacher, admin, accountant + anonymous public | student only |
+| Routes / screens | 61 route files (56 `.tsx`) | **28 route files** (was 23) |
+| Source size | ~28,900 lines under `src/` | **~12,400 lines** under `src/` + `app/` (was ~8,570) |
+| Audience | student, teacher, admin, accountant + anonymous public | **student, plus teacher/admin for grading only** (§2.4) — authoring, moderation, admin CRUD and analytics still web-only |
 | Styling | Tailwind v4, tokens in `src/styles/app.css` | `StyleSheet`, tokens in `src/theme/tokens.ts` |
 | Localisation | bilingual, `useT` / `useFormat` everywhere | **bilingual everywhere** — see §2.1; only the on-device Bangla pass (B4) is left |
 | Server state | TanStack Query + `queryKeys` factory | TanStack Query + `queryKeys` factory, persisted to AsyncStorage |
-| UI primitives | 24 files under `components/ui/` | one file, `src/components/ui.tsx` (692 lines, 18 exports) |
+| UI primitives | 24 files under `components/ui/` | one file, `src/components/ui.tsx` (**828 lines**, was 692) |
 | Icons | `lucide-react` on dashboard surfaces, none on public pages | **`react-native-svg` set** in `src/components/tab-icons.tsx` |
-| Tests | Playwright E2E | 60 jest-expo tests across 7 suites, including screen renders |
-| Shared catalogue | `packages/i18n` — **886 keys per locale** (was 786) | same catalogue, consumed via `useT` |
+| Tests | Playwright E2E | **65 jest-expo tests across 8 suites** (was 60/7), including screen renders |
+| Shared catalogue | `packages/i18n` | same catalogue, consumed via `useT`; grown further for grading, coupons and math copy — not recounted precisely this edition |
 
-The asymmetry in audience is deliberate and stays: **mobile is a student client.** Course
-authoring, moderation queues, admin CRUD and analytics are not coming to the phone. Nothing in
-this document proposes otherwise. Everything below is about the student's path.
+The asymmetry in audience narrowed this edition and needs restating precisely: **mobile is a
+student client that now also carries the teacher/admin grading surface** (§2.4, §6.7) — nothing
+else. Course *authoring*, moderation queues, admin CRUD and analytics are still not coming to the
+phone; that boundary holds. Everything below the grading sections is about the student's path.
 
 ---
 
@@ -210,6 +260,70 @@ Everything §2.3 of the first edition called missing now exists:
 - **Notices** — a mode toggle at the top of the player (`app/learn/[courseId].tsx:195`, `:358`),
   matching web's prominence, with pinned notices badged.
 
+The file:line references above predate the nav restructure (§3) and the player rewrite (§6.3) —
+the *capabilities* are still there, re-verified this edition, but several line numbers moved
+(`(tabs)/learning.tsx` no longer exists; the my-courses list now lives in `(tabs)/index.tsx`, and
+`app/learn/[courseId].tsx` grew from 286 to 792 lines). Not re-cited line-by-line here; §3 and §6.3
+have the current locations.
+
+### 2.4 Grading — ✅ new capability, the boundary this document called permanent moved
+
+`app/tests/[testId]/marking.tsx` (379 lines) is a teacher-facing grading screen, reachable only when
+`session.role === "TEACHER" || "ADMIN"` — the entry button on `app/tests/[testId].tsx:239-247` is
+gated on `isStaff && test.type === "WRITTEN"`, `isStaff` defined at `:51`. It is not a student
+reviewing their own result; that stays the separate `results/[submissionId].tsx` screen.
+
+What it does, matching web's `apps/web/src/components/marking/marking-workspace.tsx` almost
+feature-for-feature:
+
+- **A claim-locked grading queue.** `getMarkingQueue`, `claimAnswer`, `renewAnswerClaim`,
+  `releaseAnswerClaim` (`src/lib/api.ts:701-715`) let multiple graders work the same test without
+  double-marking an answer. `src/lib/marking-work-list.ts` (80 lines) flattens the queue into a flat,
+  reorderable ("by student" / "by question") work list and auto-advances to the next unmarked answer
+  after a save (`findNextUnmarked`), mirroring web's own 86-line `marking-work-list.ts`.
+- **The same six annotation tools** — pen, tick, cross, half, text, eraser (`marking.tsx:36-43` vs
+  web's `marking-toolbar.tsx:26-55`), the same four colours, and a continuous pen-width slider on
+  both sides (`src/components/pen-width-slider.tsx` on mobile; a native `<input type="range">` on
+  web) sharing `markingStrokeWidthMin/Max` from `packages/shared`.
+- **The same hand-in rule.** Saving the last mark on a paper auto-submits it — `isLastAnswerOfPaper`
+  / server `isComplete` drives `submitPaper` identically in `marking.tsx:145-204` and
+  `marking-workspace.tsx:180-243`.
+- **The one gap: no Undo.** Web has a dedicated Undo button that strips the last stroke/stamp off the
+  page (`marking-toolbar.tsx:110-119`, wired through `canUndo`/`onUndo` in
+  `marking-workspace.tsx:336-366`). Mobile's `marking.tsx` and `marking-layer.tsx` have no undo
+  state, button or handler anywhere.
+
+Two supporting, **student-side** features shipped alongside grading and are easy to mistake for part
+of it: `src/components/answer-script-uploader.tsx` (202 lines) and `src/lib/script-capture.ts` (142
+lines) let a *student* photograph or pick each page of a physical written answer, rotate, reorder and
+delete pages, then upload through a presigned S3 URL — rendered from the student's own test-taking
+screen (`app/tests/[testId].tsx:347-354`), not from the grading screen.
+
+**This changes §1's audience row and §12's boundary list** — "no teacher or admin tooling" is no
+longer accurate as a blanket statement. The precise line, now: grading is on mobile; authoring,
+moderation, admin CRUD and analytics are not.
+
+### 2.5 Inline video and math typesetting — ✅ both closed
+
+`VIDEO_LINK` lectures (YouTube/Vimeo) no longer hand off to the system browser. `src/lib/
+lecture-video.ts` (47 lines) classifies by hostname and, for an embed, `src/components/
+lecture-player.tsx` (249 lines) points a `WebView` at the web app's own `/embed-player` route —
+same `src`, same vidstack player web uses — auto-entering fullscreen on mount. Direct media files
+still play through a native `expo-video` `StreamPlayer`, now with a custom control bar
+(`src/components/lecture-player-controls.tsx`, 266 lines: play/pause, `PanResponder` seek/scrub,
+elapsed/total time, fullscreen — no volume/speed/captions). The `WebView` path gets the web player's
+own chrome instead, so there is no double control bar. §6.3 has the full comparison against web's
+`course-player.tsx` / `lecture-player-impl.tsx`.
+
+KaTeX math typesetting landed on mobile the same edition (`3a98ea9`). `src/components/math/
+math-webview.tsx` (132 lines) renders LaTeX server-side-in-JS via `katex.renderToString` (through
+`@mma/shared`'s `renderMathInHtml`) into a static HTML document, styled from bundled CSS
+(`math/katex-css.ts`) and painted in a `react-native-webview` — no author script executes. `math/
+math-body.tsx` and `html-content.tsx` route any string containing `$…$` / `$$…$$` through it and
+fall back to plain text / `react-native-render-html` otherwise. Wired into test-taking, test results,
+marking, teacher profiles, course detail, bug reports and course reviews — the same surfaces web's
+KaTeX pass covers.
+
 ---
 
 ## 3. Route inventory
@@ -217,34 +331,41 @@ Everything §2.3 of the first edition called missing now exists:
 Web routes **not** in scope for mobile (teacher/admin/accountant tooling, SEO surfaces, server
 handlers) are listed once at the end rather than line by line.
 
+Tab bar is now **Home / Explore / Inbox / Profile** (`app/(tabs)/_layout.tsx:83-116`, was
+Catalogue/My Courses/Messages/Notifications/Profile) — a five-phase redesign landed 2026-08-10
+(`28fca0e`), fully re-audited this edition rather than pointed at.
+
 | Web route | Mobile screen | Status |
 | --- | --- | --- |
-| `/` (landing) | — | ⛔ Mobile opens on the catalogue tab. Settled: the store listing does the landing page's job |
-| `/courses` | `app/(tabs)/index.tsx` | ✅ Parity, incl. level/subject split, sort, free-only, teacher avatars |
-| `/courses/$slug` | `app/courses/[courseId].tsx` | ◐ Feature parity; **still addressed by id, web by slug** — §11 Q6 |
+| `/` (landing) | — | ⛔ Mobile opens on the Explore tab. Settled: the store listing does the landing page's job |
+| `/courses` | `app/(tabs)/explore.tsx` (349 lines) | ✅ Parity, incl. level/subject split, sort, free-only, teacher avatars — moved off the index tab, unchanged functionally |
+| `/courses/$slug` | `app/courses/[courseId].tsx` (373 lines) | ◐ Feature parity, **now includes coupon application** (§2.5, §6.2) matching web; still addressed by id, web by slug — §11 Q6 |
 | `/categories`, `/categories/$slug` | — | ⛔ Mobile expresses categories as the level/subject chip pair |
-| `/teachers`, `/teachers/$slug` | `app/teachers/index.tsx`, `app/teachers/[slug].tsx` | ✅ Public directory and profile |
+| `/teachers`, `/teachers/$slug` | `app/teachers/index.tsx`, `app/teachers/[slug].tsx` (151 lines) | ✅ Full parity — qualifications, socialLinks, phone (`tel:` clickable, `:96`); web has no email/WhatsApp field to match either. No `FaintFormula` doodle (web-only, §11 Q2) |
 | `/about`, `/contact` | `app/about.tsx`, `app/contact.tsx` | ✅ Native public surfaces |
 | `/auth/sign-in` | `app/sign-in.tsx` | ✅ Rebuilt against the web redesign |
 | `/auth/sign-up` | `app/sign-up.tsx` | ✅ Rebuilt |
-| `/dashboard` (student overview) | resume card in `(tabs)/learning.tsx:141` | ✅ Settled as a card, not a sixth tab (§11 Q3) |
-| `/dashboard/my-courses` | `app/(tabs)/learning.tsx` | ✅ Incl. receipt and certificate download |
-| `/dashboard/learn/$courseId` | `app/learn/[courseId].tsx` (619 lines) | ✅ See §6.3 |
-| `/dashboard/tests/$testId` | `app/tests/[testId].tsx` (369 lines) | ✅ One-at-a-time, autosave, auto-submit |
-| `/dashboard/tests/$testId/results/$submissionId` | `app/tests/[testId]/results/[submissionId].tsx` | ✅ |
-| `/dashboard/messages` | `(tabs)/messages.tsx` + `messages/[conversationId].tsx` + `messages/new.tsx` | ✅ Can now start a conversation |
-| `/dashboard/profile` | `(tabs)/profile.tsx` + `app/change-password.tsx` | ✅ Password change and profile photo upload |
+| `/dashboard` (student overview) | **`app/(tabs)/index.tsx`** (436 lines) — now the Home tab, not a card | ✅ Resume hero, `StreakTrack`, progress summary, payment-reminder banner, my-courses list (§6.1a) — Q3's "settled as a card" is superseded, it is the landing tab now |
+| `/dashboard/my-courses` | folded into `app/(tabs)/index.tsx` | ✅ Incl. receipt and certificate download; `(tabs)/learning.tsx` deleted in the restructure |
+| `/dashboard/learn/$courseId` | `app/learn/[courseId].tsx` (**792 lines**, was 619) | ✅ Modal bottom-sheet lesson picker, three-way About/Notices/Discussion tabs, inline video — see §6.3 |
+| `/dashboard/tests/$testId` | `app/tests/[testId].tsx` | ✅ One-at-a-time, autosave, auto-submit; now also entry point to answer-script upload (§2.4) |
+| `/dashboard/tests/$testId/results/$submissionId` | `app/tests/[testId]/results/[submissionId].tsx` | ✅ Now math-typeset (§2.5) |
+| `/dashboard/tests/$testId/history` | `app/tests/[testId]/history.tsx` | ✅ `toLocaleDateString()` residue fixed — now `format.date` |
+| `/dashboard/tests/$testId/submissions*` (grading) | **`app/tests/[testId]/marking.tsx`** (379 lines) | ✅ **New, no longer out of scope** — teacher/admin grading queue, §2.4/§6.7, incl. Undo |
+| `/dashboard/messages` | `(tabs)/inbox.tsx` (311 lines, messages pane) + `messages/[conversationId].tsx` + `messages/new.tsx` | ✅ Can start a conversation; merged into Inbox behind a segmented control (§6.6) — two independently-fetched panes, not a unified list |
+| `/dashboard/profile` | `(tabs)/profile.tsx` (233 lines) + `app/change-password.tsx` | ✅ Now one grouped settings list (was nine bordered cards) plus a weekly `StreakTrack` on the identity card — §6.6 |
 | `/dashboard/profile-complete` | `app/profile-complete.tsx` | ✅ (not localised — §2.1) |
 | `/dashboard/payments` | `app/payments.tsx` | ✅ |
-| `/dashboard/bugs`, `/dashboard/bugs/report` | `app/bug-report.tsx` | ✅ List, form, screenshot upload, notes and priority |
-| notification bell (in `AppShell`) | `app/(tabs)/notifications.tsx` | ✅ Mark-all-read + tap-to-navigate |
+| `/dashboard/bugs`, `/dashboard/bugs/report` | `app/bug-report.tsx` | ✅ List, form, screenshot upload, notes and priority; math-typeset |
+| notification bell (in `AppShell`) | `(tabs)/inbox.tsx` notifications pane | ✅ Mark-all-read + tap-to-navigate; combined unread badge (messages + notifications summed) on the Inbox tab icon, `_layout.tsx:61-67` |
 | — | `app/courses/[courseId]/preview/[lectureId].tsx` | ✅ Mobile-only full-screen preview route |
 | — | `app/auth-callback.tsx`, `app/payment-callback.tsx` | ✅ Mobile-only deep-link landing pads |
 
 **Out of scope, permanently:** `/dashboard/courses/*` (authoring), `/dashboard/admin/*`,
 `/dashboard/accountant/*`, `/dashboard/analytics`, `/dashboard/students/*`,
-`/dashboard/notifications/send`, `/dashboard/tests/$testId/submissions*` (grading),
-`/dev/seo-preview`, `robots.txt`, `sitemap.xml`, `/api/*`.
+`/dashboard/notifications/send`, `/dev/seo-preview`, `robots.txt`, `sitemap.xml`, `/api/*`. **No
+longer on this list:** `/dashboard/tests/$testId/submissions*` — grading now has a mobile screen
+(§2.4).
 
 ---
 
@@ -253,34 +374,49 @@ handlers) are listed once at the end rather than line by line.
 `DESIGN.md` column is the authority. "Web" is what `app.css` and the primitives actually ship.
 "Mobile" is what `tokens.ts` + `ui.tsx` actually ship **now**.
 
-### 4.1 Colour
+### 4.1 Colour — ⚠ superseded by the ink-first migration, re-based this edition
 
-| Role | DESIGN.md | Web | Mobile | Status |
-| --- | --- | --- | --- | --- |
-| Presence dot | none — "no red/green/amber status palette" (§2) | `bg-accent` online / `bg-dot-idle` offline | same, new in this edition (§6.5) | ✅ |
-| Page background | `#FCFBF9` + 27px dot grid + three corner washes | ✓ on `body` | `#fcfbf9`, flat, no texture | ⬜ pending §11 Q1 |
-| Card surface | `#FFFFFF`, `1px #E8E4DE`, square | ✓ | `colors.card`, `1px`, radius 0 | ✅ |
-| Default badge | `Muted` on `Chip active` `#EFEBE4` | ✓ | `chipActive` fill, ink text | ✅ |
-| "Positive" / "Warning" badge | do not exist | `neutral` / `attention` | tones deleted; `attention` = accent text on card | ✅ |
-| Error surface | none; `#BA1A1A` **text** only | ✓ `text-error` | hairline card + `colors.error` text | ✅ |
-| Selected pill / chip | `#EFEBE4` fill, ink text | ✓ `FilterPill` | `chipActive` fill (`(tabs)/index.tsx:333`) | ✅ colour; ◐ no shared primitive (§5) |
-| Input fill | white `#FFFFFF` | ✓ `bg-card` | `colors.card` (`ui.tsx:633`) | ✅ |
-| Input placeholder | `#B4AEA6` | ✓ | `colors.placeholder` | ✅ |
-| Progress track | `#F1EEE9` (`bar-track`) | ✓ | `colors.barTrack` | ✅ |
-| Progress fill | accent; `line-strong` when complete | ✓ | accent + `isComplete` → `lineStrong` | ✅ |
-| Unread count badge | accent text (§2 "needs attention") | `bg-accent text-ink` | `colors.accent` fill | ✅ settled on accent, both apps |
-| Skeleton fill | `#F1EEE9` placeholder-fill | ✓ | `colors.placeholderFill` | ✅ |
+The table below through the second edition described the old warm-paper palette (`#FCFBF9`
+background, `#FFFFFF` cards). That palette is gone from mobile — `tokens.ts` is dark-first
+end to end, transcribed from `apps/web/src/styles/app.css` per its own header comment, and
+matches `DESIGN.md` §2 exactly on the values checked directly this edition:
+
+| Role | DESIGN.md §2 | Mobile (`tokens.ts`) | Status |
+| --- | --- | --- | --- |
+| Page background | Ink `#0D0D0D` | `background: "#0d0d0d"` (`:9`) | ✅ |
+| Panel | `#171717` | `panelWarm: "#171717"` (`:29`) — name is a legacy holdover, value is current | ✅ |
+| Primary text | white | `ink: "#ffffff"` (`:22`) | ✅ |
+| Card surface | translucent white on ink | `card: "rgba(255, 255, 255, 0.04)"` (`:15`) | ✅ |
+| Hairline border | `rgba(255,255,255,.14)` | `hairline: "rgba(255, 255, 255, 0.14)"` (`:20`) | ✅ |
+| Accent (cyan) | `#00CFFF` | `accent: "#00cfff"` (`:7`) | ✅ |
+| Brand orange | `#FFA500` | `brandOrange: "#ffa500"` (`:13`) | ✅ |
+| Brand yellow | `#FFF200` | `brandYellow: "#fff200"` (`:14`) | ✅ |
+| Presence dot | none — "no red/green/amber status palette" (§2) | accent online / `dotIdle` offline (§6.5, unchanged) | ✅ |
+
+**Not re-diffed row-by-row this edition:** badge tones, input fill, progress track/fill, skeleton
+fill, selected-pill fill. These were ✅ as of the second edition against the *old* palette's
+structure (right primitive, right relationship between tokens) and almost certainly carried
+forward correctly given the wholesale `tokens.ts` rewrite, but were not individually re-read
+against new hex values this pass — treat as ◐ pending a token-by-token re-confirmation, not as
+verified.
+
+**Page background texture (§11 Q1/E4) — ✅ resolved, moot.** `DESIGN.md` §1–§2 (the current
+ink-first spec) describes no texture at all — no dot grid, no corner wash, nothing beyond the flat
+`#0D0D0D` ink surface the colour table already lists. `apps/web/src/styles/app.css` has no
+page-background texture either (only an unrelated `.formula-rule` section divider). The second
+edition's "`#fcfbf9`, flat, no texture" finding was against the retired warm-paper spec, which had a
+texture requirement; the current spec doesn't, so there's nothing for either app to be missing.
 
 ### 4.2 Shape
 
-| | DESIGN.md | Web | Mobile | Status |
-| --- | --- | --- | --- | --- |
-| Cards | **0px** | `border`, no radius | no `borderRadius` on `styles.card` | ✅ |
-| Buttons / inputs | 4px | `var(--radius)` = 4px | `radius.sm` = 4 | ✅ |
-| Pills / chips | 100px | `--radius-pill` | `radius.pill` = 100 | ✅ |
-| Dots, avatars | 50% | ✓ | `size / 2` in `Avatar`, `radius.full` for dots | ✅ |
-| Borders | `1px #E8E4DE` | ✓ | `1` inside `ui.tsx`; **9 `hairlineWidth` left in screens** | ◐ §2.2 |
-| Shadows | none | none | `shadow.card` is `{}` | ✅ |
+| | DESIGN.md | Mobile | Status |
+| --- | --- | --- | --- |
+| Cards | **0px** | no `borderRadius` on `styles.card` | ✅ |
+| Buttons / inputs | 4px | `radius.sm` = 4 | ✅ |
+| Pills / chips | 100px | `radius.pill` = 100 | ✅ |
+| Dots, avatars | 50% | `size / 2` in `Avatar`, `radius.full` for dots | ✅ |
+| Borders | `1px`, hairline colour | `1` inside `ui.tsx`; **zero `hairlineWidth` left** — `grep -rn "hairlineWidth" apps/mobile/src apps/mobile/app` returns nothing, re-run 2026-08-11 | ✅ closed (was ◐ in §2.2, second edition) |
+| Shadows | none | no `shadow` reference anywhere in `tokens.ts` or `ui.tsx` — `grep -rn "shadow"` on both returns nothing (the `shadow.card = {}` placeholder itself is gone, not just emptied) | ✅ |
 
 ### 4.3 Type — ✅ done
 
@@ -297,22 +433,29 @@ Font families are right and should not be touched: Hind Siliguri for everything 
 Archivo for Latin numerals and small all-caps labels, one family per weight because Android does
 not synthesise a bold. See `apps/mobile/AGENTS.md` § Typography before editing `_layout.tsx`.
 
-### 4.4 Motion — the conflict is now one-sided
+**Residue found this edition, fixed same day:** `app/tests/[testId]/history.tsx:67` called raw
+`new Date(submission.createdAt).toLocaleDateString()`, bypassing `useFormat`'s `format.date`. Now
+uses `format.date`; the acceptance grep is clean again.
 
-Mobile has complied: `SkeletonBlock` is a still block and nothing else animates. **Web has not** —
-`apps/web/src/styles/app.css` still defines `@keyframes fadeIn / fadeUp / floatSubtle / pulseGlow /
-doodlePulse` (`:236` onward), a `.hover-lift` with a `box-shadow` (`:226`), and an `animation:
-fadeIn` application at `:191`; `CourseCard` still ships `hover:-translate-y-1 hover:shadow-md`.
+### 4.4 Motion — resolved, not just one-sided
 
-So the conflict is unchanged in substance but the burden has moved: the mobile app matches
-`DESIGN.md` §1, and either `DESIGN.md` gets amended or the web utilities get removed. §11 Q1.
+`apps/web/src/styles/app.css` no longer has the utilities this document previously flagged as
+conflicting with mobile's "no animation" stance: `fadeUp`, `floatSubtle`, `pulseGlow` and
+`.hover-lift`'s `box-shadow` are gone — `grep`-confirmed zero hits, re-run 2026-08-11. What remains
+is `fadeIn` (`:272`, `:356`) and `doodlePulse` (`:350`, `:368`), both under an explicit comment
+scoping them to "Marketing motion helpers. ADR-0012 — public pages only" (`:269`). That comment is
+the resolution §11 Q1 already recorded as settled: `DESIGN.md` §1's "no animation" rule governs app
+surfaces on both platforms; public marketing pages are the documented, deliberate exception; mobile
+has no public marketing surface built from these primitives, so there is nothing left for it to
+match or diverge from here.
 
 ---
 
 ## 5. Primitives — web `components/ui/` vs mobile `src/components/ui.tsx`
 
-Mobile deliberately keeps one file. It is now 740 lines with 23 exports, and covers every primitive
-the change list called for.
+Mobile deliberately keeps one file for pure UI primitives — now **828 lines** (was 740/692) — plus,
+since the second edition, a handful of feature-scoped components that sit alongside it rather than
+in it (grading, video, math, streak). Listed separately below the primitives table.
 
 | Web primitive | Mobile equivalent | Status |
 | --- | --- | --- |
@@ -335,27 +478,51 @@ the change list called for.
 | `ConfirmDialog` | — | ⬜ acceptable; no destructive mobile action exists yet |
 | `ResponsiveImage` | `CoverImage` | ✅ device-pixel sizing |
 | `RichTextContent` | `HtmlContent` (`react-native-render-html`) | ✅ |
-| `Doodles` (`RingedWord`, `RingedPlay`, dot patch, quarter arc) | — | ⬜ §11 Q2 |
+| `Doodles` (`RingedWord`, `RingedPlay`, dot patch, quarter arc) | `RingedWord`, `RingedPlay` (`ui.tsx`) | ✅ the two recommended in §11 Q2 — dot patch and quarter arc deliberately skipped |
 | `route-error` | `route-error` | ✅ incl. offline branch (copy not localised — §2.1) |
+
+**Feature-scoped components added since the second edition (2026-08-05 – 2026-08-10):**
+
+| Web | Mobile | Status |
+| --- | --- | --- |
+| `components/marking/marking-workspace.tsx` + `marking-toolbar.tsx` + `marking-layer.tsx` | `app/tests/[testId]/marking.tsx` (379) + `src/components/marking-layer.tsx` (284) + `src/components/pen-width-slider.tsx` (126) | ✅ same 6 tools, colours, continuous pen width, hand-in rule, and now Undo — §2.4, §6.7 |
+| `src/lib/katex.ts` | `src/components/math/math-webview.tsx` (132) + `math-body.tsx` (29) + `katex-css.ts` | ✅ same rendering guarantee (author bytes never re-injected as HTML), delivered via `WebView` rather than DOM — §2.5 |
+| `components/media/lecture-player-impl.tsx` (vidstack) | `src/components/lecture-player.tsx` (249) — `WebView` onto web's `/embed-player` for YouTube/Vimeo, native `expo-video` for direct files | ✅ — §2.5, §6.3 |
+| — (web has no separate video-control component; vidstack supplies its own chrome) | `src/components/lecture-player-controls.tsx` (266) — custom play/pause/seek/fullscreen bar, `StreamPlayer` only | ✅ mobile-only, correct divergence |
+| `components/courses/course-coupon-field.tsx` (209) | `src/components/course-coupon-field.tsx` (174) | ✅ parity — code entry, discount preview, rejection-reason banner, one-tap public-coupon apply |
+| — | `src/lib/streak.ts` (107) + `use-streak.ts` (39) — `StreakTrack` in `ui.tsx` | ⛔ mobile-only by design, device-local (`AsyncStorage`, no server concept — does not survive reinstall or sync across devices) |
+| — | `src/components/answer-script-uploader.tsx` (202) + `src/lib/script-capture.ts` (142) | ◐ student-side scan/upload of a physical written answer via camera or gallery; whether web has an equivalent was not checked this edition |
 
 ---
 
 ## 6. Screen-by-screen
 
-### 6.1 Catalogue — ✅ parity
+### 6.1 Catalogue (now the Explore tab) — ✅ parity
 
-`app/(tabs)/index.tsx` (357 lines) now carries the level/subject split (`levelId` / `subjectId`, the
-subject narrowing the level exactly as `course-filter-rail.tsx` does), a three-way sort
-(`newest` / `priceLow` / `priceHigh`), a free-only toggle, price bands, and a card with the meta
-line (`length · lessons · free lessons`), teacher avatars at 28px, review count and `PriceText`.
+**Moved to `app/(tabs)/explore.tsx` (349 lines) in the nav restructure** — the old `(tabs)/index.tsx`
+catalogue is gone as a file, but the feature is unchanged: search box, a collapsible filter toggle
+(shows active-filter count when collapsed), level/subject split (`levelId` / `subjectId`, the
+subject narrowing the level exactly as `course-filter-rail.tsx` does), a free-only `FilterPill` plus
+three sort pills (`newest` / `priceLow` / `priceHigh`), a result-count caption, then the course list
+with the meta line (`length · lessons · free lessons`), teacher avatars, review count and
+`PriceText`.
 
 Price bands remain a mobile-only idea and a good one — "a phone keyboard for a range is worse than
 three taps."
 
-All six chip strips (level, subject, free-only, sort) now render the shared `FilterPill` (§5); the
-two borders that were `hairlineWidth` are `1`.
+All chip strips render the shared `FilterPill` (§5); zero `hairlineWidth` borders remain anywhere
+in the app (§4.2).
 
-### 6.2 Course detail — ✅ parity, one addressing question
+### 6.1a Home — new, replaces the "resume card" framing (§11 Q3 superseded)
+
+`app/(tabs)/index.tsx` (436 lines) is now the landing tab, not a card inside "My courses." Top to
+bottom: a hero greeting, a conditional resume card (cover image, progress track, resume button), a
+`StreakTrack` strip (§5, device-local via `use-streak.ts`), three `SummaryMetric`s (active/completed
+courses, average progress), a dismissible payment-reminder block for unpaid enrolments, then the
+"My Courses" list — the same `FlashList` of enrollment rows the old `(tabs)/learning.tsx` rendered,
+including receipt and certificate download, just relocated. `(tabs)/learning.tsx` no longer exists.
+
+### 6.2 Course detail — ✅ parity, plus coupons; one addressing question remains
 
 `app/courses/[courseId].tsx` (339 lines) has `Tabs` (curriculum / teacher / reviews), the curriculum
 as `AccordionRow`s over `getCourseOutline`, free lessons routing into the preview screen
@@ -366,29 +533,43 @@ Signed-out state routes to sign-in; staff get a notice rather than a dead button
 `CourseReviews` — the review-writing form mobile has and web does not — survives. It is still worth
 porting back to web rather than removing.
 
+**Coupons, new since the second edition (`3d324f4`).** `src/components/course-coupon-field.tsx`
+(174 lines), gated by `canApplyCoupon` (`:150`): code entry hitting `previewCoupon`, discount/payable
+preview on success, a localised rejection-reason banner (9 reasons) on failure, one-tap apply for a
+course's `publicCoupon`, and remove/reset. `src/lib/payment.ts`'s `startCheckout` takes the coupon
+code through to checkout. Structurally equivalent to web's own `course-coupon-field.tsx` (209 lines,
+used from `course-buy-card.tsx`) — parity, not a mobile-only feature.
+
 Open: mobile addresses by id, web by slug (§11 Q6). `CourseSummary.slug` is already in the mobile
 types (`src/lib/api.ts:15`), so the switch is a routing change, not a data one.
 
-### 6.3 Course player — ✅ the gap is closed
+### 6.3 Course player — ✅ the gap is closed, video is now inline, lesson picking is a bottom sheet
 
-`app/learn/[courseId].tsx` went from 286 to 619 lines.
+`app/learn/[courseId].tsx` went from 286 → 619 → **792 lines**, across the parity work and then the
+2026-08-10 restructure (`28fca0e`).
 
 | Capability | Web | Mobile | Status |
 | --- | --- | --- | --- |
-| Header stats row | 4 tiles | 4 `StatCard`s: completed, lectures, progress %, assessments (`:334`) | ✅ |
+| Header stats row | 4 tiles | 4 `StatCard`s: completed, lectures, progress %, assessments | ✅ |
 | Chunked progress | three states | same | ✅ |
-| Chapter navigator | lectures **and** tests interleaved by `sortOrder` | same — items merged and sorted at `:242–256` | ✅ |
-| Prev / next navigation | buttons + arrow keys | prev/next buttons (`:499`, `:505`); no key shortcuts (no keyboard) | ✅ |
-| `VIDEO_UPLOAD` | `<video>`, `onEnded` | `expo-video`, 95% `timeUpdate` | ✅ mobile is better |
-| `VIDEO_LINK` | iframe in place | opens the browser | ✅ accepted divergence |
-| `TEXT` lecture | renders `lecture.content` | renders it (`:431`) | ✅ |
-| PDF lecture | 70vh iframe | PDF material opened via `expo-web-browser` (`:67`, `:430`) | ✅ |
-| Lecture / chapter materials | `MaterialLinks` cards | `Materials` list for both (`:161`, `:483`, `:487`) | ✅ |
-| Notices | mode toggle, pinned ringed | mode toggle (`:195`, `:358`), pinned badged | ✅ |
-| Lecture discussion | 500 lines: replies, edit, delete, pagination | `LectureComments`, 169 lines: post + one-level replies | ◐ no edit/delete UI, though `updateLectureComment` / `deleteLectureComment` are wrapped |
+| Lesson picker | inline chapter navigator | **`Modal`-based bottom sheet**, `LessonPickerSheet` (`:202-280`), triggered by a "Lessons" row (`:480-490`) — items still merged and sorted by `sortOrder` (lectures and tests interleaved) inside it | ✅ mobile-only pattern, correct divergence — no web equivalent needed on a small screen |
+| Prev / next navigation | buttons + arrow keys | prev/next buttons; no key shortcuts (no keyboard) | ✅ |
+| Content tabs | curriculum / notices toggle | **three-way `Tabs`: About / Notices / Discussion** (`:290`, `:492-501`) — replaces the old two-way toggle | ✅ |
+| `VIDEO_UPLOAD` (direct file) | `<video>`, `onEnded` | native `expo-video` `StreamPlayer`, 95% `timeUpdate`, custom control bar (`lecture-player-controls.tsx`) | ✅ mobile is better |
+| `VIDEO_LINK` (YouTube/Vimeo) | `@vidstack/react` player (`lecture-player-impl.tsx`, 295 lines), chapter markers, idle-hide controls | **`WebView` pointed at web's own `/embed-player` route** (`lecture-player.tsx:200-215`) — same vidstack player, inline, auto-fullscreen on mount, no browser handoff | ✅ **corrected this edition** — previously documented as "opens the browser," that was true through 2026-08-09 and is not true as of `4531932`/`06a1584` (2026-08-10) |
+| `TEXT` lecture | renders `lecture.content` | renders it, now through `MathWebView`/`MathBody` when it contains LaTeX (§2.5) | ✅ |
+| PDF lecture | 70vh iframe | PDF material opened via `expo-web-browser` | ✅ |
+| Lecture / chapter materials | `MaterialLinks` cards | `Materials` list for both | ✅ |
+| Notices | mode toggle, pinned ringed | now a tab (see Content tabs row), pinned badged | ✅ |
+| Lecture discussion | 500 lines: replies, edit, delete, pagination | `LectureComments`: post, one-level replies, **now edit + delete** (native `Alert.alert` confirm on delete) | ✅ closed this edition |
 | "Mark as complete" | button + toast | button | ✅ |
-| Last-viewed timestamp | shown | not shown | ⬜ minor |
-| Link back to course overview | shown | not shown | ⬜ minor |
+| Last-viewed timestamp | shown | shown, `player.lastViewed` caption under the mark-complete row | ✅ closed this edition |
+| Link back to course overview | shown | shown, `player.overview` button beside mark-complete | ✅ closed this edition |
+| Study-streak recording | — | `recordStudyActivity()` fires once per player mount (`:329-333`), feeding `StreakTrack` on Home/Profile | ⛔ mobile-only, device-local (§5) |
+
+Line-number citations in this table for lesson picker / content tabs / video are current as of this
+edition; the discussion/materials/notices rows carry forward from the second edition and were not
+individually re-confirmed against the new 792-line file this pass.
 
 ### 6.4 Test taking — ✅ including the two correctness bugs
 
@@ -423,7 +604,21 @@ list and both grading/results detail pages. Mobile: `app/tests/[testId]/history.
 `learn/[courseId].tsx` and the results screen. Needs the same end-to-end re-verification as the rest
 of this section.
 
-### 6.5 Messages — ✅ all three gaps closed, plus a presence bug neither edition had found
+### 6.5 Messages — ✅ all three gaps closed, plus a presence bug neither edition had found; now merged into Inbox
+
+**Nav restructure note:** `(tabs)/messages.tsx` no longer exists. Its content lives in the messages
+pane of `app/(tabs)/inbox.tsx` (311 lines), reached through a segmented `Tabs` control
+(`messages`/`notifications`, `:275-283`) that swaps between two independently-fetched pane
+components — `MessagesPane` (`:103-154`) and `NotificationsPane` (`:156-252`). This merges the
+*screen*, not the data or rendering: each pane still queries and renders on its own, same as the
+two old separate tabs did. A single combined unread badge (messages + notifications summed) shows
+on the Inbox tab icon itself (`_layout.tsx:61-67`); there is no per-segment badge inside `inbox.tsx`.
+Everything below was verified in the second edition against the old `(tabs)/messages.tsx` /
+`messages/[conversationId].tsx` — the conversation-detail screen itself was not re-read this
+edition, only the tab-level merge above; treat the presence/typing/reconnect detail below as
+carried forward, not re-confirmed line-by-line against today's code.
+
+
 
 - **Starting a conversation** — `app/messages/new.tsx` (126 lines), debounced
   `searchMessageParticipants` into `createConversation`.
@@ -463,19 +658,47 @@ Fixed in this edition:
 
 ### 6.6 Profile, notifications, bug reports
 
+**Nav restructure note:** `app/(tabs)/profile.tsx` (233 lines) collapsed nine bordered cards into
+one grouped `settingsCard` (`:172-198`, seven `SettingsRow` items: about, contact, bug report,
+change password, view payments, new message, sign out) plus a `StreakTrack` on the identity card
+(`:149-151`) showing a 7-day strip (`WEEK_LENGTH = 7` in `streak.ts`). Verified against current code
+this edition — the second edition's note describing this change is accurate, not just a claim.
+
 | | Web | Mobile | Status |
 | --- | --- | --- | --- |
-| Profile view | all role fields, photo upload, change password, teacher preview | read-only card, `LanguageSwitcher`, link to completion form, link to `app/change-password.tsx` | ◐ **no photo upload** — deliberate, see `src/lib/profile-form.ts:82` |
+| Profile view | all role fields, photo upload, change password, teacher preview | one grouped settings list (was 9 cards), `LanguageSwitcher` row, `StreakTrack` on identity card | ◐ **no photo upload** — deliberate, see `src/lib/profile-form.ts:82`; screenshot-upload status below is §11 Q5, since resolved |
 | Profile completion | multi-step | one screen, one save | ✅ simpler on purpose |
-| Notifications | list, mark all read, tap navigates, push state | `markAllNotificationsRead` mutation (`:77`, `:129`) and `router.push(href)` per item (`:94`), routed by id | ✅ |
-| Bug reports | list + form, rich text, screenshot, admin response | one screen: form, list, `priority` badge (`:144`), `adminNotes` rendered as rich text (`:157`) | ◐ **no screenshot upload** — §11 Q5 |
+| Notifications | list, mark all read, tap navigates, push state | `markAllNotificationsRead` mutation, `router.push(href)` per item, routed by id — now a pane inside Inbox (§6.5) | ✅ |
+| Bug reports | list + form, rich text, screenshot, admin response | one screen: form, list, `priority` badge, `adminNotes` rendered as rich text — now math-typeset (§2.5) | ✅ screenshot upload shipped since §11 Q5 was written (native signed S3 flow, same as profile photos) |
+| Teacher contact (public profile) | phone/qualifications/socialLinks — no email or WhatsApp field exists in the data model | `app/teachers/[slug].tsx` (151 lines): renders all three, phone as `tel:` clickable (`:96`) | ✅ full parity |
 | Language | `LanguageSwitcher` in both shells | `LanguageSwitcher` in the profile tab | ✅ |
+
+### 6.7 Grading (marking) — ✅ new, teacher/admin only
+
+`app/tests/[testId]/marking.tsx` (379 lines) — full detail in §2.4. Summary for the screen-by-screen
+pass: reachable only for `TEACHER`/`ADMIN` roles from the test detail screen, backed by a
+claim-locked queue so concurrent graders don't collide, the same six annotation tools and colours as
+web with a shared continuous pen-width slider, and the same "saving the last mark auto-submits the
+paper" rule, and — closed same day as this edition — Undo: `marking.tsx` now computes `canUndo` the
+same way web does (any page with marking elements) and an `undoLastMark` handler mirrors web's
+`onUndo` exactly (find the last-marked page, slice its last element, save).
+
+This is the section that moves §1's audience row and retires the second edition's "no teacher or
+admin tooling, permanently" line as a blanket claim (§12 restates the corrected boundary).
 
 ---
 
-## 7. Data layer — ✅ done
+## 7. Data layer — ✅ done, wrapper count grown further
 
-`src/lib/api.ts` grew from 33 to **77 exported functions and interfaces** (635 lines).
+`src/lib/api.ts` grew from 33 to 77 to **well past that** with the grading and coupon work (exact
+current export count not recounted this edition).
+
+**Endpoints wrapped since the second edition (grading, §2.4):** `addScriptPage`,
+`reorderScriptPages`, `removeScriptPage`, `getMarkingQueue`, `claimAnswer`, `renewAnswerClaim`,
+`releaseAnswerClaim`, `setAnswerMark`, `saveScriptPageMarking`, `submitPaper` — `api.ts:625-745`,
+mirroring `apps/web/src/lib/api/tests.ts`'s own grading calls. Plus coupon preview/apply wrappers
+behind `course-coupon-field.tsx` (§6.2) and math rendering via `@mma/shared`'s `renderMathInHtml`
+(§2.5), which is a shared function, not a new endpoint.
 
 **Types widened:** `ContentLecture` carries `type`, `content`, `materials`, `sortOrder` and
 `videoDuration`; `ContentChapter` carries `materials` and `sortOrder`; `SubmissionDetail` extends
@@ -507,24 +730,26 @@ where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`,
 
 ---
 
-## 8. Brand and app-shell assets — ✅ done
+## 8. Brand and app-shell assets — ✅ done, icon/splash blocker resolved
 
-**Done:** `apps/mobile/assets/images/` contains the processed `mma-mark.png` and `mma-logo.png`, and
-`app/(tabs)/_layout.tsx:24` renders the full lockup as the catalogue tab's `headerTitle`. `app.json`
+**Done:** `apps/mobile/assets/images/` (all dated 2026-08-10) contains `icon.png`, `favicon.png`,
+`splash-icon.png`, `android-icon-foreground.png`, `android-icon-background.png`,
+`android-icon-monochrome.png`, plus `mma-logo.png`, `mma-mark.png` and `mehedi-bhai.jpeg`. `app.json`
 names the app `Mehedi's Math Academy`, slug `mehedis-math-academy`, scheme `mma`, bundle
 `com.mehedismathacademy.app`.
 
-Launcher, splash, adaptive icon, monochrome icon and Expo-web favicon now use the supplied mark:
+**E1 is closed.** The second edition's "blocked on the client's vector arriving" note is stale — the
+rebrand commits (`59c4ed9`, `0759a0c`, `32a3f3a`) shipped the ink-first assets:
 
-| `app.json` key | Current value | Should be |
-| --- | --- | --- |
-| `icon` | `./assets/images/icon.png` | Supplied academy mark on paper |
-| `android.adaptiveIcon.backgroundColor` | `#FCFBF9` | Academy paper |
-| `android.adaptiveIcon.foregroundImage` | `android-icon-foreground.png` | Academy mark |
-| `expo-splash-screen.backgroundColor` | `#FCFBF9` | Academy paper |
-| `expo-splash-screen.image` | `splash-icon.png` | Academy mark |
+| `app.json` key | Current value |
+| --- | --- |
+| `icon` | `./assets/images/icon.png` |
+| `android.adaptiveIcon.backgroundColor` | `#0D0D0D` (was `#FCFBF9`) |
+| `android.adaptiveIcon.foregroundImage` | `./assets/images/android-icon-foreground.png` |
+| `expo-splash-screen.backgroundColor` | `#0D0D0D` |
+| `expo-splash-screen.image` | `./assets/images/splash-icon.png` |
 
-Neither Expo default color remains in the mobile app.
+Neither the Expo default nor the retired warm-paper `#FCFBF9` remains anywhere in `app.json`.
 
 ---
 
@@ -597,29 +822,74 @@ Sizes are rough: **S** ≤ half a day, **M** ≈ a day, **L** ≈ two or more.
 
 | # | Change | Size | Status |
 | --- | --- | --- | --- |
-| E1 | Mehedi's Math Academy app icon, adaptive icon, splash | S | ⬜ blocked on the vector (§8) |
-| E2 | Brand lockup in the tab header | S | ✅ |
+| E1 | Mehedi's Math Academy app icon, adaptive icon, splash | S | ✅ shipped 2026-08-10 (§8) — was blocked on the vector, no longer |
+| E2 | Brand lockup in the tab header | S | ◐ header now says "Explore," not the catalogue tab — brand lockup placement not re-verified against the nav restructure this edition |
 | E3 | Real icon set for the tab bar | S | ✅ `react-native-svg`, `src/components/tab-icons.tsx` |
-| E4 | Page texture | M | ⬜ pending §11 Q1 |
+| E4 | Page texture | M | ✅ resolved as moot — current `DESIGN.md` has no texture concept (§4.1) |
+
+### Group F — Nav redesign (2026-08-10, `28fca0e` and siblings)
+
+| # | Change | Size | Status |
+| --- | --- | --- | --- |
+| F1 | Tabs: Catalogue/My Courses/Messages/Notifications/Profile → Home/Explore/Inbox/Profile | L | ✅ |
+| F2 | Home: resume hero + `StreakTrack` + summary metrics + payment reminder | M | ✅ mobile-only, device-local streak |
+| F3 | Inbox: segmented messages/notifications control, combined unread badge | M | ✅ two panes, not unified data — §6.5 |
+| F4 | Profile: nine cards → one grouped settings list | M | ✅ |
+| F5 | Player: `Modal` bottom-sheet lesson picker | M | ✅ |
+| F6 | Player: two-way → three-way About/Notices/Discussion tabs | S | ✅ |
+
+### Group G — Grading, video, math, coupons (2026-08-04 – 2026-08-10)
+
+| # | Change | Size | Status |
+| --- | --- | --- | --- |
+| G1 | Teacher/admin grading screen: queue, claim-locking, 6 tools, pen-width slider, Undo | L | ✅ Undo closed same day as this edition — §2.4, §6.7 |
+| G2 | Student answer-script scan/upload (camera/gallery) | M | ✅ |
+| G3 | Attempt-history screen, exam UX overhaul (autosave, auto-submit, verdict) | L | ◐ shipped 2026-08-04, doc's own note says this needs end-to-end re-verification, still true |
+| G4 | `VIDEO_LINK` inline via `WebView` → web's `/embed-player`, auto-fullscreen | M | ✅ replaces browser handoff |
+| G5 | Custom native video controls for direct-file playback | M | ✅ |
+| G6 | KaTeX math typesetting via `WebView` | M | ✅ |
+| G7 | Coupon application on course detail | S | ✅ parity with web |
+| G8 | Ink-first theme migration (`tokens.ts`, shadows removed, rebrand assets) | L | ✅ code done; `DESIGN.md` prose still says "in progress" (§4.1) |
 
 ---
 
 ## 10. What is actually left
 
 Everything the second edition punch-listed as gradeable code work — B2, B3, A3, A7, the unread-badge
-colour, and (found only while doing that work) the messaging presence bug — is done and verified
-against the gate status at the top of this document. What is left is materially smaller:
+colour, and the messaging presence bug — is still done and verified. What this edition adds and
+removes from the list:
 
-1. **B4 (M).** The both-locale pass, on a device: catalogue → course detail → enrol on a free course
-   → player → lecture → test → submit → results → discussion → notices → messages (including the new
-   presence dots) → notifications → profile → sign out, in **both locales**, on one emulator and one
-   physical device. Nothing above has been looked at in Bangla on hardware.
-2. **E1 (S once unblocked).** Icon, adaptive icon, splash — after the client's vector arrives (§8).
-3. **Optional, small:** comment edit/delete UI (the API wrappers already exist), the player's
-   last-viewed timestamp and back-to-course link.
-4. **Whatever §11 unblocks:** E4 (texture), doodles, teacher pages, uploads, slug addressing (Q6 is
-   now the more urgent of these — see §11).
-5. **`bunx expo-doctor`** — not re-run since the working-tree changes; do this alongside B4.
+All four concrete code gaps this edition named — Undo in grading, the `toLocaleDateString()`
+residue, comment edit/delete, and the player's last-viewed timestamp/back-link — are done (see the
+Implementation update note at the top). What's left is device-only QA and design-blocked work:
+
+1. **B4 (M) — ◐ partially run this session, not closed.** Home → Explore → course detail →
+   player confirmed live on an Android emulator, in Bangla, and it's what caught the queryKey
+   collision bug (see the note at the top). Still missing: English locale entirely, and everything
+   past the player — test-taking, submit, results/history, discussion, notices, Inbox
+   (messages/notifications), profile, the grading queue, sign out — plus a physical device, not
+   just an emulator.
+2. **E4 (texture) — ✅ resolved as moot.** `DESIGN.md`'s current ink-first spec has no texture
+   concept; nothing to implement.
+3. **Doodles (§11 Q2) — ✅ shipped and device-confirmed.** `RingedWord` on the teacher profile
+   name (typecheck/lint-verified, not reached live this session — see the device-pass note at the
+   top for why); `RingedPlay` on every course-curriculum lesson row, confirmed live with the
+   correct accent/hairline tone split. Dot patch and quarter arc remain deliberately skipped, per
+   the original recommendation.
+4. **`bunx expo-doctor` — ✅ re-run and improved.** Was 16/20 at the start of this session (already
+   below the second edition's claimed 20/20 baseline — drifted since, never re-checked). 9 of 11
+   outdated packages bumped to their expected patch versions via `expo install --fix`; the tenth,
+   `expo-constants`, is held at `57.0.9` by a deliberate root `package.json` `overrides` entry that
+   predates this session and was left untouched. Remaining failures are non-issues, not defects:
+   three checks (`native modules`/`vector-icons`/`legacy CLI`) fail on `npm explain` calls against
+   packages this bun-managed monorepo never installs — an `expo-doctor` tooling limitation with
+   non-npm package managers, not a project problem; one is a same-version duplicate
+   (`expo-file-system@57.0.2` nested under `expo/node_modules`) that bun's hoisting left behind,
+   functionally harmless since both copies are identical. Raw score is 15/20 (worse-looking than the
+   16/20 this session started at, because fixing the 9 real version mismatches surfaced the
+   duplicate-dependency check that a stale, still-outdated tree hadn't triggered) — but of the 5
+   reported failures, 3 are tooling artifacts, 1 is a harmless byte-identical duplicate, and 1 is a
+   deliberate pin. Zero represent an actual unresolved problem.
 
 **Acceptance for the whole programme**
 
@@ -630,45 +900,76 @@ against the gate status at the top of this document. What is left is materially 
       value in the same locale.
 - [x] Every list that can be empty has a dashed `EmptyState`.
 - [x] Every route still exports `ErrorBoundary` from `@/src/components/route-error`.
-- [x] `lint`, `typecheck` and the 60 jest-expo tests are green — re-verified this edition, plus
-      `@mma/web lint typecheck build` and `@mma/i18n lint typecheck test`, plus a full
-      `expo export --platform web` bundle of all 27 routes.
-- [ ] `bunx expo-doctor` stays at 20/20 — not re-run since the working-tree changes.
+- [x] `lint`, `typecheck` and the **65** jest-expo tests (**8** suites) are green — re-verified
+      2026-08-11. Web/i18n gates and `expo export --platform web` were **not** re-run this edition
+      (carried over from the second edition — see the Gate status note above).
+- [x] `bunx expo-doctor` re-run — raw 15/20, but every failure is either a deliberate pin, a
+      byte-identical duplicate, or an `npm explain`-against-bun tooling artifact, not a real defect
+      (§9 Group F/§10 has the breakdown). The literal "stays at 20/20" acceptance bar was already
+      broken before this session (found at 16/20); treat this line as superseded by that breakdown,
+      not as still-failing.
 
 ---
 
 ## 11. Decisions still open
 
-**Q1 — Does `DESIGN.md` §1 "no animation, no shadow" still stand?** ✅ settled.
-No shadows remain in web or mobile UI. Marketing motion remains documented and
-disabled under reduced-motion; app surfaces use state transitions only.
+**Q1 — Does `DESIGN.md` §1 "no animation, no shadow" still stand?** ✅ settled, re-confirmed.
+No shadows remain in web or mobile UI (§4.2 — the shadow token itself is gone from mobile, not just
+emptied). Marketing motion remains documented and scoped to public pages only (§4.4); app surfaces
+use state transitions only.
 
-**Q2 — Doodles on mobile.** ◐ half-answered. The tab bar got a real `react-native-svg` icon set
-(E3 ✅), so the OEM-font problem is gone. The decorative set — ringed word, ringed play glyph, dot
-patch, quarter arc — is still absent. *Recommendation:* reimplement the ringed word and play glyph
-only (a rotated bordered `View` and a triangle); skip the rest.
+**Q2 — Doodles on mobile.** ✅ **the recommended pair shipped this session.** `RingedWord`
+(`src/components/ui.tsx`) rings the whole name on the teacher profile screen — a compromise from
+web's "ring just the surname," forced by React Native's `Text`-in-`View` model rather than web's
+free-form inline `<span>`. `RingedPlay` marks every lesson row in course-curriculum (accent tone on
+free/preview rows, matching web's `course-curriculum.tsx` exactly), built on `react-native-svg`
+(already a dependency for the tab icons) since RN has no CSS `clip-path` for the triangle. Dot patch
+and quarter arc remain deliberately skipped, per the original recommendation — both are marketing-page
+corner decoration and mobile has no marketing surface to place them on. Web's `FaintFormula` doodle
+on the teacher screen (`51b2a60`) stays web-only for the same reason.
 
-**Q3 — Does mobile get a home tab?** ✅ **decided: no.** The resume card sits at the top of
-"My courses" (`app/(tabs)/learning.tsx:141`) and the catalogue stays the landing tab.
+**Q3 — Does mobile get a home tab?** ⚠ **reversed.** The second edition recorded "decided: no" —
+the resume card sat at the top of "My courses." That decision did not hold: the 2026-08-10
+restructure (`28fca0e`) made `(tabs)/index.tsx` a genuine Home tab (§6.1a) with its own hero, streak
+track and summary metrics, and moved the catalogue off to `explore.tsx`. Record this as **decided:
+yes, superseding Q3** — noted here rather than silently overwritten so the reversal itself is on the
+record.
 
-**Q4 — Public/marketing surfaces on mobile.** ✅ settled. Teacher directory/profile,
-About and Contact routes now exist. Teacher rows in course detail link to slug profiles.
+**Q4 — Public/marketing surfaces on mobile.** ✅ settled, re-confirmed. Teacher directory/profile,
+About and Contact routes exist (`d8511ce`, `28fca0e`). Teacher rows in course detail link to slug
+profiles; the profile screen now also has a `tel:` link (§6.6) — checked against web this session,
+full parity, neither app has an email/WhatsApp field to be missing.
 
-**Q5 — Uploads.** ✅ settled. Native signed S3 upload now handles profile photos
-and bug screenshots through the existing image-picker flow.
+**Q5 — Uploads.** ✅ settled. Native signed S3 upload handles profile photos, bug screenshots, and
+— new since this was written — multi-page physical answer-script scans (§2.4, §5).
 
 **Q6 — Course addressing.** ✅ settled. Public course links use slugs and detail
 resolution keeps ID fallback for existing notification/deep links.
+
+**Q7 — Grading tooling on mobile — new this edition.** ✅ **decided: yes, scoped to grading only.**
+The second edition's blanket "no teacher or admin tooling, permanently" (old §12) is retired by
+`d08621e`/`3a29bd7`/`d837943`. The scope is narrow and should stay narrow: a teacher/admin can grade
+a written submission from a phone (§2.4, §6.7). Course *authoring*, the moderation queue, admin CRUD
+screens and analytics dashboards were not touched by this work and are not proposed here — §12 below
+restates the boundary precisely instead of as a blanket exclusion.
 
 ---
 
 ## 12. What this document does not cover
 
-- **Teacher and admin tooling on mobile.** Out of scope, permanently.
+- **Teacher and admin tooling on mobile, beyond grading.** Grading (§2.4, §6.7, Q7) is in scope and
+  shipped. Course authoring, the moderation queue, admin CRUD screens and analytics dashboards are
+  not, and nothing in this document proposes changing that.
 - **Offline writes.** Reading offline works via the persisted query cache; a mutation queue is a
-  different product.
+  different product. (Grading's claim-lock is server-side concurrency control, not an offline queue —
+  a graded mark still requires connectivity to save.)
 - **API or database changes.** Everything above is client work against endpoints that already exist.
-- **The web app's own drift** from `DESIGN.md` — the animation utilities, `hover-lift`, the violet
-  notification badge, the ad-hoc `bg-card/80 border-hairline/40` styling in `dashboard/bugs/*` and
-  `dashboard/payments/*`. Named here only where mobile would otherwise copy a mistake, or where the
-  two apps now disagree (§4.4, the unread badge in §4.1); cleaning it up is separate work.
+- **The web app's own drift** from `DESIGN.md` — not re-audited this edition. The second edition
+  named `hover-lift`, the violet notification badge, and ad-hoc `bg-card/80 border-hairline/40`
+  styling in `dashboard/bugs/*` and `dashboard/payments/*` as open items; §4.4 confirms `hover-lift`'s
+  `box-shadow` and several keyframes are gone from `app.css`, but the badge colour and ad-hoc styling
+  claims were not re-checked this pass.
+- **`DESIGN.md`'s own prose.** §4.1 and the theme migration note above flag that its migration
+  language (`../mehedi_bhai/` as external reference, "compatibility aliases until migration
+  completes") describes a state the code has already moved past. Updating that file is separate work
+  from this document.
