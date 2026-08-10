@@ -68,8 +68,8 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
           </Link>
         </div>
 
-        <div className="flex flex-1 flex-col justify-center pb-8 lg:justify-start lg:pt-10">
-          <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-[26rem]">
+        <div className="flex flex-1 flex-col items-center justify-center pb-8 lg:justify-start lg:pt-10">
+          <div className="w-full max-w-md lg:max-w-[26rem]">
             <div className="mb-8 space-y-2">
               <h1 className="text-3xl font-medium leading-tight text-ink sm:text-4xl">{title}</h1>
               <p className="text-base font-light leading-relaxed text-muted">{description}</p>
