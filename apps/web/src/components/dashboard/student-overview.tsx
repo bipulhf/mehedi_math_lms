@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesHorizontalBarChart } from "@/components/charts/horizontal-bar-chart";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProgressTrack } from "@/components/ui/progress-track";
@@ -49,6 +51,10 @@ export function StudentOverview({ name }: { name: string }): JSX.Element {
   const resume = activeCourses
     .filter((item) => item.progressPercentage > 0)
     .sort((a, b) => b.progressPercentage - a.progressPercentage)[0];
+  const progressChartData = [...accessibleCourses]
+    .sort((a, b) => b.progressPercentage - a.progressPercentage)
+    .slice(0, 8)
+    .map((item) => ({ label: item.course.title, value: item.progressPercentage }));
   const courseRows = [...visibleEnrollments]
     .sort((a, b) => {
       if (a.accessGranted !== b.accessGranted) {
@@ -106,6 +112,17 @@ export function StudentOverview({ name }: { name: string }): JSX.Element {
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="min-w-0 space-y-8">
+          {progressChartData.length > 1 ? (
+            <ChartFrame height={Math.max(160, progressChartData.length * 36)} title={t("dash.progressByCourse")}>
+              <SeriesHorizontalBarChart
+                ariaLabel={t("dash.progressByCourse")}
+                data={progressChartData}
+                height={Math.max(160, progressChartData.length * 36)}
+                renderTooltip={(point) => format.percent(point.value)}
+              />
+            </ChartFrame>
+          ) : null}
+
           {resume ? (
             <section className="space-y-4">
               <SectionHeading title={t("dash.resume")} />

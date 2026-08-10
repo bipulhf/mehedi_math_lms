@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -38,6 +40,10 @@ export function AccountantOverview(): JSX.Element {
   }
 
   const refundRate = data.totalRevenue > 0 ? (data.totalRefunded / data.totalRevenue) * 100 : 0;
+  const statusChartData = data.paymentStatusDistribution.map((row) => ({
+    label: row.status,
+    value: row.count
+  }));
 
   return (
     <div className="space-y-8">
@@ -60,6 +66,12 @@ export function AccountantOverview(): JSX.Element {
           value={format.number(data.refundedCount)}
         />
       </div>
+
+      {statusChartData.length > 1 ? (
+        <ChartFrame height={240} title={t("an.statusMix")}>
+          <SeriesBarChart ariaLabel={t("an.statusMix")} data={statusChartData} height={240} />
+        </ChartFrame>
+      ) : null}
 
       <div className="space-y-4">
         <SectionHeading title={t("dash.topCourses")} />

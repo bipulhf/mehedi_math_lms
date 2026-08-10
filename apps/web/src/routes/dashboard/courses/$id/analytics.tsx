@@ -5,27 +5,18 @@ import { useEffect, useMemo } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
 import { RouteErrorView } from "@/components/common/route-error";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
+import { SeriesLineChart } from "@/components/charts/line-chart";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackButton } from "@/components/ui/back-button";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { chartTheme } from "@/lib/chart-theme";
 import type { CourseAnalyticsDetail } from "@/lib/api/analytics";
 import { useAccessGuard } from "@/hooks/use-access-guard";
 import { getCourseAnalytics } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
 import { seo } from "@/lib/seo";
 import { useT } from "@/lib/i18n/locale-context";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
 
 export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
   head: () =>
@@ -37,8 +28,6 @@ export const Route = createFileRoute("/dashboard/courses/$id/analytics")({
   component: CourseAnalyticsPage,
   errorComponent: RouteErrorView
 } as never);
-
-const chartStroke = chartTheme.accent;
 
 function CourseAnalyticsPage(): JSX.Element {
   const t = useT();
@@ -104,46 +93,20 @@ function CourseAnalyticsPage(): JSX.Element {
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t("an.enrollmentTrend")}</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-                <XAxis dataKey="label" fontSize={11} />
-                <YAxis fontSize={11} width={40} />
-                <Tooltip />
-                <Line dataKey="value" dot={false} stroke={chartStroke} strokeWidth={2} type="monotone" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ChartFrame height={280} title={t("an.enrollmentTrend")}>
+          <SeriesLineChart ariaLabel={t("an.enrollmentTrend")} data={enrollmentSeries} height={280} />
+        </ChartFrame>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t("an.completion")}</CardTitle>
-            <CardDescription>{t("an.completionShare")}</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={[
-                  { label: "Completed", value: data.completedEnrollments },
-                  { label: "In progress", value: Math.max(0, data.totalEnrollments - data.completedEnrollments) }
-                ]}
-                margin={{ bottom: 8, left: 0, right: 8, top: 8 }}
-              >
-                <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" />
-                <XAxis dataKey="label" fontSize={11} />
-                <YAxis fontSize={11} width={40} />
-                <Tooltip />
-                <Bar dataKey="value" fill={chartStroke} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ChartFrame height={280} subtitle={t("an.completionShare")} title={t("an.completion")}>
+          <SeriesBarChart
+            ariaLabel={t("an.completion")}
+            data={[
+              { label: "Completed", value: data.completedEnrollments },
+              { label: "In progress", value: Math.max(0, data.totalEnrollments - data.completedEnrollments) }
+            ]}
+            height={280}
+          />
+        </ChartFrame>
       </div>
     </div>
   );

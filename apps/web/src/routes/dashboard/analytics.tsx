@@ -16,28 +16,19 @@ import type { JSX } from "react";
 import { useEffect, useMemo } from "react";
 
 import { RouteErrorView } from "@/components/common/route-error";
+import { ChartFrame } from "@/components/charts/chart-frame";
+import { SeriesBarChart } from "@/components/charts/bar-chart";
+import { SeriesLineChart } from "@/components/charts/line-chart";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressTrack } from "@/components/ui/progress-track";
 import { ChartSkeleton, StatsGridSkeleton } from "@/components/common/skeletons";
 import { useAuthSession } from "@/hooks/use-auth-session";
-import { chartTheme } from "@/lib/chart-theme";
 import type { TeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { getTeacherAnalyticsOverview } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
-import { useT } from "@/lib/i18n/locale-context";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis
-} from "recharts";
+import { useFormat, useT } from "@/lib/i18n/locale-context";
 
 import { seo } from "@/lib/seo";
 
@@ -66,6 +57,7 @@ function AnalyticsSkeleton(): JSX.Element {
 
 function TeacherAnalyticsPage(): JSX.Element {
   const t = useT();
+  const format = useFormat();
 
   const router = useRouter();
   const { isPending, session } = useAuthSession();
@@ -179,99 +171,18 @@ function TeacherAnalyticsPage(): JSX.Element {
 
       {/* Visual Analytics */}
       <div className="grid gap-8 lg:grid-cols-2">
-        <ChartCard title={t("an.enrollmentTrend")} subtitle={t("an.enrollmentTrendLead")}>
-           <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={enrollmentSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <defs>
-                   <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={chartTheme.accent} stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor={chartTheme.accent} stopOpacity={0}/>
-                   </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
-                <XAxis 
-                  dataKey="label" 
-                  fontSize={10} 
-                  fontWeight={700}
-                  tickLine={false}
-                  axisLine={false}
-                  dy={10}
-                />
-                <YAxis 
-                  fontSize={10} 
-                  fontWeight={700}
-                  tickLine={false}
-                  axisLine={false}
-                  width={30}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: '24px', 
-                    border: 'none', 
-                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)',
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '12px 16px'
-                  }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: chartTheme.accent }}
-                  labelStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.5 }}
-                />
-                <Line 
-                  dataKey="value" 
-                  dot={{ fill: chartTheme.accent, r: 4, stroke: chartTheme.dotStroke, strokeWidth: 2 }} 
-                  activeDot={{ fill: chartTheme.accent, r: 6, strokeWidth: 0 }}
-                  stroke={chartTheme.accent} 
-                  strokeWidth={3} 
-                  type="monotone" 
-                  animationDuration={1500}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-        </ChartCard>
+        <ChartFrame height={288} subtitle={t("an.enrollmentTrendLead")} title={t("an.enrollmentTrend")}>
+          <SeriesLineChart ariaLabel={t("an.enrollmentTrend")} data={enrollmentSeries} height={288} />
+        </ChartFrame>
 
-        <ChartCard title={t("an.revenue")} subtitle={t("an.revenueLead")}>
-           <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueSeries} margin={{ bottom: 8, left: 0, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
-                <XAxis 
-                  dataKey="label" 
-                  fontSize={10} 
-                  fontWeight={700}
-                  tickLine={false}
-                  axisLine={false}
-                  dy={10}
-                />
-                <YAxis 
-                  fontSize={10} 
-                  fontWeight={700}
-                  tickLine={false}
-                  axisLine={false}
-                  width={40}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: '24px', 
-                    border: 'none', 
-                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)',
-                    backgroundColor: 'rgba(255,255,255,0.9)',
-                    backdropFilter: 'blur(10px)',
-                    padding: '12px 16px'
-                  }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: chartTheme.accent }}
-                  labelStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', opacity: 0.5 }}
-                  formatter={(value) => [`${value} BDT`, "Revenue"]}
-                />
-                <Bar 
-                  dataKey="value" 
-                  fill={chartTheme.accent} 
-                  radius={[12, 12, 4, 4]} 
-                  opacity={0.8}
-                  className="hover:opacity-100 transition-opacity"
-                  animationDuration={1500}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-        </ChartCard>
+        <ChartFrame height={288} subtitle={t("an.revenueLead")} title={t("an.revenue")}>
+          <SeriesBarChart
+            ariaLabel={t("an.revenue")}
+            data={revenueSeries}
+            height={288}
+            renderTooltip={(point) => format.currency(point.value)}
+          />
+        </ChartFrame>
       </div>
 
       {/* Course Specific Depth */}
@@ -373,28 +284,6 @@ function StatsCard({
           <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-ink/40">{label}</p>
           <p className="text-3xl font-display font-medium text-ink leading-none">{value.toLocaleString()}</p>
           <p className="text-[0.65rem] text-ink/40 font-medium italic mt-2">{description}</p>
-       </div>
-    </div>
-  );
-}
-
-function ChartCard({ 
-  title, 
-  subtitle, 
-  children 
-}: { 
-  title: string, 
-  subtitle: string, 
-  children: React.ReactNode 
-}): JSX.Element {
-  return (
-    <div className="bg-card p-4 sm:p-6 lg:p-8 border border-hairline flex flex-col h-120">
-       <div className="mb-8">
-          <h4 className="text-xl font-body font-medium text-ink tracking-tight leading-tight">{title}</h4>
-          <p className="text-[0.65rem] font-bold text-ink/30 uppercase tracking-widest">{subtitle}</p>
-       </div>
-       <div className="flex-1 min-h-0">
-          {children}
        </div>
     </div>
   );
