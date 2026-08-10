@@ -26,6 +26,7 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-pas
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as CategoriesIndexRouteImport } from './routes/categories/index'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as CoursesSlugRouteImport } from './routes/courses/$slug'
@@ -165,6 +166,11 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => AuthRoute,
+} as any)
+const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CategoriesRoute,
 } as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/$slug',
@@ -483,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/dev/seo-preview': typeof DevSeoPreviewRoute
   '/teachers/$slug': typeof TeachersSlugRoute
+  '/categories/': typeof CategoriesIndexRoute
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/teachers/': typeof TeachersIndexRoute
@@ -533,7 +540,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
-  '/categories': typeof CategoriesRouteWithChildren
   '/contact': typeof ContactRoute
   '/embed-player': typeof EmbedPlayerRoute
   '/login': typeof LoginRoute
@@ -555,6 +561,7 @@ export interface FileRoutesByTo {
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/dev/seo-preview': typeof DevSeoPreviewRoute
   '/teachers/$slug': typeof TeachersSlugRoute
+  '/categories': typeof CategoriesIndexRoute
   '/courses': typeof CoursesIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/teachers': typeof TeachersIndexRoute
@@ -629,6 +636,7 @@ export interface FileRoutesById {
   '/dashboard/profile-complete': typeof DashboardProfileCompleteRoute
   '/dev/seo-preview': typeof DevSeoPreviewRoute
   '/teachers/$slug': typeof TeachersSlugRoute
+  '/categories/': typeof CategoriesIndexRoute
   '/courses/': typeof CoursesIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/teachers/': typeof TeachersIndexRoute
@@ -704,6 +712,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile-complete'
     | '/dev/seo-preview'
     | '/teachers/$slug'
+    | '/categories/'
     | '/courses/'
     | '/dashboard/'
     | '/teachers/'
@@ -754,7 +763,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/categories'
     | '/contact'
     | '/embed-player'
     | '/login'
@@ -776,6 +784,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile-complete'
     | '/dev/seo-preview'
     | '/teachers/$slug'
+    | '/categories'
     | '/courses'
     | '/dashboard'
     | '/teachers'
@@ -849,6 +858,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile-complete'
     | '/dev/seo-preview'
     | '/teachers/$slug'
+    | '/categories/'
     | '/courses/'
     | '/dashboard/'
     | '/teachers/'
@@ -1038,6 +1048,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-up'
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/categories/': {
+      id: '/categories/'
+      path: '/'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof CategoriesIndexRouteImport
+      parentRoute: typeof CategoriesRoute
     }
     '/categories/$slug': {
       id: '/categories/$slug'
@@ -1438,10 +1455,12 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface CategoriesRouteChildren {
   CategoriesSlugRoute: typeof CategoriesSlugRoute
+  CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 const CategoriesRouteChildren: CategoriesRouteChildren = {
   CategoriesSlugRoute: CategoriesSlugRoute,
+  CategoriesIndexRoute: CategoriesIndexRoute,
 }
 
 const CategoriesRouteWithChildren = CategoriesRoute._addFileChildren(
