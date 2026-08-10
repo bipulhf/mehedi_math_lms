@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { Badge, Body, Caption, Card, EmptyState, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { getTestDetail, listMySubmissions } from "@/src/lib/api";
-import { useT } from "@/src/lib/locale";
+import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { spacing } from "@/src/theme/tokens";
 
@@ -13,6 +13,7 @@ export default function TestHistoryScreen(): JSX.Element {
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const router = useRouter();
   const t = useT();
+  const format = useFormat();
 
   const [testQuery, submissionsQuery] = useQueries({
     queries: [
@@ -64,7 +65,7 @@ export default function TestHistoryScreen(): JSX.Element {
           >
             <Card style={{ gap: spacing.sm }}>
               <Body>{t("test.attemptLabel", { number: submission.attemptNumber })}</Body>
-              <Caption>{new Date(submission.createdAt).toLocaleDateString()}</Caption>
+              <Caption>{format.date(submission.createdAt)}</Caption>
               <View style={styles.badgesRow}>
                 <Badge tone="quiet">{submission.status}</Badge>
                 <Badge tone="quiet">
