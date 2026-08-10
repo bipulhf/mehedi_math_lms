@@ -55,6 +55,7 @@ export const bn = {
   "auth.haveAccount": "অ্যাকাউন্ট আছে?",
   "auth.heroTitle": "তোমার সব কোর্স আর পরীক্ষা {ring} জায়গায়",
   "auth.heroTitleRing": "একই",
+  "auth.panelEyebrow": "শেখা শুরু করার জায়গা",
   "auth.name": "নাম",
   "auth.namePlaceholder": "তোমার নাম",
   "auth.passwordPlaceholder": "তোমার পাসওয়ার্ড",

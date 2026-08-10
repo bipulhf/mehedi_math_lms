@@ -52,6 +52,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "auth.haveAccount": "Already have an account?",
   "auth.heroTitle": "All your courses and tests in {ring} place",
   "auth.heroTitleRing": "one",
+  "auth.panelEyebrow": "A place to start learning",
   "auth.name": "Name",
   "auth.namePlaceholder": "Your name",
   "auth.passwordPlaceholder": "Your password",
