@@ -1,5 +1,6 @@
 import type { JSX, PropsWithChildren, ReactNode } from "react";
 
+import { BannerStrip } from "@/components/layout/banner-strip";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { DiamondTrio, DotPatch, QuarterArc } from "@/components/ui/doodles";
@@ -30,6 +31,7 @@ export function PublicLayout({
 }: PublicLayoutProps): JSX.Element {
   return (
     <div className="flex min-h-screen flex-col">
+      <BannerStrip />
       <SiteHeader />
 
       {title === undefined ? null : (

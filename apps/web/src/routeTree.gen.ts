@@ -41,6 +41,7 @@ import { Route as TeachersSlugRouteImport } from './routes/teachers/$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DashboardAccountantAnalyticsRouteImport } from './routes/dashboard/accountant/analytics'
 import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/admin/analytics'
+import { Route as DashboardAdminBannersRouteImport } from './routes/dashboard/admin/banners'
 import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
 import { Route as DashboardAdminFeaturedCoursesRouteImport } from './routes/dashboard/admin/featured-courses'
@@ -241,6 +242,11 @@ const DashboardAccountantAnalyticsRoute =
 const DashboardAdminAnalyticsRoute = DashboardAdminAnalyticsRouteImport.update({
   id: '/admin/analytics',
   path: '/admin/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminBannersRoute = DashboardAdminBannersRouteImport.update({
+  id: '/admin/banners',
+  path: '/admin/banners',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardAdminCategoriesRoute =
@@ -489,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
+  '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
@@ -560,6 +567,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
+  '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
@@ -634,6 +642,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/accountant/analytics': typeof DashboardAccountantAnalyticsRoute
   '/dashboard/admin/analytics': typeof DashboardAdminAnalyticsRoute
+  '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
@@ -709,6 +718,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
+    | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
     | '/dashboard/admin/featured-courses'
@@ -780,6 +790,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
+    | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
     | '/dashboard/admin/featured-courses'
@@ -853,6 +864,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/accountant/analytics'
     | '/dashboard/admin/analytics'
+    | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
     | '/dashboard/admin/featured-courses'
@@ -1139,6 +1151,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/analytics'
       fullPath: '/dashboard/admin/analytics'
       preLoaderRoute: typeof DashboardAdminAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/banners': {
+      id: '/dashboard/admin/banners'
+      path: '/admin/banners'
+      fullPath: '/dashboard/admin/banners'
+      preLoaderRoute: typeof DashboardAdminBannersRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/categories': {
@@ -1471,6 +1490,7 @@ interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAccountantAnalyticsRoute: typeof DashboardAccountantAnalyticsRoute
   DashboardAdminAnalyticsRoute: typeof DashboardAdminAnalyticsRoute
+  DashboardAdminBannersRoute: typeof DashboardAdminBannersRoute
   DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
   DashboardAdminCoursesRoute: typeof DashboardAdminCoursesRoute
   DashboardAdminFeaturedCoursesRoute: typeof DashboardAdminFeaturedCoursesRoute
@@ -1520,6 +1540,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAccountantAnalyticsRoute: DashboardAccountantAnalyticsRoute,
   DashboardAdminAnalyticsRoute: DashboardAdminAnalyticsRoute,
+  DashboardAdminBannersRoute: DashboardAdminBannersRoute,
   DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
   DashboardAdminCoursesRoute: DashboardAdminCoursesRoute,
   DashboardAdminFeaturedCoursesRoute: DashboardAdminFeaturedCoursesRoute,
