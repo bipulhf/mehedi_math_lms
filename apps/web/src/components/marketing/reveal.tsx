@@ -1,5 +1,5 @@
 import type { ElementType, JSX, PropsWithChildren } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -27,15 +27,26 @@ export function Reveal({
   const elementRef = useRef<HTMLDivElement | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = elementRef.current;
 
     if (!element) {
       return;
     }
 
-    // Anything already on screen when the page loads is revealed immediately
-    // rather than waiting for a scroll that may never come.
+    // Anything already on screen at mount is revealed synchronously, before
+    // the browser paints — waiting on IntersectionObserver's async callback
+    // here means content above the fold sits invisible until the observer
+    // gets a turn, which on a page hydrating a dozen sections at once can
+    // take a visible beat.
+    const rect = element.getBoundingClientRect();
+    const isAlreadyVisible = rect.top < window.innerHeight * 0.9 && rect.bottom > 0;
+
+    if (isAlreadyVisible) {
+      setIsRevealed(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
