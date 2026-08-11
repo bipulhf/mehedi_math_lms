@@ -14,6 +14,13 @@ interface RevealProps extends PropsWithChildren {
  * Fades a block up as it comes into view. Public marketing pages only —
  * ADR-0012; the app shell has no motion in it.
  *
+ * Visible by default — matches the server-rendered markup, so anything
+ * already on screen at mount (above the fold, always true for the landing
+ * page's first screenful) never touches opacity:0 and never waits on JS.
+ * Only content that's below the fold at mount gets hidden-then-faded, and
+ * that hide happens in useLayoutEffect (before the browser paints the
+ * client frame) so there's no flash for it either.
+ *
  * It reveals once and then stops observing: a section that fades back out when
  * it leaves the viewport and in again when it returns turns scrolling back up
  * into a flicker.
@@ -25,7 +32,8 @@ export function Reveal({
   delayMs = 0
 }: RevealProps): JSX.Element {
   const elementRef = useRef<HTMLDivElement | null>(null);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(true);
+  const [isAnimated, setIsAnimated] = useState(false);
 
   useLayoutEffect(() => {
     const element = elementRef.current;
@@ -34,18 +42,15 @@ export function Reveal({
       return;
     }
 
-    // Anything already on screen at mount is revealed synchronously, before
-    // the browser paints — waiting on IntersectionObserver's async callback
-    // here means content above the fold sits invisible until the observer
-    // gets a turn, which on a page hydrating a dozen sections at once can
-    // take a visible beat.
     const rect = element.getBoundingClientRect();
     const isAlreadyVisible = rect.top < window.innerHeight * 0.9 && rect.bottom > 0;
 
     if (isAlreadyVisible) {
-      setIsRevealed(true);
       return;
     }
+
+    setIsAnimated(true);
+    setIsRevealed(false);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -67,6 +72,7 @@ export function Reveal({
   return (
     <Component
       className={cn("reveal", className)}
+      data-animated={isAnimated}
       data-revealed={isRevealed}
       ref={elementRef}
       style={{ "--reveal-delay": `${delayMs}ms` } as React.CSSProperties}
