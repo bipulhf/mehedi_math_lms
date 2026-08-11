@@ -189,7 +189,7 @@ export default function CatalogScreen(): JSX.Element {
   const activeFilterCount = [levelId !== null, isFreeOnly, sortOrder !== "newest"].filter(Boolean).length;
 
   return (
-    <Screen>
+    <Screen noHeader>
       <View style={styles.header}>
         <Heading>{t("courses.title")}</Heading>
         <TextInput

@@ -1,7 +1,7 @@
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { BackHandler, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { Body, Button, Caption, Card, Field, Heading, Screen, Title } from "@/src/components/ui";
@@ -18,6 +18,18 @@ export default function SignInScreen(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
+
+  // Explore is the public storefront a visitor came from, or would have,
+  // so back always lands there — not an app exit, and not stuck on sign-in
+  // for someone who followed a deep link straight to it.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      router.replace("/explore");
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [router]);
 
   const handleSubmit = (): void => {
     setError(null);

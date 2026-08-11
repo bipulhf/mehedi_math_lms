@@ -12,6 +12,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
@@ -38,7 +39,7 @@ function AppStack(): JSX.Element {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           contentStyle: { backgroundColor: colors.background },
@@ -99,13 +100,15 @@ export default function RootLayout(): JSX.Element | null {
   }
 
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
-    >
-      <LocaleProvider>
-        <AppStack />
-      </LocaleProvider>
-    </PersistQueryClientProvider>
+    <SafeAreaProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
+      >
+        <LocaleProvider>
+          <AppStack />
+        </LocaleProvider>
+      </PersistQueryClientProvider>
+    </SafeAreaProvider>
   );
 }

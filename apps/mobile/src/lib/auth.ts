@@ -2,6 +2,7 @@ import type { UserRole } from "@mma/shared";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 
+import { REQUEST_TIMEOUT_MS } from "@/src/lib/api-client";
 import { mobileEnv } from "@/src/lib/env";
 import {
   clearSessionCookie,
@@ -60,7 +61,10 @@ async function authRequest<TResponse>(
 
   const response = await fetch(`${mobileEnv.authBaseUrl}/${path.replace(/^\//, "")}`, {
     ...init,
-    headers
+    headers,
+    // Same ceiling as api-client.ts: a stalled connection should fail loudly
+    // rather than leave the session query pending forever.
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
   });
   const payload = (await response.json().catch(() => null)) as TResponse | null;
 

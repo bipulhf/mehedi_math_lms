@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react-native";
 import type { JSX, ReactNode } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import * as api from "@/src/lib/api";
 import type { CourseSummary, StudentEnrollment } from "@/src/lib/api";
@@ -94,9 +95,16 @@ function renderScreen(node: JSX.Element): void {
   });
 
   render(
-    <LocaleProvider>
-      <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
-    </LocaleProvider>
+    <SafeAreaProvider
+      initialMetrics={{
+        frame: { height: 0, width: 0, x: 0, y: 0 },
+        insets: { bottom: 0, left: 0, right: 0, top: 0 }
+      }}
+    >
+      <LocaleProvider>
+        <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+      </LocaleProvider>
+    </SafeAreaProvider>
   );
 }
 

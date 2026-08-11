@@ -14,16 +14,19 @@
     },
     "preview": {
       "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
-        "EXPO_PUBLIC_API_ORIGIN": "https://api.mehedismathacademy.com",
-        "EXPO_PUBLIC_WEB_ORIGIN": "https://mehedismathacademy.com"
+        "EXPO_PUBLIC_API_ORIGIN": "https://api.lms.mehedismathacademy.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://lms.mehedismathacademy.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_ORIGIN": "https://api.mehedismathacademy.com",
-        "EXPO_PUBLIC_WEB_ORIGIN": "https://mehedismathacademy.com"
+        "EXPO_PUBLIC_API_ORIGIN": "https://api.lms.mehedismathacademy.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://lms.mehedismathacademy.com"
       }
     }
   },

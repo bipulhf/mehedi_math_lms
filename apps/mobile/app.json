@@ -43,7 +43,13 @@
       "expo-image",
       "expo-video",
       "expo-sharing",
-      "expo-system-ui"
+      "expo-system-ui",
+      [
+        "expo-notifications",
+        {
+          "color": "#00CFFF"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

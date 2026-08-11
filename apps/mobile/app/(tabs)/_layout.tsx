@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Image } from "expo-image";
 import { Tabs } from "expo-router";
 import type { JSX } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -20,16 +19,6 @@ import { colors, fonts, radius } from "@/src/theme/tokens";
  * SVG line icons (react-native-svg) rather than Unicode glyphs: the previous
  * five characters rendered differently on every Android OEM font.
  */
-
-/** The Mehedi's Math Academy mark and wordmark from the shared brand set, as in the web shell. */
-function BrandLockup(): JSX.Element {
-  return (
-    <View style={styles.brand}>
-      {/* eslint-disable-next-line @typescript-eslint/no-require-imports -- bundled asset, no import form exists */}
-      <Image source={require("@/assets/images/mma-logo.png")} style={styles.brandLogo} />
-    </View>
-  );
-}
 
 function Badge({ count }: { count: number }): JSX.Element | null {
   if (count <= 0) {
@@ -69,9 +58,7 @@ export default function TabsLayout(): JSX.Element {
   return (
     <Tabs
       screenOptions={{
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.background },
-        headerTitleStyle: { fontFamily: fonts.displayBold },
+        headerShown: false,
         tabBarActiveTintColor: colors.ink,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
@@ -83,7 +70,6 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="index"
         options={{
-          headerTitle: () => <BrandLockup />,
           tabBarIcon: ({ focused }) => <LearningIcon focused={focused} />,
           title: t("nav.home")
         }}
@@ -129,7 +115,5 @@ const styles = StyleSheet.create({
     right: -12,
     top: -4
   },
-  badgeText: { color: colors.card, fontFamily: fonts.displayBold, fontSize: 10 },
-  brand: { alignItems: "center" },
-  brandLogo: { height: 48, width: 48 }
+  badgeText: { color: colors.card, fontFamily: fonts.displayBold, fontSize: 10 }
 });

@@ -55,6 +55,15 @@ export function buildQueryString(query: Record<string, QueryValue> = {}): string
   return serialised.length > 0 ? `?${serialised}` : "";
 }
 
+/**
+ * A phone on a degraded connection can open the TCP connection and then never
+ * hear back — `fetch` has no default timeout, so that hangs the request (and
+ * every screen waiting on it) forever rather than failing. This is the ceiling
+ * on how long a screen is allowed to sit on a skeleton before it is told the
+ * same "offline" story a lost signal gets.
+ */
+export const REQUEST_TIMEOUT_MS = 15_000;
+
 async function request<TResponse>(path: string, init: RequestInit = {}): Promise<TResponse> {
   const cookie = await readSessionCookie();
   const headers = new Headers(init.headers);
@@ -74,12 +83,15 @@ async function request<TResponse>(path: string, init: RequestInit = {}): Promise
   try {
     response = await fetch(`${mobileEnv.apiBaseUrl}/${path.replace(/^\//, "")}`, {
       ...init,
-      headers
+      headers,
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
     });
   } catch {
     // `fetch` rejects rather than resolving when there is no route to the
-    // server. Left unhandled this surfaces as "Network request failed", which
-    // reads as a broken app rather than a missing signal.
+    // server, and `AbortSignal.timeout` rejects the same way once the clock
+    // above runs out. Left unhandled this surfaces as "Network request
+    // failed" or "Aborted", which reads as a broken app rather than a missing
+    // signal.
     throw new ApiError(
       "You appear to be offline. This needs a connection — try again in a moment.",
       OFFLINE_STATUS

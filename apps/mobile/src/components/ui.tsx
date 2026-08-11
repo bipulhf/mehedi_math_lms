@@ -14,6 +14,7 @@ import {
   type ViewStyle
 } from "react-native";
 import { Polygon, Svg } from "react-native-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useFormat } from "@/src/lib/locale";
 import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
@@ -26,12 +27,25 @@ import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
 
 export function Screen({
   children,
-  style
+  style,
+  noHeader = false
 }: {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  /**
+   * True on the four tab screens, which have no navigation header to clear
+   * the status bar for them. Every pushed screen keeps its native header,
+   * which already reserves that space — adding it there too would double up.
+   */
+  noHeader?: boolean;
 }): JSX.Element {
-  return <View style={[styles.screen, style]}>{children}</View>;
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.screen, noHeader ? { paddingTop: insets.top } : null, style]}>
+      {children}
+    </View>
+  );
 }
 
 export function Card({
@@ -360,9 +374,20 @@ export function EmptyState({
  * The shape a screen shows before its session resolves. Even the boot state is
  * a skeleton of the screen that is about to arrive, never a spinner.
  */
-export function ScreenSkeleton({ rows = 3 }: { rows?: number }): JSX.Element {
+export function ScreenSkeleton({
+  rows = 3,
+  noHeader = false
+}: {
+  rows?: number;
+  /** See `Screen`'s `noHeader` — same reasoning, same four tab screens. */
+  noHeader?: boolean;
+}): JSX.Element {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.screenSkeleton}>
+    <View
+      style={[styles.screenSkeleton, noHeader ? { paddingTop: insets.top + spacing.lg } : null]}
+    >
       <SkeletonBlock height={28} width="45%" />
       {Array.from({ length: rows }).map((_, index) => (
         <Card key={index}>

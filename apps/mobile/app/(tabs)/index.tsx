@@ -1,8 +1,8 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { Link, Redirect, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -17,7 +17,6 @@ import {
   Heading,
   ProgressTrack,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock,
   StreakTrack,
   Title
@@ -186,6 +185,64 @@ function PaymentReminderRow({
   );
 }
 
+/**
+ * Traces `StudentDashboardHeader` + two course rows below it, block for
+ * block, rather than a couple of generic cards — the point of a skeleton is
+ * that the real screen doesn't visibly jump into place once it loads.
+ */
+function HomeSkeleton(): JSX.Element {
+  return (
+    <View>
+      <View style={styles.hero}>
+        <SkeletonBlock height={12} width="40%" />
+        <View style={{ height: spacing.xs }} />
+        <SkeletonBlock height={30} width="70%" />
+      </View>
+
+      <View style={styles.resumeWrap}>
+        <SkeletonBlock height={14} width="30%" />
+        <Card>
+          <SkeletonBlock height={160} />
+          <View style={styles.resumeBody}>
+            <SkeletonBlock height={20} width="75%" />
+            <SkeletonBlock height={8} />
+            <SkeletonBlock height={44} />
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.streakWrap}>
+        <SkeletonBlock height={64} />
+      </View>
+
+      <View style={styles.metrics}>
+        {[0, 1, 2].map((key) => (
+          <View key={key} style={styles.metric}>
+            <SkeletonBlock height={24} width="60%" />
+            <SkeletonBlock height={14} width="80%" />
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.coursesHeading}>
+        <SkeletonBlock height={22} width="40%" />
+      </View>
+
+      <View style={styles.skeletonList}>
+        {[0, 1].map((key) => (
+          <Card key={key}>
+            <SkeletonBlock height={140} />
+            <View style={styles.rowBody}>
+              <SkeletonBlock height={20} width="60%" />
+              <SkeletonBlock height={8} />
+            </View>
+          </Card>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function StudentDashboardHeader({
   activeCourses,
   averageProgress,
@@ -301,17 +358,29 @@ export default function HomeScreen(): JSX.Element {
   );
   const keyExtractor = useCallback((item: StudentEnrollment) => item.id, []);
 
-  if (isSessionPending) {
-    return <ScreenSkeleton rows={3} />;
-  }
+  // Signed out is not an error state here: Explore is the public storefront,
+  // and a visitor should be able to browse courses before ever signing in.
+  // Sign-in is one tap away (the tab bar or any enroll button), not forced.
+  // An effect rather than a render-time <Redirect>: redirecting during the
+  // tab navigator's own first mount raced Fabric's view mounting and crashed
+  // with "child already has a parent" on a cold start.
+  useEffect(() => {
+    if (!isSessionPending && !session) {
+      router.replace("/explore");
+    }
+  }, [isSessionPending, session, router]);
 
-  if (!session) {
-    return <Redirect href="/sign-in" />;
+  if (isSessionPending || !session) {
+    return (
+      <Screen noHeader>
+        <HomeSkeleton />
+      </Screen>
+    );
   }
 
   if (!isStudent) {
     return (
-      <Screen style={styles.padded}>
+      <Screen noHeader style={styles.padded}>
         <EmptyState message={t("mine.nonStudentLead")} title={t("mine.nonStudent")} />
       </Screen>
     );
@@ -348,19 +417,9 @@ export default function HomeScreen(): JSX.Element {
   );
 
   return (
-    <Screen>
+    <Screen noHeader>
       {isPending ? (
-        <View style={styles.skeletonList}>
-          {[0, 1].map((key) => (
-            <Card key={key}>
-              <SkeletonBlock height={140} />
-              <View style={styles.rowBody}>
-                <SkeletonBlock height={20} width="60%" />
-                <SkeletonBlock height={8} />
-              </View>
-            </Card>
-          ))}
-        </View>
+        <HomeSkeleton />
       ) : visibleEnrollments.length === 0 ? (
         <View>
           {listHeader}

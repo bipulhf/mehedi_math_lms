@@ -1,8 +1,8 @@
 import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, Redirect, useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import {
@@ -253,22 +253,28 @@ function NotificationsPane(): JSX.Element {
 
 export default function InboxScreen(): JSX.Element {
   const t = useT();
+  const router = useRouter();
   const [segment, setSegment] = useState<InboxSegment>("messages");
   const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
 
   usePushRegistration(Boolean(session));
 
-  if (isSessionPending) {
-    return <ScreenSkeleton rows={4} />;
-  }
+  // An effect, not a render-time <Redirect>: redirecting during the tab
+  // navigator's own mount raced Fabric's view mounting and crashed with
+  // "child already has a parent" — see app/(tabs)/index.tsx.
+  useEffect(() => {
+    if (!isSessionPending && !session) {
+      router.replace("/sign-in");
+    }
+  }, [isSessionPending, session, router]);
 
-  if (!session) {
-    return <Redirect href="/sign-in" />;
+  if (isSessionPending || !session) {
+    return <ScreenSkeleton noHeader rows={4} />;
   }
 
   return (
-    <Screen>
+    <Screen noHeader>
       <View style={styles.header}>
         <Heading>{t("nav.inbox")}</Heading>
       </View>

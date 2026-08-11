@@ -1,7 +1,8 @@
 import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import type { JSX } from "react";
+import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -100,12 +101,17 @@ export default function ProfileScreen(): JSX.Element {
     queryKey: queryKeys.profile()
   });
 
-  if (isSessionPending) {
-    return <ScreenSkeleton rows={2} />;
-  }
+  // An effect, not a render-time <Redirect>: redirecting during the tab
+  // navigator's own mount raced Fabric's view mounting and crashed with
+  // "child already has a parent" — see app/(tabs)/index.tsx.
+  useEffect(() => {
+    if (!isSessionPending && !session) {
+      router.replace("/sign-in");
+    }
+  }, [isSessionPending, session, router]);
 
-  if (!session) {
-    return <Redirect href="/sign-in" />;
+  if (isSessionPending || !session) {
+    return <ScreenSkeleton noHeader rows={2} />;
   }
 
   // The session's flag is the one the API enforces against; the profile record
@@ -115,7 +121,7 @@ export default function ProfileScreen(): JSX.Element {
   const phone = profile?.studentProfile?.phone ?? profile?.teacherProfile?.phone ?? null;
 
   return (
-    <Screen>
+    <Screen noHeader>
       <ScrollView contentContainerStyle={styles.content}>
         <Heading>{t("nav.profile")}</Heading>
 
