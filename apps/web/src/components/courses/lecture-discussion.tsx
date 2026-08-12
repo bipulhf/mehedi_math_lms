@@ -401,7 +401,7 @@ export function LectureDiscussion({ lectureId }: LectureDiscussionProps): JSX.El
           {isLoading && comments.length === 0 ? (
             <CommentThreadSkeleton />
           ) : comments.length === 0 ? (
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper p-4 text-sm leading-7 text-ink/68">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card p-4 text-sm leading-7 text-ink/68">
               {t("disc.empty")}
             </div>
           ) : (

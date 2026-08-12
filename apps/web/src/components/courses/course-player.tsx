@@ -209,7 +209,7 @@ export function CoursePlayer({
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                     {t("player.completed")}
                   </p>
@@ -217,13 +217,13 @@ export function CoursePlayer({
                     {progress.completedLectures}
                   </p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                     {t("player.lectures")}
                   </p>
                   <p className="mt-2 text-xl font-semibold text-ink">{progress.totalLectures}</p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                     {t("mine.progress")}
                   </p>
@@ -231,7 +231,7 @@ export function CoursePlayer({
                     {progress.completionPercentage}%
                   </p>
                 </div>
-                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+                <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                     {t("player.assessments")}
                   </p>
@@ -294,7 +294,7 @@ export function CoursePlayer({
                   const isChapterOpen = openChapterId === chapter.id;
 
                   return (
-                    <div key={chapter.id} className="border border-hairline bg-paper">
+                    <div key={chapter.id} className="border border-hairline bg-card">
                       <button
                         aria-expanded={isChapterOpen}
                         className="flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left"
@@ -375,7 +375,7 @@ export function CoursePlayer({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {selectedLecture.description ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3 text-sm leading-7 text-ink/72">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3 text-sm leading-7 text-ink/72">
                         {selectedLecture.description}
                       </div>
                     ) : null}
@@ -389,7 +389,7 @@ export function CoursePlayer({
                         />
                       </div>
                     ) : selectedLecture.type === "TEXT" ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-8 text-ink whitespace-pre-wrap">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-5 py-5 text-sm leading-8 text-ink whitespace-pre-wrap">
                         {selectedLecture.content}
                       </div>
                     ) : selectedLecture.videoUrl ? (
@@ -400,7 +400,7 @@ export function CoursePlayer({
                         title={selectedLecture.title}
                       />
                     ) : (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-5 py-5 text-sm leading-7 text-ink/68">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-5 py-5 text-sm leading-7 text-ink/68">
                         {t("player.noVideoSource")}
                       </div>
                     )}
@@ -489,7 +489,7 @@ export function CoursePlayer({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {selectedItem.test.description ? (
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3 text-sm leading-7 text-ink/72">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-3 text-sm leading-7 text-ink/72">
                         <RichTextContent
                           className="text-sm leading-7 text-ink/72"
                           html={selectedItem.test.description}
@@ -497,7 +497,7 @@ export function CoursePlayer({
                       </div>
                     ) : null}
                     <div className="grid gap-3 md:grid-cols-3">
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                           {t("ab.questions")}
                         </p>
@@ -505,7 +505,7 @@ export function CoursePlayer({
                           {selectedItem.test.questionCount}
                         </p>
                       </div>
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                           {t("qe.marks")}
                         </p>
@@ -513,7 +513,7 @@ export function CoursePlayer({
                           {selectedItem.test.totalMarks}
                         </p>
                       </div>
-                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                      <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-4">
                         <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                           {t("player.passing")}
                         </p>
@@ -522,7 +522,7 @@ export function CoursePlayer({
                         </p>
                       </div>
                       {selectedItem.test.maxAttempts !== null ? (
-                        <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-4">
+                        <div className="rounded-[calc(var(--radius)-0.125rem)] bg-card px-4 py-4">
                           <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                             {t("test.attemptsRemainingLabel")}
                           </p>
