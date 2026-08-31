@@ -13,6 +13,10 @@ interface CategorySelectorProps {
   value: string;
 }
 
+/**
+ * Depth is shown with non-breaking spaces: the list is real markup now, and
+ * HTML would collapse a plain-space indent to nothing.
+ */
 function flattenCategories(
   categories: readonly CategoryNode[],
   depth = 0
@@ -20,7 +24,7 @@ function flattenCategories(
   return categories.flatMap((category) => [
     {
       id: category.id,
-      label: `${"  ".repeat(depth)}${category.name}`
+      label: `${"\u00a0\u00a0".repeat(depth)}${category.name}`
     },
     ...flattenCategories(category.children, depth + 1)
   ]);
@@ -39,17 +43,17 @@ export function CategorySelector({
   const options = flattenCategories(categories);
 
   return (
-    <Select id={id} value={value} error={error} onChange={(event) => onChange(event.target.value)}>
-      {includeRootOption ? (
-        <option value="">{t("cat.noParent")}</option>
-      ) : (
-        <option value="" disabled>{t("cat.select")}</option>
-      )}
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.label}
-        </option>
-      ))}
-    </Select>
+    <Select
+      error={error}
+      id={id}
+      onValueChange={onChange}
+      options={[
+        includeRootOption
+          ? { label: t("cat.noParent"), value: "" }
+          : { disabled: true, label: t("cat.select"), value: "" },
+        ...options.map((option) => ({ label: option.label, value: option.id }))
+      ]}
+      value={value}
+    />
   );
 }

@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { queryKeys } from "@/lib/query/keys";
 import { cn } from "@/lib/utils";
 import { RouteErrorView } from "@/components/common/route-error";
@@ -230,18 +231,12 @@ function AdminSmsPage() {
               {targetMode === "role" && (
                 <div className="space-y-1.5">
                   <Label htmlFor="sms-role">{t("sms.roleFilter")}</Label>
-                  <select
-                    className="w-full border border-hairline bg-card h-10 px-3 text-sm text-ink"
+                  <Select
                     id="sms-role"
-                    onChange={(e) => setTargetRole(e.target.value as UserRole)}
+                    onValueChange={(next) => setTargetRole(next as UserRole)}
+                    options={userRoleValues.map((value) => ({ label: value, value }))}
                     value={targetRole}
-                  >
-                    {userRoleValues.map((value) => (
-                      <option key={value} value={value}>
-                        {value}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
               )}
               {targetMode === "course" && (

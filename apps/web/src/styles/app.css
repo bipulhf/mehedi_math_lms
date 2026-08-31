@@ -34,6 +34,8 @@
 
   --color-paper: #fcfbf9;
   --color-card: #ffffff;
+  /* Anything that floats over the page needs a fill you cannot see through. */
+  --color-popover: #ffffff;
   --color-panel-warm: #f7f5f1;
   --color-row-hover: #fbf9f6;
   --color-placeholder-fill: #f1eee9;

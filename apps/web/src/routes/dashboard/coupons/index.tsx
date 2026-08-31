@@ -181,16 +181,16 @@ function CouponsPage(): JSX.Element {
             </p>
             <Select
               aria-label={t("coupon.filterState")}
-              onChange={(event) => setState(event.target.value as CouponState | "")}
+              onValueChange={(next) => setState(next as CouponState | "")}
+              options={[
+                { label: t("coupon.filterState"), value: "" },
+                ...COUPON_STATES.map((option) => ({
+                  label: t(COUPON_STATE_KEYS[option]),
+                  value: option
+                }))
+              ]}
               value={state}
-            >
-              <option value="">{t("coupon.filterState")}</option>
-              {COUPON_STATES.map((option) => (
-                <option key={option} value={option}>
-                  {t(COUPON_STATE_KEYS[option])}
-                </option>
-              ))}
-            </Select>
+            />
           </div>
         </div>
 

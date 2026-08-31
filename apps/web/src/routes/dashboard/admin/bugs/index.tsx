@@ -132,34 +132,36 @@ function AdminBugsPage(): JSX.Element {
               <Label htmlFor="bug-status-filter">{t("admin.bugs.statusFilter")}</Label>
               <Select
                 id="bug-status-filter"
-                onChange={(event) => {
-                  setStatus(event.target.value);
+                onValueChange={(next) => {
+                  setStatus(next);
                   setPage(1);
                 }}
                 value={status}
-              >
-                <option value="">{t("admin.bugs.allStatuses")}</option>
-                <option value="OPEN">{t("admin.bugs.open")}</option>
-                <option value="IN_PROGRESS">{t("admin.bugs.inProgress")}</option>
-                <option value="RESOLVED">{t("admin.bugs.resolved")}</option>
-                <option value="CLOSED">{t("admin.bugs.closed")}</option>
-              </Select>
+                options={[
+                  { label: t("admin.bugs.allStatuses"), value: "" },
+                  { label: t("admin.bugs.open"), value: "OPEN" },
+                  { label: t("admin.bugs.inProgress"), value: "IN_PROGRESS" },
+                  { label: t("admin.bugs.resolved"), value: "RESOLVED" },
+                  { label: t("admin.bugs.closed"), value: "CLOSED" }
+                ]}
+              />
             </div>
             <div className="flex-1 space-y-1">
               <Label htmlFor="bug-priority-filter">{t("admin.bugs.priorityFilter")}</Label>
               <Select
                 id="bug-priority-filter"
-                onChange={(event) => {
-                  setPriority(event.target.value);
+                onValueChange={(next) => {
+                  setPriority(next);
                   setPage(1);
                 }}
                 value={priority}
-              >
-                <option value="">{t("admin.bugs.allPriorities")}</option>
-                <option value="LOW">{t("admin.bugs.low")}</option>
-                <option value="MEDIUM">{t("admin.bugs.medium")}</option>
-                <option value="HIGH">{t("admin.bugs.high")}</option>
-              </Select>
+                options={[
+                  { label: t("admin.bugs.allPriorities"), value: "" },
+                  { label: t("admin.bugs.low"), value: "LOW" },
+                  { label: t("admin.bugs.medium"), value: "MEDIUM" },
+                  { label: t("admin.bugs.high"), value: "HIGH" }
+                ]}
+              />
             </div>
           </div>
         </div>

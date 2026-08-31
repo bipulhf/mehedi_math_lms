@@ -448,21 +448,22 @@ export function AssessmentBuilder({
                   <div className="grid gap-2 md:grid-cols-4">
                     <Select
                       className="h-10"
-                      value={selectedTest.type}
-                      onChange={(event) =>
+                      onValueChange={(next) =>
                         setSelectedTest((currentValue) =>
                           currentValue
                             ? {
                                 ...currentValue,
-                                type: event.target.value as AssessmentTestDetail["type"]
+                                type: next as AssessmentTestDetail["type"]
                               }
                             : currentValue
                         )
                       }
-                    >
-                      <option value="MCQ">{t("ab.mcq")}</option>
-                      <option value="WRITTEN">{t("ab.written")}</option>
-                                </Select>
+                      options={[
+                        { label: t("ab.mcq"), value: "MCQ" },
+                        { label: t("ab.written"), value: "WRITTEN" }
+                      ]}
+                      value={selectedTest.type}
+                    />
                     <Input
                       className="h-10"
                       min={1}

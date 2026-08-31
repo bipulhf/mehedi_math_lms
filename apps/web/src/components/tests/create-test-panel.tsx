@@ -41,14 +41,13 @@ export function CreateTestPanel({
       <div className="grid gap-2 md:grid-cols-4">
         <Select
           className="h-10"
+          onValueChange={(next) => onChange({ ...draft, type: next as CreateTestInput["type"] })}
+          options={[
+            { label: t("ab.mcq"), value: "MCQ" },
+            { label: t("ab.written"), value: "WRITTEN" }
+          ]}
           value={draft.type}
-          onChange={(event) =>
-            onChange({ ...draft, type: event.target.value as CreateTestInput["type"] })
-          }
-        >
-          <option value="MCQ">{t("ab.mcq")}</option>
-          <option value="WRITTEN">{t("ab.written")}</option>
-        </Select>
+        />
         <Input
           className="h-10"
           min={1}

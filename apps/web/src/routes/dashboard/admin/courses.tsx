@@ -230,18 +230,19 @@ function AdminCoursesPage(): JSX.Element {
           </div>
           <Select
             className="min-w-40"
-            onChange={(e) => {
-              setStatus(e.target.value as StatusFilter);
+            onValueChange={(next) => {
+              setStatus(next as StatusFilter);
               setPage(1);
             }}
             value={status}
-          >
-            {STATUS_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {value === "ALL" ? t("admin.courses.allStatuses") : value.charAt(0) + value.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </Select>
+            options={STATUS_OPTIONS.map((value) => ({
+              label:
+                value === "ALL"
+                  ? t("admin.courses.allStatuses")
+                  : value.charAt(0) + value.slice(1).toLowerCase(),
+              value
+            }))}
+          />
         </div>
       </div>
 

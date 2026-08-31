@@ -121,12 +121,17 @@ function AdminBugDetailPage(): JSX.Element {
 
             <div className="space-y-2">
               <Label htmlFor="bug-status">{t("admin.bugs.statusFilter")}</Label>
-              <Select id="bug-status" value={status} onChange={(event) => setStatus(event.target.value as AdminBugRecord["status"])}>
-                <option value="OPEN">{t("admin.bugs.open")}</option>
-                <option value="IN_PROGRESS">{t("admin.bugs.inProgress")}</option>
-                <option value="RESOLVED">{t("admin.bugs.resolved")}</option>
-                <option value="CLOSED">{t("admin.bugs.closed")}</option>
-              </Select>
+              <Select
+                id="bug-status"
+                onValueChange={(next) => setStatus(next as AdminBugRecord["status"])}
+                options={[
+                  { label: t("admin.bugs.open"), value: "OPEN" },
+                  { label: t("admin.bugs.inProgress"), value: "IN_PROGRESS" },
+                  { label: t("admin.bugs.resolved"), value: "RESOLVED" },
+                  { label: t("admin.bugs.closed"), value: "CLOSED" }
+                ]}
+                value={status}
+              />
             </div>
 
             <div className="space-y-2">
@@ -134,12 +139,13 @@ function AdminBugDetailPage(): JSX.Element {
               <Select
                 id="bug-priority"
                 value={priority}
-                onChange={(event) => setPriority(event.target.value as AdminBugRecord["priority"])}
-              >
-                <option value="LOW">{t("admin.bugs.low")}</option>
-                <option value="MEDIUM">{t("admin.bugs.medium")}</option>
-                <option value="HIGH">{t("admin.bugs.high")}</option>
-              </Select>
+                onValueChange={(next) => setPriority(next as AdminBugRecord["priority"])}
+                options={[
+                  { label: t("admin.bugs.low"), value: "LOW" },
+                  { label: t("admin.bugs.medium"), value: "MEDIUM" },
+                  { label: t("admin.bugs.high"), value: "HIGH" }
+                ]}
+              />
             </div>
 
           </div>

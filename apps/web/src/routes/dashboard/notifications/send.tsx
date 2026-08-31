@@ -242,17 +242,13 @@ function SendNotificationPage(): JSX.Element {
                 <Label htmlFor="n-type">{t("notify.category")}</Label>
                 <Select
                   id="n-type"
-                  onChange={(e) =>
-                    setNotificationType(notificationTypeSchema.parse(e.target.value))
-                  }
+                  onValueChange={(next) => setNotificationType(notificationTypeSchema.parse(next))}
+                  options={notificationTypeValues.map((value) => ({
+                    label: value.replaceAll("_", " "),
+                    value
+                  }))}
                   value={notificationType}
-                >
-                  {notificationTypeValues.map((value) => (
-                    <option key={value} value={value}>
-                      {value.replaceAll("_", " ")}
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
 
               <div className="space-y-2">
@@ -309,15 +305,13 @@ function SendNotificationPage(): JSX.Element {
                 <Label htmlFor="n-role">{t("notify.selectRole")}</Label>
                 <Select
                   id="n-role"
-                  onChange={(e) => setTargetRole(userRoleSchema.parse(e.target.value))}
+                  onValueChange={(next) => setTargetRole(userRoleSchema.parse(next))}
+                  options={userRoleValues.map((value) => ({
+                    label: `${value.charAt(0) + value.slice(1).toLowerCase()} Group`,
+                    value
+                  }))}
                   value={targetRole}
-                >
-                  {userRoleValues.map((value) => (
-                    <option key={value} value={value}>
-                      {value.charAt(0) + value.slice(1).toLowerCase()} Group
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
             )}
 

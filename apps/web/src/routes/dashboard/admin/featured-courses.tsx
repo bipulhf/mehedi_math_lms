@@ -177,20 +177,20 @@ function FeaturedCoursesPage(): JSX.Element {
           <div className="sm:w-96">
             <Select
               disabled={draft.length >= MAX_FEATURED || isCatalogPending}
-              onChange={(event) => add(event.target.value)}
+              onValueChange={add}
+              options={[
+                {
+                  disabled: true,
+                  label:
+                    draft.length >= MAX_FEATURED
+                      ? t("admin.featured.atCapacity")
+                      : t("admin.featured.pickPlaceholder"),
+                  value: ""
+                },
+                ...catalog.map((course) => ({ label: course.title, value: course.id }))
+              ]}
               value={pickerValue}
-            >
-              <option disabled value="">
-                {draft.length >= MAX_FEATURED
-                  ? t("admin.featured.atCapacity")
-                  : t("admin.featured.pickPlaceholder")}
-              </option>
-              {catalog.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.title}
-                </option>
-              ))}
-            </Select>
+            />
           </div>
         </div>
       </div>
