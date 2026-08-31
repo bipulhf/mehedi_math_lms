@@ -126,3 +126,12 @@ export const bannerPresetEnum = pgEnum("banner_preset", [
   "YELLOW",
   "SPECTRUM"
 ]);
+
+/**
+ * Where a student's challenge against their marked script stands.
+ *
+ * There is no DECLINED: the teacher answers a challenge by marking the paper
+ * again and handing it back, whether or not the score moves. What the student
+ * is owed is the second look, and RESOLVED records that it happened.
+ */
+export const scriptChallengeStatusEnum = pgEnum("script_challenge_status", ["OPEN", "RESOLVED"]);

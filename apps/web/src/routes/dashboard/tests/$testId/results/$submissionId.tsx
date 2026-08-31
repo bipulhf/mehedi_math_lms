@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { MarkingLayer } from "@/components/marking/marking-layer";
+import { ScriptChallengePanel } from "@/components/marking/script-challenge-panel";
 import { MathText } from "@/components/ui/math-text";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
@@ -120,6 +121,10 @@ function SubmissionResultPage(): JSX.Element {
           </div>
         </CardContent>
       </Card>
+
+      {test.type === "WRITTEN" ? (
+        <ScriptChallengePanel canRaise={isGraded} submissionId={submissionId} />
+      ) : null}
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-ink/55">

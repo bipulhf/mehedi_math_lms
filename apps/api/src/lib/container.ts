@@ -17,6 +17,7 @@ import { HealthController } from "@/controllers/health-controller";
 import { LandingController } from "@/controllers/landing-controller";
 import { MessageController } from "@/controllers/message-controller";
 import { CourseRoutineController } from "@/controllers/course-routine-controller";
+import { ScriptChallengeController } from "@/controllers/script-challenge-controller";
 import { NoticeController } from "@/controllers/notice-controller";
 import { NotificationController } from "@/controllers/notification-controller";
 import { SmsController } from "@/controllers/sms-controller";
@@ -48,6 +49,7 @@ import { LandingRepository } from "@/repositories/landing-repository";
 import { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import { MessageRepository } from "@/repositories/message-repository";
 import { CourseRoutineRepository } from "@/repositories/course-routine-repository";
+import { ScriptChallengeRepository } from "@/repositories/script-challenge-repository";
 import { NoticeRepository } from "@/repositories/notice-repository";
 import { NotificationRepository } from "@/repositories/notification-repository";
 import { PaymentRepository } from "@/repositories/payment-repository";
@@ -81,6 +83,7 @@ import { FcmPushService } from "@/services/fcm-push-service";
 import { MessageRealtimeService } from "@/services/message-realtime-service";
 import { MessageService } from "@/services/message-service";
 import { CourseRoutineService } from "@/services/course-routine-service";
+import { ScriptChallengeService } from "@/services/script-challenge-service";
 import { NoticeService } from "@/services/notice-service";
 import { NotificationRealtimeService } from "@/services/notification-realtime-service";
 import { NotificationService } from "@/services/notification-service";
@@ -117,6 +120,7 @@ const conversationReportRepository = new ConversationReportRepository();
 const notificationRepository = new NotificationRepository();
 const noticeRepository = new NoticeRepository();
 const courseRoutineRepository = new CourseRoutineRepository();
+const scriptChallengeRepository = new ScriptChallengeRepository();
 const smsRepository = new SmsRepository();
 const profileRepository = new ProfileRepository();
 const paymentRepository = new PaymentRepository();
@@ -242,12 +246,18 @@ const answerScriptService = new AnswerScriptService(
 );
 // Marking promotes an enrolment through the submission service once a paper is
 // submitted, which is how an Exam-Only Course of written papers completes.
+const scriptChallengeService = new ScriptChallengeService(
+  scriptChallengeRepository,
+  testRepository,
+  notificationService
+);
 const paperMarkingService = new PaperMarkingService(
   testRepository,
   answerScriptRepository,
   assessmentAccessGuards,
   testSubmissionService,
-  notificationService
+  notificationService,
+  scriptChallengeService
 );
 const uploadService = new UploadService(
   uploadRepository,
@@ -284,6 +294,7 @@ export const messageController = new MessageController(messageService);
 export const notificationController = new NotificationController(notificationService);
 export const noticeController = new NoticeController(noticeService);
 export const courseRoutineController = new CourseRoutineController(courseRoutineService);
+export const scriptChallengeController = new ScriptChallengeController(scriptChallengeService);
 export const smsController = new SmsController(smsService);
 export {
   fcmPushService,

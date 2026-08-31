@@ -8,6 +8,7 @@ import { comments } from "./comments";
 import { coupons } from "./coupons";
 import { courseProgress, enrollments } from "./enrollments";
 import { courseRoutines } from "./course-routines";
+import { scriptChallenges } from "./script-challenges";
 import { courseTeachers, courses, notices } from "./courses";
 import { lectureMaterials, lectures, videoChapters } from "./lectures";
 import { conversationReports, conversations, messages } from "./messages";
@@ -172,6 +173,21 @@ export const noticesRelations = relations(notices, ({ one }) => ({
   teacher: one(users, {
     fields: [notices.teacherId],
     references: [users.id]
+  })
+}));
+
+export const scriptChallengesRelations = relations(scriptChallenges, ({ one }) => ({
+  assignedTeacher: one(users, {
+    fields: [scriptChallenges.assignedTeacherId],
+    references: [users.id]
+  }),
+  raisedBy: one(users, {
+    fields: [scriptChallenges.raisedById],
+    references: [users.id]
+  }),
+  submission: one(testSubmissions, {
+    fields: [scriptChallenges.submissionId],
+    references: [testSubmissions.id]
   })
 }));
 

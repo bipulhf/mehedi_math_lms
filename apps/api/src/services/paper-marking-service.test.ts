@@ -5,6 +5,7 @@ import type { TestRepository } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import type { NotificationService } from "@/services/notification-service";
 import { PaperMarkingService } from "@/services/paper-marking-service";
+import type { ScriptChallengeService } from "@/services/script-challenge-service";
 import type { TestSubmissionService } from "@/services/test-submission-service";
 import { ConflictError, ForbiddenError, ValidationError } from "@/utils/errors";
 
@@ -17,6 +18,8 @@ interface AnswerSpec {
 
 interface Overrides {
   answers?: readonly AnswerSpec[];
+  /** The teacher a live challenge belongs to; null means the paper is not challenged. */
+  challengedTeacherId?: string | null;
   lockHeldByOther?: boolean;
   status?: "STARTED" | "SUBMITTED" | "GRADED";
   testType?: "MCQ" | "WRITTEN";
@@ -24,6 +27,7 @@ interface Overrides {
 
 interface Calls {
   notified: string[];
+  resolvedChallenges: { score: number; submissionId: string }[];
   submissionUpdates: Record<string, unknown>[];
   upserts: Record<string, unknown>[][];
 }
@@ -34,7 +38,12 @@ const questions = [
 ];
 
 function buildService(overrides: Overrides = {}): { calls: Calls; service: PaperMarkingService } {
-  const calls: Calls = { notified: [], submissionUpdates: [], upserts: [] };
+  const calls: Calls = {
+    notified: [],
+    resolvedChallenges: [],
+    submissionUpdates: [],
+    upserts: []
+  };
   const answers = overrides.answers ?? [
     { awardedMarks: 3, id: "a1", pageCount: 2, questionId: "q1" },
     { awardedMarks: 8, id: "a2", pageCount: 1, questionId: "q2" }
@@ -137,6 +146,18 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Paper
     }
   } as unknown as NotificationService;
 
+  const scriptChallenges = {
+    findAssignedTeacherId: async () => overrides.challengedTeacherId ?? null,
+    resolveOnResubmit: async (
+      submissionId: string,
+      _resolvedById: string,
+      _response: string | null,
+      score: number
+    ) => {
+      calls.resolvedChallenges.push({ score, submissionId });
+    }
+  } as unknown as ScriptChallengeService;
+
   return {
     calls,
     service: new PaperMarkingService(
@@ -144,7 +165,8 @@ function buildService(overrides: Overrides = {}): { calls: Calls; service: Paper
       answerScriptRepository,
       access,
       submissions,
-      notificationService
+      notificationService,
+      scriptChallenges
     )
   };
 }
@@ -257,5 +279,63 @@ describe("PaperMarkingService.reopenPaper", () => {
     await service.reopenPaper("sub-1", "admin-1", "ADMIN");
 
     expect(calls.submissionUpdates[0]).toEqual({ gradedAt: null, status: "SUBMITTED" });
+  });
+});
+
+describe("PaperMarkingService — a challenged paper belongs to its marker", () => {
+  test("another teacher on the same test is refused the re-check", async () => {
+    const { service } = buildService({ challengedTeacherId: "teacher-1" });
+
+    await expect(
+      service.setAnswerMark("a1", { awardedMarks: 4 }, "teacher-2", "TEACHER")
+    ).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  test("the teacher who marked it may mark it again", async () => {
+    const { service } = buildService({ challengedTeacherId: "teacher-1" });
+
+    await expect(
+      service.setAnswerMark("a1", { awardedMarks: 4 }, "teacher-1", "TEACHER")
+    ).resolves.toBeDefined();
+  });
+
+  test("an admin stays exempt, so a departed teacher cannot strand a paper", async () => {
+    const { service } = buildService({ challengedTeacherId: "teacher-1" });
+
+    await expect(
+      service.setAnswerMark("a1", { awardedMarks: 4 }, "admin-1", "ADMIN")
+    ).resolves.toBeDefined();
+  });
+
+  test("an unchallenged paper is still open to any teacher on the test", async () => {
+    const { service } = buildService();
+
+    await expect(
+      service.setAnswerMark("a1", { awardedMarks: 4 }, "teacher-2", "TEACHER")
+    ).resolves.toBeDefined();
+  });
+
+  test("handing the paper back closes the challenge and carries the new score", async () => {
+    const { calls, service } = buildService({ challengedTeacherId: "teacher-1" });
+
+    await service.submitPaper("sub-1", {}, "teacher-1", "TEACHER");
+
+    expect(calls.resolvedChallenges).toEqual([{ score: 11, submissionId: "sub-1" }]);
+  });
+
+  test("a challenged paper does not also send the ordinary 'marked' notice", async () => {
+    const { calls, service } = buildService({ challengedTeacherId: "teacher-1" });
+
+    await service.submitPaper("sub-1", {}, "teacher-1", "TEACHER");
+
+    expect(calls.notified).toEqual([]);
+  });
+
+  test("an ordinary paper still tells the student it is marked", async () => {
+    const { calls, service } = buildService();
+
+    await service.submitPaper("sub-1", {}, "teacher-1", "TEACHER");
+
+    expect(calls.notified).toEqual(["student-1"]);
   });
 });
