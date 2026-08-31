@@ -23,6 +23,40 @@ function nextRotation(rotation: PageRotation): PageRotation {
 }
 
 /**
+ * Where one page is in the three steps it goes through. Only the middle one
+ * reports a percentage, so the bar treats the other two as the boundaries of
+ * the page rather than pretending to measure them.
+ */
+type PagePhase = "PREPARING" | "SAVING" | "UPLOADING";
+
+interface UploadBatch {
+  /** Pages already stored in this run — the whole ones behind the bar. */
+  done: number;
+  /** 0-100 within the current page, meaningful only while UPLOADING. */
+  percent: number;
+  phase: PagePhase;
+  total: number;
+}
+
+const phaseKeys = {
+  PREPARING: "script.preparingPage",
+  SAVING: "script.savingPage",
+  UPLOADING: "script.uploadingPage"
+} as const;
+
+/**
+ * How far through the whole batch, counting the current page as the fraction
+ * of it that has actually happened. Preparing has not moved a byte yet and
+ * saving is the last thing before the page exists, so they read as 0 and 1.
+ */
+function batchPercent(batch: UploadBatch): number {
+  const pageFraction =
+    batch.phase === "PREPARING" ? 0 : batch.phase === "SAVING" ? 1 : batch.percent / 100;
+
+  return Math.round(((batch.done + pageFraction) / batch.total) * 100);
+}
+
+/**
  * The student's Answer Script for one question: photograph a page, straighten
  * it, put the pages in the order you wrote them, take one back if it came out
  * unreadable.
@@ -41,6 +75,9 @@ export function AnswerScriptUploader({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingRotation, setPendingRotation] = useState<PageRotation>(0);
   const [isBusy, setIsBusy] = useState(false);
+  // Null between runs. A photographed page is a slow upload on a phone, and
+  // without this the only sign anything was happening was a greyed-out button.
+  const [batch, setBatch] = useState<UploadBatch | null>(null);
   const isFull = pages.length >= maxScriptPagesPerAnswer;
 
   const handleFiles = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -51,25 +88,39 @@ export function AnswerScriptUploader({
       return;
     }
 
+    const accepted = files.slice(0, maxScriptPagesPerAnswer - pages.length);
+
     setIsBusy(true);
+    setBatch({ done: 0, percent: 0, phase: "PREPARING", total: accepted.length });
 
     try {
       let latestPages = pages;
 
-      for (const file of files.slice(0, maxScriptPagesPerAnswer - pages.length)) {
+      for (const [index, file] of accepted.entries()) {
+        setBatch({ done: index, percent: 0, phase: "PREPARING", total: accepted.length });
         const prepared = await prepareScriptPage(file, pendingRotation);
-        const upload = await uploadAnswerScriptPage(prepared.file);
+
+        setBatch({ done: index, percent: 0, phase: "UPLOADING", total: accepted.length });
+        const upload = await uploadAnswerScriptPage(prepared.file, (percent) => {
+          setBatch({ done: index, percent, phase: "UPLOADING", total: accepted.length });
+        });
+
+        setBatch({ done: index, percent: 100, phase: "SAVING", total: accepted.length });
         latestPages = await addScriptPage(submissionId, {
           questionId,
           uploadId: upload.id
         });
+
+        // Each page appears as it lands rather than all of them at the end, so
+        // a batch of five is visibly progressing and not one long freeze.
+        onPagesChange(latestPages);
       }
 
-      onPagesChange(latestPages);
       setPendingRotation(0);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("script.uploadFailed"));
     } finally {
+      setBatch(null);
       setIsBusy(false);
     }
   };
@@ -148,11 +199,34 @@ export function AnswerScriptUploader({
         </span>
       </div>
 
-      {pages.length === 0 ? (
+      {batch === null ? null : (
+        <div
+          aria-live="polite"
+          className="space-y-2 rounded-[var(--radius)] border border-hairline bg-panel-warm p-3"
+        >
+          <div className="flex items-center justify-between gap-3 text-xs text-ink/62">
+            <span>
+              {t(phaseKeys[batch.phase], {
+                number: batch.done + 1,
+                total: batch.total
+              })}
+            </span>
+            <span>{batchPercent(batch)}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-chip-active">
+            <div
+              className="h-full rounded-full bg-accent transition-[width] ease-out"
+              style={{ width: `${String(batchPercent(batch))}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {pages.length === 0 && batch === null ? (
         <p className="rounded-[var(--radius)] border border-dashed border-hairline bg-panel-warm p-6 text-center text-sm text-ink/62">
           {t("script.empty")}
         </p>
-      ) : (
+      ) : pages.length === 0 ? null : (
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {pages.map((page, index) => (
             <li
