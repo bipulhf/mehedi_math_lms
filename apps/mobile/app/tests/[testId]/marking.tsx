@@ -125,6 +125,35 @@ export default function MarkingScreen(): JSX.Element {
     }
   };
 
+  const canUndo = activeAnswer
+    ? activeAnswer.pages.some((page) => (markingByPageId[page.id]?.elements.length ?? 0) > 0)
+    : false;
+
+  const undoLastMark = (): void => {
+    if (!activeAnswer) {
+      return;
+    }
+
+    const lastMarked = [...activeAnswer.pages]
+      .reverse()
+      .find((page) => (markingByPageId[page.id]?.elements.length ?? 0) > 0);
+
+    if (!lastMarked) {
+      return;
+    }
+
+    const marking = markingByPageId[lastMarked.id];
+
+    if (!marking) {
+      return;
+    }
+
+    queueMarkingSave(lastMarked.id, {
+      elements: marking.elements.slice(0, -1),
+      version: marking.version
+    });
+  };
+
   const queueMarkingSave = (pageId: string, marking: MarkingDocument): void => {
     setMarkingByPageId((current) => ({ ...current, [pageId]: marking }));
 
@@ -303,6 +332,13 @@ export default function MarkingScreen(): JSX.Element {
                 min={markingStrokeWidthMin}
                 onChange={setPenWidth}
                 value={penWidth}
+              />
+              <Button
+                disabled={!canUndo}
+                label={t("marking.undo")}
+                onPress={undoLastMark}
+                size="sm"
+                variant="outline"
               />
             </View>
 
