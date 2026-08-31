@@ -60,11 +60,22 @@ export function MarkingLayer({
   const [pendingNote, setPendingNote] = useState<{ text: string; x: number; y: number } | null>(
     null
   );
+  const hasCommittedNoteRef = useRef(false);
   const isEditable = onChange !== undefined;
+  const isErasing = isEditable && tool === "ERASER";
   const aspect = pageWidth > 0 && pageHeight > 0 ? pageHeight / pageWidth : 1.4142;
   const viewWidth = 100;
   const viewHeight = 100 * aspect;
-  const strokeWidth = resolveStrokeWidthRatio(penWidth) * Math.min(viewWidth, viewHeight) * 10;
+
+  /**
+   * A stroke's width is a fraction of the page's shorter edge, which is what
+   * `markingStrokeWidthMin`/`Max` have always described. It used to be scaled
+   * ten times past that here, so even the thinnest setting drew a band about a
+   * centimetre wide on a real script and the notes were narrower than the pen
+   * that wrote them.
+   */
+  const strokeWidthFor = (width: MarkingStrokeWidth): number =>
+    resolveStrokeWidthRatio(width) * Math.min(viewWidth, viewHeight);
 
   const toNormalised = (event: ReactPointerEvent<HTMLDivElement>): { x: number; y: number } => {
     const bounds = surfaceRef.current?.getBoundingClientRect();
@@ -87,6 +98,40 @@ export function MarkingLayer({
     commit(marking.elements.filter((element) => element.id !== elementId));
   };
 
+  /**
+   * Enter used to be the only way to keep a note, so a teacher who typed one
+   * and clicked on to the next page lost it without being told — the mark was
+   * never written and the student saw an unannotated page. Blur commits too,
+   * and the ref stops Enter (which blurs straight after submitting) from
+   * writing the same note twice.
+   */
+  const commitNote = (): void => {
+    if (!pendingNote || hasCommittedNoteRef.current) {
+      return;
+    }
+
+    hasCommittedNoteRef.current = true;
+
+    const text = pendingNote.text.trim();
+
+    if (text.length > 0) {
+      commit([
+        ...marking.elements,
+        {
+          color,
+          fontSize: 0.025,
+          id: nextElementId("note"),
+          kind: "NOTE",
+          text: text.slice(0, 500),
+          x: pendingNote.x,
+          y: pendingNote.y
+        }
+      ]);
+    }
+
+    setPendingNote(null);
+  };
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>): void => {
     if (!isEditable || pendingNote) {
       return;
@@ -101,6 +146,7 @@ export function MarkingLayer({
     }
 
     if (tool === "NOTE") {
+      hasCommittedNoteRef.current = false;
       setPendingNote({ text: "", ...point });
       return;
     }
@@ -154,9 +200,8 @@ export function MarkingLayer({
   };
 
   const renderElement = (element: MarkingElement): JSX.Element | null => {
-    const eraserProps =
-      isEditable && tool === "ERASER"
-        ? {
+    const eraserProps = isErasing
+      ? {
             className: "cursor-pointer",
             onPointerDown: (event: ReactPointerEvent<SVGElement>) => {
               event.stopPropagation();
@@ -177,7 +222,7 @@ export function MarkingLayer({
           stroke={markingColorHex[element.color]}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={resolveStrokeWidthRatio(element.width) * Math.min(viewWidth, viewHeight) * 10}
+          strokeWidth={strokeWidthFor(element.width)}
           {...eraserProps}
         />
       );
@@ -200,25 +245,21 @@ export function MarkingLayer({
       );
     }
 
-    return (
-      <text
-        key={element.id}
-        dominantBaseline="hanging"
-        fill={markingColorHex[element.color]}
-        fontSize={element.fontSize * viewHeight}
-        x={element.x * viewWidth}
-        y={element.y * viewHeight}
-        {...eraserProps}
-      >
-        {element.text}
-      </text>
-    );
+    // A NOTE is typed text, and the SVG is stretched to the page box with
+    // `preserveAspectRatio="none"` — inside it a note is squashed with the
+    // page and drawn at the browser's smallest hinted size. It is laid over
+    // the page as ordinary text instead, below.
+    return null;
   };
+
+  const notes = marking.elements.filter((element) => element.kind === "NOTE");
 
   return (
     <div
       ref={surfaceRef}
       className={`relative w-full select-none ${isEditable ? "touch-none" : ""}`}
+      // Notes are sized in `cqw`, so the page box has to be their container.
+      style={{ containerType: "inline-size" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -243,33 +284,46 @@ export function MarkingLayer({
             stroke={markingColorHex[color]}
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={strokeWidth}
+            strokeWidth={strokeWidthFor(penWidth)}
           />
         ) : null}
       </svg>
+      {notes.map((note) => (
+        <span
+          key={note.id}
+          className={`absolute max-w-[70%] whitespace-pre-wrap font-medium leading-tight ${
+            isErasing ? "cursor-pointer" : ""
+          }`}
+          style={{
+            color: markingColorHex[note.color],
+            // `fontSize` is a fraction of the page's height, and `cqw` is a
+            // hundredth of its width, so the aspect converts between them. The
+            // floor keeps a note readable on a thumbnail, where the page it
+            // scales with is a couple of hundred pixels wide.
+            fontSize: `max(0.8rem, ${(note.fontSize * aspect * 100).toFixed(3)}cqw)`,
+            left: `${note.x * 100}%`,
+            pointerEvents: isErasing ? "auto" : "none",
+            top: `${note.y * 100}%`
+          }}
+          onPointerDown={
+            isErasing
+              ? (event) => {
+                  event.stopPropagation();
+                  removeElement(note.id);
+                }
+              : undefined
+          }
+        >
+          {note.text}
+        </span>
+      ))}
       {pendingNote ? (
         <form
           className="absolute z-10 flex gap-1"
           style={{ left: `${pendingNote.x * 100}%`, top: `${pendingNote.y * 100}%` }}
           onSubmit={(event) => {
             event.preventDefault();
-
-            if (pendingNote.text.trim().length > 0) {
-              commit([
-                ...marking.elements,
-                {
-                  color,
-                  fontSize: 0.025,
-                  id: nextElementId("note"),
-                  kind: "NOTE",
-                  text: pendingNote.text.trim().slice(0, 500),
-                  x: pendingNote.x,
-                  y: pendingNote.y
-                }
-              ]);
-            }
-
-            setPendingNote(null);
+            commitNote();
           }}
         >
           <input
@@ -277,11 +331,13 @@ export function MarkingLayer({
             className="h-8 rounded-[var(--radius)] border border-line-strong bg-paper px-2 text-xs text-ink"
             placeholder="Text"
             value={pendingNote.text}
+            onBlur={commitNote}
             onChange={(event) =>
               setPendingNote((note) => (note ? { ...note, text: event.target.value } : note))
             }
             onKeyDown={(event) => {
               if (event.key === "Escape") {
+                hasCommittedNoteRef.current = true;
                 setPendingNote(null);
               }
             }}
