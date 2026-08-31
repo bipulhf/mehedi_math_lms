@@ -80,6 +80,21 @@ export function MarkingLayer({
   const hasCommittedTextRef = useRef(false);
   const isEditable = onChange !== undefined;
 
+  /**
+   * A stroke's width is a fraction of the page's shorter edge, which is what
+   * `markingStrokeWidthMin`/`Max` have always described. It used to be scaled
+   * ten times past that here, so even the thinnest setting drew a band about a
+   * centimetre wide on a real script.
+   */
+  const strokeWidthFor = (value: MarkingStrokeWidth): number =>
+    resolveStrokeWidthRatio(value) * Math.min(width, height);
+
+  /**
+   * The floor keeps a note readable on a phone, where the page it scales with
+   * is only a few hundred points wide.
+   */
+  const noteFontSize = (fraction: number): number => Math.max(12, fraction * height);
+
   const commit = (elements: readonly MarkingElement[]): void => {
     onChange?.({ elements: [...elements], version: markingDocumentVersion });
   };
@@ -219,21 +234,42 @@ export function MarkingLayer({
           stroke={colorHex[element.color]}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={resolveStrokeWidthRatio(element.width) * Math.min(width, height) * 10}
+          strokeWidth={strokeWidthFor(element.width)}
         />
       );
     }
 
+    if (element.kind === "STAMP") {
+      return (
+        <SvgText
+          fill={colorHex[element.color]}
+          fontSize={element.size * height}
+          key={element.id}
+          textAnchor="middle"
+          x={element.x * width}
+          y={element.y * height}
+        >
+          {stampGlyph[element.stamp]}
+        </SvgText>
+      );
+    }
+
+    const size = noteFontSize(element.fontSize);
+
     return (
       <SvgText
         fill={colorHex[element.color]}
-        fontSize={(element.kind === "STAMP" ? element.size : element.fontSize) * height}
+        fontSize={size}
+        fontWeight="500"
         key={element.id}
-        textAnchor={element.kind === "STAMP" ? "middle" : "start"}
+        textAnchor="start"
         x={element.x * width}
-        y={element.y * height}
+        // `y` is a baseline here, so a note written near the top of the page
+        // was drawn above it and cropped away. Dropping it by its own size
+        // hangs the text off the point it was placed at, as the web does.
+        y={element.y * height + size}
       >
-        {element.kind === "STAMP" ? stampGlyph[element.stamp] : element.text}
+        {element.text}
       </SvgText>
     );
   };
@@ -250,7 +286,7 @@ export function MarkingLayer({
             stroke={colorHex[color]}
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={resolveStrokeWidthRatio(penWidth) * Math.min(width, height) * 10}
+            strokeWidth={strokeWidthFor(penWidth)}
           />
         ) : null}
       </Svg>
