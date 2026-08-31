@@ -18,6 +18,7 @@ export const queryKeys = {
   courseProgress: (courseId: string) => ["progress", courseId] as const,
   courseReviewSummary: (courseId: string) => ["reviews", "summary", courseId] as const,
   courseReviews: (courseId: string) => ["reviews", courseId] as const,
+  courseRoutine: (courseId: string) => ["routines", courseId] as const,
   courseTests: (courseId: string) => ["tests", "course", courseId] as const,
   courses: (filters: Record<string, unknown>) => ["courses", "list", filters] as const,
   enrollment: (courseId: string) => ["enrollments", courseId] as const,

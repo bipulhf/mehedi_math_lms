@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { CourseRoutinePanel } from "@/src/components/course-routine-panel";
 import { LectureBody, MaterialLinks, getPdfMaterial } from "@/src/components/lecture-body";
 import { LectureComments } from "@/src/components/lecture-comments";
 import { LessonPickerSheet, type NavigationItem } from "@/src/components/lesson-picker-sheet";
@@ -83,7 +84,9 @@ export default function CoursePlayerScreen(): JSX.Element {
   const format = useFormat();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [openChapterId, setOpenChapterId] = useState<string | null>(null);
-  const [contentTab, setContentTab] = useState<"about" | "discussion" | "notices">("about");
+  const [contentTab, setContentTab] = useState<"about" | "discussion" | "notices" | "routine">(
+    "about"
+  );
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const recordStudyActivity = useRecordStudyActivity();
 
@@ -302,6 +305,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           tabs={[
             { isActive: contentTab === "about", label: t("player.about"), value: "about" },
             { isActive: contentTab === "notices", label: t("player.notices"), value: "notices" },
+            { isActive: contentTab === "routine", label: t("player.routine"), value: "routine" },
             { isActive: contentTab === "discussion", label: t("disc.title"), value: "discussion" }
           ]}
           value={contentTab}
@@ -325,6 +329,8 @@ export default function CoursePlayerScreen(): JSX.Element {
             ))
           )
         ) : null}
+
+        {contentTab === "routine" ? <CourseRoutinePanel courseId={courseId} /> : null}
 
         {contentTab === "about" && selectedLecture !== null && selectedChapter !== null ? (
           <Card style={{ gap: spacing.md }}>
