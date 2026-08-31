@@ -7,6 +7,7 @@ export * from "./categories";
 export * from "./comments";
 export * from "./content";
 export * from "./coupons";
+export * from "./course-routines";
 export * from "./courses";
 export * from "./marking";
 export * from "./math";

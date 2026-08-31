@@ -7,6 +7,7 @@ import { chapterMaterials, chapters } from "./chapters";
 import { comments } from "./comments";
 import { coupons } from "./coupons";
 import { courseProgress, enrollments } from "./enrollments";
+import { courseRoutines } from "./course-routines";
 import { courseTeachers, courses, notices } from "./courses";
 import { lectureMaterials, lectures, videoChapters } from "./lectures";
 import { conversationReports, conversations, messages } from "./messages";
@@ -170,6 +171,17 @@ export const noticesRelations = relations(notices, ({ one }) => ({
   }),
   teacher: one(users, {
     fields: [notices.teacherId],
+    references: [users.id]
+  })
+}));
+
+export const courseRoutinesRelations = relations(courseRoutines, ({ one }) => ({
+  course: one(courses, {
+    fields: [courseRoutines.courseId],
+    references: [courses.id]
+  }),
+  updatedBy: one(users, {
+    fields: [courseRoutines.updatedById],
     references: [users.id]
   })
 }));

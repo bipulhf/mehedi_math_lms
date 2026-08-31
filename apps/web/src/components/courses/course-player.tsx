@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Clock3, Megaphone, PlayCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Clock3, Megaphone, PlayCircle } from "lucide-react";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CourseNoticesPanel } from "@/components/courses/course-notices-panel";
+import { CourseRoutinePanel } from "@/components/courses/course-routine-panel";
 import {
   ChunkedProgressBar,
   CourseNavigationItemButton,
@@ -46,7 +47,7 @@ export function CoursePlayer({
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [openChapterId, setOpenChapterId] = useState<string | null>(null);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
-  const [playerMode, setPlayerMode] = useState<"learn" | "notices">("learn");
+  const [playerMode, setPlayerMode] = useState<"learn" | "notices" | "routine">("learn");
   const progressByLectureId = useMemo(
     () => new Map(progress.lectures.map((lecture) => [lecture.lectureId, lecture] as const)),
     [progress.lectures]
@@ -258,6 +259,15 @@ export function CoursePlayer({
                 <Megaphone className="size-4" />
                 {t("player.notices")}
               </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={playerMode === "routine" ? "ink" : "outline"}
+                onClick={() => setPlayerMode("routine")}
+              >
+                <CalendarDays className="size-4" />
+                {t("player.routine")}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -266,6 +276,12 @@ export function CoursePlayer({
       {playerMode === "notices" ? (
         <div>
           <CourseNoticesPanel courseId={course.id} />
+        </div>
+      ) : null}
+
+      {playerMode === "routine" ? (
+        <div>
+          <CourseRoutinePanel courseId={course.id} />
         </div>
       ) : null}
 

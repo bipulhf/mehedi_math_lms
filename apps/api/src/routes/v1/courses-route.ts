@@ -10,6 +10,7 @@ import {
   createCourseSchema,
   createChapterSchema,
   listCoursesQuerySchema,
+  upsertCourseRoutineSchema,
   reorderChaptersSchema,
   slugParamsSchema,
   teacherDirectoryQuerySchema,
@@ -21,6 +22,7 @@ import {
   auditLogService,
   contentController,
   courseController,
+  courseRoutineController,
   noticeController,
   progressController,
   reviewController,
@@ -335,6 +337,68 @@ coursesRoutes.patch("/:courseId/chapters/reorder", requireRole("ADMIN", "TEACHER
 
   auditLogService.log({
     action: "course.chapters_reordered",
+    actorId: authUser!.id,
+    entityId: params.courseId,
+    entityType: "course"
+  });
+
+  return response;
+});
+
+coursesRoutes.get("/:courseId/routine", requireAuth(), (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return courseRoutineController.getForCourse(
+    context,
+    params.courseId,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
+// PUT rather than POST: there is one routine per course, so saving is the same
+// call whether or not the course already had one.
+coursesRoutes.put("/:courseId/routine", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const payload = upsertCourseRoutineSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  const response = await courseRoutineController.saveForCourse(
+    context,
+    params.courseId,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "course.routine.saved",
+    actorId: authUser!.id,
+    entityId: params.courseId,
+    entityType: "course",
+    metadata: { hasAttachment: payload.attachmentUrl != null }
+  });
+
+  return response;
+});
+
+coursesRoutes.delete("/:courseId/routine", requireRole("ADMIN", "TEACHER"), async (context) => {
+  const params = courseContentParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  const response = await courseRoutineController.deleteForCourse(
+    context,
+    params.courseId,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "course.routine.deleted",
     actorId: authUser!.id,
     entityId: params.courseId,
     entityType: "course"

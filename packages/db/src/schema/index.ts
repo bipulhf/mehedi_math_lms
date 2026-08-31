@@ -4,6 +4,7 @@ export * from "./bug-reports";
 export * from "./categories";
 export * from "./chapters";
 export * from "./comments";
+export * from "./course-routines";
 export * from "./coupons";
 export * from "./courses";
 export * from "./enrollments";

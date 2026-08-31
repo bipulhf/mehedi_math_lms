@@ -16,6 +16,7 @@ import { EnrollmentController } from "@/controllers/enrollment-controller";
 import { HealthController } from "@/controllers/health-controller";
 import { LandingController } from "@/controllers/landing-controller";
 import { MessageController } from "@/controllers/message-controller";
+import { CourseRoutineController } from "@/controllers/course-routine-controller";
 import { NoticeController } from "@/controllers/notice-controller";
 import { NotificationController } from "@/controllers/notification-controller";
 import { SmsController } from "@/controllers/sms-controller";
@@ -46,6 +47,7 @@ import { HealthRepository } from "@/repositories/health-repository";
 import { LandingRepository } from "@/repositories/landing-repository";
 import { ConversationReportRepository } from "@/repositories/conversation-report-repository";
 import { MessageRepository } from "@/repositories/message-repository";
+import { CourseRoutineRepository } from "@/repositories/course-routine-repository";
 import { NoticeRepository } from "@/repositories/notice-repository";
 import { NotificationRepository } from "@/repositories/notification-repository";
 import { PaymentRepository } from "@/repositories/payment-repository";
@@ -78,6 +80,7 @@ import { HealthService } from "@/services/health-service";
 import { FcmPushService } from "@/services/fcm-push-service";
 import { MessageRealtimeService } from "@/services/message-realtime-service";
 import { MessageService } from "@/services/message-service";
+import { CourseRoutineService } from "@/services/course-routine-service";
 import { NoticeService } from "@/services/notice-service";
 import { NotificationRealtimeService } from "@/services/notification-realtime-service";
 import { NotificationService } from "@/services/notification-service";
@@ -113,6 +116,7 @@ const messageRepository = new MessageRepository();
 const conversationReportRepository = new ConversationReportRepository();
 const notificationRepository = new NotificationRepository();
 const noticeRepository = new NoticeRepository();
+const courseRoutineRepository = new CourseRoutineRepository();
 const smsRepository = new SmsRepository();
 const profileRepository = new ProfileRepository();
 const paymentRepository = new PaymentRepository();
@@ -151,6 +155,11 @@ const noticeService = new NoticeService(
   courseRepository,
   enrollmentRepository,
   notificationService
+);
+const courseRoutineService = new CourseRoutineService(
+  courseRoutineRepository,
+  courseRepository,
+  enrollmentRepository
 );
 const staffAccountService = new StaffAccountService(staffAccountRepository);
 const adminUserService = new AdminUserService(
@@ -274,6 +283,7 @@ export const landingController = new LandingController(landingService);
 export const messageController = new MessageController(messageService);
 export const notificationController = new NotificationController(notificationService);
 export const noticeController = new NoticeController(noticeService);
+export const courseRoutineController = new CourseRoutineController(courseRoutineService);
 export const smsController = new SmsController(smsService);
 export {
   fcmPushService,
