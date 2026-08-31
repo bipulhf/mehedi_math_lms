@@ -33,11 +33,16 @@ export function AnswerScriptUploader({
 }: AnswerScriptUploaderProps): JSX.Element {
   const t = useT();
   const [isBusy, setIsBusy] = useState(false);
+  // A dimmed button with an ellipsis was the only sign a page was going up,
+  // and a photograph over mobile data is not a quick round trip. The S3 PUT
+  // reports no progress, so this names the step rather than a percentage.
+  const [phase, setPhase] = useState<"PREPARING" | "SAVING" | "UPLOADING" | null>(null);
   const [rotation, setRotation] = useState(0);
   const isFull = pages.length >= maxScriptPagesPerAnswer;
 
   const addPage = async (source: "CAMERA" | "LIBRARY"): Promise<void> => {
     setIsBusy(true);
+    setPhase("PREPARING");
 
     try {
       const captured = await pickScriptPage({ rotation, source });
@@ -46,7 +51,10 @@ export function AnswerScriptUploader({
         return;
       }
 
+      setPhase("UPLOADING");
       const upload = await uploadScriptPage(captured);
+
+      setPhase("SAVING");
       onPagesChange(await addScriptPage(submissionId, { questionId, uploadId: upload.id }));
       setRotation(0);
     } catch (error) {
@@ -55,6 +63,7 @@ export function AnswerScriptUploader({
         error instanceof Error ? error.message : t("script.uploadFailed")
       );
     } finally {
+      setPhase(null);
       setIsBusy(false);
     }
   };
@@ -132,9 +141,23 @@ export function AnswerScriptUploader({
           variant="outline"
         />
       </View>
-      <Caption tone="faint">
-        {t("script.pagesOf", { count: pages.length, total: maxScriptPagesPerAnswer })}
-      </Caption>
+      {phase === null ? (
+        <Caption tone="faint">
+          {t("script.pagesOf", { count: pages.length, total: maxScriptPagesPerAnswer })}
+        </Caption>
+      ) : (
+        <View style={styles.progress}>
+          <Caption>
+            {t(
+              phase === "PREPARING"
+                ? "script.preparingOne"
+                : phase === "UPLOADING"
+                  ? "script.uploadingOne"
+                  : "script.savingOne"
+            )}
+          </Caption>
+        </View>
+      )}
 
       {pages.length === 0 ? (
         <View style={styles.empty}>
@@ -198,5 +221,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   pageButtons: { flexDirection: "row", gap: spacing.xs },
+  progress: {
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.sm,
+    padding: spacing.sm
+  },
   thumbnail: { borderRadius: radius.sm, height: 220, width: "100%" }
 });
