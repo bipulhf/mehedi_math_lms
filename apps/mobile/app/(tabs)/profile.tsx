@@ -187,6 +187,7 @@ export default function ProfileScreen(): JSX.Element {
             label={t("profile.changePassword")}
             onPress={() => router.push("/change-password")}
           />
+          <SettingsRow label={t("exams.title")} onPress={() => router.push("/exams")} />
           <SettingsRow label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
           <SettingsRow label={t("messages.new")} onPress={() => router.push("/messages/new")} />
           <SettingsRow

@@ -170,6 +170,11 @@ export async function removeScriptPage(pageId: string): Promise<{ id: string }> 
   return apiDelete<{ id: string }>(`scripts/pages/${pageId}`);
 }
 
+/** Every attempt handed in on this test, for the staff who can mark it. */
+export async function listTestSubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
+  return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions`);
+}
+
 /** Every attempt the current student has made on this test, oldest first. */
 export async function listMySubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
   return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);

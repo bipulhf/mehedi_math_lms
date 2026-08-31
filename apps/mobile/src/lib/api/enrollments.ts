@@ -5,6 +5,7 @@ import { apiGet, apiPost } from "@/src/lib/api-client";
 export interface StudentEnrollment {
   accessGranted: boolean;
   cancelledAt: string | null;
+  category: { name: string; slug: string };
   completedAt: string | null;
   course: {
     coverImageUrl: string | null;

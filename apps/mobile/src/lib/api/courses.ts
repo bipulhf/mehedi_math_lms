@@ -54,6 +54,8 @@ export async function listCourses(query: {
   hasFreeLesson?: boolean | undefined;
   limit?: number;
   maxPrice?: number | undefined;
+  /** Staff only: the courses the caller teaches or administers, published or not. */
+  mine?: boolean | undefined;
   minPrice?: number | undefined;
   page?: number;
   search?: string | undefined;
@@ -64,6 +66,7 @@ export async function listCourses(query: {
       hasFreeLesson: query.hasFreeLesson,
       limit: query.limit ?? 20,
       maxPrice: query.maxPrice,
+      mine: query.mine,
       minPrice: query.minPrice,
       page: query.page ?? 1,
       search: query.search

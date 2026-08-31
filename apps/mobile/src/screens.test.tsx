@@ -78,6 +78,7 @@ const COURSE: CourseSummary = {
 const ENROLLMENT: StudentEnrollment = {
   accessGranted: true,
   cancelledAt: null,
+  category: { name: "HSC Maths", slug: "hsc-maths" },
   completedAt: null,
   course: {
     coverImageUrl: null,

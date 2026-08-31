@@ -334,6 +334,14 @@ function StudentDashboardHeader({
         </View>
       ) : null}
 
+      <View style={styles.examsWrap}>
+        <Button
+          label={t("exams.title")}
+          onPress={() => router.push("/exams")}
+          variant="outline"
+        />
+      </View>
+
       <View style={styles.coursesHeading}>
         <Heading>{t("nav.myCourses")}</Heading>
       </View>
@@ -442,6 +450,7 @@ export default function HomeScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  examsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xxl },
   emptyWrap: { padding: spacing.lg },
   hero: { backgroundColor: colors.background, gap: spacing.xs, padding: spacing.xl },
