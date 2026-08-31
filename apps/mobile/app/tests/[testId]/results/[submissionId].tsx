@@ -2,8 +2,10 @@ import { MathBody } from "@/src/components/math/math-body";
 import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
+import { CourseCompletionNotice } from "@/src/components/course-completion-notice";
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer } from "@/src/components/marking-layer";
 import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
@@ -28,6 +30,11 @@ export default function SubmissionResultScreen(): JSX.Element {
   }>();
   const router = useRouter();
   const t = useT();
+  const [isCelebrating, setIsCelebrating] = useState(false);
+  // `courseCompletedJustNow` is only true on the response seeded right after
+  // submitting — a background refetch reads it fresh and gets false. The ref
+  // keeps that from taking the banner away again.
+  const hasCelebrated = useRef(false);
 
   const [testQuery, submissionQuery] = useQueries({
     queries: [
@@ -45,6 +52,13 @@ export default function SubmissionResultScreen(): JSX.Element {
   const test = testQuery?.data ?? null;
   const submission = submissionQuery?.data ?? null;
   const isLoading = Boolean(testQuery?.isPending) || Boolean(submissionQuery?.isPending);
+
+  useEffect(() => {
+    if (submission?.courseCompletedJustNow === true && !hasCelebrated.current) {
+      hasCelebrated.current = true;
+      setIsCelebrating(true);
+    }
+  }, [submission]);
 
   if (isLoading || !test || !submission) {
     return (
@@ -64,6 +78,10 @@ export default function SubmissionResultScreen(): JSX.Element {
     <Screen>
       <Stack.Screen options={{ title: test.title }} />
       <ScrollView contentContainerStyle={styles.content}>
+        {isCelebrating ? (
+          <CourseCompletionNotice onDismiss={() => setIsCelebrating(false)} />
+        ) : null}
+
         <Card style={{ gap: spacing.md }}>
           <Title>{test.title}</Title>
           <Caption>

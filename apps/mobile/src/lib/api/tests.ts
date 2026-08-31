@@ -90,6 +90,8 @@ export interface SubmissionSummary {
 
 export interface SubmissionDetail extends SubmissionSummary {
   answers: readonly SubmissionAnswerView[];
+  /** True only on the response to the submission that finished the course. */
+  courseCompletedJustNow: boolean;
   gradedById: string | null;
   testId: string;
 }

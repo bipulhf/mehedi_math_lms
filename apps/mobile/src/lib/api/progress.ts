@@ -25,6 +25,8 @@ export async function getCourseProgress(courseId: string): Promise<CourseProgres
   return apiGet<CourseProgressResponse>(`courses/${courseId}/progress`);
 }
 
-export async function markLectureComplete(lectureId: string): Promise<void> {
-  await apiPost(`progress/${lectureId}/complete`);
+/** Answers with the whole course's progress, so a caller can see the lesson
+    that finished the course finish it. */
+export async function markLectureComplete(lectureId: string): Promise<CourseProgressResponse> {
+  return apiPost<undefined, CourseProgressResponse>(`progress/${lectureId}/complete`);
 }

@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { CourseCompletionNotice } from "@/src/components/course-completion-notice";
 import { CourseRoutinePanel } from "@/src/components/course-routine-panel";
 import { LectureBody, MaterialLinks, getPdfMaterial } from "@/src/components/lecture-body";
 import { LectureComments } from "@/src/components/lecture-comments";
@@ -88,6 +89,7 @@ export default function CoursePlayerScreen(): JSX.Element {
     "about"
   );
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [hasJustCompletedCourse, setHasJustCompletedCourse] = useState(false);
   const recordStudyActivity = useRecordStudyActivity();
 
   const [courseQuery, contentQuery, progressQuery, testsQuery, noticesQuery] = useQueries({
@@ -215,7 +217,15 @@ export default function CoursePlayerScreen(): JSX.Element {
 
   const complete = useMutation({
     mutationFn: markLectureComplete,
-    onSuccess: async () => {
+    onSuccess: async (next) => {
+      // The lesson that finishes the course is the only one worth a
+      // celebration, and the server is the one that decides a course is
+      // finished — read the transition off its answer rather than counting
+      // lectures here. ADR-0005.
+      if (progress?.enrollmentStatus !== "COMPLETED" && next.enrollmentStatus === "COMPLETED") {
+        setHasJustCompletedCourse(true);
+      }
+
       await queryClient.invalidateQueries({ queryKey: queryKeys.courseProgress(courseId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments() });
     }
@@ -252,6 +262,10 @@ export default function CoursePlayerScreen(): JSX.Element {
     <Screen>
       <Stack.Screen options={{ title: course?.title ?? t("player.navigator") }} />
       <ScrollView contentContainerStyle={styles.content}>
+        {hasJustCompletedCourse ? (
+          <CourseCompletionNotice onDismiss={() => setHasJustCompletedCourse(false)} />
+        ) : null}
+
         <Card>
           <View style={styles.badgesRow}>
             {course?.category ? <Badge>{course.category.name}</Badge> : null}
