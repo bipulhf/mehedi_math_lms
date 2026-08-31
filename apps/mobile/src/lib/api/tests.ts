@@ -175,7 +175,7 @@ export async function listTestSubmissions(testId: string): Promise<readonly Subm
   return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions`);
 }
 
-/** Every attempt the current student has made on this test, oldest first. */
+/** Every attempt the current student has made on this test, newest first. */
 export async function listMySubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
   return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);
 }

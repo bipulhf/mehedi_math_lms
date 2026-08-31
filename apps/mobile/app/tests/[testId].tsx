@@ -19,7 +19,15 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { getTestDetail, saveSubmissionAnswers, type ScriptPageView, startSubmission, type SubmissionDetail, submitTest } from "@/src/lib/api/tests";
+import {
+  getTestDetail,
+  listMySubmissions,
+  saveSubmissionAnswers,
+  type ScriptPageView,
+  startSubmission,
+  type SubmissionDetail,
+  submitTest
+} from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
@@ -48,6 +56,7 @@ export default function TestScreen(): JSX.Element {
     Record<string, readonly ScriptPageView[]>
   >({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isRetaking, setIsRetaking] = useState(false);
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
@@ -55,13 +64,56 @@ export default function TestScreen(): JSX.Element {
   // Answers are hydrated from the server exactly once, after `startSubmission`
   // resolves. Until then the autosave must not fire on an empty draft.
   const isHydratingAnswersRef = useRef(true);
+  const startedForRef = useRef<string | null>(null);
 
   const { data: test, isPending } = useQuery({
     queryFn: async () => getTestDetail(testId),
     queryKey: queryKeys.test(testId)
   });
+  /**
+   * What this student has already done with this exam, newest first.
+   *
+   * Read before anything is started, because starting is a write: coming back
+   * out of the results screen lands here again, and without this the screen
+   * silently opened a fresh attempt — or, on a one-attempt exam, showed the raw
+   * refusal from the server.
+   */
+  const { data: attempts, isPending: isLoadingAttempts } = useQuery({
+    queryFn: async () => listMySubmissions(testId),
+    queryKey: queryKeys.myTestSubmissions(testId),
+    // Never from cache: landing here decides whether to write an attempt, and a
+    // minute-old "no attempts yet" is exactly what a back gesture hands over a
+    // second after a paper was submitted.
+    refetchOnMount: "always" as const,
+    staleTime: 0
+  });
+
+  const latestAttempt = attempts?.[0] ?? null;
+  /** An attempt that is over. A `STARTED` one is resumed, not re-opened. */
+  const finishedAttempt =
+    latestAttempt !== null && latestAttempt.status !== "STARTED" ? latestAttempt : null;
+  const isShowingFinishedAttempt = finishedAttempt !== null && !isRetaking;
 
   useEffect(() => {
+    if (isLoadingAttempts) {
+      return;
+    }
+
+    if (isShowingFinishedAttempt) {
+      setIsStartingSubmission(false);
+
+      return;
+    }
+
+    // Resuming and retaking are two different starts, so the guard is keyed on
+    // which one this is rather than on the test alone.
+    const startKey = `${testId}:${isRetaking ? "retake" : "open"}`;
+
+    if (startedForRef.current === startKey) {
+      return;
+    }
+
+    startedForRef.current = startKey;
     setIsStartingSubmission(true);
 
     void (async () => {
@@ -78,7 +130,9 @@ export default function TestScreen(): JSX.Element {
           )
         );
         setPagesByQuestionId(
-          Object.fromEntries(started.answers.map((answer) => [answer.questionId, answer.scriptPages]))
+          Object.fromEntries(
+            started.answers.map((answer) => [answer.questionId, answer.scriptPages])
+          )
         );
         isHydratingAnswersRef.current = true;
       } catch (startError) {
@@ -87,7 +141,7 @@ export default function TestScreen(): JSX.Element {
         setIsStartingSubmission(false);
       }
     })();
-  }, [testId]);
+  }, [isLoadingAttempts, isRetaking, isShowingFinishedAttempt, testId]);
 
   useEffect(() => {
     if (!test?.durationInMinutes || !submission?.startedAt) {
@@ -189,16 +243,56 @@ export default function TestScreen(): JSX.Element {
   };
 
   const confirmSubmit = (): void => {
-    Alert.alert(t("test.confirmSubmitTitle"), t("test.confirmSubmitDescription", {
-      answered: answeredCount,
-      total: test?.questions.length ?? 0
-    }), [
-      { style: "cancel", text: t("common.cancel") },
-      { onPress: () => void handleSubmit(), style: "default", text: t("test.confirmSubmitAction") }
-    ]);
+    Alert.alert(
+      t("test.confirmSubmitTitle"),
+      t("test.confirmSubmitDescription", {
+        answered: answeredCount,
+        total: test?.questions.length ?? 0
+      }),
+      [
+        { style: "cancel", text: t("common.cancel") },
+        {
+          onPress: () => void handleSubmit(),
+          style: "default",
+          text: t("test.confirmSubmitAction")
+        }
+      ]
+    );
   };
 
-  const isLoading = isPending || isStartingSubmission;
+  const isLoading = isPending || isLoadingAttempts || isStartingSubmission;
+
+  if (isShowingFinishedAttempt && finishedAttempt !== null && !isLoading) {
+    const canRetake = !test || test.attemptsRemaining === null || test.attemptsRemaining > 0;
+
+    return (
+      <Screen>
+        <Stack.Screen options={{ title: test?.title ?? t("test.alreadySubmitted") }} />
+        <ScrollView contentContainerStyle={styles.content}>
+          <Card style={{ gap: spacing.md }}>
+            <Title>{test?.title ?? t("test.alreadySubmitted")}</Title>
+            <Body muted>{t("test.alreadySubmittedLead")}</Body>
+            <Button
+              label={t("test.seeResult")}
+              onPress={() =>
+                router.push({
+                  params: { submissionId: finishedAttempt.id, testId },
+                  pathname: "/tests/[testId]/results/[submissionId]"
+                })
+              }
+            />
+            {canRetake ? (
+              <Button
+                label={t("test.takeAgain")}
+                onPress={() => setIsRetaking(true)}
+                variant="outline"
+              />
+            ) : null}
+          </Card>
+        </ScrollView>
+      </Screen>
+    );
+  }
 
   if (error && !submission) {
     return (
@@ -268,9 +362,7 @@ export default function TestScreen(): JSX.Element {
                   onPress={() => setCurrentQuestionIndex(index)}
                   style={[styles.questionDot, isCurrent ? styles.questionDotCurrent : null]}
                 >
-                  <Caption
-                    tone={isAnswered(question.id) && !isCurrent ? "muted" : "faint"}
-                  >
+                  <Caption tone={isAnswered(question.id) && !isCurrent ? "muted" : "faint"}>
                     {index + 1}
                   </Caption>
                 </Pressable>
@@ -364,9 +456,7 @@ export default function TestScreen(): JSX.Element {
               <Button
                 label={t("common.next")}
                 onPress={() =>
-                  setCurrentQuestionIndex((value) =>
-                    Math.min(test.questions.length - 1, value + 1)
-                  )
+                  setCurrentQuestionIndex((value) => Math.min(test.questions.length - 1, value + 1))
                 }
               />
             )}
