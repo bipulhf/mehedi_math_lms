@@ -141,16 +141,17 @@ function StudentsDirectoryPage(): JSX.Element {
           </div>
           <Select
             className="min-w-40"
-            onChange={(e) => {
-              setStatus(e.target.value as "all" | "active" | "inactive");
+            onValueChange={(next) => {
+              setStatus(next as "all" | "active" | "inactive");
               setPage(1);
             }}
+            options={[
+              { label: "All statuses", value: "all" },
+              { label: "Active", value: "active" },
+              { label: "Inactive", value: "inactive" }
+            ]}
             value={status}
-          >
-            <option value="all">All statuses</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </Select>
+          />
         </div>
       </div>
 

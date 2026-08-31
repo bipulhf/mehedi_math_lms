@@ -142,19 +142,16 @@ function AdminLogsPage(): JSX.Element {
               <Label htmlFor="log-action-filter">{t("admin.logs.actionFilter")}</Label>
               <Select
                 id="log-action-filter"
-                onChange={(event) => {
-                  setAction(event.target.value);
+                onValueChange={(next) => {
+                  setAction(next);
                   setPage(1);
                 }}
+                options={[
+                  { label: t("admin.logs.allActions"), value: "" },
+                  ...(actions ?? []).map((value) => ({ label: formatAction(value), value }))
+                ]}
                 value={action}
-              >
-                <option value="">{t("admin.logs.allActions")}</option>
-                {(actions ?? []).map((value) => (
-                  <option key={value} value={value}>
-                    {formatAction(value)}
-                  </option>
-                ))}
-              </Select>
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="log-from">{t("admin.logs.fromDate")}</Label>

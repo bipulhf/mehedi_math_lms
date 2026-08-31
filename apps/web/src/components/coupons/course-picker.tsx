@@ -173,7 +173,7 @@ export function CoursePicker({
 
       {isOpen ? (
         <ul
-          className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-y-auto border border-hairline bg-card"
+          className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-y-auto border border-hairline bg-popover"
           id={listId}
           role="listbox"
         >

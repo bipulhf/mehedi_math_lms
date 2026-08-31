@@ -204,15 +204,16 @@ function DashboardCoursesPage(): JSX.Element {
             <Label htmlFor="status-filter">{t("tcourses.statusFilter")}</Label>
             <Select
               id="status-filter"
-              onChange={(event) => setStatus(event.target.value)}
+              onValueChange={setStatus}
+              options={[
+                { label: t("tcourses.allStates"), value: "" },
+                { label: t("tcourses.drafts"), value: "DRAFT" },
+                { label: t("tcourses.underReview"), value: "PENDING" },
+                { label: t("tcourses.live"), value: "PUBLISHED" },
+                { label: t("tcourses.archived"), value: "ARCHIVED" }
+              ]}
               value={status}
-            >
-              <option value="">{t("tcourses.allStates")}</option>
-              <option value="DRAFT">{t("tcourses.drafts")}</option>
-              <option value="PENDING">{t("tcourses.underReview")}</option>
-              <option value="PUBLISHED">{t("tcourses.live")}</option>
-              <option value="ARCHIVED">{t("tcourses.archived")}</option>
-            </Select>
+            />
           </div>
           <Button asChild className="shrink-0" size="lg">
             <Link to="/dashboard/courses/new">

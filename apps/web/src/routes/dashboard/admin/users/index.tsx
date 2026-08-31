@@ -86,7 +86,9 @@ function AdminUsersPage(): JSX.Element {
     formState: { errors },
     handleSubmit,
     register,
-    reset
+    reset,
+    setValue,
+    watch
   } = form;
 
   const userFilters = { limit: 10, page, role, search, status };
@@ -226,12 +228,16 @@ function AdminUsersPage(): JSX.Element {
             <Select
               error={errors.role?.message}
               id="create-role"
-              {...register("role")}
-            >
-              <option value="STUDENT">{t("role.student")}</option>
-              <option value="TEACHER">{t("role.teacherOption")}</option>
-              <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
-            </Select>
+              onValueChange={(next) =>
+                setValue("role", next as CreateAdminUserInput["role"], { shouldValidate: true })
+              }
+              options={[
+                { label: t("role.student"), value: "STUDENT" },
+                { label: t("role.teacherOption"), value: "TEACHER" },
+                { label: t("role.accountantOption"), value: "ACCOUNTANT" }
+              ]}
+              value={watch("role")}
+            />
           </div>
           <div>
             <Button
@@ -280,30 +286,32 @@ function AdminUsersPage(): JSX.Element {
               <div className="flex gap-2">
                 <Select
                   className="min-w-32 sm:min-w-40"
-                  onChange={(e) => {
-                    setRole(e.target.value);
+                  onValueChange={(next) => {
+                    setRole(next);
                     setPage(1);
                   }}
+                  options={[
+                    { label: t("admin.users.allRoles"), value: "" },
+                    { label: t("role.student"), value: "STUDENT" },
+                    { label: t("role.teacherOption"), value: "TEACHER" },
+                    { label: t("role.accountantOption"), value: "ACCOUNTANT" },
+                    { label: t("role.adminOption"), value: "ADMIN" }
+                  ]}
                   value={role}
-                >
-                  <option value="">{t("admin.users.allRoles")}</option>
-                  <option value="STUDENT">{t("role.student")}</option>
-                  <option value="TEACHER">{t("role.teacherOption")}</option>
-                  <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
-                  <option value="ADMIN">{t("role.adminOption")}</option>
-                </Select>
+                />
                 <Select
                   className="min-w-32 sm:min-w-40"
-                  onChange={(e) => {
-                    setStatus(e.target.value as "all" | "active" | "inactive");
+                  onValueChange={(next) => {
+                    setStatus(next as "all" | "active" | "inactive");
                     setPage(1);
                   }}
+                  options={[
+                    { label: t("admin.users.anyStatus"), value: "all" },
+                    { label: t("admin.users.active"), value: "active" },
+                    { label: t("admin.users.suspended"), value: "inactive" }
+                  ]}
                   value={status}
-                >
-                  <option value="all">{t("admin.users.anyStatus")}</option>
-                  <option value="active">{t("admin.users.active")}</option>
-                  <option value="inactive">{t("admin.users.suspended")}</option>
-                </Select>
+                />
               </div>
             </div>
           </div>

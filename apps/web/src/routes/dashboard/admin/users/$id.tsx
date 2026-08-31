@@ -141,13 +141,14 @@ function AdminUserDetailPage(): JSX.Element {
                 <Select
                   disabled={user.role === "ADMIN"}
                   id="detail-role"
-                  onChange={(event) => setRole(event.target.value as "STUDENT" | "TEACHER" | "ACCOUNTANT")}
+                  onValueChange={(next) => setRole(next as "STUDENT" | "TEACHER" | "ACCOUNTANT")}
+                  options={[
+                    { label: t("role.student"), value: "STUDENT" },
+                    { label: t("role.teacherOption"), value: "TEACHER" },
+                    { label: t("role.accountantOption"), value: "ACCOUNTANT" }
+                  ]}
                   value={user.role === "ADMIN" ? "STUDENT" : role}
-                >
-                  <option value="STUDENT">{t("role.student")}</option>
-                  <option value="TEACHER">{t("role.teacherOption")}</option>
-                  <option value="ACCOUNTANT">{t("role.accountantOption")}</option>
-                </Select>
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>{t("admin.users.statusColumn")}</Label>

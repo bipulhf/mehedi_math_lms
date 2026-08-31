@@ -203,15 +203,16 @@ function PaymentsPage(): JSX.Element {
             <Label htmlFor="payment-status-filter">{t("pay.filterStatus")}</Label>
             <Select
               id="payment-status-filter"
-              onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | "")}
+              onValueChange={(next) => setStatusFilter(next as PaymentStatus | "")}
+              options={[
+                { label: t("pay.allStatuses"), value: "" },
+                { label: t("pay.pending"), value: "PENDING" },
+                { label: t("pay.success"), value: "SUCCESS" },
+                { label: t("pay.failed"), value: "FAILED" },
+                { label: t("pay.refunded"), value: "REFUNDED" }
+              ]}
               value={statusFilter}
-            >
-              <option value="">{t("pay.allStatuses")}</option>
-              <option value="PENDING">{t("pay.pending")}</option>
-              <option value="SUCCESS">{t("pay.success")}</option>
-              <option value="FAILED">{t("pay.failed")}</option>
-              <option value="REFUNDED">{t("pay.refunded")}</option>
-            </Select>
+            />
           </div>
         </div>
       ) : null}

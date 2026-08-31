@@ -32,6 +32,12 @@
 
   --color-paper: #ffffff;
   --color-card: rgba(255, 255, 255, 0.04);
+  /* Anything that floats over the page needs a fill you cannot see through.
+   * `card` is 4% white, which reads as a surface only because the page is
+   * behind it — a dropdown laid over text just shows the text. This is that
+   * same 4% already composited against the background, so a panel and the
+   * menu above it are the same colour. */
+  --color-popover: #171717;
   --color-panel-warm: #171717;
   --color-row-hover: rgba(0, 207, 255, 0.08);
   --color-placeholder-fill: #1e1e1e;
@@ -97,6 +103,7 @@
     --color-placeholder: rgba(255, 255, 255, 0.38);
     --color-paper: #ffffff;
     --color-card: rgba(255, 255, 255, 0.04);
+    --color-popover: #171717;
     --color-panel-warm: #171717;
     --color-row-hover: rgba(0, 207, 255, 0.08);
     --color-placeholder-fill: #1e1e1e;
@@ -117,6 +124,7 @@
     --color-placeholder: rgba(13, 13, 13, 0.4);
     --color-paper: #ffffff;
     --color-card: #fafafa;
+    --color-popover: #ffffff;
     --color-panel-warm: #f4f4f4;
     --color-row-hover: rgba(0, 207, 255, 0.08);
     --color-placeholder-fill: #eeeeee;

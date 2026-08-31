@@ -502,18 +502,16 @@ export function CourseLectureBuilder({
           <Select
             className="h-11 w-full md:max-w-md"
             id="authoring-chapter"
-            value={activeChapterId}
-            onChange={(event) => {
-              setActiveChapterId(event.target.value);
+            onValueChange={(next) => {
+              setActiveChapterId(next);
               resetComposer();
             }}
-          >
-            {chapters.map((chapter, index) => (
-              <option key={chapter.id} value={chapter.id}>
-                {format.digits(String(index + 1).padStart(2, "0"))} · {chapter.title}
-              </option>
-            ))}
-          </Select>
+            options={chapters.map((chapter, index) => ({
+              label: `${format.digits(String(index + 1).padStart(2, "0"))} · ${chapter.title}`,
+              value: chapter.id
+            }))}
+            value={activeChapterId}
+          />
         </div>
       </div>
 

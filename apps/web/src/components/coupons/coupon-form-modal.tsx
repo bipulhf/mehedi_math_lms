@@ -173,12 +173,13 @@ export function CouponFormModal({
             <Label htmlFor="coupon-kind">{t("coupon.kind")}</Label>
             <Select
               id="coupon-kind"
-              onChange={(event) => setKind(event.target.value as CouponKind)}
+              onValueChange={(next) => setKind(next as CouponKind)}
+              options={[
+                { label: t("coupon.kindPercent"), value: "PERCENT" },
+                { label: t("coupon.kindFlat"), value: "FLAT" }
+              ]}
               value={kind}
-            >
-              <option value="PERCENT">{t("coupon.kindPercent")}</option>
-              <option value="FLAT">{t("coupon.kindFlat")}</option>
-            </Select>
+            />
           </div>
 
           <div className="space-y-2">
