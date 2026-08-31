@@ -5,7 +5,7 @@ import type { MessageKey } from "@mma/i18n";
 import { useT } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
-export type ManageTab = "analytics" | "content" | "discussions" | "info" | "notices";
+export type ManageTab = "analytics" | "content" | "discussions" | "info" | "notices" | "routine";
 
 interface TabDefinition {
   readonly labelKey: MessageKey;
@@ -21,6 +21,7 @@ interface TabDefinition {
 const tabs: readonly TabDefinition[] = [
   { labelKey: "builder.stepInfo", tab: "info", to: "/dashboard/courses/$id/edit" },
   { labelKey: "builder.stepContent", tab: "content", to: "/dashboard/courses/$id/content" },
+  { labelKey: "manage.routine", tab: "routine", to: "/dashboard/courses/$id/routine" },
   { labelKey: "manage.notices", tab: "notices", to: "/dashboard/courses/$id/notices" },
   { labelKey: "manage.discussions", tab: "discussions", to: "/dashboard/courses/$id/discussions" },
   { labelKey: "manage.analytics", tab: "analytics", to: "/dashboard/courses/$id/analytics" }
