@@ -26,6 +26,8 @@ export interface CourseTeacherSummary {
 }
 
 export interface CourseStats {
+  /** Students on the course now — a refunded one is not counted. ADR-0001. */
+  enrolledStudentCount: number;
   /** Lessons anyone can watch without enrolling — `lectures.isPreview`. */
   freeLessonCount: number;
   lectureCount: number;
