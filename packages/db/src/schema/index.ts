@@ -15,6 +15,7 @@ export * from "./notifications";
 export * from "./payments";
 export * from "./relations";
 export * from "./reviews";
+export * from "./script-challenges";
 export * from "./sms";
 export * from "./tests";
 export * from "./uploads";

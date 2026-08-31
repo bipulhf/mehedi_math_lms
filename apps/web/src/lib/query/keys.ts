@@ -78,6 +78,10 @@ export const queryKeys = {
     reports: () => ["moderation", "reports"] as const,
     thread: (conversationId: string) => ["moderation", "thread", conversationId] as const
   },
+  challenges: {
+    all: () => ["challenges"] as const,
+    submission: (submissionId: string) => ["challenges", "submission", submissionId] as const
+  },
   routines: {
     all: () => ["routines"] as const,
     course: (courseId: string) => ["routines", "course", courseId] as const

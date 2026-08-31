@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
 import { MarkingLayer } from "@/components/marking/marking-layer";
+import { ScriptChallengePanel } from "@/components/marking/script-challenge-panel";
 import { MathText } from "@/components/ui/math-text";
 import { BackButton } from "@/components/ui/back-button";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,10 @@ function SubmissionReviewPage(): JSX.Element {
           ) : null}
         </CardHeader>
       </Card>
+
+      {test.type === "WRITTEN" ? (
+        <ScriptChallengePanel canRaise={false} submissionId={submissionId} />
+      ) : null}
 
       {test.questions.map((question, index) => {
         const answer = answerMap.get(question.id);

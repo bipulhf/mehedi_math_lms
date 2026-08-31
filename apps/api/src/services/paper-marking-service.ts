@@ -17,6 +17,7 @@ import type { AssessmentAccessGuards } from "@/services/assessment-access-guards
 import { roundMarks, totalMarks } from "@/services/assessment-grading";
 import { mapScriptPageView, type ScriptPageView } from "@/services/assessment-views";
 import type { NotificationService } from "@/services/notification-service";
+import type { ScriptChallengeService } from "@/services/script-challenge-service";
 import type { TestSubmissionService } from "@/services/test-submission-service";
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from "@/utils/errors";
 
@@ -92,8 +93,35 @@ export class PaperMarkingService {
     private readonly answerScriptRepository: AnswerScriptRepository,
     private readonly access: AssessmentAccessGuards,
     private readonly submissions: TestSubmissionService,
-    private readonly notificationService: NotificationService
+    private readonly notificationService: NotificationService,
+    private readonly scriptChallenges: ScriptChallengeService
   ) {}
+
+  /**
+   * A challenged paper belongs to the teacher who marked it and to nobody else.
+   *
+   * The ordinary rule is that any teacher who manages the test may mark any
+   * script on it, which is right for a first pass and wrong for a second: a
+   * student who disputes a mark is owed a look from the person who made it.
+   * Admins stay exempt — they are the escape hatch when that teacher is gone.
+   */
+  private async requireChallengeReviewer(
+    submissionId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<void> {
+    if (currentUserRole === "ADMIN") {
+      return;
+    }
+
+    const assignedTeacherId = await this.scriptChallenges.findAssignedTeacherId(submissionId);
+
+    if (assignedTeacherId !== null && assignedTeacherId !== currentUserId) {
+      throw new ForbiddenError(
+        "This paper is under challenge and only the teacher who marked it can check it again"
+      );
+    }
+  }
 
   private async requireWrittenTest(
     testId: string,
@@ -173,6 +201,8 @@ export class PaperMarkingService {
         ]
       );
     }
+
+    await this.requireChallengeReviewer(submission.id, currentUserId, currentUserRole);
 
     const question = await this.testRepository.findQuestionById(answer.questionId);
 
@@ -410,6 +440,8 @@ export class PaperMarkingService {
       currentUserRole
     );
 
+    await this.requireChallengeReviewer(submissionId, currentUserId, currentUserRole);
+
     if (submission.status !== "SUBMITTED") {
       throw new ValidationError(
         submission.status === "GRADED"
@@ -475,12 +507,27 @@ export class PaperMarkingService {
     });
 
     await this.submissions.promoteEnrollmentIfFinished(test.chapterId, submission.userId);
-    await this.notificationService.notifyUsers([submission.userId], {
-      body: `Your paper for ${test.title} has been marked.`,
-      data: { submissionId, testId: submission.testId },
-      title: "Your paper is marked",
-      type: "COURSE"
-    });
+
+    // Handing a challenged paper back is what answers the challenge, so the
+    // student hears once — about the review they asked for — rather than
+    // twice, once for a marking they did not know was happening again.
+    const wasChallenged = await this.scriptChallenges.findAssignedTeacherId(submissionId);
+
+    if (wasChallenged === null) {
+      await this.notificationService.notifyUsers([submission.userId], {
+        body: `Your paper for ${test.title} has been marked.`,
+        data: { submissionId, testId: submission.testId },
+        title: "Your paper is marked",
+        type: "COURSE"
+      });
+    } else {
+      await this.scriptChallenges.resolveOnResubmit(
+        submissionId,
+        currentUserId,
+        input.feedback !== undefined ? normalizeOptionalHtml(input.feedback) : null,
+        score
+      );
+    }
 
     return { score, submissionId };
   }

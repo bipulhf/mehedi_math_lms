@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   createQuestionSchema,
+  raiseScriptChallengeSchema,
   reorderQuestionsSchema,
   saveSubmissionAnswersSchema,
   submissionIdParamsSchema,
@@ -12,7 +13,7 @@ import {
 } from "@mma/shared";
 import type { UserRole } from "@mma/shared";
 
-import { auditLogService, testController } from "@/lib/container";
+import { auditLogService, scriptChallengeController, testController } from "@/lib/container";
 import { requireAuth, requireRole } from "@/middleware/auth";
 import type { AppBindings } from "@/types/app-bindings";
 import { extractCreatedId } from "@/utils/audit";
@@ -229,6 +230,47 @@ testsRoutes.put("/submissions/:id/answers", requireAuth(), async (context) => {
   });
 
   return response;
+});
+
+/**
+ * A student's challenge against the marking on their own script. The service
+ * refuses any other role — a teacher who disagrees with a mark changes it.
+ */
+testsRoutes.post("/submissions/:id/challenge", requireAuth(), async (context) => {
+  const params = submissionIdParamsSchema.parse(context.req.param());
+  const payload = raiseScriptChallengeSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  const response = await scriptChallengeController.raise(
+    context,
+    params.id,
+    payload,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+
+  auditLogService.log({
+    action: "script_challenge.raised",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "test_submission"
+  });
+
+  return response;
+});
+
+testsRoutes.get("/submissions/:id/challenges", requireAuth(), (context) => {
+  const params = submissionIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return scriptChallengeController.listForSubmission(
+    context,
+    params.id,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
 });
 
 testsRoutes.get("/submissions/:id", requireAuth(), (context) => {
