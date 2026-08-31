@@ -63,6 +63,7 @@ const COURSE: CourseSummary = {
   price: "1200.00",
   slug: "higher-maths",
   stats: {
+    enrolledStudentCount: 42,
     freeLessonCount: 1,
     lectureCount: 12,
     reviewAverage: 4.5,

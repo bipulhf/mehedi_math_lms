@@ -36,7 +36,11 @@ import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
 
-function formatCourseLength(totalDurationSeconds: number, t: ReturnType<typeof useT>, format: ReturnType<typeof useFormat>): string | null {
+function formatCourseLength(
+  totalDurationSeconds: number,
+  t: ReturnType<typeof useT>,
+  format: ReturnType<typeof useFormat>
+): string | null {
   if (totalDurationSeconds <= 0) {
     return null;
   }
@@ -122,13 +126,16 @@ export default function CourseDetailScreen(): JSX.Element {
         return;
       }
 
-      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollment(course?.id ?? courseId) });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.enrollment(course?.id ?? courseId)
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments() });
       router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
     }
   });
 
-  const openPlayer = (): void => router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
+  const openPlayer = (): void =>
+    router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
 
   if (courseQuery?.isPending) {
     return <ScreenSkeleton rows={4} />;
@@ -187,10 +194,16 @@ export default function CourseDetailScreen(): JSX.Element {
           {course.isExamOnly ? <Badge tone="attention">{t("course.examOnly")}</Badge> : null}
         </View>
         <Caption>
+          {course.stats.enrolledStudentCount > 0
+            ? `${format.number(course.stats.enrolledStudentCount)} ${t("common.students")} · `
+            : ""}
           {t("detail.curriculumSummary", {
             lessons: format.number(course.stats.lectureCount),
             modules: chapters.length
           })}
+          {course.stats.freeLessonCount > 0
+            ? ` · ${format.number(course.stats.freeLessonCount)} ${t("detail.factFree")}`
+            : ""}
           {course.stats.reviewCount > 0
             ? ` · ${t("detail.reviewSummary", {
                 average: format.rating(course.stats.reviewAverage ?? 0),
@@ -225,7 +238,11 @@ export default function CourseDetailScreen(): JSX.Element {
           label={course.title}
           onChange={setTab}
           tabs={[
-            { isActive: tab === "curriculum", label: t("detail.tabCurriculum"), value: "curriculum" },
+            {
+              isActive: tab === "curriculum",
+              label: t("detail.tabCurriculum"),
+              value: "curriculum"
+            },
             { isActive: tab === "reviews", label: t("detail.tabReviews"), value: "reviews" },
             { isActive: tab === "teacher", label: t("detail.tabTeacher"), value: "teacher" }
           ]}
@@ -281,7 +298,7 @@ export default function CourseDetailScreen(): JSX.Element {
                           key={lesson.id}
                           onPress={() =>
                             router.push({
-                               params: { courseId: course.slug, lectureId: lesson.id },
+                              params: { courseId: course.slug, lectureId: lesson.id },
                               pathname: "/courses/[courseId]/preview/[lectureId]"
                             })
                           }
@@ -305,11 +322,13 @@ export default function CourseDetailScreen(): JSX.Element {
           )
         ) : null}
 
-        {tab === "reviews" ? <CourseReviews canReview={hasAccess} courseId={resolvedCourseId} /> : null}
+        {tab === "reviews" ? (
+          <CourseReviews canReview={hasAccess} courseId={resolvedCourseId} />
+        ) : null}
 
         {tab === "teacher" ? (
           <Card style={{ gap: spacing.md }}>
-            {course.teachers.map((teacher) => (
+            {course.teachers.map((teacher) =>
               teacher.slug ? (
                 <Link
                   asChild
@@ -333,7 +352,7 @@ export default function CourseDetailScreen(): JSX.Element {
                   </View>
                 </View>
               )
-            ))}
+            )}
           </Card>
         ) : null}
 

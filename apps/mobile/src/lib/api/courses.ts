@@ -11,6 +11,8 @@ export interface CourseSummary {
   price: string;
   slug: string;
   stats: {
+    /** Students on the course now — a refunded one is not counted. ADR-0001. */
+    enrolledStudentCount: number;
     freeLessonCount: number;
     lectureCount: number;
     reviewAverage: number | null;
