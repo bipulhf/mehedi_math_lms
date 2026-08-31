@@ -22,16 +22,11 @@ import {
   Tabs,
   Title
 } from "@/src/components/ui";
-import {
-  getCourse,
-  getCourseAssessments,
-  getCourseContent,
-  getCourseProgress,
-  listCourseNotices,
-  markLectureComplete,
-  type AssessmentTestSummary,
-  type ContentLecture
-} from "@/src/lib/api";
+import { type ContentLecture, getCourseContent } from "@/src/lib/api/content";
+import { getCourse } from "@/src/lib/api/courses";
+import { listCourseNotices } from "@/src/lib/api/notices";
+import { getCourseProgress, markLectureComplete } from "@/src/lib/api/progress";
+import { type AssessmentTestSummary, getCourseAssessments } from "@/src/lib/api/tests";
 import { ApiError } from "@/src/lib/api-client";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";

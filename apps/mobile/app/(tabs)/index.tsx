@@ -21,7 +21,7 @@ import {
   StreakTrack,
   Title
 } from "@/src/components/ui";
-import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api";
+import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";

@@ -10,16 +10,8 @@ import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer, type MarkingTool } from "@/src/components/marking-layer";
 import { PenWidthSlider } from "@/src/components/pen-width-slider";
 import { Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
-import type { MarkingAnswerView } from "@/src/lib/api";
-import {
-  claimAnswer,
-  getMarkingQueue,
-  releaseAnswerClaim,
-  renewAnswerClaim,
-  saveScriptPageMarking,
-  setAnswerMark,
-  submitPaper
-} from "@/src/lib/api";
+import type { MarkingAnswerView } from "@/src/lib/api/marking";
+import { claimAnswer, getMarkingQueue, releaseAnswerClaim, renewAnswerClaim, saveScriptPageMarking, setAnswerMark, submitPaper } from "@/src/lib/api/marking";
 import { useT } from "@/src/lib/locale";
 import {
   buildMarkingWorkList,

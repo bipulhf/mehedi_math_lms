@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { Badge, Body, Caption, Card, EmptyState, Screen, SkeletonBlock, Title } from "@/src/components/ui";
-import { getTestDetail, listMySubmissions } from "@/src/lib/api";
+import { getTestDetail, listMySubmissions } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { spacing } from "@/src/theme/tokens";

@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import { Body, Button, Caption } from "@/src/components/ui";
-import type { ScriptPageView } from "@/src/lib/api";
-import { addScriptPage, removeScriptPage, reorderScriptPages } from "@/src/lib/api";
+import type { ScriptPageView } from "@/src/lib/api/tests";
+import { addScriptPage, removeScriptPage, reorderScriptPages } from "@/src/lib/api/tests";
 import { pickScriptPage, uploadScriptPage } from "@/src/lib/script-capture";
 import { useT } from "@/src/lib/locale";
 import { colors, radius, spacing } from "@/src/theme/tokens";

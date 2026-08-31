@@ -11,7 +11,7 @@ import {
 } from "@mma/shared";
 import type { ZodType } from "zod";
 
-import type { OwnProfile } from "@/src/lib/api";
+import type { OwnProfile } from "@/src/lib/api/profiles";
 
 /**
  * The profile form's shape, kept out of the screen so the field list, the

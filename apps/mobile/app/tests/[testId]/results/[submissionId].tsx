@@ -7,7 +7,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer } from "@/src/components/marking-layer";
 import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
-import { getSubmissionDetail, getTestDetail } from "@/src/lib/api";
+import { getSubmissionDetail, getTestDetail } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";

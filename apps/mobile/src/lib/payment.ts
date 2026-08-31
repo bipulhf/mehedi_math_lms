@@ -1,7 +1,7 @@
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 
-import { createEnrollment } from "@/src/lib/api";
+import { createEnrollment } from "@/src/lib/api/enrollments";
 import { mobileEnv } from "@/src/lib/env";
 
 /**

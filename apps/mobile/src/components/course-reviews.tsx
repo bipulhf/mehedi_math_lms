@@ -14,7 +14,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { getCourseReviewSummary, listCourseReviews, submitCourseReview } from "@/src/lib/api";
+import { getCourseReviewSummary, listCourseReviews, submitCourseReview } from "@/src/lib/api/reviews";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";

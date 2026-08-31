@@ -3,7 +3,7 @@ import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 import { Platform } from "react-native";
 
-import { registerPushToken } from "@/src/lib/api";
+import { registerPushToken } from "@/src/lib/api/notifications";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

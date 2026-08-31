@@ -20,14 +20,8 @@ import {
   Tabs,
   Title
 } from "@/src/components/ui";
-import {
-  listConversations,
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-  type MessageConversation,
-  type NotificationRecord
-} from "@/src/lib/api";
+import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
+import { listNotifications, markAllNotificationsRead, markNotificationRead, type NotificationRecord } from "@/src/lib/api/notifications";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";

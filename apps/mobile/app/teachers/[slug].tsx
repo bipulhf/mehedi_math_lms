@@ -18,7 +18,7 @@ import {
   Title
 } from "@/src/components/ui";
 import { HtmlContent } from "@/src/components/html-content";
-import { getPublicTeacherBySlug } from "@/src/lib/api";
+import { getPublicTeacherBySlug } from "@/src/lib/api/profiles";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";

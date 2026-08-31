@@ -17,7 +17,7 @@ import {
   Screen,
   ScreenSkeleton
 } from "@/src/components/ui";
-import { createConversation, searchMessageParticipants } from "@/src/lib/api";
+import { createConversation, searchMessageParticipants } from "@/src/lib/api/messages";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";

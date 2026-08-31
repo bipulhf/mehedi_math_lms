@@ -22,7 +22,8 @@ Read it before any parity or redesign work.
 
 ```
 app/                     Expo Router file routes. (tabs)/ is the signed-in shell.
-src/lib/                 env, api-client, api, auth, session-store, query, hooks
+src/lib/                 env, api-client, auth, session-store, query, hooks
+src/lib/api/             One module per API feature. Thin typed wrappers over api-client.
 src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
 src/components/*.tsx     Composed pieces: lecture player, comments, reviews, route error
 src/theme/tokens.ts      The ink-first academy palette, radii, spacing and type scale
@@ -41,7 +42,7 @@ Two origins, and confusing them is the most likely mistake here:
 
 `src/lib/env.ts` infers both from the Metro connection in development, so a physical device works without editing anything. `EXPO_PUBLIC_API_ORIGIN` / `EXPO_PUBLIC_WEB_ORIGIN` override for real builds; `eas.json` sets them per profile.
 
-Never call `fetch` directly for product data. Use `src/lib/api-client.ts`, which unwraps the `{ status, message?, data }` envelope and throws `ApiError` carrying the API's own message. Add endpoints to `src/lib/api.ts`, one function each. **Check the actual route in `apps/api/src/routes/v1/` before adding one** — several paths are not where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`, `tests/submissions/:id/answers`, `tests/:testId/submit`).
+Never call `fetch` directly for product data. Use `src/lib/api-client.ts`, which unwraps the `{ status, message?, data }` envelope and throws `ApiError` carrying the API's own message. Add endpoints to `src/lib/api/<feature>.ts`, one function each — one module per API feature, the same split the web app uses. There is no barrel: import from the module that owns the call, so the import path says which part of the API a screen talks to. **Check the actual route in `apps/api/src/routes/v1/` before adding one** — several paths are not where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`, `tests/submissions/:id/answers`, `tests/:testId/submit`).
 
 ## Named exports, with one forced exception
 

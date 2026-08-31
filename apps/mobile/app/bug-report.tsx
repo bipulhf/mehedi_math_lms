@@ -19,7 +19,7 @@ import {
   ScreenSkeleton,
   Title
 } from "@/src/components/ui";
-import { createBugReport, listMyBugReports } from "@/src/lib/api";
+import { createBugReport, listMyBugReports } from "@/src/lib/api/bugs";
 import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";

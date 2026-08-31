@@ -21,7 +21,8 @@ import {
   Screen,
   SkeletonBlock
 } from "@/src/components/ui";
-import { listCategories, listCourses, type CourseSummary } from "@/src/lib/api";
+import { listCategories } from "@/src/lib/api/categories";
+import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";

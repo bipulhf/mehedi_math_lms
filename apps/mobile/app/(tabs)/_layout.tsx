@@ -9,7 +9,8 @@ import {
   MessagesIcon,
   ProfileIcon
 } from "@/src/components/tab-icons";
-import { getNotificationUnreadCount, listConversations } from "@/src/lib/api";
+import { listConversations } from "@/src/lib/api/messages";
+import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";

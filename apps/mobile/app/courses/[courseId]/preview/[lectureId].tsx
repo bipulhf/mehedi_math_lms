@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { LecturePlayer } from "@/src/components/lecture-player";
 import { Body, Button, Caption, Heading, Screen, SkeletonBlock } from "@/src/components/ui";
-import { getLecturePreview, type ContentMaterial } from "@/src/lib/api";
+import { type ContentMaterial, getLecturePreview } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";

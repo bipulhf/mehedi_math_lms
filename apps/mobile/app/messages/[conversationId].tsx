@@ -24,12 +24,7 @@ import {
   Screen,
   SkeletonBlock
 } from "@/src/components/ui";
-import {
-  getConversation,
-  markConversationRead,
-  reportConversation,
-  sendMessage
-} from "@/src/lib/api";
+import { getConversation, markConversationRead, reportConversation, sendMessage } from "@/src/lib/api/messages";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useMessagingSocket } from "@/src/lib/use-messaging-socket";

@@ -17,7 +17,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { listMyPayments, type PaymentHistoryItem } from "@/src/lib/api";
+import { listMyPayments, type PaymentHistoryItem } from "@/src/lib/api/payments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";

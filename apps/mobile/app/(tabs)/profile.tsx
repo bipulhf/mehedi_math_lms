@@ -19,7 +19,7 @@ import {
   StreakTrack,
   Title
 } from "@/src/components/ui";
-import { getOwnProfile } from "@/src/lib/api";
+import { getOwnProfile } from "@/src/lib/api/profiles";
 import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession, useSignOut } from "@/src/lib/use-session";

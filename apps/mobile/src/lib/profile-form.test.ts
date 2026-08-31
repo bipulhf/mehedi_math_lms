@@ -1,4 +1,4 @@
-import type { OwnProfile } from "@/src/lib/api";
+import type { OwnProfile } from "@/src/lib/api/profiles";
 import { profileFormShape, profileFormValues, validateProfileForm } from "@/src/lib/profile-form";
 
 /**

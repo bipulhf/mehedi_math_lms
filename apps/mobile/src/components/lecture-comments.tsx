@@ -13,13 +13,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import {
-  createLectureComment,
-  deleteLectureComment,
-  listLectureComments,
-  updateLectureComment,
-  type LectureComment
-} from "@/src/lib/api";
+import { createLectureComment, deleteLectureComment, type LectureComment, listLectureComments, updateLectureComment } from "@/src/lib/api/comments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";

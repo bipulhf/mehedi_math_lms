@@ -17,7 +17,7 @@ import {
   Screen,
   ScreenSkeleton
 } from "@/src/components/ui";
-import { getOwnProfile, updateOwnProfile } from "@/src/lib/api";
+import { getOwnProfile, updateOwnProfile } from "@/src/lib/api/profiles";
 import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useT } from "@/src/lib/locale";
 import { profileFormShape, profileFormValues, validateProfileForm } from "@/src/lib/profile-form";

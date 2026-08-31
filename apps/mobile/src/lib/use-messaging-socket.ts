@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 
-import type { ConversationThread, MessageConversation } from "@/src/lib/api";
+import type { ConversationThread, MessageConversation } from "@/src/lib/api/messages";
 import { mobileEnv } from "@/src/lib/env";
 import { queryKeys } from "@/src/lib/query";
 import { readSessionCookie } from "@/src/lib/session-store";

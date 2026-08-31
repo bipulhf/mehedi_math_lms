@@ -1,6 +1,6 @@
 import type { MarkingReviewMode } from "@mma/shared";
 
-import type { MarkingQueueView } from "@/src/lib/api";
+import type { MarkingQueueView } from "@/src/lib/api/marking";
 
 /** One answer waiting to be marked, in the order the teacher chose to work. */
 export interface MarkingWorkItem {

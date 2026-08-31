@@ -27,12 +27,9 @@ import {
   Tabs,
   Title
 } from "@/src/components/ui";
-import {
-  getCourseBySlugOrId,
-  getCourseOutline,
-  getMyCourseEnrollment,
-  type CourseOutlineChapter
-} from "@/src/lib/api";
+import { type CourseOutlineChapter, getCourseOutline } from "@/src/lib/api/content";
+import { getCourseBySlugOrId } from "@/src/lib/api/courses";
+import { getMyCourseEnrollment } from "@/src/lib/api/enrollments";
 import { startCheckout } from "@/src/lib/payment";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Body, Button, Caption, ErrorNotice, Field } from "@/src/components/ui";
-import type { CouponPreview, CouponRejectionReason } from "@/src/lib/api";
-import { previewCoupon } from "@/src/lib/api";
+import type { CouponPreview, CouponRejectionReason } from "@/src/lib/api/coupons";
+import { previewCoupon } from "@/src/lib/api/coupons";
 import { useFormat, useT } from "@/src/lib/locale";
 import { colors, spacing } from "@/src/theme/tokens";
 import type { MessageKey } from "@mma/i18n";

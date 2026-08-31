@@ -16,7 +16,7 @@ import {
 } from "@/src/components/ui";
 import { stripHtml } from "@/src/lib/html";
 import { useFormat, useT } from "@/src/lib/locale";
-import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api";
+import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api/profiles";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";
 

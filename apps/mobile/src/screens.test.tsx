@@ -3,8 +3,12 @@ import { render, screen, waitFor } from "@testing-library/react-native";
 import type { JSX, ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import * as api from "@/src/lib/api";
-import type { CourseSummary, StudentEnrollment } from "@/src/lib/api";
+import * as categoriesApi from "@/src/lib/api/categories";
+import * as coursesApi from "@/src/lib/api/courses";
+import * as enrollmentsApi from "@/src/lib/api/enrollments";
+import * as profilesApi from "@/src/lib/api/profiles";
+import type { CourseSummary } from "@/src/lib/api/courses";
+import type { StudentEnrollment } from "@/src/lib/api/enrollments";
 import * as auth from "@/src/lib/auth";
 import { LocaleProvider } from "@/src/lib/locale";
 
@@ -115,8 +119,8 @@ beforeEach(() => {
 
 describe("catalogue", () => {
   test("shows a skeleton, then the courses", async () => {
-    jest.spyOn(api, "listCategories").mockResolvedValue([]);
-    jest.spyOn(api, "listCourses").mockResolvedValue({ items: [COURSE], pages: 1 });
+    jest.spyOn(categoriesApi, "listCategories").mockResolvedValue([]);
+    jest.spyOn(coursesApi, "listCourses").mockResolvedValue({ items: [COURSE], pages: 1 });
 
     renderScreen(<CatalogScreen />);
 
@@ -127,8 +131,8 @@ describe("catalogue", () => {
   });
 
   test("says so when nothing matches, rather than showing an empty list", async () => {
-    jest.spyOn(api, "listCategories").mockResolvedValue([]);
-    jest.spyOn(api, "listCourses").mockResolvedValue({ items: [], pages: 0 });
+    jest.spyOn(categoriesApi, "listCategories").mockResolvedValue([]);
+    jest.spyOn(coursesApi, "listCourses").mockResolvedValue({ items: [], pages: 0 });
 
     renderScreen(<CatalogScreen />);
 
@@ -140,7 +144,7 @@ describe("catalogue", () => {
 
 describe("home", () => {
   test("lists the enrolments", async () => {
-    jest.spyOn(api, "listMyEnrollments").mockResolvedValue([ENROLLMENT]);
+    jest.spyOn(enrollmentsApi, "listMyEnrollments").mockResolvedValue([ENROLLMENT]);
 
     renderScreen(<HomeScreen />);
 
@@ -151,7 +155,7 @@ describe("home", () => {
   });
 
   test("an account with nothing enrolled is told where to start", async () => {
-    jest.spyOn(api, "listMyEnrollments").mockResolvedValue([]);
+    jest.spyOn(enrollmentsApi, "listMyEnrollments").mockResolvedValue([]);
 
     renderScreen(<HomeScreen />);
 
@@ -162,7 +166,7 @@ describe("home", () => {
 
   test("a completed course offers its certificate, and an active one does not", async () => {
     jest
-      .spyOn(api, "listMyEnrollments")
+      .spyOn(enrollmentsApi, "listMyEnrollments")
       .mockResolvedValue([
         { ...ENROLLMENT, completedAt: "2026-02-01T00:00:00.000Z", status: "COMPLETED" }
       ]);
@@ -181,7 +185,7 @@ describe("profile", () => {
       ...SESSION,
       session: { ...SESSION.session, profileCompleted: false }
     });
-    jest.spyOn(api, "getOwnProfile").mockResolvedValue({
+    jest.spyOn(profilesApi, "getOwnProfile").mockResolvedValue({
       studentProfile: null,
       teacherProfile: null,
       user: {

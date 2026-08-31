@@ -19,14 +19,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import {
-  getTestDetail,
-  saveSubmissionAnswers,
-  startSubmission,
-  submitTest,
-  type ScriptPageView,
-  type SubmissionDetail
-} from "@/src/lib/api";
+import { getTestDetail, saveSubmissionAnswers, type ScriptPageView, startSubmission, type SubmissionDetail, submitTest } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
