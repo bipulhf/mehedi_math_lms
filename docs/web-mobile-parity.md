@@ -129,6 +129,54 @@ its first two editions.
 
 ---
 
+## 0. 2026-08-31 — fourth pass, the gaps this document did not have
+
+Everything below was written against `0af502c`. Five web commits landed after it, and re-reading
+the two apps file by file — rather than trusting this document — turned up four older gaps as well.
+All nine are closed; each is one commit.
+
+**Ported from the newer web commits**
+
+- **Class routine** (`2043850`). The web player grew a Routine tab; the app had no way to read one.
+  Now a fourth tab beside About/Notices/Discussion (`src/components/course-routine-panel.tsx`),
+  read-only, written half and attached PDF.
+- **Script challenge** (`c0fa9ad`). A student can now ask for a second look from the results screen
+  for a written paper, and the grading workspace shows the marker why a paper came back — web
+  reads that on the submission page, which the app has no equivalent of, so the panel goes where
+  the marker already is. Silent on papers nobody challenged.
+- **Enrolled-student count** (`3cd95e7`), plus the free-classes figure the same facts row carries.
+- Answer-script upload progress (`52e11a5`) and the marking-note/pen-width fix (`599c27a`) were
+  already ported in their own commits — no work needed.
+
+**Older gaps this document never listed**
+
+- **Password reset.** The app could change a password inside a session but not recover one from
+  outside it. `app/forgot-password.tsx` requests the link; the link itself still lands on the web
+  reset page, because the token it carries is minted for a browser.
+- **Exams hub.** `/dashboard/exams` had no counterpart, so a test was reachable only from inside
+  its course player. `app/exams.tsx` is the same list for both readers — a student's exam leads to
+  their attempt history, a teacher's to the grading queue.
+- **Course-completion celebration.** Web fires confetti and a toast from both the player and the
+  results screen. The app now shows a banner at the same two trigger points, off the same server
+  signals (the enrolment-status transition, and `courseCompletedJustNow`).
+- **Announcement banner.** An admin's banner reached every public web page and no part of the app.
+  It renders on Explore, the app's storefront.
+- **A finished exam reopened itself.** Opening a test started an attempt on mount without reading
+  the attempts first, so coming back out of a results screen wrote a fresh one — or, on a
+  one-attempt exam, showed the server's raw refusal. Fixed the way web does it.
+
+**Two refactors this needed first**, both because the files were past the repo's 800-line ceiling:
+`src/lib/api.ts` is now one module per API feature (`src/lib/api/`), matching the web layout, and
+the course player screen dropped its lesson picker and lesson body into their own modules.
+
+**Still out of scope, deliberately:** authoring, admin, accountant, moderation, SMS and coupon
+management, and the marketing landing page. §3's out-of-scope list stands.
+
+Gates: `lint`, `typecheck` and the jest-expo suites green at every commit — now **72** tests across
+**9** suites, the new one covering the exams filters.
+
+---
+
 ## 1. What each app is today
 
 | | `apps/web` | `apps/mobile` |
