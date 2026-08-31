@@ -6,6 +6,7 @@ import { ApiError } from "@/src/lib/api-client";
 
 /** Every key the app queries by, so an invalidation cannot drift from its query. */
 export const queryKeys = {
+  activeBanner: () => ["banners", "active"] as const,
   bugReports: () => ["bugs", "mine"] as const,
   categories: () => ["categories"] as const,
   conversation: (conversationId: string) => ["messages", "thread", conversationId] as const,

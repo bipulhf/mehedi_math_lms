@@ -6,6 +6,7 @@ import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { BannerStrip } from "@/src/components/banner-strip";
 import {
   Avatar,
   Badge,
@@ -31,7 +32,11 @@ import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 type SortOrder = "newest" | "priceLow" | "priceHigh";
 
 /** The meta line under a card title: lessons · free lessons. No total length. */
-function courseMetaParts(course: CourseSummary, t: Translator, format: Formatters): readonly string[] {
+function courseMetaParts(
+  course: CourseSummary,
+  t: Translator,
+  format: Formatters
+): readonly string[] {
   const parts: string[] = [];
 
   if (course.stats.lectureCount > 0) {
@@ -45,7 +50,10 @@ function courseMetaParts(course: CourseSummary, t: Translator, format: Formatter
   return parts;
 }
 
-function sortCourses(courses: readonly CourseSummary[], order: SortOrder): readonly CourseSummary[] {
+function sortCourses(
+  courses: readonly CourseSummary[],
+  order: SortOrder
+): readonly CourseSummary[] {
   if (order === "newest") {
     return courses;
   }
@@ -167,7 +175,8 @@ export default function CatalogScreen(): JSX.Element {
   });
 
   const courses = sortCourses(data?.items ?? [], sortOrder);
-  const selectedLevel = levelId === null ? null : categories.find((level) => level.id === levelId) ?? null;
+  const selectedLevel =
+    levelId === null ? null : (categories.find((level) => level.id === levelId) ?? null);
 
   const resetFilters = (): void => {
     setLevelId(null);
@@ -187,10 +196,16 @@ export default function CatalogScreen(): JSX.Element {
     { label: t("courses.sort.priceLow"), value: "priceLow" },
     { label: t("courses.sort.priceHigh"), value: "priceHigh" }
   ];
-  const activeFilterCount = [levelId !== null, isFreeOnly, sortOrder !== "newest"].filter(Boolean).length;
+  const activeFilterCount = [levelId !== null, isFreeOnly, sortOrder !== "newest"].filter(
+    Boolean
+  ).length;
 
   return (
     <Screen noHeader>
+      {/* The app's storefront is where web puts it too — on the public layout,
+          not behind the sign-in. */}
+      <BannerStrip />
+
       <View style={styles.header}>
         <Heading>{t("courses.title")}</Heading>
         <TextInput
@@ -295,7 +310,12 @@ export default function CatalogScreen(): JSX.Element {
       ) : courses.length === 0 ? (
         <EmptyState
           action={
-            <Button label={t("action.clearFilters")} onPress={resetFilters} size="sm" variant="outline" />
+            <Button
+              label={t("action.clearFilters")}
+              onPress={resetFilters}
+              size="sm"
+              variant="outline"
+            />
           }
           message={t("empty.courses")}
         />
@@ -326,7 +346,12 @@ const styles = StyleSheet.create({
   },
   filtersToggleChevron: { color: colors.mutedFaint, fontSize: 14 },
   filtersToggleLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 14 },
-  footer: { alignItems: "center", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  footer: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between"
+  },
   header: { gap: spacing.md, padding: spacing.lg },
   list: { padding: spacing.lg },
   metaText: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
