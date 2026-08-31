@@ -1,7 +1,14 @@
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import { BackHandler, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View
+} from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { Body, Button, Caption, Card, Field, Heading, Screen, Title } from "@/src/components/ui";
@@ -93,6 +100,12 @@ export default function SignInScreen(): JSX.Element {
                 label={t("auth.signIn")}
                 onPress={handleSubmit}
               />
+
+              <Button
+                label={t("auth.forgotPassword")}
+                onPress={() => router.push("/forgot-password")}
+                variant="ghost"
+              />
             </View>
           </Card>
 
@@ -102,11 +115,7 @@ export default function SignInScreen(): JSX.Element {
             <Body muted>{t("auth.signUpLead")}</Body>
             <View style={{ height: spacing.lg }} />
             <Link asChild href="/sign-up">
-              <Button
-                label={t("auth.signUp")}
-                onPress={() => undefined}
-                variant="outline"
-              />
+              <Button label={t("auth.signUp")} onPress={() => undefined} variant="outline" />
             </Link>
           </Card>
         </ScrollView>

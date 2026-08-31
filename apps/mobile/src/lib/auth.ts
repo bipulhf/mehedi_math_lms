@@ -189,6 +189,22 @@ export async function signOut(): Promise<void> {
   }
 }
 
+/**
+ * Asks for the reset link. The mail's link lands on the **web** app, not here:
+ * Better Auth's callback checks the token and forwards to `/auth/reset-password`
+ * on its own origin, and a token minted for a browser is not something this app
+ * can finish anyway.
+ *
+ * The confirmation never says whether the address is registered — the endpoint
+ * answers the same way either way, and so does the screen.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  await authRequest("request-password-reset", {
+    body: JSON.stringify({ email, redirectTo: "/auth/reset-password" }),
+    method: "POST"
+  });
+}
+
 export async function changePassword(input: {
   currentPassword: string;
   newPassword: string;
