@@ -6,6 +6,7 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-n
 
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer } from "@/src/components/marking-layer";
+import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
 import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
@@ -91,11 +92,16 @@ export default function SubmissionResultScreen(): JSX.Element {
           <Button
             label={t("test.viewHistory")}
             variant="outline"
-            onPress={() =>
-              router.push({ params: { testId }, pathname: "/tests/[testId]/history" })
-            }
+            onPress={() => router.push({ params: { testId }, pathname: "/tests/[testId]/history" })}
           />
         </Card>
+
+        {test.type === "WRITTEN" ? (
+          <ScriptChallengePanel
+            canRaise={submission.status === "GRADED"}
+            submissionId={submissionId}
+          />
+        ) : null}
 
         {test.questions.map((question) => {
           const answer = answerMap.get(question.id);

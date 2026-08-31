@@ -4,14 +4,31 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from "react-native";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  useWindowDimensions,
+  View
+} from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
+import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
 import { MarkingLayer, type MarkingTool } from "@/src/components/marking-layer";
 import { PenWidthSlider } from "@/src/components/pen-width-slider";
 import { Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import type { MarkingAnswerView } from "@/src/lib/api/marking";
-import { claimAnswer, getMarkingQueue, releaseAnswerClaim, renewAnswerClaim, saveScriptPageMarking, setAnswerMark, submitPaper } from "@/src/lib/api/marking";
+import {
+  claimAnswer,
+  getMarkingQueue,
+  releaseAnswerClaim,
+  renewAnswerClaim,
+  saveScriptPageMarking,
+  setAnswerMark,
+  submitPaper
+} from "@/src/lib/api/marking";
 import { useT } from "@/src/lib/locale";
 import {
   buildMarkingWorkList,
@@ -58,7 +75,11 @@ export default function MarkingScreen(): JSX.Element {
   const [isBusy, setIsBusy] = useState(false);
   const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
-  const { data: queue, isPending, refetch } = useQuery({
+  const {
+    data: queue,
+    isPending,
+    refetch
+  } = useQuery({
     queryFn: async () => getMarkingQueue(testId, mode),
     queryKey: queryKeys.markingQueue(testId, mode)
   });
@@ -294,6 +315,10 @@ export default function MarkingScreen(): JSX.Element {
                 })}
               </Caption>
             ) : null}
+
+            {/* Why the paper came back, when it came back because the student
+                said so. Silent on every paper nobody challenged. */}
+            <ScriptChallengePanel canRaise={false} submissionId={activeAnswer.submissionId} />
 
             <View style={styles.row}>
               {tools.map((item) => (

@@ -34,6 +34,8 @@ export const queryKeys = {
   // changes the session's `profileCompleted` flag and has to invalidate it.
   session: () => ["session"] as const,
   streak: (locale: string) => ["streak", locale] as const,
+  submissionChallenges: (submissionId: string) =>
+    ["tests", "submission", submissionId, "challenges"] as const,
   test: (testId: string) => ["tests", testId] as const,
   testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
   myTestSubmissions: (testId: string) => ["tests", testId, "my-attempts"] as const,
