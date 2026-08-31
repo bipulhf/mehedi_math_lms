@@ -8,10 +8,12 @@ import {
   courses,
   db,
   desc,
+  enrollments,
   eq,
   ilike,
   inArray,
   isNotNull,
+  isNull,
   lectures,
   ne,
   or,
@@ -45,6 +47,14 @@ export interface CourseTeacherRecord {
  * not twelve extra round trips.
  */
 export interface CourseStatsRecord {
+  /**
+   * Students on the course right now.
+   *
+   * Counted on `cancelled_at is null`, not on `status`: status is progress
+   * only, so a student who finished is still enrolled and a refunded one is
+   * not, however far through they got. ADR-0001.
+   */
+  enrolledStudentCount: number;
   freeLessonCount: number;
   lectureCount: number;
   reviewAverage: number | null;
@@ -53,6 +63,7 @@ export interface CourseStatsRecord {
 }
 
 const emptyStats: CourseStatsRecord = {
+  enrolledStudentCount: 0,
   freeLessonCount: 0,
   lectureCount: 0,
   reviewAverage: null,
@@ -211,7 +222,7 @@ export class CourseRepository {
     }
 
     const ids = [...courseIds];
-    const [lessonRows, reviewRows] = await Promise.all([
+    const [lessonRows, reviewRows, enrolmentRows] = await Promise.all([
       db
         .select({
           courseId: chapters.courseId,
@@ -231,7 +242,15 @@ export class CourseRepository {
         })
         .from(reviews)
         .where(inArray(reviews.courseId, ids))
-        .groupBy(reviews.courseId)
+        .groupBy(reviews.courseId),
+      db
+        .select({
+          courseId: enrollments.courseId,
+          enrolledStudentCount: count()
+        })
+        .from(enrollments)
+        .where(and(inArray(enrollments.courseId, ids), isNull(enrollments.cancelledAt)))
+        .groupBy(enrollments.courseId)
     ]);
 
     const byCourseId = new Map<string, CourseStatsRecord>();
@@ -253,6 +272,15 @@ export class CourseRepository {
         ...current,
         reviewAverage: average === null ? null : Math.round(average * 10) / 10,
         reviewCount: Number(row.reviewCount)
+      });
+    }
+
+    for (const row of enrolmentRows) {
+      const current = byCourseId.get(row.courseId) ?? emptyStats;
+
+      byCourseId.set(row.courseId, {
+        ...current,
+        enrolledStudentCount: Number(row.enrolledStudentCount)
       });
     }
 

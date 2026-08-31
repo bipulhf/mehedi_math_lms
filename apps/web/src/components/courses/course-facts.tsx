@@ -21,6 +21,14 @@ export function CourseFacts({
   const t = useT();
   const format = useFormat();
   const facts: readonly { label: string; value: string }[] = [
+    ...(course.stats.enrolledStudentCount > 0
+      ? [
+          {
+            label: t("common.students"),
+            value: format.number(course.stats.enrolledStudentCount)
+          }
+        ]
+      : []),
     ...(course.stats.lectureCount > 0
       ? [{ label: t("common.lessons"), value: format.number(course.stats.lectureCount) }]
       : []),
