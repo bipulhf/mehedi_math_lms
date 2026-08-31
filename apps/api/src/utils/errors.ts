@@ -1,4 +1,5 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { ZodError } from "zod";
 
 export interface ValidationIssue {
   field: string;
@@ -27,6 +28,20 @@ export class ValidationError extends AppError {
     super(message, 400, issues);
     this.name = "ValidationError";
   }
+}
+
+/**
+ * A failed schema is the caller's mistake, not a fault on this side, so it has
+ * to arrive at the error handler as an `AppError` to be answered as one.
+ */
+export function validationErrorFromZod(error: ZodError): ValidationError {
+  return new ValidationError(
+    "Validation failed",
+    error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message
+    }))
+  );
 }
 
 export class NotFoundError extends AppError {

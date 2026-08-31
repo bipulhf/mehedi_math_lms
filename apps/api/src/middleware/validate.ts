@@ -3,14 +3,7 @@ import type { z, ZodType } from "zod";
 import { ZodError } from "zod";
 
 import type { AppBindings } from "@/types/app-bindings";
-import { ValidationError } from "@/utils/errors";
-
-function mapZodIssues(error: ZodError): readonly { field: string; message: string }[] {
-  return error.issues.map((issue) => ({
-    field: issue.path.join("."),
-    message: issue.message
-  }));
-}
+import { validationErrorFromZod } from "@/utils/errors";
 
 export function validateJson<TSchema extends ZodType>(
   schema: TSchema
@@ -22,7 +15,7 @@ export function validateJson<TSchema extends ZodType>(
       await next();
     } catch (error) {
       if (error instanceof ZodError) {
-        throw new ValidationError("Validation failed", mapZodIssues(error));
+        throw validationErrorFromZod(error);
       }
 
       throw error;
@@ -39,7 +32,7 @@ export function validateQuery<TSchema extends z.ZodObject>(
       await next();
     } catch (error) {
       if (error instanceof ZodError) {
-        throw new ValidationError("Validation failed", mapZodIssues(error));
+        throw validationErrorFromZod(error);
       }
 
       throw error;
@@ -56,7 +49,7 @@ export function validateParams<TSchema extends z.ZodObject>(
       await next();
     } catch (error) {
       if (error instanceof ZodError) {
-        throw new ValidationError("Validation failed", mapZodIssues(error));
+        throw validationErrorFromZod(error);
       }
 
       throw error;
