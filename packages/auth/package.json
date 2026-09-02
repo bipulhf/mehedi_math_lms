@@ -29,6 +29,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@better-auth/core": "^1.7.2",
     "@better-auth/drizzle-adapter": "^1.7.2",
     "@genex/db": "workspace:*",
     "@genex/mailer": "workspace:*",

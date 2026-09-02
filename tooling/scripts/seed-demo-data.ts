@@ -13,7 +13,7 @@
  * both, and a catalogue seeded entirely in one language hides every place the
  * layout only fits the other.
  */
-import { createPasswordHash } from "@genex/auth/server";
+import { createPasswordHash, credentialAccountIssuer } from "@genex/auth/server";
 import {
   accounts,
   and,
@@ -147,6 +147,7 @@ async function upsertUser(input: {
   if (!existingAccount[0]) {
     await db.insert(accounts).values({
       accountId: userId,
+      issuer: credentialAccountIssuer,
       password: await createPasswordHash(DEMO_PASSWORD),
       providerId: "credential",
       userId

@@ -148,6 +148,27 @@
       "when": 1788344853087,
       "tag": "0020_lucky_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1788358882664,
+      "tag": "0021_add_account_issuer",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1788358893322,
+      "tag": "0022_backfill_account_issuer",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1788358901573,
+      "tag": "0023_require_account_issuer",
+      "breakpoints": true
     }
   ]
 }
