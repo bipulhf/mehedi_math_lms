@@ -31,13 +31,13 @@ function actorOf(context: Context<AppBindings>): { id: string; role: UserRole } 
 /**
  * A code checker is a guessing oracle: without a limit a script walks SAVE5,
  * SAVE10, SAVE15 and finds every live code in seconds. Signed-in students only,
- * and twenty attempts a minute per address on top of the global limit — enough
- * for somebody who mistypes twice, not enough to sweep.
+ * and sixty attempts a minute per address on top of the global limit — enough
+ * that a shared address never runs into it, not enough to sweep.
  */
 couponsRoutes.post(
   "/preview",
   requireRole("STUDENT"),
-  createRateLimitMiddleware({ keyPrefix: "coupon-preview", max: 20, windowMs: 60_000 }),
+  createRateLimitMiddleware({ keyPrefix: "coupon-preview", max: 60, windowMs: 60_000 }),
   async (context) => {
     const payload = previewCouponSchema.parse(await context.req.json());
     const authUser = context.get("authUser");
