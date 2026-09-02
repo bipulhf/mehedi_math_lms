@@ -38,7 +38,7 @@
 > Undo in grading, the `toLocaleDateString()` residue, comment edit/delete UI, and the
 > player's last-viewed timestamp/back-link — are shipped and gate-verified (lint/typecheck/test
 > all green, 65/8). Also closed the same day: `expo-doctor` patch-version drift (9 packages bumped;
-> one `expo-constants` pin is a deliberate root-level `overrides` entry, left alone — §10), the
+> the one `expo-constants` pin that used to sit in a root-level `overrides` entry has since been removed — §10), the
 > ringed-word and ringed-play doodles ported to mobile (§5, §11 Q2), and the teacher
 > email/WhatsApp "gap" turned out not to be one — web has no such field either (§6.6). Left
 > undone, and why: **B4** genuinely needs a physical device for the Bangla-fit check, not just an
@@ -927,8 +927,11 @@ Implementation update note at the top). What's left is device-only QA and design
 4. **`bunx expo-doctor` — ✅ re-run and improved.** Was 16/20 at the start of this session (already
    below the second edition's claimed 20/20 baseline — drifted since, never re-checked). 9 of 11
    outdated packages bumped to their expected patch versions via `expo install --fix`; the tenth,
-   `expo-constants`, is held at `57.0.9` by a deliberate root `package.json` `overrides` entry that
-   predates this session and was left untouched. Remaining failures are non-issues, not defects:
+   `expo-constants`, was held at `57.0.9` by a root `package.json` `overrides` entry that predated
+   that session and was left untouched. **That override is gone as of the dependency sweep** — it was
+   a leftover from the duplicate-copies problem that `bunfig.toml`'s `linker = "hoisted"` actually
+   solved (BLOCKERS.md), and with it removed `expo-constants` resolves to a single hoisted `57.0.17`
+   and `expo install --check` reports the tree up to date. Remaining failures are non-issues, not defects:
    three checks (`native modules`/`vector-icons`/`legacy CLI`) fail on `npm explain` calls against
    packages this bun-managed monorepo never installs — an `expo-doctor` tooling limitation with
    non-npm package managers, not a project problem; one is a same-version duplicate
