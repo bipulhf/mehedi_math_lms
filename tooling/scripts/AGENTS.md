@@ -6,6 +6,7 @@ One-off and maintenance scripts run directly with Bun. Root conventions in [`../
 bun run db:seed                  # bun --env-file ../../.env seed.ts
 bun run db:seed-demo             # bun --env-file ../../.env seed-demo-data.ts
 bun run db:backfill-user-slugs   # bun --env-file ../../.env backfill-user-slugs.ts
+bun run db:backfill-user-phone-numbers
 bun run typecheck
 ```
 
@@ -19,6 +20,7 @@ Also reachable from the repo root: `bun run db:seed`, `bun run db:seed-demo`, `b
   - Every course's `coverImageUrl` and each teacher's `image` are real photos from Lorem Picsum (`https://picsum.photos/seed/<key>/<w>/<h>`), keyed by a stable seed in the fixture so the same course always gets the same photo.
   - Every chapter test inserts real `test_questions` **and** four `question_options` per question with exactly one `is_correct: true` — the grader (`apps/api/src/services/assessment-grading.ts`) reads `question_options.is_correct` / `selected_option_id`, not `test_questions.correct_answer`, so a seeded exam with questions and no options is not gradable. Do not go back to inserting bare questions without options.
 - **`backfill-user-slugs.ts`** — fills `users.slug` for rows where it is null or empty. This exists because the web app's Better Auth config (`@mma/auth/tanstack-server`) has no slug-generation hook, while `@mma/auth/server` does. See `packages/auth/AGENTS.md`.
+- **`backfill-user-phone-numbers.ts`** — copies `student_profiles.phone` / `teacher_profiles.phone` onto `users.phone_number` so an existing account can be signed into with a code. Three rules it will not bend, all from [ADR-0016](../../docs/adr/0016-a-phone-number-is-a-second-front-door.md): it never sets `phone_number_verified` (a number typed into a form has never been delivered to), it never reads `guardian_phone` (a parent's handset must not open the student's account), and it skips a number another account already claims rather than failing the run — shared family numbers are common here. Oldest account wins, so a re-run picks the same winner.
 
 ## Rules
 

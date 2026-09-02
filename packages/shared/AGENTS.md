@@ -6,6 +6,8 @@ The contract layer between the API, the web app, and scripts: Zod validators, sh
 src/validators/*.ts   One module per feature. index.ts re-exports all of them.
 src/types/roles.ts    userRoleValues / userRoleSchema / UserRole.
 src/constants/app.ts  appName, appDomain, appUrl.
+src/constants/phone-otp.ts  phoneOtpLength, phoneOtpExpirySeconds, phoneOtpCooldownSeconds, phoneOtpAllowedAttempts.
+src/phone-bd.ts       normalizeBdPhoneE164 — the one definition of a Bangladesh mobile number.
 src/slug.ts           slugifySegment, buildSerialSlugCandidate, generateUniqueSlug, slugifyWithRandomSuffix.
 src/image-variants.ts imageVariantWidths, buildImageVariantKey, withImageVariants, readImageVariants,
                       buildImageSrcSet, pickImageVariant.
@@ -23,6 +25,7 @@ The modules below the validators are not validators, and they are here for the s
 - **Maths.** A question is HTML with LaTeX between dollars (ADR-0014). Where a formula starts and stops has to be decided identically by the web renderer, the app's WebView and the plain-text flattener used for list rows — three implementations of the same delimiter rules would eventually disagree about the same question. The renderer is a parameter, so nothing here depends on KaTeX and the React Native bundle does not carry it.
 - **Bijoy.** The conversion tables are shared because the web editor and the MCQ option fields both need them, and because they are the part worth testing. `bijoy-char-map.ts` was copied byte-for-byte and contains control characters that do not survive being retyped — copy it, never edit it by hand.
 - **Progress chunks.** DESIGN.md's chunked tracker means turning a percentage into whole blocks, and the rounding rules — some progress never rounds to empty, nearly-done never rounds to full — are a product decision, not a rendering detail. Web and mobile draw different elements from the same numbers.
+- **Phone numbers.** `normalizeBdPhoneE164` is here rather than in `@mma/sms` because the browser and the Expo app both call it before they post a number, and neither can import a module that parses `process.env` at load. On the sign-in path its return value *is* the account key, so the web form, the app screen, the auth plugin and the backfill script all have to agree on it exactly — see [ADR-0016](../../docs/adr/0016-a-phone-number-is-a-second-front-door.md). The OTP constants beside it are shared for the same reason: the screens tell the person how long a code lasts and when they may ask again, and the server is what enforces both.
 
 `src/index.ts` re-exports everything, so `import { createCourseSchema, type UserRole } from "@mma/shared"` is the normal form. Subpath exports (`@mma/shared/validators/*`, `@mma/shared/types/*`, `@mma/shared/constants/*`) also exist but are rarely used.
 

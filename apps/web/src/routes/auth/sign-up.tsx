@@ -2,11 +2,13 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PhoneOtpForm } from "@/components/auth/phone-otp-form";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { Tabs } from "@/components/ui/tabs";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { useT } from "@/lib/i18n/locale-context";
@@ -20,7 +22,7 @@ export const Route = createFileRoute("/auth/sign-up")({
   head: () =>
     seo({
       description:
-        "Create your Mehedi's Math Academy learner account with email and password to unlock courses, progress, and messaging.",
+        "Create your Mehedi's Math Academy learner account with a mobile number or an email to unlock courses, progress, and messaging.",
       path: "/auth/sign-up",
       title: "Create account"
     }),
@@ -28,6 +30,8 @@ export const Route = createFileRoute("/auth/sign-up")({
   component: AuthSignUpRoutePage,
   errorComponent: RouteErrorView
 });
+
+type SignUpMethod = "email" | "phone";
 
 const signUpSchema = z
   .object({
@@ -55,6 +59,9 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
   const t = useT();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Phone first, as on sign-in: a code on a handset is fewer things to
+  // remember than an address and a password.
+  const [method, setMethod] = useState<SignUpMethod>("phone");
   const form = useZodForm({
     defaultValues: {
       confirmPassword: "",
@@ -144,50 +151,57 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
         <span>{t("auth.google")}</span>
       </Button>
 
-      <div className="relative text-center text-sm">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-hairline" />
-        </div>
-        <span className="relative bg-card px-3 text-muted-light">{t("auth.orEmail")}</span>
-      </div>
+      <Tabs
+        label={t("auth.chooseMethod")}
+        onChange={setMethod}
+        tabs={[
+          { label: t("auth.withPhone"), value: "phone" },
+          { label: t("auth.withEmail"), value: "email" }
+        ]}
+        value={method}
+      />
 
-      <form className="space-y-5" onSubmit={onSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="name">{t("auth.name")}</Label>
-          <Input autoComplete="name" error={errors.name?.message} id="name" {...register("name")} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">{t("auth.email")}</Label>
-          <Input
-            autoComplete="email"
-            error={errors.email?.message}
-            id="email"
-            type="email"
-            {...register("email")}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">{t("auth.password")}</Label>
-          <PasswordInput
-            autoComplete="new-password"
-            error={errors.password?.message}
-            id="password"
-            {...register("password")}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
-          <PasswordInput
-            autoComplete="new-password"
-            error={errors.confirmPassword?.message}
-            id="confirmPassword"
-            {...register("confirmPassword")}
-          />
-        </div>
-        <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
-          {isSubmitting ? t("auth.signingUp") : t("auth.signUp")}
-        </Button>
-      </form>
+      {method === "phone" ? <PhoneOtpForm courseSlug={courseSlug} /> : null}
+
+      {method === "email" ? (
+        <form className="space-y-5" onSubmit={onSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="name">{t("auth.name")}</Label>
+            <Input autoComplete="name" error={errors.name?.message} id="name" {...register("name")} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">{t("auth.email")}</Label>
+            <Input
+              autoComplete="email"
+              error={errors.email?.message}
+              id="email"
+              type="email"
+              {...register("email")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">{t("auth.password")}</Label>
+            <PasswordInput
+              autoComplete="new-password"
+              error={errors.password?.message}
+              id="password"
+              {...register("password")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
+            <PasswordInput
+              autoComplete="new-password"
+              error={errors.confirmPassword?.message}
+              id="confirmPassword"
+              {...register("confirmPassword")}
+            />
+          </div>
+          <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
+            {isSubmitting ? t("auth.signingUp") : t("auth.signUp")}
+          </Button>
+        </form>
+      ) : null}
 
       <p className="pt-2 text-center text-base font-light text-muted">
         {t("auth.haveAccount")}{" "}

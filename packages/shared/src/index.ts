@@ -1,5 +1,6 @@
 export * from "./bijoy";
 export * from "./constants/app";
+export * from "./constants/phone-otp";
 export * from "./image-variants";
 export * from "./math-html";
 export * from "./math-plain-text";

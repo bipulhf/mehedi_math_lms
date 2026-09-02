@@ -2,10 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   fetchSession,
+  sendPhoneOtp,
   signInWithEmail,
   signInWithGoogle,
   signOut,
   signUpWithEmail,
+  verifyPhoneOtp,
   type MobileSession
 } from "@/src/lib/auth";
 import { queryKeys } from "@/src/lib/query";
@@ -31,6 +33,23 @@ export function useSignIn() {
 
   return useMutation({
     mutationFn: signInWithEmail,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
+    }
+  });
+}
+
+export function useSendPhoneOtp() {
+  return useMutation({
+    mutationFn: sendPhoneOtp
+  });
+}
+
+export function useVerifyPhoneOtp() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: verifyPhoneOtp,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }

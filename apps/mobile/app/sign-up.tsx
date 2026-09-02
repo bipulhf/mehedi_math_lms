@@ -4,17 +4,23 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
-import { Body, Button, Caption, Card, Field, Heading, Screen } from "@/src/components/ui";
+import { PhoneOtpForm } from "@/src/components/phone-otp-form";
+import { Body, Button, Card, Field, Heading, Screen, Tabs } from "@/src/components/ui";
 import { useT } from "@/src/lib/locale";
 import { useSignUp } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
 
 const MINIMUM_PASSWORD_LENGTH = 8;
 
+type SignUpMethod = "email" | "phone";
+
 export default function SignUpScreen(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const signUp = useSignUp();
+  // Phone first, as on sign-in: a code on a handset is fewer things to
+  // remember than an address and a password.
+  const [method, setMethod] = useState<SignUpMethod>("phone");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,49 +61,65 @@ export default function SignUpScreen(): JSX.Element {
             <View style={styles.form}>
               <GoogleSignInButton />
 
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Caption>{t("auth.orEmail")}</Caption>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <Field
-                autoComplete="name"
-                label={t("auth.name")}
-                onChangeText={setName}
-                placeholder={t("auth.namePlaceholder")}
-                value={name}
-              />
-              <Field
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                label={t("auth.email")}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                value={email}
-              />
-              <Field
-                autoCapitalize="none"
-                autoComplete="new-password"
-                label={t("auth.password")}
-                onChangeText={setPassword}
-                placeholder={t("password.placeholderNew", { count: MINIMUM_PASSWORD_LENGTH })}
-                secureTextEntry
-                value={password}
+              <Tabs
+                label={t("auth.chooseMethod")}
+                onChange={setMethod}
+                tabs={[
+                  { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
+                  { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
+                ]}
+                value={method}
               />
 
-              {passwordTooShort ? (
-                <Body muted>{t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}</Body>
-              ) : null}
-              {error ? <Body>{error}</Body> : null}
+              {method === "phone" ? (
+                <PhoneOtpForm
+                  onSignedIn={() => {
+                    router.replace("/");
+                  }}
+                />
+              ) : (
+                <>
+                  <Field
+                    autoComplete="name"
+                    label={t("auth.name")}
+                    onChangeText={setName}
+                    placeholder={t("auth.namePlaceholder")}
+                    value={name}
+                  />
+                  <Field
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    label={t("auth.email")}
+                    onChangeText={setEmail}
+                    placeholder="you@example.com"
+                    value={email}
+                  />
+                  <Field
+                    autoCapitalize="none"
+                    autoComplete="new-password"
+                    label={t("auth.password")}
+                    onChangeText={setPassword}
+                    placeholder={t("password.placeholderNew", { count: MINIMUM_PASSWORD_LENGTH })}
+                    secureTextEntry
+                    value={password}
+                  />
 
-              <Button
-                disabled={!canSubmit}
-                isBusy={signUp.isPending}
-                label={t("auth.signUp")}
-                onPress={handleSubmit}
-              />
+                  {passwordTooShort ? (
+                    <Body muted>
+                      {t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}
+                    </Body>
+                  ) : null}
+                  {error ? <Body>{error}</Body> : null}
+
+                  <Button
+                    disabled={!canSubmit}
+                    isBusy={signUp.isPending}
+                    label={t("auth.signUp")}
+                    onPress={handleSubmit}
+                  />
+                </>
+              )}
             </View>
           </Card>
         </ScrollView>
@@ -108,8 +130,6 @@ export default function SignUpScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
-  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
-  dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   flex: { backgroundColor: colors.background, flex: 1 },
   form: { gap: spacing.lg }
 });

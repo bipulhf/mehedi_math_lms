@@ -33,6 +33,7 @@
     "@mma/db": "workspace:*",
     "@mma/mailer": "workspace:*",
     "@mma/shared": "workspace:*",
+    "@mma/sms": "workspace:*",
     "better-auth": "^1.6.25",
     "zod": "^4.4.3"
   }

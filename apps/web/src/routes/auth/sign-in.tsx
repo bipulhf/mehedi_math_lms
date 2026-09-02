@@ -3,11 +3,13 @@ import { useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { PhoneOtpForm } from "@/components/auth/phone-otp-form";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { Tabs } from "@/components/ui/tabs";
 import { authClient } from "@/lib/auth";
 import { useZodForm } from "@/lib/forms/use-zod-form";
 import { useT } from "@/lib/i18n/locale-context";
@@ -16,13 +18,15 @@ import { seo } from "@/lib/seo";
 export const Route = createFileRoute("/auth/sign-in")({
   head: () =>
     seo({
-      description: "Secure email and Google sign-in for Mehedi's Math Academy.",
+      description: "Sign in to Mehedi's Math Academy with a mobile number, email or Google.",
       path: "/auth/sign-in",
       title: "Sign in"
     }),
   component: SignInPage,
   errorComponent: RouteErrorView
 });
+
+type SignInMethod = "email" | "phone";
 
 const signInSchema = z.object({
   email: z.email(),
@@ -33,6 +37,9 @@ export function SignInPage(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Phone first: it is the way most of this audience has an account at all,
+  // and it needs no password to have been remembered.
+  const [method, setMethod] = useState<SignInMethod>("phone");
   const form = useZodForm({
     defaultValues: { email: "", password: "" },
     schema: signInSchema
@@ -97,38 +104,45 @@ export function SignInPage(): JSX.Element {
         <span>{t("auth.google")}</span>
       </Button>
 
-      <div className="relative text-center text-sm">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-hairline" />
-        </div>
-        <span className="relative bg-card px-3 text-muted-light">{t("auth.orEmail")}</span>
-      </div>
+      <Tabs
+        label={t("auth.chooseMethod")}
+        onChange={setMethod}
+        tabs={[
+          { label: t("auth.withPhone"), value: "phone" },
+          { label: t("auth.withEmail"), value: "email" }
+        ]}
+        value={method}
+      />
 
-      <form className="space-y-5" onSubmit={onSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="email">{t("auth.email")}</Label>
-          <Input error={errors.email?.message} id="email" type="email" {...register("email")} />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between gap-3">
-            <Label htmlFor="password">{t("auth.password")}</Label>
-            <Link
-              className="text-sm font-light text-muted transition-colors hover:text-accent"
-              to="/auth/forgot-password"
-            >
-              {t("auth.forgotPassword")}
-            </Link>
+      {method === "phone" ? <PhoneOtpForm /> : null}
+
+      {method === "email" ? (
+        <form className="space-y-5" onSubmit={onSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="email">{t("auth.email")}</Label>
+            <Input error={errors.email?.message} id="email" type="email" {...register("email")} />
           </div>
-          <PasswordInput
-            error={errors.password?.message}
-            id="password"
-            {...register("password")}
-          />
-        </div>
-        <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
-          {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
-        </Button>
-      </form>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <Label htmlFor="password">{t("auth.password")}</Label>
+              <Link
+                className="text-sm font-light text-muted transition-colors hover:text-accent"
+                to="/auth/forgot-password"
+              >
+                {t("auth.forgotPassword")}
+              </Link>
+            </div>
+            <PasswordInput
+              error={errors.password?.message}
+              id="password"
+              {...register("password")}
+            />
+          </div>
+          <Button className="w-full" disabled={isSubmitting} size="lg" type="submit">
+            {isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
+          </Button>
+        </form>
+      ) : null}
 
       <p className="pt-2 text-center text-base font-light text-muted">
         {t("auth.newHere")}{" "}

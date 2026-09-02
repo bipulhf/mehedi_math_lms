@@ -10,6 +10,8 @@ import { passwordResetExpirySeconds, sendPasswordResetEmail } from "@mma/mailer"
 import { generateUniqueSlug } from "@mma/shared";
 import { z } from "zod";
 
+import { createPhoneOtpPlugin, phoneOtpCooldownHook } from "./phone-otp";
+
 const authEnvSchema = z.object({
   APP_URL: z.url().default("https://mehedismathacademy.com"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
@@ -145,6 +147,17 @@ export const auth = betterAuth({
       "/reset-password": {
         window: 15 * 60,
         max: 5
+      },
+      // Every one of these costs a message. The per-handset cooldown in
+      // `phone-otp.ts` is the other half: this counts per IP, that one counts
+      // per number, and a code sender needs both.
+      "/phone-number/send-otp": {
+        window: 15 * 60,
+        max: 3
+      },
+      "/phone-number/verify": {
+        window: 15 * 60,
+        max: 10
       }
     }
   },
@@ -208,6 +221,9 @@ export const auth = betterAuth({
       }
     }
   },
+  hooks: {
+    before: phoneOtpCooldownHook
+  },
   plugins: [
     admin({
       defaultRole: "STUDENT",
@@ -222,6 +238,7 @@ export const auth = betterAuth({
       expiresIn: 3,
       storeToken: "hashed"
     }),
+    createPhoneOtpPlugin(),
     customSession(async ({ session, user }) => {
       const authUser = user as AuthUserFields;
 

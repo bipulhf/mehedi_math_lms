@@ -107,6 +107,31 @@ export async function signUpWithEmail(input: {
   await persistCookie(setCookie);
 }
 
+/**
+ * Signing in with a handset, which is also how an account is made: if the
+ * number is unknown, verifying the code creates it. Two calls, no password.
+ *
+ * The number must already be canonical — `normalizeBdPhoneE164` from
+ * `@mma/shared`, `8801XXXXXXXXX` — because the server takes the string as the
+ * account key and rejects anything else. Normalizing on this side rather than
+ * theirs is what keeps one person from ending up with two accounts.
+ */
+export async function sendPhoneOtp(phoneE164: string): Promise<void> {
+  await authRequest("phone-number/send-otp", {
+    body: JSON.stringify({ phoneNumber: phoneE164 }),
+    method: "POST"
+  });
+}
+
+export async function verifyPhoneOtp(input: { code: string; phoneE164: string }): Promise<void> {
+  const { setCookie } = await authRequest("phone-number/verify", {
+    body: JSON.stringify({ code: input.code, phoneNumber: input.phoneE164 }),
+    method: "POST"
+  });
+
+  await persistCookie(setCookie);
+}
+
 export type GoogleSignInOutcome = "cancelled" | "signed-in";
 
 /**
