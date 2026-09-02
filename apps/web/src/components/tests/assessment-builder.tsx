@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CreateTestPanel } from "@/components/tests/create-test-panel";
+import { McqImportDialog } from "@/components/tests/mcq-import-dialog";
 import {
   createQuestionPayload,
   initialQuestionDraft,
@@ -88,6 +89,7 @@ export function AssessmentBuilder({
   const [questionDraft, setQuestionDraft] = useState<QuestionDraft>(initialQuestionDraft);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [questionEditDrafts, setQuestionEditDrafts] = useState<Record<string, QuestionDraft>>({});
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [isWorking, setIsWorking] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<
     | { kind: "test"; testId: string }
@@ -212,6 +214,46 @@ export function AssessmentBuilder({
       await onRefresh();
       toast.success(t("ab.qCreated"));
     } finally {
+      setIsWorking(false);
+    }
+  };
+
+  /**
+   * Questions from the converter, created one at a time against the endpoint a
+   * hand-written question already uses.
+   *
+   * Sequential rather than parallel: each create recomputes the test's total
+   * marks server-side, and a failure part-way through has to name the question
+   * it stopped at. The ones already created stay -- re-importing the rest is a
+   * smaller job than working out what a rollback did.
+   */
+  const handleImportQuestions = async (drafts: readonly QuestionDraft[]): Promise<void> => {
+    if (!selectedTest) {
+      return;
+    }
+
+    setIsImportOpen(false);
+    setIsWorking(true);
+
+    let created = 0;
+
+    try {
+      for (const draft of drafts) {
+        await createQuestion(selectedTest.id, createQuestionPayload(draft, selectedTest.type));
+        created += 1;
+      }
+
+      toast.success(t("mcqImport.added", { count: String(created) }));
+    } catch (error) {
+      toast.error(
+        t("mcqImport.failedAt", { number: String(created + 1) }) +
+          (error instanceof Error ? ` — ${error.message}` : "")
+      );
+    } finally {
+      const refreshed = await getTestDetail(selectedTest.id);
+
+      setSelectedTest(refreshed);
+      await onRefresh();
       setIsWorking(false);
     }
   };
@@ -684,6 +726,20 @@ export function AssessmentBuilder({
                     </div>
                   ))}
 
+                  {selectedTest.type === "MCQ" ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        disabled={isWorking}
+                        onClick={() => setIsImportOpen(true)}
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                      >
+                        {t("mcqImport.open")}
+                      </Button>
+                    </div>
+                  ) : null}
+
                   <div className="rounded-[calc(var(--radius)-0.125rem)] border border-dashed border-hairline bg-panel-warm p-3">
                     <QuestionEditor
                       draft={questionDraft}
@@ -699,6 +755,12 @@ export function AssessmentBuilder({
           )}
         </div>
       </div>
+
+      <McqImportDialog
+        onClose={() => setIsImportOpen(false)}
+        onImport={(drafts) => void handleImportQuestions(drafts)}
+        open={isImportOpen}
+      />
 
       <ConfirmDialog
         cancelLabel={t("common.cancel")}
