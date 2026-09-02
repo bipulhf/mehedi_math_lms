@@ -99,6 +99,13 @@ export const accounts = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     providerId: varchar("provider_id", { length: 64 }).notNull(),
+    // Who vouched for this identity, not which button was pressed. Better Auth
+    // looks an OAuth account up by (issuer, accountId) -- `provider_id` is only
+    // a label. Google's is `https://accounts.google.com`; a method with no
+    // issuer of its own gets a synthetic one, so an email/password row is
+    // `local:credential`. Without the column every lookup throws and the
+    // callback dies as a bare `?error=internal_server_error`.
+    issuer: varchar("issuer", { length: 255 }).notNull(),
     accountId: varchar("provider_account_id", { length: 255 }).notNull(),
     password: text("password_hash"),
     accessToken: text("access_token"),
@@ -112,6 +119,10 @@ export const accounts = pgTable(
   },
   (table) => [
     uniqueIndex("accounts_provider_unique_idx").on(table.providerId, table.accountId),
+    // The pair Better Auth reads an OAuth callback with. Load-bearing twice
+    // over: without it every sign-in scans the table, and a second row under
+    // one issuer's subject would be a second account for one person.
+    uniqueIndex("accounts_issuer_account_id_unique_idx").on(table.issuer, table.accountId),
     index("accounts_user_id_idx").on(table.userId)
   ]
 );

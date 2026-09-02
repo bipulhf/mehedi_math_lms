@@ -10,6 +10,7 @@ import { passwordResetExpirySeconds, sendPasswordResetEmail } from "@mma/mailer"
 import { generateUniqueSlug } from "@mma/shared";
 import { z } from "zod";
 
+import { credentialAccountIssuer } from "./account-issuer";
 import { createPhoneOtpPlugin, phoneOtpCooldownHook } from "./phone-otp";
 
 const authEnvSchema = z.object({
@@ -72,6 +73,8 @@ async function createUniqueUserSlug(name: string): Promise<string> {
     return existingUser.length > 0;
   });
 }
+
+export { credentialAccountIssuer };
 
 export const auth = betterAuth({
   appName: "Mehedi's Math Academy",

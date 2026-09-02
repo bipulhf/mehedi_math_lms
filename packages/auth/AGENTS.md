@@ -24,6 +24,8 @@ Point 2 has a consequence: since the web app is the one actually handling sign-u
 
 **Sign-in with a phone number is configured in one place, `src/phone-otp.ts`.** `createPhoneOtpPlugin()` and `phoneOtpCooldownHook` are imported by both server configs, deliberately, so the one part of this pair that is genuinely new cannot drift the way points 1 and 2 did. It reads the brand from `@mma/shared` (`appName`, `appDomain`), so nothing in it is per-deployment. [ADR-0016](../../docs/adr/0016-a-phone-number-is-a-second-front-door.md) explains the identity decisions; the short version is that a phone is a *second* door, the submitted number is the account key and must arrive already canonical, and an unknown number becomes an account on its first successful verify.
 
+**`accounts.issuer` is the account key, not `provider_id`.** Better Auth 1.7 looks an OAuth account up by `(issuer, accountId)` and a credential account by `(userId, providerId, issuer, accountId)`. A provider that publishes an issuer supplies its own (Google: `https://accounts.google.com`); a local method gets a synthetic one, which is what `src/account-issuer.ts` exports as `credentialAccountIssuer`. Better Auth fills the column on rows it writes itself. Code that inserts an `accounts` row directly — `apps/api/src/repositories/staff-account-repository.ts`, both seed scripts — must set it from that constant, never a literal, or it mints an account that cannot sign in.
+
 **`src/factory.ts` is dead code.** It exports `createAuth()`, which nothing imports. Do not add to it or "wire it up" as part of an unrelated change; if you consolidate the three configs, that is a deliberate, standalone refactor.
 
 ## Configuration shape

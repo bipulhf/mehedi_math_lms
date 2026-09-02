@@ -1,3 +1,4 @@
+import { credentialAccountIssuer } from "@mma/auth/server";
 import { accounts, db, eq, users } from "@mma/db";
 
 /**
@@ -90,6 +91,7 @@ export class StaffAccountRepository {
       await transaction.insert(accounts).values({
         userId: insertedUser.id,
         providerId: "credential",
+        issuer: credentialAccountIssuer,
         accountId: insertedUser.id,
         password: input.passwordHash
       });

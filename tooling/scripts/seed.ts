@@ -1,4 +1,4 @@
-import { createPasswordHash } from "@mma/auth/server";
+import { createPasswordHash, credentialAccountIssuer } from "@mma/auth/server";
 import { accounts, and, db, eq, sql, users } from "@mma/db";
 import { generateUniqueSlug } from "@mma/shared";
 import { z } from "zod";
@@ -98,6 +98,7 @@ async function seedAdmin(): Promise<void> {
       .update(accounts)
       .set({
         accountId: userId,
+        issuer: credentialAccountIssuer,
         password: passwordHash,
         updatedAt: new Date()
       })
@@ -106,6 +107,7 @@ async function seedAdmin(): Promise<void> {
     await db.insert(accounts).values({
       userId,
       providerId: "credential",
+      issuer: credentialAccountIssuer,
       accountId: userId,
       password: passwordHash
     });
