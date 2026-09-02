@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
+import { LeaderboardLink } from "@/components/exams/leaderboard-link";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
@@ -56,6 +57,9 @@ function TestHistoryPage(): JSX.Element {
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
           <CardDescription>{t("test.historyLead")}</CardDescription>
+          <div className="flex flex-wrap gap-3">
+            <LeaderboardLink testId={testId} type={test.type} />
+          </div>
         </CardHeader>
       </Card>
 

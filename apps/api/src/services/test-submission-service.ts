@@ -14,6 +14,7 @@ import type {
 } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { gradeMcqAnswers, totalMarks } from "@/services/assessment-grading";
+import { buildLeaderboard, type LeaderboardEntry } from "@/services/assessment-leaderboard";
 import {
   attachAttemptNumbers,
   mapScriptPageView,
@@ -362,6 +363,36 @@ export class TestSubmissionService {
     return submissions.map((submission) =>
       mapSubmissionSummary(submission, test.passingScore, attemptNumbers.get(submission.id) ?? 1)
     );
+  }
+
+  /**
+   * The board for one MCQ test.
+   *
+   * MCQ only, and the guard is not cosmetic: a written paper is marked by hand
+   * over days, so a board built from it would rank whoever happened to be
+   * marked first and would read as a result long before it was one.
+   *
+   * Both sides call this. A teacher reaches it through the test they manage, a
+   * student through a test they are enrolled on, and both are shown the same
+   * rows -- a board that showed one person only their own line would not be a
+   * board. Emails are not on it; a name and a score are what a ranking needs.
+   */
+  public async getLeaderboard(
+    testId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<readonly LeaderboardEntry[]> {
+    // Already branches by role: a teacher gets in through the course they
+    // manage, a student through the one they are enrolled on.
+    const test = await this.access.requireAccessibleTest(testId, currentUserId, currentUserRole);
+
+    if (test.type !== "MCQ") {
+      throw new ValidationError("A leaderboard is only kept for MCQ tests");
+    }
+
+    const submissions = await this.testRepository.listSubmissionsByTestId(testId);
+
+    return buildLeaderboard(submissions, currentUserId);
   }
 
   public async getSubmissionDetail(

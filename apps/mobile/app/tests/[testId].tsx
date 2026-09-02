@@ -288,6 +288,15 @@ export default function TestScreen(): JSX.Element {
                 variant="outline"
               />
             ) : null}
+            {test?.type === "MCQ" ? (
+              <Button
+                label={t("leaderboard.title")}
+                onPress={() =>
+                  router.push({ params: { testId }, pathname: "/tests/[testId]/leaderboard" })
+                }
+                variant="outline"
+              />
+            ) : null}
           </Card>
         </ScrollView>
       </Screen>
@@ -328,6 +337,18 @@ export default function TestScreen(): JSX.Element {
               label={t("marking.openPaper")}
               onPress={() =>
                 router.push({ params: { testId: test.id }, pathname: "/tests/[testId]/marking" })
+              }
+              variant="outline"
+            />
+          ) : null}
+          {test.type === "MCQ" ? (
+            <Button
+              label={t("leaderboard.title")}
+              onPress={() =>
+                router.push({
+                  params: { testId: test.id },
+                  pathname: "/tests/[testId]/leaderboard"
+                })
               }
               variant="outline"
             />

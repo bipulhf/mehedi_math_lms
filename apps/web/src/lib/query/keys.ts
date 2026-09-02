@@ -126,6 +126,7 @@ export const queryKeys = {
     byCourse: (courseId: string) => ["tests", "course", courseId] as const,
     detail: (testId: string) => ["tests", "detail", testId] as const,
     detailWithAnswers: (testId: string) => ["tests", "detail", testId, "answers"] as const,
+    leaderboard: (testId: string) => ["tests", "leaderboard", testId] as const,
     markingAnswer: (answerId: string) => ["tests", "marking", "answer", answerId] as const,
     markingQueue: (testId: string, mode: string) =>
       ["tests", "marking", testId, mode] as const,

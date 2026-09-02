@@ -195,6 +195,23 @@ testsRoutes.get("/:id/submissions", requireRole("ADMIN", "TEACHER"), (context) =
   );
 });
 
+/**
+ * The board. Open to anybody who can open the test -- a student sees the same
+ * rows a teacher does, because a ranking only one person can read is not one.
+ */
+testsRoutes.get("/:id/leaderboard", requireAuth(), (context) => {
+  const params = testIdParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const authSession = context.get("authSession");
+
+  return testController.getLeaderboard(
+    context,
+    params.id,
+    authUser!.id,
+    authSession!.role as UserRole
+  );
+});
+
 testsRoutes.get("/:id/submissions/mine", requireAuth(), (context) => {
   const params = testIdParamsSchema.parse(context.req.param());
   const authUser = context.get("authUser");

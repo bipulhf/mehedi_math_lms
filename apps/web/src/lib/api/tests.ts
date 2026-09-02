@@ -116,6 +116,22 @@ export interface SubmissionDetail extends SubmissionSummary {
   testId: string;
 }
 
+/** One row of an MCQ test's board. Best attempt per student, ties share a rank. */
+export interface LeaderboardEntry {
+  attempts: number;
+  durationMs: number | null;
+  isCurrentUser: boolean;
+  maxScore: number | null;
+  rank: number;
+  score: number;
+  submissionId: string;
+  submittedAt: string | null;
+  user: {
+    id: string;
+    name: string;
+  };
+}
+
 export type { TestType };
 
 export type CreateTestInput = z.infer<typeof createTestSchema>;
@@ -318,6 +334,15 @@ export async function listMyTestSubmissions(
   testId: string
 ): Promise<readonly SubmissionSummary[]> {
   const response = await apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);
+
+  return response.data;
+}
+
+/** MCQ tests only — the API rejects the rest, so do not offer the link for them. */
+export async function getTestLeaderboard(
+  testId: string
+): Promise<readonly LeaderboardEntry[]> {
+  const response = await apiGet<readonly LeaderboardEntry[]>(`tests/${testId}/leaderboard`);
 
   return response.data;
 }

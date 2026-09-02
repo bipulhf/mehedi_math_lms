@@ -42,6 +42,7 @@ export const queryKeys = {
   streak: (locale: string) => ["streak", locale] as const,
   submissionChallenges: (submissionId: string) =>
     ["tests", "submission", submissionId, "challenges"] as const,
+  leaderboard: (testId: string) => ["tests", testId, "leaderboard"] as const,
   test: (testId: string) => ["tests", testId] as const,
   testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
   myTestSubmissions: (testId: string) => ["tests", testId, "my-attempts"] as const,

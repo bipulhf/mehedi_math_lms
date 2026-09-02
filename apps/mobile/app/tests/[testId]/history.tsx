@@ -3,7 +3,17 @@ import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-import { Badge, Body, Caption, Card, EmptyState, Screen, SkeletonBlock, Title } from "@/src/components/ui";
+import {
+  Badge,
+  Body,
+  Button,
+  Caption,
+  Card,
+  EmptyState,
+  Screen,
+  SkeletonBlock,
+  Title
+} from "@/src/components/ui";
 import { getTestDetail, listMySubmissions } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -50,6 +60,16 @@ export default function TestHistoryScreen(): JSX.Element {
       <ScrollView contentContainerStyle={styles.content}>
         <Title>{test.title}</Title>
         <Caption>{t("test.historyLead")}</Caption>
+
+        {test.type === "MCQ" ? (
+          <Button
+            label={t("leaderboard.title")}
+            onPress={() =>
+              router.push({ params: { testId }, pathname: "/tests/[testId]/leaderboard" })
+            }
+            variant="outline"
+          />
+        ) : null}
 
         {submissions.length === 0 ? <EmptyState message={t("test.historyEmpty")} /> : null}
 

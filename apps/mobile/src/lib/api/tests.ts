@@ -175,6 +175,29 @@ export async function listTestSubmissions(testId: string): Promise<readonly Subm
   return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions`);
 }
 
+/** One row of an MCQ test's board. Best attempt per student, ties share a rank. */
+export interface LeaderboardEntry {
+  attempts: number;
+  durationMs: number | null;
+  isCurrentUser: boolean;
+  maxScore: number | null;
+  rank: number;
+  score: number;
+  submissionId: string;
+  submittedAt: string | null;
+  user: {
+    id: string;
+    name: string;
+  };
+}
+
+/** MCQ tests only — the API rejects the rest, so do not offer the link for them. */
+export async function getTestLeaderboard(
+  testId: string
+): Promise<readonly LeaderboardEntry[]> {
+  return apiGet<readonly LeaderboardEntry[]>(`tests/${testId}/leaderboard`);
+}
+
 /** Every attempt the current student has made on this test, newest first. */
 export async function listMySubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
   return apiGet<readonly SubmissionSummary[]>(`tests/${testId}/submissions/mine`);

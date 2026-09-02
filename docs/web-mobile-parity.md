@@ -399,6 +399,7 @@ Catalogue/My Courses/Messages/Notifications/Profile) — a five-phase redesign l
 | `/dashboard/tests/$testId` | `app/tests/[testId].tsx` | ✅ One-at-a-time, autosave, auto-submit; now also entry point to answer-script upload (§2.4) |
 | `/dashboard/tests/$testId/results/$submissionId` | `app/tests/[testId]/results/[submissionId].tsx` | ✅ Now math-typeset (§2.5) |
 | `/dashboard/tests/$testId/history` | `app/tests/[testId]/history.tsx` | ✅ `toLocaleDateString()` residue fixed — now `format.date` |
+| `/dashboard/tests/$testId/leaderboard` | `app/tests/[testId]/leaderboard.tsx` | ✅ MCQ only, same rows for student and teacher — [ADR-0017](adr/0017-a-leaderboard-ranks-the-best-attempt.md) |
 | `/dashboard/tests/$testId/submissions*` (grading) | **`app/tests/[testId]/marking.tsx`** (379 lines) | ✅ **New, no longer out of scope** — teacher/admin grading queue, §2.4/§6.7, incl. Undo |
 | `/dashboard/messages` | `(tabs)/inbox.tsx` (311 lines, messages pane) + `messages/[conversationId].tsx` + `messages/new.tsx` | ✅ Can start a conversation; merged into Inbox behind a segmented control (§6.6) — two independently-fetched panes, not a unified list |
 | `/dashboard/profile` | `(tabs)/profile.tsx` (233 lines) + `app/change-password.tsx` | ✅ Now one grouped settings list (was nine bordered cards) plus a weekly `StreakTrack` on the identity card — §6.6 |
