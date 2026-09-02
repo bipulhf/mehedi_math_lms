@@ -29,12 +29,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "^1.6.25",
+    "@better-auth/drizzle-adapter": "^1.7.2",
     "@genex/db": "workspace:*",
     "@genex/mailer": "workspace:*",
     "@genex/shared": "workspace:*",
     "@genex/sms": "workspace:*",
-    "better-auth": "^1.6.25",
-    "zod": "^4.4.3"
+    "better-auth": "^1.7.2",
+    "zod": "^4.5.4"
   }
 }
