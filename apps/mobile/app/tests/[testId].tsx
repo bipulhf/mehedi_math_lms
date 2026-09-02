@@ -245,6 +245,18 @@ export default function TestScreen(): JSX.Element {
               variant="outline"
             />
           ) : null}
+          {test.type === "MCQ" ? (
+            <Button
+              label={t("leaderboard.title")}
+              onPress={() =>
+                router.push({
+                  params: { testId: test.id },
+                  pathname: "/tests/[testId]/leaderboard"
+                })
+              }
+              variant="outline"
+            />
+          ) : null}
           <View style={styles.badgeRow}>
             <Badge>
               {t("test.answered", { count: answeredCount, total: test.questions.length })}

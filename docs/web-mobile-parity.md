@@ -196,6 +196,7 @@ handlers) are listed once at the end rather than line by line.
 | `/dashboard/learn/$courseId` | `app/learn/[courseId].tsx` (619 lines) | ✅ See §6.3 |
 | `/dashboard/tests/$testId` | `app/tests/[testId].tsx` (369 lines) | ✅ One-at-a-time, autosave, auto-submit |
 | `/dashboard/tests/$testId/results/$submissionId` | `app/tests/[testId]/results/[submissionId].tsx` | ✅ |
+| `/dashboard/tests/$testId/leaderboard` | `app/tests/[testId]/leaderboard.tsx` | ✅ MCQ only, same rows for student and teacher — [ADR-0017](adr/0017-a-leaderboard-ranks-the-best-attempt.md) |
 | `/dashboard/messages` | `(tabs)/messages.tsx` + `messages/[conversationId].tsx` + `messages/new.tsx` | ✅ Can now start a conversation |
 | `/dashboard/profile` | `(tabs)/profile.tsx` + `app/change-password.tsx` | ◐ Password change ✅; **photo upload absent** — §11 Q5 |
 | `/dashboard/profile-complete` | `app/profile-complete.tsx` | ✅ (not localised — §2.1) |

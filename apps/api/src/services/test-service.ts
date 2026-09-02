@@ -17,6 +17,7 @@ import type { EnrollmentRepository } from "@/repositories/enrollment-repository"
 import type { TestRepository } from "@/repositories/test-repository";
 import type { AssessmentAccessGuards } from "@/services/assessment-access-guards";
 import { totalMarks, validateQuestionInput } from "@/services/assessment-grading";
+import type { LeaderboardEntry } from "@/services/assessment-leaderboard";
 import {
   type AssessmentOption,
   type AssessmentQuestion,
@@ -596,6 +597,14 @@ export class TestService {
     currentUserRole: UserRole
   ): Promise<readonly SubmissionSummary[]> {
     return this.submissions.listMySubmissions(testId, currentUserId, currentUserRole);
+  }
+
+  public async getLeaderboard(
+    testId: string,
+    currentUserId: string,
+    currentUserRole: UserRole
+  ): Promise<readonly LeaderboardEntry[]> {
+    return this.submissions.getLeaderboard(testId, currentUserId, currentUserRole);
   }
 
   public async getSubmissionDetail(

@@ -3,6 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import type { JSX } from "react";
 
 import { DataTableSkeleton } from "@/components/common/data-table-skeleton";
+import { LeaderboardLink } from "@/components/exams/leaderboard-link";
 import { RouteErrorView } from "@/components/common/route-error";
 import { Badge } from "@/components/ui/badge";
 import { BackButton } from "@/components/ui/back-button";
@@ -58,15 +59,16 @@ function TestSubmissionsPage(): JSX.Element {
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
           <CardDescription>{t("grade.lead")}</CardDescription>
-          {test.type === "WRITTEN" ? (
-            <div>
+          <div className="flex flex-wrap gap-3">
+            {test.type === "WRITTEN" ? (
               <Button asChild>
                 <Link params={{ testId }} to="/dashboard/tests/$testId/marking">
                   {t("marking.openPaper")}
                 </Link>
               </Button>
-            </div>
-          ) : null}
+            ) : null}
+            <LeaderboardLink testId={testId} type={test.type} />
+          </div>
         </CardHeader>
       </Card>
 

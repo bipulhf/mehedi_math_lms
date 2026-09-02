@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
 
+import { LeaderboardLink } from "@/components/exams/leaderboard-link";
 import { McqAnswerReview } from "@/components/exams/mcq-answer-review";
 import { WrittenAnswerReview } from "@/components/exams/written-answer-review";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +98,7 @@ export function StaffExamWorkspace({ testId }: { testId: string }): JSX.Element 
                 </Link>
               </Button>
             ) : null}
+            <LeaderboardLink testId={testId} type={test.type} />
             <Button asChild variant="outline">
               <Link to="/dashboard/exams">{t("exams.backToExams")}</Link>
             </Button>

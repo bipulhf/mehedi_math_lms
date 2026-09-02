@@ -33,6 +33,7 @@ export const queryKeys = {
   // Owned by `use-session.ts`, but named here because completing a profile
   // changes the session's `profileCompleted` flag and has to invalidate it.
   session: () => ["session"] as const,
+  leaderboard: (testId: string) => ["tests", testId, "leaderboard"] as const,
   test: (testId: string) => ["tests", testId] as const,
   testWithAnswers: (testId: string) => ["tests", testId, "answers"] as const,
   myTestSubmissions: (testId: string) => ["tests", testId, "my-attempts"] as const,
