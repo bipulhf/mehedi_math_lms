@@ -97,6 +97,8 @@ export const bn = {
   "auth.changePhone": "নম্বর বদলাও",
   "auth.signIn": "লগ ইন",
   "auth.signInLead": "তোমার কোর্স, ক্লাস আর পরীক্ষা — সব এক জায়গায়।",
+  "auth.signInToContinue": "চালিয়ে যেতে লগ ইন করো",
+  "auth.signInToContinueLead": "তোমার কোর্স, বার্তা আর প্রোফাইল দেখতে লগ ইন করো।",
   "auth.signingIn": "ঢুকছি…",
   "auth.signingUp": "অ্যাকাউন্ট খুলছি…",
   "auth.signUp": "অ্যাকাউন্ট খোল",

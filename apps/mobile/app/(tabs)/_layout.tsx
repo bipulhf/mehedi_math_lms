@@ -16,10 +16,7 @@ import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { colors, fonts, radius } from "@/src/theme/tokens";
 
-/**
- * SVG line icons (react-native-svg) rather than Unicode glyphs: the previous
- * five characters rendered differently on every Android OEM font.
- */
+/** Native views avoid Fabric re-parenting failures in the tab bar. */
 
 function Badge({ count }: { count: number }): JSX.Element | null {
   if (count <= 0) {

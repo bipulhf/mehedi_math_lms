@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import type { JSX, ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -14,6 +14,7 @@ import { LocaleProvider } from "@/src/lib/locale";
 
 import CatalogScreen from "@/app/(tabs)/explore";
 import HomeScreen from "@/app/(tabs)/index";
+import InboxScreen from "@/app/(tabs)/inbox";
 import ProfileScreen from "@/app/(tabs)/profile";
 
 /**
@@ -26,12 +27,18 @@ import ProfileScreen from "@/app/(tabs)/profile";
  * the tests live here and import across.
  */
 
+const mockRouterPush = jest.fn();
+
 jest.mock("expo-router", () => ({
   Link: ({ children }: { children: ReactNode }) => children,
   Redirect: () => null,
   Stack: { Screen: () => null },
   useLocalSearchParams: () => ({ courseId: "course-1" }),
-  useRouter: () => ({ back: jest.fn(), push: jest.fn(), replace: jest.fn() })
+  useRouter: () => ({ back: jest.fn(), push: mockRouterPush, replace: jest.fn() })
+}));
+
+jest.mock("@/src/lib/use-push-registration", () => ({
+  usePushRegistration: jest.fn()
 }));
 
 // FlashList measures its window, which a test renderer has none of.
@@ -116,6 +123,7 @@ function renderScreen(node: JSX.Element): void {
 
 beforeEach(() => {
   jest.restoreAllMocks();
+  mockRouterPush.mockReset();
   jest.spyOn(auth, "fetchSession").mockResolvedValue(SESSION);
 });
 
@@ -208,5 +216,45 @@ describe("profile", () => {
       expect(screen.getByText("প্রোফাইল শেষ করো")).toBeTruthy();
     });
     expect(screen.getByText("প্রোফাইল সম্পূর্ণ করো")).toBeTruthy();
+  });
+});
+
+describe("signed-out tabs", () => {
+  beforeEach(() => {
+    jest.spyOn(auth, "fetchSession").mockResolvedValue(null);
+  });
+
+  test("home stops loading and offers sign-in or the public catalogue", async () => {
+    const enrollments = jest.spyOn(enrollmentsApi, "listMyEnrollments");
+
+    renderScreen(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+    });
+    expect(enrollments).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole("button", { name: "লগ ইন" }));
+
+    expect(mockRouterPush).toHaveBeenCalledWith("/sign-in");
+  });
+
+  test("inbox stops at a sign-in prompt instead of navigating during tab mount", async () => {
+    renderScreen(<InboxScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+    });
+  });
+
+  test("profile stops at a sign-in prompt instead of navigating during tab mount", async () => {
+    const profile = jest.spyOn(profilesApi, "getOwnProfile");
+
+    renderScreen(<ProfileScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+    });
+    expect(profile).not.toHaveBeenCalled();
   });
 });

@@ -94,6 +94,8 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "auth.changePhone": "Use a different number",
   "auth.signIn": "Sign in",
   "auth.signInLead": "Your courses, classes and tests, all in one place.",
+  "auth.signInToContinue": "Sign in to continue",
+  "auth.signInToContinueLead": "Sign in to see your courses, messages and profile.",
   "auth.signingIn": "Signing in…",
   "auth.signingUp": "Creating your account…",
   "auth.signUp": "Create an account",

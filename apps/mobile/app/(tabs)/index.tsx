@@ -2,7 +2,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -21,6 +21,7 @@ import {
   StreakTrack,
   Title
 } from "@/src/components/ui";
+import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -366,22 +367,20 @@ export default function HomeScreen(): JSX.Element {
   );
   const keyExtractor = useCallback((item: StudentEnrollment) => item.id, []);
 
-  // Signed out is not an error state here: Explore is the public storefront,
-  // and a visitor should be able to browse courses before ever signing in.
-  // Sign-in is one tap away (the tab bar or any enroll button), not forced.
-  // An effect rather than a render-time <Redirect>: redirecting during the
-  // tab navigator's own first mount raced Fabric's view mounting and crashed
-  // with "child already has a parent" on a cold start.
-  useEffect(() => {
-    if (!isSessionPending && !session) {
-      router.replace("/explore");
-    }
-  }, [isSessionPending, session, router]);
-
-  if (isSessionPending || !session) {
+  if (isSessionPending) {
     return (
       <Screen noHeader>
         <HomeSkeleton />
+      </Screen>
+    );
+  }
+
+  // Explore is public, but Home needs an account. Keeping this prompt in the
+  // selected tab avoids navigation while the native tab view is mounting.
+  if (!session) {
+    return (
+      <Screen noHeader style={styles.padded}>
+        <SignInPrompt showExplore />
       </Screen>
     );
   }

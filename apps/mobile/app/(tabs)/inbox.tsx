@@ -2,7 +2,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import {
@@ -20,6 +20,7 @@ import {
   Tabs,
   Title
 } from "@/src/components/ui";
+import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
 import { listNotifications, markAllNotificationsRead, markNotificationRead, type NotificationRecord } from "@/src/lib/api/notifications";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -247,24 +248,22 @@ function NotificationsPane(): JSX.Element {
 
 export default function InboxScreen(): JSX.Element {
   const t = useT();
-  const router = useRouter();
   const [segment, setSegment] = useState<InboxSegment>("messages");
   const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
 
   usePushRegistration(Boolean(session));
 
-  // An effect, not a render-time <Redirect>: redirecting during the tab
-  // navigator's own mount raced Fabric's view mounting and crashed with
-  // "child already has a parent" — see app/(tabs)/index.tsx.
-  useEffect(() => {
-    if (!isSessionPending && !session) {
-      router.replace("/sign-in");
-    }
-  }, [isSessionPending, session, router]);
-
-  if (isSessionPending || !session) {
+  if (isSessionPending) {
     return <ScreenSkeleton noHeader rows={4} />;
+  }
+
+  if (!session) {
+    return (
+      <Screen noHeader style={styles.padded}>
+        <SignInPrompt />
+      </Screen>
+    );
   }
 
   return (
