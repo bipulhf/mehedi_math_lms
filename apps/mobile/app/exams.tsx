@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, TextInput, View } from "react-native";
 
 import { BottomSheet } from "@expo/ui";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
 
 import { CourseExamGroup } from "@/src/components/course-exam-group";
@@ -197,12 +197,7 @@ export default function ExamsScreen(): JSX.Element {
           <>
             <View style={styles.searchRow}>
               <View style={styles.searchWrap}>
-                <SymbolView
-                  name="magnifyingglass"
-                  size={18}
-                  tintColor={colors.mutedFaint}
-                  style={styles.searchIcon as never}
-                />
+                <Ionicons color={colors.mutedFaint} name="search" size={18} />
                 <TextInput
                   accessibilityLabel={t("exams.search")}
                   onChangeText={(value) => setFilters({ ...filters, search: value })}
@@ -226,11 +221,7 @@ export default function ExamsScreen(): JSX.Element {
                   pressed ? { opacity: 0.7 } : null
                 ]}
               >
-                <SymbolView
-                  name="slider.horizontal.3"
-                  size={18}
-                  tintColor={isSearching ? colors.onAccent : colors.ink}
-                />
+                <Ionicons color={isSearching ? colors.onAccent : colors.ink} name="options" size={18} />
                 {isSearching ? (
                   <View style={styles.filterBadge}>
                     <Text style={styles.filterBadgeText}>•</Text>
@@ -264,7 +255,7 @@ export default function ExamsScreen(): JSX.Element {
                     hitSlop={spacing.sm}
                     onPress={() => setIsFilterSheetOpen(false)}
                   >
-                    <SymbolView name="xmark.circle.fill" size={26} tintColor={colors.mutedFaint} />
+                    <Ionicons color={colors.mutedFaint} name="close-circle" size={26} />
                   </Pressable>
                 </View>
                 <View style={styles.sheetSection}>

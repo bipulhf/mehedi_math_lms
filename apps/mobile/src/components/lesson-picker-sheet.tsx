@@ -1,5 +1,5 @@
 import { BottomSheet } from "@expo/ui";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
@@ -123,7 +123,7 @@ export function LessonPickerSheet({
           onPress={onClose}
           style={styles.closeButton}
         >
-          <SymbolView name="xmark.circle.fill" size={26} tintColor={colors.mutedFaint} />
+          <Ionicons color={colors.mutedFaint} name="close-circle" size={26} />
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>

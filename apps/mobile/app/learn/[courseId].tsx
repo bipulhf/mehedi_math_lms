@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { CourseCompletionNotice } from "@/src/components/course-completion-notice";
 import { CourseRoutinePanel } from "@/src/components/course-routine-panel";
@@ -315,12 +315,7 @@ export default function CoursePlayerScreen(): JSX.Element {
                 <Body numberOfLines={1}>{selectedItem?.title ?? t("player.noLectures")}</Body>
               </View>
               <View style={styles.chevronWrap}>
-                <SymbolView
-                  name="chevron.right"
-                  size={16}
-                  tintColor={colors.mutedFaint}
-                  weight="semibold"
-                />
+                <Ionicons color={colors.mutedFaint} name="chevron-forward" size={16} />
               </View>
             </View>
           </Card>

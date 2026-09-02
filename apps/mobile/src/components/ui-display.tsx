@@ -1,7 +1,7 @@
 import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@mma/shared";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX, ReactNode } from "react";
 import { PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Polygon, Svg } from "react-native-svg";
@@ -285,11 +285,10 @@ export function AccordionRow({
           {title}
         </Text>
         {meta === undefined ? null : <Text style={styles.accordionMeta}>{meta}</Text>}
-        <SymbolView
-          name={isOpen ? "chevron.up" : "chevron.down"}
+        <Ionicons
+          color={isOpen ? colors.accent : colors.mutedFaint}
+          name={isOpen ? "chevron-up" : "chevron-down"}
           size={14}
-          tintColor={isOpen ? colors.accent : colors.mutedFaint}
-          weight="semibold"
         />
       </Pressable>
       {isOpen ? <View style={styles.accordionBody}>{children}</View> : null}

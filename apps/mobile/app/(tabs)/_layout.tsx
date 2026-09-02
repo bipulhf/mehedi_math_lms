@@ -3,7 +3,7 @@ import { Tabs } from "expo-router";
 import type { JSX } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { listConversations } from "@/src/lib/api/messages";
 import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
@@ -12,20 +12,15 @@ import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { colors, fonts, radius } from "@/src/theme/tokens";
 
-function TabSymbol({
+function TabIcon({
   focused,
   name
 }: {
   focused: boolean;
-  name: "book.fill" | "square.grid.2x2.fill" | "bubble.left.and.bubble.right.fill" | "person.crop.circle.fill";
+  name: keyof typeof Ionicons.glyphMap;
 }): JSX.Element {
   return (
-    <SymbolView
-      name={name}
-      size={24}
-      tintColor={focused ? colors.accent : colors.muted}
-      weight={focused ? "semibold" : "regular"}
-    />
+    <Ionicons color={focused ? colors.accent : colors.muted} name={name} size={24} />
   );
 }
 
@@ -86,16 +81,14 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <TabSymbol focused={focused} name="book.fill" />,
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="book" />,
           title: t("nav.home")
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabSymbol focused={focused} name="square.grid.2x2.fill" />
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="grid" />,
           title: t("nav.explore")
         }}
       />
@@ -104,7 +97,7 @@ export default function TabsLayout(): JSX.Element {
         options={{
           tabBarIcon: ({ focused }) => (
             <View>
-              <TabSymbol focused={focused} name="bubble.left.and.bubble.right.fill" />
+              <TabIcon focused={focused} name="chatbubbles" />
               <Badge count={unreadInbox} />
             </View>
           ),
@@ -114,9 +107,7 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => (
-            <TabSymbol focused={focused} name="person.crop.circle.fill" />
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="person-circle" />,
           title: t("nav.profile")
         }}
       />

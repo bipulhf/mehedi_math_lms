@@ -19,7 +19,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { ProgressTrack, StreakTrack } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
@@ -30,6 +30,15 @@ import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
 import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+
+function sfToIon(sf: string): string {
+  const map: Record<string, string> = {
+    "book.fill": "book",
+    "checkmark.circle.fill": "checkmark-circle",
+    "chart.bar.fill": "bar-chart"
+  };
+  return map[sf] ?? "cube";
+}
 
 /**
  * Downloading and sharing is a phone-shaped action, more so than a desktop one
@@ -160,7 +169,7 @@ function SummaryMetric({
   return (
     <View style={styles.metric}>
       <View style={styles.metricIcon}>
-        <SymbolView name={icon as never} size={16} tintColor={colors.accent} />
+        <Ionicons color={colors.accent} name={sfToIon(icon) as never} size={16} />
       </View>
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
@@ -185,7 +194,7 @@ function PaymentReminderRow({
   return (
     <View style={styles.paymentItem}>
       <View style={styles.paymentIcon}>
-        <SymbolView name="exclamationmark.circle.fill" size={20} tintColor={colors.warning} />
+        <Ionicons color={colors.warning} name="alert-circle" size={20} />
       </View>
       <Link
         asChild
@@ -209,7 +218,7 @@ function PaymentReminderRow({
         onPress={onDismiss}
         style={styles.paymentDismissBtn}
       >
-        <SymbolView name="xmark.circle.fill" size={20} tintColor={colors.mutedFaint} />
+        <Ionicons color={colors.mutedFaint} name="close-circle" size={20} />
       </Pressable>
     </View>
   );
@@ -333,7 +342,7 @@ function StudentDashboardHeader({
                   />
                   <View style={styles.resumeAction}>
                     <Text style={styles.resumeActionLabel}>{t("mine.resume")}</Text>
-                    <SymbolView name="play.fill" size={12} tintColor={colors.actionForeground} />
+                    <Ionicons color={colors.actionForeground} name="play" size={12} />
                   </View>
                 </View>
               </Card>

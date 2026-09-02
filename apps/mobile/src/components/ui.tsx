@@ -1,7 +1,7 @@
 import { pickImageVariant, readImageVariants } from "@mma/shared";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX, ReactNode } from "react";
 import { useState } from "react";
 import {
@@ -300,7 +300,7 @@ export function CoverImage({
 export function ErrorNotice({ message }: { message: string }): JSX.Element {
   return (
     <View accessibilityRole="alert" style={styles.errorNotice}>
-      <SymbolView name="exclamationmark.triangle.fill" size={18} tintColor={colors.error} />
+      <Ionicons color={colors.error} name="warning" size={18} />
       <Text style={styles.errorNoticeText}>{message}</Text>
     </View>
   );
@@ -318,23 +318,19 @@ export function EmptyState({
   message: string;
   title?: string;
 }): JSX.Element {
-  const symbolMap: Record<string, string> = {
-    book: "book.closed",
-    "book.closed": "book.closed",
-    bubble: "bubble.left",
-    "bubble.left": "bubble.left",
-    magnifyingglass: "magnifyingglass",
-    tray: "tray"
+  const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
+    book: "book",
+    "book.closed": "book",
+    bubble: "chatbubble-ellipses",
+    "bubble.left": "chatbubble",
+    magnifyingglass: "search",
+    tray: "cube"
   };
 
   return (
     <View style={styles.emptyState}>
       <View style={styles.emptyIconWrap}>
-        <SymbolView
-          name={(symbolMap[icon] ?? "tray") as never}
-          size={28}
-          tintColor={colors.mutedFaint}
-        />
+        <Ionicons color={colors.mutedFaint} name={iconMap[icon] ?? "cube"} size={28} />
       </View>
       {title === undefined ? null : <Text style={styles.emptyTitle}>{title}</Text>}
       <Text style={styles.emptyMessage}>{message}</Text>

@@ -1,7 +1,7 @@
 import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -15,6 +15,21 @@ import { queryKeys } from "@/src/lib/query";
 import { useHasPassword, useSession, useSignOut } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
 import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+
+function sfToIon(sf: string): string {
+  const map: Record<string, string> = {
+    "globe": "globe-outline",
+    "info.circle": "information-circle",
+    "envelope": "mail",
+    "ladybug": "bug",
+    "key": "key",
+    "doc.text": "document-text",
+    "creditcard": "card",
+    "plus.bubble": "chatbubble-ellipses",
+    "rectangle.portrait.and.arrow.right": "log-out"
+  };
+  return map[sf] ?? "cube";
+}
 
 /**
  * Two pills, both always visible, mirroring the web switcher. A single toggle
@@ -92,12 +107,12 @@ function SettingsRow({
       <View style={styles.settingsRowLeft}>
         {icon ? (
           <View style={styles.settingsIconWrap}>
-            <SymbolView name={icon as never} size={16} tintColor={colors.muted} />
+            <Ionicons color={colors.muted} name={sfToIon(icon) as never} size={16} />
           </View>
         ) : null}
         <Text style={styles.settingsRowLabel}>{isBusy ? `${label}…` : label}</Text>
       </View>
-      <SymbolView name="chevron.right" size={14} tintColor={colors.mutedFaint} weight="semibold" />
+      <Ionicons color={colors.mutedFaint} name="chevron-forward" size={14} />
     </Pressable>
   );
 }
@@ -207,7 +222,7 @@ export default function ProfileScreen(): JSX.Element {
           <View style={[styles.settingsRow, styles.settingsRowDivider]}>
             <View style={styles.settingsRowLeft}>
               <View style={styles.settingsIconWrap}>
-                <SymbolView name="globe" size={16} tintColor={colors.muted} />
+                <Ionicons color={colors.muted} name="globe-outline" size={16} />
               </View>
               <Text style={styles.settingsRowLabel}>{t("locale.label")}</Text>
             </View>

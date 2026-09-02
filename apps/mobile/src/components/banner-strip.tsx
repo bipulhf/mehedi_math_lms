@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { SymbolView } from "expo-symbols";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { getActiveBanner } from "@/src/lib/api/banners";
 import { useT } from "@/src/lib/locale";
@@ -83,12 +83,7 @@ export function BannerStrip(): JSX.Element | null {
         onPress={() => setDismissedId(banner.id)}
         style={styles.dismissBtn}
       >
-        <SymbolView
-          name="xmark.circle.fill"
-          size={22}
-          tintColor={preset.foreground}
-          style={{ opacity: 0.85 } as never}
-        />
+        <Ionicons color={preset.foreground} name="close-circle" size={22} style={{ opacity: 0.85 } as never} />
       </Pressable>
     </View>
   );
