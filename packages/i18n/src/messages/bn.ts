@@ -502,6 +502,7 @@ export const bn = {
   "nav.menu": "মেনু",
   "nav.login": "লগ ইন",
   "nav.signOut": "লগ আউট",
+  "nav.signOutFailed": "লগ আউট করা যায়নি। আবার চেষ্টা করুন।",
   "nav.teachers": "শিক্ষক",
 
   "status.archived": "আর্কাইভ",
