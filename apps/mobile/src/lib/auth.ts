@@ -138,26 +138,21 @@ export type GoogleSignInOutcome = "cancelled" | "signed-in";
  * Google sign-in, which cannot work the way it does on the web: the OAuth
  * round trip happens in a browser the app cannot read cookies from.
  *
- * So the browser is sent to `/api/mobile-auth-handoff` on the web app instead
- * of a dashboard. That route mints a single-use, three-minute token for the
- * session it just created and redirects into this app's deep link with it;
- * `one-time-token/verify` then answers with the `Set-Cookie` stored here.
+ * The browser begins at `/api/mobile-google-start`, where Better Auth can set
+ * the OAuth state cookie in the same cookie jar that Google returns to. On a
+ * successful sign-in, `/api/mobile-auth-handoff` mints a single-use,
+ * three-minute token and redirects into this app's deep link; then
+ * `one-time-token/verify` answers with the `Set-Cookie` stored here.
  *
  * @see apps/web/src/routes/api/mobile-auth-handoff.ts
  */
 export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   const returnUrl = Linking.createURL("auth-callback");
-  const callbackURL = `/api/mobile-auth-handoff?redirect=${encodeURIComponent(returnUrl)}`;
-  const { payload } = await authRequest<{ redirect?: boolean; url?: string }>("sign-in/social", {
-    body: JSON.stringify({ callbackURL, provider: "google" }),
-    method: "POST"
-  });
+  const startUrl = new URL("/api/mobile-google-start", mobileEnv.webOrigin);
 
-  if (!payload?.url) {
-    throw new AuthError("Google sign-in is not available right now.");
-  }
+  startUrl.searchParams.set("redirect", returnUrl);
 
-  const result = await WebBrowser.openAuthSessionAsync(payload.url, returnUrl);
+  const result = await WebBrowser.openAuthSessionAsync(startUrl.toString(), returnUrl);
 
   // Closing the browser is a decision, not a failure. It gets no error banner.
   if (result.type === "cancel" || result.type === "dismiss") {

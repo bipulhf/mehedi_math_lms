@@ -21,6 +21,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ApiMobileAuthHandoffRouteImport } from './routes/api/mobile-auth-handoff'
+import { Route as ApiMobileGoogleStartRouteImport } from './routes/api/mobile-google-start'
 import { Route as ApiPaymentReturnRouteImport } from './routes/api/payment-return'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -143,6 +144,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ApiMobileAuthHandoffRoute = ApiMobileAuthHandoffRouteImport.update({
   id: '/api/mobile-auth-handoff',
   path: '/api/mobile-auth-handoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileGoogleStartRoute = ApiMobileGoogleStartRouteImport.update({
+  id: '/api/mobile-google-start',
+  path: '/api/mobile-google-start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPaymentReturnRoute = ApiPaymentReturnRouteImport.update({
@@ -495,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/mobile-google-start': typeof ApiMobileGoogleStartRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -570,6 +577,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/mobile-google-start': typeof ApiMobileGoogleStartRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/mobile-auth-handoff': typeof ApiMobileAuthHandoffRoute
+  '/api/mobile-google-start': typeof ApiMobileGoogleStartRoute
   '/api/payment-return': typeof ApiPaymentReturnRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -727,6 +736,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/mobile-google-start'
     | '/api/payment-return'
     | '/auth/forgot-password'
     | '/auth/reset-password'
@@ -802,6 +812,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/mobile-google-start'
     | '/api/payment-return'
     | '/auth/forgot-password'
     | '/auth/reset-password'
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/api/mobile-auth-handoff'
+    | '/api/mobile-google-start'
     | '/api/payment-return'
     | '/auth/forgot-password'
     | '/auth/reset-password'
@@ -957,6 +969,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiMobileAuthHandoffRoute: typeof ApiMobileAuthHandoffRoute
+  ApiMobileGoogleStartRoute: typeof ApiMobileGoogleStartRoute
   ApiPaymentReturnRoute: typeof ApiPaymentReturnRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   DevSeoPreviewRoute: typeof DevSeoPreviewRoute
@@ -1050,6 +1063,13 @@ declare module '@tanstack/react-router' {
       path: '/api/mobile-auth-handoff'
       fullPath: '/api/mobile-auth-handoff'
       preLoaderRoute: typeof ApiMobileAuthHandoffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile-google-start': {
+      id: '/api/mobile-google-start'
+      path: '/api/mobile-google-start'
+      fullPath: '/api/mobile-google-start'
+      preLoaderRoute: typeof ApiMobileGoogleStartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/payment-return': {
@@ -1664,6 +1684,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiMobileAuthHandoffRoute: ApiMobileAuthHandoffRoute,
+  ApiMobileGoogleStartRoute: ApiMobileGoogleStartRoute,
   ApiPaymentReturnRoute: ApiPaymentReturnRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   DevSeoPreviewRoute: DevSeoPreviewRoute,

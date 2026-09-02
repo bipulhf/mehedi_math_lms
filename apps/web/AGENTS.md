@@ -236,7 +236,7 @@ Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`.
 
 ## The two hops for the mobile app
 
-`src/routes/api/mobile-auth-handoff.ts` and `src/routes/api/payment-return.ts` exist for the same reason: the Expo app opens a browser for something it cannot do itself — an OAuth round trip, a payment gateway — and that browser ends up holding state the app cannot read. React Native has no cookie jar, and the gateway's callbacks are server-to-server. Each route is the last hop: it takes a deep link on the query string and 302s into it.
+`src/routes/api/mobile-google-start.ts`, `src/routes/api/mobile-auth-handoff.ts` and `src/routes/api/payment-return.ts` exist for the same reason: the Expo app opens a browser for something it cannot do itself — an OAuth round trip, a payment gateway — and that browser ends up holding state the app cannot read. React Native has no cookie jar, and the gateway's callbacks are server-to-server. The Google start route keeps Better Auth's OAuth state cookie in the browser; the other two routes are the last hop, taking a deep link on the query string and 302ing into it.
 
 Both take the redirect target from a query parameter, so both go through `isAllowedAppRedirect` in `src/lib/app-link.ts`. **Do not inline that check or widen the scheme list.** Without it either route would bounce a signed-in user — one-time token and all — to any host an attacker named.
 

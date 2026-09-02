@@ -90,7 +90,7 @@ There is no SSR here, so unlike the web there is no cookie and no first-paint
 problem: the stored locale is read in an effect and the first frame uses the
 default.
 
-**Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` sends Better Auth's `callbackURL` to `/api/mobile-auth-handoff` on the **web** app, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `mma://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
+**Google sign-in** cannot work the way it does on the web, because the OAuth round trip happens in an in-app browser whose cookies the app cannot read. Instead `signInWithGoogle` opens `/api/mobile-google-start` on the **web** app, so Better Auth's OAuth state cookie stays in that browser. Its callback reaches `/api/mobile-auth-handoff`, which mints a single-use three-minute token (`oneTimeToken` plugin, minting disabled for client requests) and redirects into `mma://auth-callback?token=…`. The app exchanges that at `one-time-token/verify`, which answers with the `Set-Cookie` it stores. Closing the browser returns `"cancelled"` rather than throwing — it is a decision, not a failure.
 
 A **401 from any product request clears the stored cookie**. A session can end while the app is backgrounded, and without this every screen would keep replaying a dead cookie with nothing telling the app to ask for a sign-in.
 

@@ -98,6 +98,17 @@ test.describe("/api/mobile-auth-handoff", () => {
   });
 });
 
+test.describe("/api/mobile-google-start", () => {
+  test("refuses to begin a browser session for a non-app redirect", async ({ request }) => {
+    const response = await request.get(
+      "/api/mobile-google-start?redirect=https%3A%2F%2Fevil.test%2Fsteal",
+      { maxRedirects: 0 }
+    );
+
+    expect(response.status()).toBe(400);
+  });
+});
+
 test.describe("one-time tokens are not mintable by a client", () => {
   /**
    * `disableClientRequest: true` on the `oneTimeToken` plugin is what makes the

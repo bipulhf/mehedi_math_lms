@@ -101,14 +101,12 @@ describe("fetchSession", () => {
 
 describe("signInWithGoogle", () => {
   test("closing the browser is cancelled, not an error", async () => {
-    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({ type: WebBrowser.WebBrowserResultType.DISMISS });
 
     await expect(signInWithGoogle()).resolves.toBe("cancelled");
   });
 
   test("exchanges the one-time token for the cookie it stores", async () => {
-    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({
       type: "success",
       url: "mma://auth-callback?token=one-time-abc"
@@ -124,23 +122,18 @@ describe("signInWithGoogle", () => {
     expect(JSON.parse(String(verifyInit.body))).toEqual({ token: "one-time-abc" });
   });
 
-  test("sends Better Auth to the handoff route, not to a dashboard", async () => {
-    // The whole design rests on this: a dashboard would leave the session in a
-    // browser the app cannot read.
-    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
+  test("opens the browser at the stateful mobile start route", async () => {
     openAuthSession.mockResolvedValueOnce({ type: WebBrowser.WebBrowserResultType.CANCEL });
 
     await signInWithGoogle();
 
-    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse(String(init.body)) as { callbackURL: string; provider: string };
+    const [startUrl, returnUrl] = openAuthSession.mock.calls[0] as [string, string];
 
-    expect(body.provider).toBe("google");
-    expect(body.callbackURL).toContain("/api/mobile-auth-handoff?redirect=");
+    expect(startUrl).toContain("/api/mobile-google-start?redirect=mma%3A%2F%2Fauth-callback");
+    expect(returnUrl).toBe("mma://auth-callback");
   });
 
   test("a callback carrying no token fails rather than appearing to sign in", async () => {
-    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({
       type: "success",
       url: "mma://auth-callback?error=no-session"
