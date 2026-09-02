@@ -45,19 +45,25 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
   ];
 
   return (
-    <div className="flex min-h-screen flex-col" data-surface="ink">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
 
       <div className="relative flex flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-4 py-10 sm:px-8">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -left-40 -top-40 size-[32rem] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(0,207,255,0.12), transparent 70%)" }}
+          style={{
+            background:
+              "radial-gradient(circle, color-mix(in oklab, var(--color-brand-blue) 14%, transparent), transparent 70%)"
+          }}
         />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-40 bottom-0 size-[32rem] rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(255,165,0,0.1), transparent 70%)" }}
+          style={{
+            background:
+              "radial-gradient(circle, color-mix(in oklab, var(--color-brand-orange) 12%, transparent), transparent 70%)"
+          }}
         />
 
         <DotPatch className="left-10 top-10 hidden opacity-60 lg:block" />
@@ -79,7 +85,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
             className="relative hidden flex-col justify-center gap-9 p-10 lg:flex"
             style={{
               background:
-                "linear-gradient(165deg, rgba(255,165,0,.16), rgba(255,242,0,.07) 48%, rgba(0,207,255,.12))"
+                "linear-gradient(165deg, color-mix(in oklab, var(--color-brand-orange) 16%, transparent), color-mix(in oklab, var(--color-brand-orange) 7%, transparent) 48%, color-mix(in oklab, var(--color-brand-blue) 14%, transparent))"
             }}
           >
             <img
@@ -90,7 +96,7 @@ export function AuthLayout({ children, description, title }: AuthLayoutProps): J
             />
 
             <div className="relative space-y-4">
-              <span className="label-mono inline-flex self-start rounded-[var(--radius-pill)] border border-hairline bg-background/35 px-3.5 py-1.5 text-xs uppercase tracking-[0.14em] text-ink-muted">
+              <span className="label-mono inline-flex self-start rounded-[var(--radius-pill)] border border-hairline bg-card/70 px-3.5 py-1.5 text-xs uppercase tracking-[0.14em] text-ink-muted">
                 {t("auth.panelEyebrow")}
               </span>
               <h2 className="max-w-[18ch] text-2xl font-medium leading-tight tracking-tight text-ink">

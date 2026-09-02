@@ -326,7 +326,7 @@ function AdminUsersPage(): JSX.Element {
                   "p-5 rounded-3xl border border-hairline/30 flex flex-col gap-5 transition-all",
                   user.isActive
                     ? "bg-panel-warm/20"
-                    : "bg-neutral-500/5 opacity-60 grayscale-[0.3]"
+                    : "bg-muted/5 opacity-60 grayscale-[0.3]"
                 )}
               >
                 <div className="flex justify-between items-start">
@@ -352,9 +352,9 @@ function AdminUsersPage(): JSX.Element {
                     <span className="text-[0.6rem] uppercase tracking-widest text-ink/40 font-bold">{t("admin.users.profile")}</span>
                     <div className="flex items-center gap-1.5">
                       {user.profileCompleted ? (
-                        <CheckCircle2 className="size-3 text-green-500" />
+                        <CheckCircle2 className="size-3 text-success" />
                       ) : (
-                        <AlertCircle className="size-3 text-amber-500" />
+                        <AlertCircle className="size-3 text-warning" />
                       )}
                       <span className="text-xs font-semibold">
                         {user.profileCompleted ? "Complete" : "Ongoing"}
@@ -386,8 +386,8 @@ function AdminUsersPage(): JSX.Element {
                     className={cn(
                       "h-10 px-4 rounded-xl font-bold uppercase tracking-widest text-[0.65rem] transition-all",
                       user.isActive
-                        ? "text-red-500/80 hover:bg-red-50"
-                        : "text-green-500/80 hover:bg-green-50"
+                        ? "text-error/80 hover:bg-error/10"
+                        : "text-success/80 hover:bg-success/10"
                     )}
                   >
                     {user.isActive ? (
@@ -401,7 +401,7 @@ function AdminUsersPage(): JSX.Element {
                     variant="ghost"
                     disabled={session?.user.id === user.id}
                     onClick={() => handleDelete(user)}
-                    className="h-10 w-10 rounded-xl font-bold uppercase tracking-widest text-error hover:bg-red-50 transition-all"
+                    className="h-10 w-10 rounded-xl font-bold uppercase tracking-widest text-error hover:bg-error/10 transition-all"
                     title="Delete user"
                   >
                     <Trash2 className="size-4" />
@@ -481,14 +481,14 @@ function AdminUsersPage(): JSX.Element {
                             className={cn(
                               "size-2 rounded-full",
                               user.isActive
-                                 ? "bg-green-500"
-                                : "bg-red-500"
+                                 ? "bg-success"
+                                : "bg-error"
                             )}
                           />
                           <span
                             className={cn(
                               "text-xs font-bold uppercase tracking-wider",
-                              user.isActive ? "text-green-600/80" : "text-red-500/80"
+                              user.isActive ? "text-success/80" : "text-error/80"
                             )}
                           >
                             {user.isActive ? "Operational" : "Suspended"}
@@ -500,8 +500,8 @@ function AdminUsersPage(): JSX.Element {
                           className={cn(
                             "flex items-center gap-2 px-3 py-1.5 rounded-2xl text-[0.65rem] font-bold uppercase tracking-wider w-fit",
                             user.profileCompleted
-                              ? "bg-green-500/10 text-green-600"
-                              : "bg-amber-500/10 text-amber-600"
+                              ? "bg-success/10 text-success"
+                              : "bg-warning/10 text-warning"
                           )}
                         >
                           {user.profileCompleted ? (
@@ -548,8 +548,8 @@ function AdminUsersPage(): JSX.Element {
                             className={cn(
                                "size-9 rounded-xl transition-colors",
                               user.isActive
-                                ? "hover:bg-red-50 hover:text-red-500"
-                                : "hover:bg-green-50 hover:text-green-500"
+                                ? "hover:bg-error/10 hover:text-error"
+                                : "hover:bg-success/10 hover:text-success"
                             )}
                             title={user.isActive ? "Suspend Access" : "Restore Access"}
                           >
@@ -564,7 +564,7 @@ function AdminUsersPage(): JSX.Element {
                             variant="ghost"
                             disabled={isOwn}
                             onClick={() => handleDelete(user)}
-                            className="size-9 rounded-xl transition-all hover:bg-red-50 hover:text-error"
+                            className="size-9 rounded-xl transition-all hover:bg-error/10 hover:text-error"
                             title="Delete user permanently"
                           >
                             <Trash2 className="size-4" />

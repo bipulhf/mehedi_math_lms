@@ -20,11 +20,11 @@ import { colors, fonts, spacing } from "@/src/theme/tokens";
  * two were chosen around.
  */
 const presetStyles: Record<BannerPreset, { background: string; foreground: string }> = {
-  CYAN: { background: colors.brandCyan, foreground: colors.actionForeground },
+  CYAN: { background: colors.accent, foreground: colors.onAccent },
   INK: { background: colors.panelWarm, foreground: colors.ink },
   ORANGE: { background: colors.brandOrange, foreground: colors.actionForeground },
-  SPECTRUM: { background: colors.brandYellow, foreground: colors.actionForeground },
-  YELLOW: { background: colors.brandYellow, foreground: colors.actionForeground }
+  SPECTRUM: { background: colors.brandOrangeStrong, foreground: colors.actionForeground },
+  YELLOW: { background: colors.brandOrangeStrong, foreground: colors.actionForeground }
 };
 
 /**

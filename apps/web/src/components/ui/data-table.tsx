@@ -82,7 +82,7 @@ export function DataTable<TRow>({
       <div className="hidden border border-hairline bg-card md:block">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-hairline bg-panel-warm/40">
+            <tr className="border-b border-hairline bg-panel-warm">
               {columns.map((column) => (
                 <th
                   className={cn(

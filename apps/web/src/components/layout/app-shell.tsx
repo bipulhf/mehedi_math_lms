@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useState, type JSX, type PropsWithChildren, type ReactNode } from "react";
 
 import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth";
@@ -73,7 +74,7 @@ export function AppShell({
   }, [router.state.location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col" data-surface="ink">
+    <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-hairline bg-panel-warm/95">
         <div className="flex h-[74px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <button
@@ -102,6 +103,7 @@ export function AppShell({
 
           <div className="flex shrink-0 items-center gap-3">
             {primaryAction}
+            <ThemeToggle />
             <LanguageSwitcher className="hidden md:inline-flex" />
             {isLoading ? null : <NotificationBell />}
             <button

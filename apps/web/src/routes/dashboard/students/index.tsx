@@ -170,7 +170,7 @@ function StudentsDirectoryPage(): JSX.Element {
                   key={student.id}
                   className={cn(
                     "cursor-pointer p-5 rounded-3xl border border-hairline/30 flex flex-col gap-4 transition-all",
-                    student.isActive ? "bg-panel-warm/20" : "bg-neutral-500/5 opacity-60"
+                    student.isActive ? "bg-panel-warm/20" : "bg-muted/5 opacity-60"
                   )}
                   onClick={(event) => activateStudentRow(student.id, event)}
                   onKeyDown={(event) => activateStudentWithKeyboard(student.id, event)}
@@ -202,9 +202,9 @@ function StudentsDirectoryPage(): JSX.Element {
                       </span>
                       <div className="flex items-center gap-1">
                         {student.profileCompleted ? (
-                          <CheckCircle2 className="size-3 text-green-500" />
+                          <CheckCircle2 className="size-3 text-success" />
                         ) : (
-                          <AlertCircle className="size-3 text-amber-500" />
+                          <AlertCircle className="size-3 text-warning" />
                         )}
                         <span>{student.profileCompleted ? "Complete" : "Ongoing"}</span>
                       </div>
@@ -288,7 +288,7 @@ function StudentsDirectoryPage(): JSX.Element {
                           <div
                             className={cn(
                               "size-2 rounded-full",
-                              student.isActive ? "bg-green-500" : "bg-red-500"
+                              student.isActive ? "bg-success" : "bg-error"
                             )}
                           />
                           <span className="text-xs font-semibold">
@@ -301,8 +301,8 @@ function StudentsDirectoryPage(): JSX.Element {
                           className={cn(
                             "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider w-fit",
                             student.profileCompleted
-                              ? "bg-green-500/10 text-green-700"
-                              : "bg-amber-500/10 text-amber-700"
+                              ? "bg-success/10 text-success"
+                              : "bg-warning/10 text-warning"
                           )}
                         >
                           {student.profileCompleted ? (

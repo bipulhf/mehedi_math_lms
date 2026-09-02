@@ -26,7 +26,7 @@ src/lib/                 env, api-client, auth, session-store, query, hooks
 src/lib/api/             One module per API feature. Thin typed wrappers over api-client.
 src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
 src/components/*.tsx     Composed pieces: lecture player, comments, reviews, route error
-src/theme/tokens.ts      The ink-first academy palette, radii, spacing and type scale
+src/theme/tokens.ts      The dark navy palette, radii, spacing and type scale
 ```
 
 `app/` holds routes only. Anything reusable belongs in `src/` — including the
@@ -67,11 +67,16 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 
 ## Design tokens and locale
 
-`src/theme/tokens.ts` must restate `DESIGN.md` in values Metro can bundle — the
-ink-first academy palette, cyan/orange/yellow roles, rounded plates, and surface
-contrast. Current warm-paper values are compatibility aliases during migration.
-The Material token names below it are compatibility aliases and go when screens
-using them are rebuilt.
+`src/theme/tokens.ts` must restate `DESIGN.md` in values Metro can bundle —
+blue as the primary control colour, gold rationed to marks and highlights,
+rounded plates, and surface contrast.
+
+**The app is the dark theme only.** There is no toggle here and no light values
+to switch to, so the names in `tokens.ts` are the web app's *dark* block, value
+for value. Keeping them identical is what lets a screen ported from web land on
+the right colour without a lookup — if a web token changes, change it here too.
+`accent` is the lighter blue the dark theme uses, and `onAccent` is the navy
+that reads on top of it; white on that blue is 2.6:1.
 
 Type is Hind Siliguri for Bangla display, Solaiman Lipi for Bangla body, and
 Geist/Archivo for Latin numerals, ids and small all-caps labels. Several `fonts` entries deliberately

@@ -267,7 +267,7 @@ function CarouselButton({
   return (
     <button
       aria-label={ariaLabel}
-      className="flex size-11 items-center justify-center rounded-full border border-paper/40 bg-black/30 text-paper backdrop-blur-sm transition-colors hover:bg-paper hover:text-background"
+      className="flex size-11 items-center justify-center rounded-full border border-paper/40 bg-black/30 text-paper backdrop-blur-sm transition-colors hover:bg-paper hover:text-action-foreground"
       onClick={onClick}
       type="button"
     >

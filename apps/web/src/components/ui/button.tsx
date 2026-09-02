@@ -5,15 +5,21 @@ import type { ButtonHTMLAttributes, JSX, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Reference theme buttons: cyan primary, orange decisive action, surface-aware
- * outlines, and a 44px minimum touch target.
+ * Brand buttons: blue primary, gold decisive action, surface-aware outlines,
+ * and a 44px minimum touch target.
+ *
+ * `aria-busy` is the loading state rather than a prop, so a caller can mark a
+ * button pending without this component learning about its mutation: the
+ * control dims, stops taking clicks, and still announces itself as busy.
  */
 const buttonVariants = cva(
   [
     "inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius)]",
     "font-semibold transition-[background-color,border-color,color,transform] duration-200 ease-out",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan",
-    "focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+    "focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "active:translate-y-0",
+    "aria-busy:pointer-events-none aria-busy:opacity-70",
     "disabled:pointer-events-none disabled:opacity-55"
   ],
   {
@@ -26,13 +32,18 @@ const buttonVariants = cva(
         icon: "size-11 shrink-0 p-0"
       },
       variant: {
-        ink: "bg-brand-cyan text-action-foreground hover:bg-brand-cyan/90 hover:-translate-y-0.5",
-        accent: "bg-brand-orange text-action-foreground hover:bg-brand-orange/90 hover:-translate-y-0.5",
-        outline: "border border-line-strong bg-transparent text-ink hover:border-brand-cyan hover:bg-brand-cyan/10",
+        ink: "bg-accent text-on-accent hover:bg-accent-strong hover:-translate-y-0.5",
+        accent:
+          "bg-brand-orange text-action-foreground hover:bg-brand-orange-strong hover:-translate-y-0.5",
+        // Red stays red. A destructive action is the one place the brand does
+        // not get a say in the colour.
+        danger: "bg-error text-on-error hover:opacity-90 hover:-translate-y-0.5",
+        outline:
+          "border border-line-strong bg-transparent text-ink hover:border-accent hover:bg-accent/10 hover:text-accent",
         ghost: "bg-transparent text-muted hover:bg-panel-warm hover:text-ink",
-        accentLink: "min-h-0 bg-transparent px-0 text-brand-cyan hover:text-brand-orange",
+        accentLink: "min-h-0 bg-transparent px-0 text-accent hover:text-accent-strong",
         underline:
-          "min-h-0 rounded-none border-b border-line-strong bg-transparent px-0 text-ink hover:border-brand-orange hover:text-brand-orange"
+          "min-h-0 rounded-none border-b border-line-strong bg-transparent px-0 text-ink hover:border-accent hover:text-accent"
       }
     },
     defaultVariants: {

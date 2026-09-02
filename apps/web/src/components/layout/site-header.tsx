@@ -2,6 +2,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type JSX } from "react";
 
 import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { isSiteNavItemActive, siteNavItems, type SiteNavItem } from "@/components/layout/site-nav";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ function useIsScrollingDown(): boolean {
  * The 82px marketing header: solid paper, one hairline underneath, no shadow.
  *
  * Two deliberate departures from DESIGN.md, both asked for: the surface is
- * opaque rather than the §3 `rgba(252,251,249,.78)` sticky wash, and the bar
+ * opaque rather than §3's translucent sticky wash, and the bar
  * slides out of the way while the reader scrolls down and returns the moment
  * they scroll up — §1 otherwise budgets no motion beyond colour. The slide is
  * dropped entirely under `prefers-reduced-motion`.
@@ -171,10 +172,11 @@ export function SiteHeader(): JSX.Element {
 
         {/* Pills in a capsule, not bare text: the active page carries the
             `chip active` fill the design reserves for exactly this.
-            DESIGN.md §2. Centred on the bar rather than tucked beside the
-            logo, so it reads as the header's own row, not an extension of
-            the brand mark. */}
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-[var(--radius-pill)] border border-hairline bg-ink/5 p-1.5 lg:flex">
+            DESIGN.md §2. Centred in the space the brand and the controls
+            leave rather than pinned to the middle of the bar: pinned, it
+            overlapped the helpline once the theme toggle joined the row, and
+            an absolutely positioned child cannot be pushed out of the way. */}
+        <nav className="mx-auto hidden items-center gap-1 rounded-[var(--radius-pill)] border border-hairline bg-ink/5 p-1.5 lg:flex">
           {siteNavItems.map((item) => (
             <Link
               aria-current={isActive(item) ? "page" : undefined}
@@ -203,6 +205,8 @@ export function SiteHeader(): JSX.Element {
               {format.digits(siteConfig.contact.helpline)}
             </span>
           </a>
+
+          <ThemeToggle />
 
           <LanguageSwitcher className="hidden md:inline-flex" />
 

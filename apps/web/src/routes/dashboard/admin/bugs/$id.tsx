@@ -161,7 +161,7 @@ function AdminBugDetailPage(): JSX.Element {
             </div>
 
             <Button type="button" disabled={isSaving} onClick={() => void handleSave()}>
-              {isSaving ? <span className="h-4 w-16 rounded-full bg-white/25" aria-hidden="true" /> : null}
+              {isSaving ? <span className="h-4 w-16 rounded-full bg-on-accent/25" aria-hidden="true" /> : null}
               {isSaving ? "Saving bug" : "Save bug update"}
             </Button>
           </div>

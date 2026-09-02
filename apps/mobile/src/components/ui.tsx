@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonGhost: { backgroundColor: "transparent" },
-  buttonInk: { backgroundColor: colors.brandCyan },
+  buttonInk: { backgroundColor: colors.accent },
   buttonLabel: { color: colors.actionForeground, fontFamily: fonts.displaySemiBold },
   buttonLabelAccentLink: { color: colors.accent },
   buttonLabelGhost: { color: colors.muted },

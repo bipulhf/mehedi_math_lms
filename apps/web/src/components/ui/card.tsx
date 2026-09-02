@@ -3,8 +3,9 @@ import type { HTMLAttributes, JSX, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Surface-aware rounded plate. Ink surfaces use translucent panels; paper uses
- * solid cards. Hover changes border without moving content.
+ * Surface-aware rounded plate. Hover changes the border without moving the
+ * content, and `--shadow-plate` is a hairline of lift in the light theme and
+ * nothing at all in the dark one, where the border already separates it.
  *
  * Header, content and footer step from `p-4` to `p-6` at `sm`. This is the most
  * repeated padding in the app, and 24px a side inside a 16px page gutter left a
@@ -18,7 +19,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-md)] border border-hairline bg-card transition-colors duration-200 hover:border-brand-cyan/50",
+        "rounded-[var(--radius-md)] border border-hairline bg-card shadow-[var(--shadow-plate)] transition-colors duration-200 hover:border-accent/50",
         className
       )}
       {...props}

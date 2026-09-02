@@ -125,7 +125,7 @@ function TeacherAnalyticsPage(): JSX.Element {
              <div className="px-6 py-4 bg-panel-warm border border-hairline/10 flex flex-col justify-center min-w-32">
                 <span className="text-[0.6rem] font-bold uppercase tracking-widest text-ink/40 mb-1">{t("an.totalImpact")}</span>
                 <span className="text-2xl font-display font-medium text-ink leading-none">{data.totalEnrollments.toLocaleString()}</span>
-                <span className="text-[0.6rem] font-bold text-green-500 flex items-center gap-1 mt-1">
+                <span className="text-[0.6rem] font-bold text-success flex items-center gap-1 mt-1">
                    <TrendingUp className="size-3" />{t("an.enrollments")}</span>
              </div>
              <div className="px-6 py-4 bg-panel-warm border border-hairline/10 flex flex-col justify-center min-w-32">
@@ -239,7 +239,7 @@ function TeacherAnalyticsPage(): JSX.Element {
                           </div>
 
                           <div className="shrink-0 flex items-center gap-3">
-                             <Button asChild variant="outline" className="h-11 border-hairline/30 px-6 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:bg-ink hover:text-white hover:border-ink">
+                             <Button asChild variant="outline" className="h-11 border-hairline/30 px-6 font-bold text-[0.65rem] uppercase tracking-widest transition-all hover:bg-ink hover:text-background hover:border-ink">
                                 <Link to="/dashboard/courses/$id/analytics" params={{ id: row.courseId }} className="flex items-center gap-2">{t("an.teacherTitle")}<ArrowUpRight className="size-3.5" />
                                 </Link>
                              </Button>
@@ -270,9 +270,9 @@ function StatsCard({
 }): JSX.Element {
   const colorStyles = {
     primary: "bg-ink/5 text-ink border-ink/10",
-    blue: "bg-blue-500/5 text-blue-500 border-blue-500/10",
-    violet: "bg-violet-500/5 text-violet-500 border-violet-500/10",
-    green: "bg-green-500/5 text-green-500 border-green-500/10"
+    blue: "bg-spectrum-teal/8 text-spectrum-teal border-spectrum-teal/20",
+    violet: "bg-spectrum-violet/8 text-spectrum-violet border-spectrum-violet/20",
+    green: "bg-success/8 text-success border-success/20"
   };
 
   return (

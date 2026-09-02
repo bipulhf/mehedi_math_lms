@@ -22,62 +22,95 @@
 }
 
 @theme {
-  /* Semantic aliases preserve existing markup while surfaces migrate. */
-  --color-ink: #ffffff;
-  --color-ink-muted: rgba(255, 255, 255, 0.72);
-  --color-muted: rgba(255, 255, 255, 0.64);
-  --color-muted-light: rgba(255, 255, 255, 0.52);
-  --color-muted-faint: rgba(255, 255, 255, 0.4);
-  --color-placeholder: rgba(255, 255, 255, 0.38);
+  /* ------------------------------------------------------------------
+   * Colour.
+   *
+   * Every value here is the light theme's. `@layer base` below re-declares
+   * the whole set for the dark theme and for the two local surface
+   * overrides, so this block doubles as the list of what a theme owes.
+   * Nothing outside this file types a hex.
+   * ------------------------------------------------------------------ */
 
+  /* Text, darkest to faintest. The three muted tiers sit close together
+   * because each one still has to clear 4.5:1 on `panel-warm`, the darkest
+   * surface the light theme puts text on — a wider ramp would only be wider
+   * at the illegible end. */
+  --color-ink: #172033;
+  --color-ink-muted: #334155;
+  --color-muted: #5b6779;
+  --color-muted-light: #616d80;
+  --color-muted-faint: #667085;
+  --color-placeholder: #616d80;
+
+  /* Surfaces, from the page up to what floats over it. */
+  --color-background: #f7f9fc;
+  --color-card: #ffffff;
+  --color-panel-warm: #f1f5f9;
+  --color-popover: #ffffff;
+  --color-input: #ffffff;
+  --color-placeholder-fill: #e2e8f0;
+  /* Literal white in both themes: the fill and the text colour of anything
+   * sitting on a photograph or a video, where the page's theme has no say.
+   * Not a synonym for "the light theme's card" -- that is `card`. */
   --color-paper: #ffffff;
-  --color-card: rgba(255, 255, 255, 0.04);
-  /* Anything that floats over the page needs a fill you cannot see through.
-   * `card` is 4% white, which reads as a surface only because the page is
-   * behind it — a dropdown laid over text just shows the text. This is that
-   * same 4% already composited against the background, so a panel and the
-   * menu above it are the same colour. */
-  --color-popover: #171717;
-  --color-panel-warm: #171717;
-  --color-row-hover: rgba(0, 207, 255, 0.08);
-  --color-placeholder-fill: #1e1e1e;
-  --color-chip-active: rgba(0, 207, 255, 0.14);
 
-  --color-hairline: rgba(255, 255, 255, 0.14);
-  --color-hairline-faint: rgba(255, 255, 255, 0.09);
-  --color-hairline-fainter: rgba(255, 255, 255, 0.05);
-  --color-line-strong: rgba(255, 255, 255, 0.2);
-  --color-dot-idle: rgba(255, 255, 255, 0.24);
+  /* Lines. Depth is a hairline and a change of surface, never a shadow. */
+  --color-hairline: #e2e8f0;
+  --color-hairline-faint: #eaeff5;
+  --color-hairline-fainter: #f1f5f9;
+  --color-line-strong: #cbd5e1;
+  --color-dot-idle: #cbd5e1;
+  --color-bar-track: #e2e8f0;
+  --color-bar-idle: #cbd5e1;
 
-  --color-bar-track: rgba(255, 255, 255, 0.1);
-  --color-bar-idle: rgba(255, 255, 255, 0.22);
+  /* Brand. Blue is trust and carries every primary control; gold is warmth
+   * and is rationed to badges, marks and small highlights. The logo's own
+   * #007bff is `brand-blue` -- it is the identity, used for rings, tints and
+   * rules. `accent` is the shade that colour actually reads at as text or as
+   * a fill, which on white is a step darker. */
+  --color-brand-blue: #007bff;
+  --color-brand-orange: #f5a723;
+  --color-brand-orange-strong: #dc9109;
+  --color-brand-gold: #9a6300;
+  --color-accent: #0069db;
+  --color-accent-strong: #0056b8;
+  /* What text on top of `accent` is. White on this blue, navy on the lighter
+   * blue the dark theme uses -- so a primary button reads in both. */
+  --color-on-accent: #ffffff;
+  --color-focus: #007bff;
+  --color-row-hover: rgba(0, 123, 255, 0.07);
+  --color-chip-active: rgba(0, 123, 255, 0.11);
+  /* Dark text for a bright constant fill: a gold badge, a white chip, the
+   * play button over a poster. Constant, because the fill is constant. */
+  --color-action-foreground: #172033;
 
-  --color-accent: #00cfff;
-  --color-brand-cyan: #00cfff;
-  --color-brand-orange: #ffa500;
-  --color-brand-yellow: #fff200;
-  --color-action-foreground: #0d0d0d;
-  --color-background: #0d0d0d;
-  --color-error: #ff6257;
-  --color-online: #00cfff;
+  /* State stays conventional -- green passes, red fails, amber warns. Never
+   * re-hued to the brand, because the colour is the message. */
+  --color-error: #dc2626;
+  --color-on-error: #ffffff;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-correct: #15803d;
+  --color-online: #15803d;
 
-  --color-spectrum-ember: #ffa500;
-  --color-spectrum-teal: #00cfff;
-  --color-spectrum-indigo: #00cfff;
-  --color-spectrum-violet: #ffa500;
-  --color-spectrum-amber: #fff200;
-  --color-spectrum-rose: #ff6257;
-  --color-correct: #00cfff;
+  /* Category hues (ADR-0011): six tints that tell a list apart, all pulled
+   * toward the brand so a page of chips still reads as one product. */
+  --color-spectrum-ember: #b3730a;
+  --color-spectrum-teal: #0069db;
+  --color-spectrum-indigo: #3b5bdb;
+  --color-spectrum-violet: #6d4bc7;
+  --color-spectrum-amber: #9a6300;
+  --color-spectrum-rose: #c0334c;
 
   /* ------------------------------------------------------------------
    * Type
    * ------------------------------------------------------------------ */
   --font-body: "Hind Siliguri", ui-sans-serif, system-ui, sans-serif;
-  /* Latin numerals, ids, and small all-caps labels. DESIGN.md §4. */
+  /* Latin numerals, ids, and small all-caps labels. DESIGN.md 4. */
   --font-mono-label: "Archivo", ui-sans-serif, system-ui, sans-serif;
-  /* Georgia is reserved for formulas and mathematical identity text — the
+  /* Georgia is reserved for formulas and mathematical identity text -- the
    * reference theme treats it as the serif a maths problem is typeset in.
-   * DESIGN.md §4. */
+   * DESIGN.md 4. */
   --font-formula: "Georgia", "Iowan Old Style", "Apple Garamond", "Times New Roman", ui-serif, serif;
 
   /* ------------------------------------------------------------------
@@ -93,47 +126,121 @@
 }
 
 @layer base {
+  /* The light theme, and the local override that forces it. `data-surface`
+   * is for a region that has to stay light (or dark) whatever the reader
+   * chose -- a printed certificate, a panel over a photograph -- and is not
+   * how the page-level theme is set. That is `data-theme` on <html>. */
   :root,
-  [data-surface="ink"] {
-    --color-ink: #ffffff;
-    --color-ink-muted: rgba(255, 255, 255, 0.72);
-    --color-muted: rgba(255, 255, 255, 0.64);
-    --color-muted-light: rgba(255, 255, 255, 0.52);
-    --color-muted-faint: rgba(255, 255, 255, 0.4);
-    --color-placeholder: rgba(255, 255, 255, 0.38);
-    --color-paper: #ffffff;
-    --color-card: rgba(255, 255, 255, 0.04);
-    --color-popover: #171717;
-    --color-panel-warm: #171717;
-    --color-row-hover: rgba(0, 207, 255, 0.08);
-    --color-placeholder-fill: #1e1e1e;
-    --color-chip-active: rgba(0, 207, 255, 0.14);
-    --color-hairline: rgba(255, 255, 255, 0.14);
-    --color-hairline-faint: rgba(255, 255, 255, 0.09);
-    --color-hairline-fainter: rgba(255, 255, 255, 0.05);
-    --color-line-strong: rgba(255, 255, 255, 0.2);
-    --color-dot-idle: rgba(255, 255, 255, 0.24);
+  [data-surface="paper"] {
+    color-scheme: light;
+
+    --color-ink: #172033;
+    --color-ink-muted: #334155;
+    --color-muted: #5b6779;
+    --color-muted-light: #616d80;
+    --color-muted-faint: #667085;
+    --color-placeholder: #616d80;
+
+    --color-background: #f7f9fc;
+    --color-card: #ffffff;
+    --color-panel-warm: #f1f5f9;
+    --color-popover: #ffffff;
+    --color-input: #ffffff;
+    --color-placeholder-fill: #e2e8f0;
+
+    --color-hairline: #e2e8f0;
+    --color-hairline-faint: #eaeff5;
+    --color-hairline-fainter: #f1f5f9;
+    --color-line-strong: #cbd5e1;
+    --color-dot-idle: #cbd5e1;
+    --color-bar-track: #e2e8f0;
+    --color-bar-idle: #cbd5e1;
+
+    --color-accent: #0069db;
+    --color-accent-strong: #0056b8;
+    --color-on-accent: #ffffff;
+    --color-brand-orange-strong: #dc9109;
+    --color-brand-gold: #9a6300;
+    --color-focus: #007bff;
+    --color-row-hover: rgba(0, 123, 255, 0.07);
+    --color-chip-active: rgba(0, 123, 255, 0.11);
+
+    --color-error: #dc2626;
+    --color-on-error: #ffffff;
+    --color-success: #15803d;
+    --color-warning: #b45309;
+    --color-correct: #15803d;
+    --color-online: #15803d;
+
+    --color-spectrum-ember: #b3730a;
+    --color-spectrum-teal: #0069db;
+    --color-spectrum-indigo: #3b5bdb;
+    --color-spectrum-violet: #6d4bc7;
+    --color-spectrum-amber: #9a6300;
+    --color-spectrum-rose: #c0334c;
+
+    /* Light mode is the one place a shadow earns its keep: white cards on an
+     * off-white page have no surface contrast to fall back on. It stays at
+     * the strength of a held breath. Dark mode sets it to nothing and leans
+     * on the border, per DESIGN.md. */
+    --shadow-plate: 0 1px 2px rgba(23, 32, 51, 0.06), 0 1px 3px rgba(23, 32, 51, 0.04);
   }
 
-  [data-surface="paper"] {
-    --color-ink: #0d0d0d;
-    --color-ink-muted: rgba(13, 13, 13, 0.72);
-    --color-muted: rgba(13, 13, 13, 0.62);
-    --color-muted-light: rgba(13, 13, 13, 0.5);
-    --color-muted-faint: rgba(13, 13, 13, 0.42);
-    --color-placeholder: rgba(13, 13, 13, 0.4);
-    --color-paper: #ffffff;
-    --color-card: #fafafa;
-    --color-popover: #ffffff;
-    --color-panel-warm: #f4f4f4;
-    --color-row-hover: rgba(0, 207, 255, 0.08);
-    --color-placeholder-fill: #eeeeee;
-    --color-chip-active: rgba(0, 207, 255, 0.12);
-    --color-hairline: rgba(13, 13, 13, 0.1);
-    --color-hairline-faint: rgba(13, 13, 13, 0.07);
-    --color-hairline-fainter: rgba(13, 13, 13, 0.04);
-    --color-line-strong: rgba(13, 13, 13, 0.18);
-    --color-dot-idle: rgba(13, 13, 13, 0.2);
+  /* A dark navy, not an inverted light theme, and never pure black: the logo
+   * sits on it, and long study sessions happen on it. */
+  [data-theme="dark"],
+  [data-surface="ink"] {
+    color-scheme: dark;
+
+    --color-ink: #f8fafc;
+    --color-ink-muted: #cbd5e1;
+    --color-muted: #94a3b8;
+    --color-muted-light: #8a9ab0;
+    --color-muted-faint: #8496ae;
+    --color-placeholder: #8496ae;
+
+    --color-background: #0b1220;
+    --color-card: #172033;
+    --color-panel-warm: #111827;
+    --color-popover: #1e293b;
+    --color-input: #111827;
+    --color-placeholder-fill: #1e293b;
+
+    --color-hairline: #283548;
+    --color-hairline-faint: #1f2b3d;
+    --color-hairline-fainter: #182233;
+    --color-line-strong: #3a4a63;
+    --color-dot-idle: #3a4a63;
+    --color-bar-track: #1e293b;
+    --color-bar-idle: #334155;
+
+    /* A lighter blue, because #007bff on navy is 4.1:1 -- readable as a
+     * 2px rule, not as the word a student is meant to click. Text on top of
+     * it flips to the page's own navy for the same reason. */
+    --color-accent: #4d9fff;
+    --color-accent-strong: #7ab6ff;
+    --color-on-accent: #0b1220;
+    --color-brand-orange-strong: #ffbf4d;
+    --color-brand-gold: #f5c066;
+    --color-focus: #66b0ff;
+    --color-row-hover: rgba(77, 159, 255, 0.1);
+    --color-chip-active: rgba(77, 159, 255, 0.16);
+
+    --color-error: #f87171;
+    --color-on-error: #0b1220;
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-correct: #4ade80;
+    --color-online: #4ade80;
+
+    --color-spectrum-ember: #f0a45c;
+    --color-spectrum-teal: #4d9fff;
+    --color-spectrum-indigo: #8ba3ff;
+    --color-spectrum-violet: #b49bf0;
+    --color-spectrum-amber: #f5c066;
+    --color-spectrum-rose: #f58ba0;
+
+    --shadow-plate: none;
   }
 
   * {
@@ -177,7 +284,7 @@
   }
 
   html {
-    background: #0d0d0d;
+    background: var(--color-background);
     color: var(--color-ink);
     font-family: var(--font-body);
   }
@@ -185,7 +292,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: #0d0d0d;
+    background-color: var(--color-background);
     color: var(--color-ink);
     font-family: var(--font-body);
     text-rendering: optimizeLegibility;
@@ -203,7 +310,7 @@
   }
 
   a:hover {
-    color: var(--color-brand-cyan);
+    color: var(--color-accent);
   }
 
   button,
@@ -255,7 +362,7 @@
   }
 
   ::selection {
-    background: rgba(0, 207, 255, 0.2);
+    background: color-mix(in oklab, var(--color-brand-blue) 22%, transparent);
   }
 }
 
@@ -286,7 +393,7 @@
   .formula-display {
     font-family: var(--font-formula);
     font-style: italic;
-    color: var(--color-brand-yellow);
+    color: var(--color-brand-gold);
     /* KaTeX in displayMode produces .katex-display with overflow-x: auto.
      * The page-level rules there make a wide formula scroll *inside* its
      * card. We want the formula to shrink-to-fit instead, so that nothing
@@ -321,13 +428,13 @@
    * of the brand tokens; KaTeX picks up the colour through a CSS variable
    * instead of a hardcoded hex. */
   .formula-hue-cyan {
-    color: var(--color-brand-cyan);
+    color: var(--color-accent);
   }
   .formula-hue-orange {
-    color: var(--color-brand-orange);
+    color: var(--color-spectrum-ember);
   }
   .formula-hue-yellow {
-    color: var(--color-brand-yellow);
+    color: var(--color-brand-gold);
   }
   .formula-hue-rose {
     color: var(--color-spectrum-rose);
@@ -338,7 +445,7 @@
   .formula-rule {
     background-image: repeating-linear-gradient(
       90deg,
-      rgba(255, 242, 0, 0.35) 0 6px,
+      color-mix(in oklab, var(--color-brand-orange) 45%, transparent) 0 6px,
       transparent 6px 14px
     );
     height: 1px;

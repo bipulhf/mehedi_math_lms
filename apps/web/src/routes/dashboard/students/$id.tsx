@@ -74,13 +74,13 @@ function AdminStudentProfilePage(): JSX.Element {
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-hairline bg-panel-warm/40 text-xs">
             {profile.user.isActive ? (
               <>
-                <div className="size-2 rounded-full bg-green-500" />
-                <span className="font-medium text-green-700">Active</span>
+                <div className="size-2 rounded-full bg-success" />
+                <span className="font-medium text-success">Active</span>
               </>
             ) : (
               <>
-                <div className="size-2 rounded-full bg-red-500" />
-                <span className="font-medium text-red-700">Inactive</span>
+                <div className="size-2 rounded-full bg-error" />
+                <span className="font-medium text-error">Inactive</span>
               </>
             )}
           </div>
@@ -165,13 +165,13 @@ function AdminStudentProfilePage(): JSX.Element {
               <div className="flex items-center gap-1.5">
                 {profile.user.profileCompleted ? (
                   <>
-                    <CheckCircle2 className="size-3.5 text-green-500" />
-                    <span className="text-xs font-semibold text-green-700">Complete</span>
+                    <CheckCircle2 className="size-3.5 text-success" />
+                    <span className="text-xs font-semibold text-success">Complete</span>
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="size-3.5 text-amber-500" />
-                    <span className="text-xs font-semibold text-amber-700">Incomplete</span>
+                    <AlertCircle className="size-3.5 text-warning" />
+                    <span className="text-xs font-semibold text-warning">Incomplete</span>
                   </>
                 )}
               </div>

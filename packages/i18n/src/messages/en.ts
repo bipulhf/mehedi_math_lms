@@ -461,6 +461,12 @@ export const en: Readonly<Record<MessageKey, string>> = {
 
   "locale.label": "Language",
 
+  "theme.label": "Theme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.toLight": "Switch to the light theme",
+  "theme.toDark": "Switch to the dark theme",
+
   "nav.exams": "Exams",
   "exams.search": "Search a course or exam",
   "exams.filterAll": "All",

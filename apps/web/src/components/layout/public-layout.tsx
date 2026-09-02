@@ -30,7 +30,7 @@ export function PublicLayout({
   title
 }: PublicLayoutProps): JSX.Element {
   return (
-    <div className="flex min-h-screen flex-col" data-surface="ink">
+    <div className="flex min-h-screen flex-col">
       <BannerStrip />
       <SiteHeader />
 

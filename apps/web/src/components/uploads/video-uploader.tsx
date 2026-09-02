@@ -117,7 +117,7 @@ export function VideoUploader({
           <button
             className={`rounded-full px-4 py-2 text-sm transition-colors ${
               value.mode === "VIDEO_LINK"
-                ? "bg-accent text-ink"
+                ? "bg-accent text-on-accent"
                 : "text-ink/62 hover:text-ink"
             }`}
             disabled={disabled || isUploading}
@@ -132,7 +132,7 @@ export function VideoUploader({
           <button
             className={`rounded-full px-4 py-2 text-sm transition-colors ${
               value.mode === "VIDEO_UPLOAD"
-                ? "bg-accent text-ink"
+                ? "bg-accent text-on-accent"
                 : "text-ink/62 hover:text-ink"
             }`}
             disabled={disabled || isUploading}

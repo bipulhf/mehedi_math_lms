@@ -6,7 +6,7 @@ import { scalePoint } from "@tanstack/charts/scales/point";
 import { tooltip } from "@tanstack/charts/tooltip";
 import type { JSX } from "react";
 
-import { chartTheme } from "@/lib/chart-theme";
+import { useChartTheme } from "@/lib/chart-theme";
 
 export interface ChartSeriesPoint {
   label: string;
@@ -31,6 +31,8 @@ export function SeriesLineChart({
   height,
   renderTooltip
 }: SeriesLineChartProps): JSX.Element {
+  const chartTheme = useChartTheme();
+
   const definition = defineChart({
     marks: [
       lineY(data, { stroke: chartTheme.accent, strokeWidth: 2, x: "label", y: "value" }),

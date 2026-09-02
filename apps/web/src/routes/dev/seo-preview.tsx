@@ -96,7 +96,7 @@ function DevSeoPreviewPage(): JSX.Element {
                       : `meta-${JSON.stringify(tag)}`;
 
               return (
-                <li key={tagKey} className="rounded-md bg-paper px-3 py-2 font-mono text-xs">
+                <li key={tagKey} className="rounded-md bg-panel-warm px-3 py-2 font-mono text-xs">
                   {JSON.stringify(tag)}
                 </li>
               );
@@ -113,7 +113,7 @@ function DevSeoPreviewPage(): JSX.Element {
                       : `script-${JSON.stringify(tag)}`;
 
                   return (
-                    <li key={tagKey} className="rounded-md bg-paper px-3 py-2 font-mono text-xs">
+                    <li key={tagKey} className="rounded-md bg-panel-warm px-3 py-2 font-mono text-xs">
                       {JSON.stringify(tag)}
                     </li>
                   );
@@ -122,7 +122,7 @@ function DevSeoPreviewPage(): JSX.Element {
             </>
           ) : null}
           <p className="font-semibold text-ink">Canonical</p>
-          <pre className="overflow-x-auto rounded-md bg-paper px-3 py-2 text-xs">
+          <pre className="overflow-x-auto rounded-md bg-panel-warm px-3 py-2 text-xs">
             {JSON.stringify(preview.links, null, 2)}
           </pre>
         </div>

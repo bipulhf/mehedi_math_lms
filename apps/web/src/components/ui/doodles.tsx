@@ -36,7 +36,7 @@ export function DotPatch({ className }: { className?: string }): JSX.Element {
       aria-hidden="true"
       className={cn("pointer-events-none absolute size-28", className)}
       style={{
-         backgroundImage: "radial-gradient(rgba(0, 207, 255, .45) 1.5px, transparent 1.5px)",
+         backgroundImage: "radial-gradient(color-mix(in oklab, var(--color-brand-blue) 45%, transparent) 1.5px, transparent 1.5px)",
         backgroundSize: "15px 15px"
       }}
     />
@@ -49,7 +49,7 @@ export function QuarterArc({ className }: { className?: string }): JSX.Element {
     <span
       aria-hidden="true"
       className={cn(
-         "pointer-events-none absolute size-16 rounded-full border-[1.5px] border-white/20",
+         "pointer-events-none absolute size-16 rounded-full border-[1.5px] border-ink/20",
         "border-r-transparent border-t-transparent",
         className
       )}
@@ -65,7 +65,7 @@ export function DiamondTrio({ className }: { className?: string }): JSX.Element 
       aria-hidden="true"
       className={cn("pointer-events-none absolute flex items-center gap-1.5", className)}
     >
-      {["#00CFFF", "#FFA500", "#FFF200"].map((tint) => (
+      {["#007BFF", "#F5A723", "#DC9109"].map((tint) => (
         <span
         className="size-[7px]"
           key={tint}
@@ -84,7 +84,7 @@ export function HatchedRule({ className }: { className?: string }): JSX.Element 
       className={cn("pointer-events-none block h-1.5 w-full", className)}
       style={{
          backgroundImage:
-           "repeating-linear-gradient(45deg, rgba(0, 207, 255, .35) 0 2px, transparent 2px 8px)"
+           "repeating-linear-gradient(45deg, color-mix(in oklab, var(--color-brand-blue) 35%, transparent) 0 2px, transparent 2px 8px)"
       }}
     />
   );
@@ -161,7 +161,7 @@ export function MathGlyph({
     <span
       aria-hidden="true"
       className={cn(
-        "font-formula italic text-brand-yellow tracking-normal",
+        "font-formula italic text-brand-gold tracking-normal",
         className
       )}
     >
@@ -188,7 +188,7 @@ export function FaintFormula({
     <span
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute select-none font-formula text-8xl text-brand-yellow opacity-[0.08] sm:text-9xl",
+        "pointer-events-none absolute select-none font-formula text-8xl text-brand-gold opacity-[0.08] sm:text-9xl",
         className
       )}
       style={{ transform: `rotate(${String(rotate)}deg)` }}

@@ -50,7 +50,7 @@ function MessageBubble({ message }: { message: ThreadMessage }): JSX.Element {
         message.isHidden
           ? "border-dashed border-dot-idle bg-panel-warm text-muted"
           : message.isOwn
-            ? "ml-auto border-brand-cyan bg-brand-cyan text-action-foreground"
+            ? "ml-auto border-accent bg-accent text-on-accent"
             : "border-hairline bg-card text-ink",
         message.isHidden && message.isOwn ? "ml-auto" : undefined
       )}
@@ -69,7 +69,7 @@ function MessageBubble({ message }: { message: ThreadMessage }): JSX.Element {
         <div
           className={cn(
             "flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs",
-            message.isOwn && !message.isHidden ? "text-paper/70" : "text-muted-light"
+            message.isOwn && !message.isHidden ? "text-on-accent/70" : "text-muted-light"
           )}
         >
           <span>{formatTimestamp(message.createdAt)}</span>

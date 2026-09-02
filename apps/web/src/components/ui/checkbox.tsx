@@ -30,7 +30,7 @@ export function Checkbox({ className, label, ...props }: CheckboxProps): JSX.Ele
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute hidden text-[11px] leading-none text-paper peer-checked:block"
+          className="pointer-events-none absolute hidden text-[11px] leading-none text-on-accent peer-checked:block"
         >
           ✓
         </span>

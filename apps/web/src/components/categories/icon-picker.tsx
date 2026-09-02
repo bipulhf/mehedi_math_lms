@@ -53,7 +53,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
           <button
             type="button"
             onClick={() => setValue(name, "", { shouldDirty: true })}
-            className="text-[0.6rem] font-bold text-red-500 uppercase tracking-tighter hover:opacity-70 transition-opacity"
+            className="text-[0.6rem] font-bold text-error uppercase tracking-tighter hover:opacity-70 transition-opacity"
           >{t("cat.clearIcon")}</button>
         )}
       </div>
@@ -87,7 +87,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
         </div>
 
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-panel-warm/95 border border-hairline p-4 sm:p-6">
+          <div className="absolute top-full left-0 right-0 mt-3 z-50 bg-popover border border-hairline p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="size-8 bg-ink/10 flex items-center justify-center text-ink">
@@ -151,7 +151,7 @@ export function IconPicker({ error, name }: IconPickerProps) {
         )}
       </div>
 
-      {error ? <p className="text-xs text-red-500 font-bold uppercase tracking-widest pl-1 mt-1">{error}</p> : null}
+      {error ? <p className="text-xs text-error font-bold uppercase tracking-widest pl-1 mt-1">{error}</p> : null}
     </div>
   );
 }

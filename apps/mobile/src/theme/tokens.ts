@@ -1,36 +1,58 @@
 /**
- * The Mehedi's Math Academy palette, transcribed from `apps/web/src/styles/app.css` into plain
- * values React Native can use. `DESIGN.md` is the authority; this file only
- * restates it in a form Metro can bundle.
+ * The Mehedi's Math Academy palette, transcribed from the dark theme in
+ * `apps/web/src/styles/app.css` into plain values React Native can use.
+ * `DESIGN.md` is the authority; this file only restates it in a form Metro can
+ * bundle.
+ *
+ * The app ships the dark theme only — there is no toggle here, and a light
+ * value would have nothing to switch it. Keeping the names identical to the
+ * web tokens is what makes a screen ported from web land on the right colour
+ * without a lookup.
  */
 export const colors = {
-  accent: "#00cfff",
-  actionForeground: "#0d0d0d",
-  background: "#0d0d0d",
-  barIdle: "rgba(255, 255, 255, 0.22)",
-  barTrack: "rgba(255, 255, 255, 0.1)",
-  brandCyan: "#00cfff",
-  brandOrange: "#ffa500",
-  brandYellow: "#fff200",
-  card: "rgba(255, 255, 255, 0.04)",
-  chipActive: "rgba(0, 207, 255, 0.14)",
-  correct: "#00cfff",
-  dotIdle: "rgba(255, 255, 255, 0.24)",
-  error: "#ff6257",
-  hairline: "rgba(255, 255, 255, 0.14)",
-  hairlineFaint: "rgba(255, 255, 255, 0.09)",
-  ink: "#ffffff",
-  inkMuted: "rgba(255, 255, 255, 0.72)",
-  lineStrong: "rgba(255, 255, 255, 0.2)",
-  muted: "rgba(255, 255, 255, 0.64)",
-  mutedFaint: "rgba(255, 255, 255, 0.4)",
-  mutedLight: "rgba(255, 255, 255, 0.52)",
-  online: "#00cfff",
-  panelWarm: "#171717",
+  /** Interactive blue. Lighter than the logo's #007bff, which is 4.1:1 on this
+   * navy — readable as a rule, not as the word a student is meant to tap. */
+  accent: "#4d9fff",
+  accentStrong: "#7ab6ff",
+  /** Dark text on a bright constant fill: a gold badge, a white chip. */
+  actionForeground: "#172033",
+  background: "#0b1220",
+  barIdle: "#334155",
+  barTrack: "#1e293b",
+  brandBlue: "#007bff",
+  brandGold: "#f5c066",
+  brandOrange: "#f5a723",
+  brandOrangeStrong: "#ffbf4d",
+  card: "#172033",
+  chipActive: "rgba(77, 159, 255, 0.16)",
+  correct: "#4ade80",
+  dotIdle: "#3a4a63",
+  error: "#f87171",
+  hairline: "#283548",
+  hairlineFaint: "#1f2b3d",
+  ink: "#f8fafc",
+  inkMuted: "#cbd5e1",
+  /** A field's own fill, one step below the card it sits on. */
+  input: "#111827",
+  lineStrong: "#3a4a63",
+  muted: "#94a3b8",
+  mutedFaint: "#8496ae",
+  mutedLight: "#8a9ab0",
+  /** What text on top of `accent` is — the page's navy, not white, which is
+   * 2.6:1 on this blue. */
+  onAccent: "#0b1220",
+  onError: "#0b1220",
+  online: "#4ade80",
+  panelWarm: "#111827",
+  /** Literal white, for anything sitting on a photograph or a video. */
   paper: "#ffffff",
-  placeholder: "rgba(255, 255, 255, 0.38)",
-  placeholderFill: "#1e1e1e",
-  rowHover: "rgba(0, 207, 255, 0.08)"
+  placeholder: "#8496ae",
+  placeholderFill: "#1e293b",
+  /** Anything that floats over the page needs a fill you cannot see through. */
+  popover: "#1e293b",
+  rowHover: "rgba(77, 159, 255, 0.1)",
+  success: "#4ade80",
+  warning: "#fbbf24"
 } as const;
 
 /**

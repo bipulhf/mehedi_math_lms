@@ -43,7 +43,7 @@ export function Modal({
       <div
         aria-label={title}
         aria-modal="true"
-         className={cn("w-full max-w-md rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-5 sm:p-6", className)}
+         className={cn("w-full max-w-md rounded-[var(--radius-md)] border border-hairline bg-popover p-5 sm:p-6", className)}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >

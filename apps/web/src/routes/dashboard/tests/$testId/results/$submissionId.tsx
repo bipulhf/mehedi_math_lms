@@ -116,19 +116,19 @@ function SubmissionResultPage(): JSX.Element {
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
               <p className="text-xs uppercase tracking-[0.16em] text-ink/52">{t("test.scoreLabel")}</p>
               <p className="mt-2 text-xl font-semibold text-ink">{percentage}%</p>
             </div>
             {test.passingScore !== null ? (
-              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+              <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
                 <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                   {t("player.passing")}
                 </p>
                 <p className="mt-2 text-xl font-semibold text-ink">{test.passingScore}</p>
               </div>
             ) : null}
-            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-paper px-4 py-3">
+            <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm px-4 py-3">
               <p className="text-xs uppercase tracking-[0.16em] text-ink/52">
                 {t("ab.questions")}
               </p>

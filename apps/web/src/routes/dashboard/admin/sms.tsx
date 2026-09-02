@@ -159,16 +159,16 @@ function AdminSmsPage() {
 
         <div className="space-y-6">
           {providerOk === false ? (
-            <div className="border border-amber-500/20 bg-amber-500/5 px-4 py-3 flex items-center gap-3 text-amber-600">
-              <div className="size-2 rounded-full bg-amber-500"></div>
+            <div className="border border-warning/20 bg-warning/5 px-4 py-3 flex items-center gap-3 text-warning">
+              <div className="size-2 rounded-full bg-warning"></div>
               <p className="text-xs font-bold uppercase tracking-wider">
                 Provider Configuration Missing:{" "}
                 <span className="text-ink/60 normal-case font-medium ml-1 italic">{t("sms.needCredentials")}</span>
               </p>
             </div>
           ) : providerOk === true ? (
-            <div className="border border-green-500/20 bg-green-500/5 px-4 py-3 flex items-center gap-3 text-green-600">
-              <div className="size-2 rounded-full bg-green-500"></div>
+            <div className="border border-success/20 bg-success/5 px-4 py-3 flex items-center gap-3 text-success">
+              <div className="size-2 rounded-full bg-success"></div>
               <p className="text-xs font-bold uppercase tracking-wider">
                 System Active:{" "}
                 <span className="text-ink/60 normal-case font-medium ml-1">{t("sms.connected")}</span>
@@ -257,7 +257,7 @@ function AdminSmsPage() {
                 type="submit"
               >
                 {submitting ? (
-                  <Skeleton className="h-4 w-20 bg-white/20" />
+                  <Skeleton className="h-4 w-20 bg-on-accent/20" />
                 ) : (
                   "Queue Batch Dispatch"
                 )}

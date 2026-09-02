@@ -6,7 +6,7 @@ import { scaleLinear } from "@tanstack/charts/scales/linear";
 import { tooltip } from "@tanstack/charts/tooltip";
 import type { JSX } from "react";
 
-import { chartTheme } from "@/lib/chart-theme";
+import { useChartTheme } from "@/lib/chart-theme";
 import type { ChartSeriesPoint } from "@/components/charts/line-chart";
 
 export interface SeriesBarChartProps {
@@ -18,6 +18,8 @@ export interface SeriesBarChartProps {
 
 /** A single-series vertical bar — one category per bar, read top to bottom. */
 export function SeriesBarChart({ ariaLabel, data, height, renderTooltip }: SeriesBarChartProps): JSX.Element {
+  const chartTheme = useChartTheme();
+
   const definition = defineChart({
     marks: [barY(data, { fill: chartTheme.accent, maxThickness: 40, radius: 4, x: "label", y: "value" })],
     theme: { foreground: chartTheme.label, grid: chartTheme.grid, muted: chartTheme.label },

@@ -9,14 +9,18 @@ export interface BannerPresetStyle {
 
 /**
  * A curated set of on-brand backgrounds, each already paired with a text
- * colour known to read on it — not a free colour picker. `action-foreground`
- * is the same near-black the accent buttons use on a bright fill; `ink` is
- * the page's own default text colour, white on the dark panel.
+ * colour known to read on it — not a free colour picker. `on-accent` is
+ * whatever reads on the blue in the current theme; `action-foreground` is the
+ * dark navy that reads on a bright constant fill; `ink` is the page's own
+ * text colour, which follows the panel it sits on.
+ *
+ * The keys are the stored `BannerPreset` values, so `CYAN` still names the
+ * brand's primary — which is now blue.
  */
 export const bannerPresetStyles: Record<BannerPreset, BannerPresetStyle> = {
   CYAN: {
     labelKey: "admin.banner.presetCyan",
-    style: { background: "var(--color-brand-cyan)", color: "var(--color-action-foreground)" }
+    style: { background: "var(--color-accent)", color: "var(--color-on-accent)" }
   },
   INK: {
     labelKey: "admin.banner.presetInk",
@@ -30,12 +34,12 @@ export const bannerPresetStyles: Record<BannerPreset, BannerPresetStyle> = {
     labelKey: "admin.banner.presetSpectrum",
     style: {
       background:
-        "linear-gradient(90deg, var(--color-brand-orange), var(--color-brand-yellow), var(--color-brand-cyan))",
+        "linear-gradient(90deg, var(--color-brand-orange), var(--color-brand-orange-strong), var(--color-brand-blue))",
       color: "var(--color-action-foreground)"
     }
   },
   YELLOW: {
     labelKey: "admin.banner.presetYellow",
-    style: { background: "var(--color-brand-yellow)", color: "var(--color-action-foreground)" }
+    style: { background: "var(--color-brand-orange-strong)", color: "var(--color-action-foreground)" }
   }
 };

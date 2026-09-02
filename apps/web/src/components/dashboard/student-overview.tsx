@@ -75,23 +75,23 @@ export function StudentOverview({ name }: { name: string }): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <section className="border border-brand-cyan/40 bg-panel-warm p-6 text-ink sm:p-8 lg:p-10">
+      <section className="border border-accent/40 bg-panel-warm p-6 text-ink sm:p-8 lg:p-10">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="label-mono text-xs uppercase tracking-[0.2em] text-paper/55">
+            <p className="label-mono text-xs uppercase tracking-[0.2em] text-muted-faint">
               {t("dash.learningSummary")}
             </p>
             <h1 className="mt-3 text-3xl font-medium leading-tight sm:text-4xl">
               {t("dash.greeting", { name })}
             </h1>
-            <p className="mt-3 max-w-xl text-base font-light leading-relaxed text-paper/70">
+            <p className="mt-3 max-w-xl text-base font-light leading-relaxed text-muted">
               {t("dash.learningSummaryLead")}
             </p>
           </div>
 
           <Button
             asChild
-            className="w-full border-paper/35 text-paper hover:bg-paper/10 hover:text-paper sm:w-auto"
+            className="w-full sm:w-auto"
             size="lg"
             variant="outline"
           >
@@ -99,11 +99,11 @@ export function StudentOverview({ name }: { name: string }): JSX.Element {
           </Button>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 border-t border-paper/15 pt-5 sm:grid-cols-3">
+        <div className="mt-8 grid grid-cols-2 border-t border-hairline pt-5 sm:grid-cols-3">
           <SummaryMetric label={t("dash.activeCourses")} value={format.number(activeCourses.length)} />
           <SummaryMetric label={t("dash.completedCourses")} value={format.number(completedCourses.length)} />
           <SummaryMetric
-            className="col-span-2 mt-5 border-t border-paper/15 pt-5 sm:col-span-1 sm:mt-0 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0"
+            className="col-span-2 mt-5 border-t border-hairline pt-5 sm:col-span-1 sm:mt-0 sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0"
             label={t("dash.averageProgress")}
             value={format.percent(averageProgress)}
           />
@@ -212,8 +212,8 @@ function SummaryMetric({
 }): JSX.Element {
   return (
     <div className={className}>
-      <p className="text-2xl font-medium text-paper sm:text-3xl">{value}</p>
-      <p className="mt-1 text-sm text-paper/55">{label}</p>
+      <p className="text-2xl font-medium text-ink sm:text-3xl">{value}</p>
+      <p className="mt-1 text-sm text-muted">{label}</p>
     </div>
   );
 }

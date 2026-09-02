@@ -242,24 +242,38 @@ Both take the redirect target from a query parameter, so both go through `isAllo
 
 Tailwind v4, configured entirely in `src/styles/app.css` via `@theme` — there is no `tailwind.config.js`. `DESIGN.md` is the authority on what the tokens mean; this section is only about how to reach them from code.
 
-Target theme is reference project's ink-first academy system — `ink`, `paper`,
-`panel`, `muted-panel`, `body`, `faint`, `hairline`, `line-firm`, `brand-cyan`,
-`brand-orange`, `brand-yellow`, and `error`. Current warm-paper tokens remain
-compatibility aliases only until migration completes.
+There are two themes and they are the same design, not inversions of each
+other. `app.css` declares the full token set three times: once in `@theme` (the
+light values, which is also the list of what a theme owes), then once each for
+`:root, [data-surface="paper"]` and `[data-theme="dark"], [data-surface="ink"]`.
+**A token added to one block and not the other is a colour that breaks in the
+other theme** — there is no fallback that will save it.
 
-Use surface-aware tokens and `data-surface="ink|paper"` rather than raw Tailwind
-colours or arbitrary hex values. Validation text is `text-error`.
+`<html data-theme>` is the page theme, set from the `mma.theme` cookie in
+`__root.tsx`'s `beforeLoad` so the server renders it. `data-surface="ink|paper"`
+is the local override, for a region whose contrast the *content* decides — a
+caption over a video, a certificate that will be printed. It is not how a page
+picks a theme, and a layout that sets it pins itself out of the reader's choice.
+`src/lib/theme/` holds the cookie, the provider and the pre-paint bootstrap
+script; `ThemeToggle` in `src/components/common/` is the control.
 
-**Brand colours are variables.** Cyan is primary, orange is decisive action, and
-yellow is highlight/formula. Never type their hex values into a component.
+Use surface-aware tokens rather than raw Tailwind colours or arbitrary hex
+values. Validation text is `text-error`.
 
-Recharts is the one exception to token discipline, and only because it writes colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The values the charts need are mirrored as literals in `src/lib/chart-theme.ts` — add to that file rather than retyping a hex in a route.
+**Brand colours are variables.** Blue is primary, gold is the decisive action
+and the highlight. `brand-blue` is the logo's `#007BFF` and is for rings, tints
+and rules; `accent` is the shade that blue actually reads at as text or a fill,
+and `on-accent` is whatever reads on top of it — white on light, navy on dark.
+Never type a hex into a component.
+
+Charts are the one exception to token discipline, and only because they write colours out as SVG presentation attributes, which cannot resolve CSS custom properties. The values the charts need are mirrored as literals in `src/lib/chart-theme.ts`, which is a hook (`useChartTheme`) rather than a constant so a chart follows the theme — add to that file rather than retyping a hex in a route.
 
 Four rules from `DESIGN.md` that this codebase gets wrong most often:
 
-- **Ink is default.** Paper must be explicitly declared for light/print surfaces.
+- **Both themes or neither.** Every token is declared in both blocks.
 - **Rounded plates.** Cards use `14px`, slabs `18px`, pills `100px`, controls `8px`.
-- **No shadows.** Depth comes from surface contrast, hairlines and colour blocks.
+- **Almost no shadows.** Depth comes from surface contrast, hairlines and colour
+  blocks. `--shadow-plate` is the single exception and is `none` in dark mode.
 - **Motion has a budget.** Marketing uses documented rise/fade/marquee/floaty
   effects; every effect stops under `prefers-reduced-motion`.
 - **Surface contrast matters.** Portals and dialogs declare their surface rather

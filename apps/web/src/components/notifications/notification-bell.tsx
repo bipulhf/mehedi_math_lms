@@ -180,7 +180,7 @@ export function NotificationBell(): JSX.Element | null {
       >
         <Bell className="size-4" />
         {unread > 0 ? (
-          <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-accent px-1 text-[0.6rem] font-bold leading-4 text-ink">
+          <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-accent px-1 text-[0.6rem] font-bold leading-4 text-on-accent">
             {unread > 99 ? "99+" : unread}
           </span>
         ) : null}
@@ -189,7 +189,7 @@ export function NotificationBell(): JSX.Element | null {
         <div
           className={cn(
             "absolute right-0 z-50 mt-3 w-[min(100vw-1.5rem,24rem)]",
-            "rounded-[var(--radius-md)] border border-hairline bg-panel-warm p-3"
+            "rounded-[var(--radius-md)] border border-hairline bg-popover p-3"
           )}
           onClick={(event) => event.stopPropagation()}
         >

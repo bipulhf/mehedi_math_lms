@@ -157,7 +157,7 @@ export function ConversationList({
                       </span>
                     ) : null}
                     {conversation.unreadCount > 0 ? (
-                      <span className="label-mono rounded-[var(--radius-pill)] bg-accent px-2 py-0.5 text-[11px] text-paper">
+                      <span className="label-mono rounded-[var(--radius-pill)] bg-accent px-2 py-0.5 text-[11px] text-on-accent">
                         {format.number(conversation.unreadCount)}
                       </span>
                     ) : null}

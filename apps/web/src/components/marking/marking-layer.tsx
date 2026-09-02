@@ -328,7 +328,7 @@ export function MarkingLayer({
         >
           <input
             autoFocus
-            className="h-8 rounded-[var(--radius)] border border-line-strong bg-paper px-2 text-xs text-ink"
+            className="h-8 rounded-[var(--radius)] border border-line-strong bg-card px-2 text-xs text-ink"
             placeholder="Text"
             value={pendingNote.text}
             onBlur={commitNote}

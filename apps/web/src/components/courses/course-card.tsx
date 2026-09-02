@@ -60,7 +60,10 @@ export function CourseCard({ course, managementHref }: CourseCardProps): JSX.Ele
         )}
 
         {course.isExamOnly ? (
-          <span className="absolute left-3 top-3 rounded-[var(--radius-pill)] border border-hairline bg-paper px-3 py-1 text-xs text-accent">
+          <span
+            className="absolute left-3 top-3 rounded-[var(--radius-pill)] border border-hairline bg-paper px-3 py-1 text-xs text-accent"
+            data-surface="paper"
+          >
             {t("course.examOnly")}
           </span>
         ) : null}

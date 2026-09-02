@@ -462,6 +462,12 @@ export const bn = {
 
   "locale.label": "ভাষা",
 
+  "theme.label": "থিম",
+  "theme.light": "আলো",
+  "theme.dark": "অন্ধকার",
+  "theme.toLight": "আলো থিমে যাও",
+  "theme.toDark": "অন্ধকার থিমে যাও",
+
   "nav.exams": "পরীক্ষা",
   "exams.search": "কোর্স বা পরীক্ষা খোঁজো",
   "exams.filterAll": "সব",

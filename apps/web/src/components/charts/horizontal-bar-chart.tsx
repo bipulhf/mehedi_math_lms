@@ -6,7 +6,7 @@ import { scaleLinear } from "@tanstack/charts/scales/linear";
 import { tooltip } from "@tanstack/charts/tooltip";
 import type { JSX } from "react";
 
-import { chartTheme } from "@/lib/chart-theme";
+import { useChartTheme } from "@/lib/chart-theme";
 import type { ChartSeriesPoint } from "@/components/charts/line-chart";
 
 export interface SeriesHorizontalBarChartProps {
@@ -26,6 +26,8 @@ export function SeriesHorizontalBarChart({
   height,
   renderTooltip
 }: SeriesHorizontalBarChartProps): JSX.Element {
+  const chartTheme = useChartTheme();
+
   const definition = defineChart({
     marks: [barX(data, { fill: chartTheme.accent, maxThickness: 28, radius: 4, x: "value", y: "label" })],
     theme: { foreground: chartTheme.label, grid: chartTheme.grid, muted: chartTheme.label },

@@ -151,7 +151,7 @@ export function CourseCouponField({
             </p>
           </div>
           <button
-            className="mt-3 flex min-h-11 w-full items-center justify-between gap-3 border border-dashed border-accent/50 bg-card px-3 py-2.5 text-left transition-colors hover:border-accent hover:bg-paper disabled:pointer-events-none disabled:opacity-55"
+            className="mt-3 flex min-h-11 w-full items-center justify-between gap-3 border border-dashed border-accent/50 bg-card px-3 py-2.5 text-left transition-colors hover:border-accent hover:bg-panel-warm disabled:pointer-events-none disabled:opacity-55"
             disabled={previewMutation.isPending}
             onClick={() => submit(publicCode)}
             type="button"

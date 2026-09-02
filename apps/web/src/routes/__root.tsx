@@ -15,6 +15,9 @@ import { RouteErrorView } from "@/components/common/route-error";
 import { LocaleProvider, useLocale } from "@/lib/i18n/locale-context";
 import { readLocale } from "@/lib/i18n/locale-cookie";
 import { createQueryClient } from "@/lib/query/query-client";
+import { ThemeProvider } from "@/lib/theme/theme-context";
+import type { Theme } from "@/lib/theme/theme-cookie";
+import { readTheme, themeBootstrapScript } from "@/lib/theme/theme-cookie";
 import { setActiveQueryClient } from "@/lib/query/refresh-on-mutation";
 import { siteConfig } from "@/lib/site";
 import appCss from "@/styles/app.css?url";
@@ -23,7 +26,7 @@ import katexCss from "katex/dist/katex.min.css?url";
 export const Route = createRootRoute({
   // Reading the cookie here rather than in an effect is what stops the page
   // rendering in one language and then flipping to the other after hydration.
-  beforeLoad: () => ({ locale: readLocale() }),
+  beforeLoad: () => ({ locale: readLocale(), theme: readTheme() }),
   head: () => ({
     meta: [
       {
@@ -42,7 +45,7 @@ export const Route = createRootRoute({
       },
       {
         name: "theme-color",
-        content: "#0d0d0d"
+        content: "#f7f9fc"
       },
       {
         property: "og:site_name",
@@ -75,7 +78,11 @@ export const Route = createRootRoute({
       // KaTeX ships its own faces. Linked rather than imported so the maths on a
       // server-rendered question is styled in the first paint, not after it.
       { rel: "stylesheet", href: katexCss }
-    ]
+    ],
+    // Runs before anything paints, and only does work on a first visit: it
+    // turns the operating system's preference into `<html data-theme>` so the
+    // page never renders in one theme and then corrects itself.
+    scripts: [{ children: themeBootstrapScript }]
   }),
   errorComponent: RouteErrorView,
   component: RootComponent
@@ -85,7 +92,7 @@ function RootComponent(): JSX.Element {
   // useState, not module scope: on the server this component runs once per
   // request, and a shared client would hand one user's cache to the next.
   const [queryClient] = useState(createQueryClient);
-  const { locale } = Route.useRouteContext();
+  const { locale, theme } = Route.useRouteContext();
 
   // Browser only, by construction: effects do not run during SSR, and the
   // per-request client there must never be reachable from module scope.
@@ -99,32 +106,42 @@ function RootComponent(): JSX.Element {
 
   return (
     <LocaleProvider initialLocale={locale}>
-      <RootDocument>
-        <QueryClientProvider client={queryClient}>
-          <Outlet />
-        </QueryClientProvider>
-        <Toaster
-          closeButton
-          richColors
-          position="top-right"
-          toastOptions={{
-            classNames: {
-              toast: "!border !border-hairline !bg-panel-warm !text-ink",
-              description: "!text-ink/66",
-              title: "!font-semibold"
-            }
-          }}
-        />
-      </RootDocument>
+      <ThemeProvider initialTheme={theme}>
+        <RootDocument theme={theme}>
+          <QueryClientProvider client={queryClient}>
+            <Outlet />
+          </QueryClientProvider>
+          <Toaster
+            closeButton
+            richColors
+            position="top-right"
+            toastOptions={{
+              classNames: {
+                toast: "!border !border-hairline !bg-popover !text-ink",
+                description: "!text-ink/66",
+                title: "!font-semibold"
+              }
+            }}
+          />
+        </RootDocument>
+      </ThemeProvider>
     </LocaleProvider>
   );
 }
 
-function RootDocument({ children }: PropsWithChildren): JSX.Element {
+/**
+ * `data-theme` is omitted rather than guessed when the reader has never
+ * chosen: React leaves an attribute it did not render alone during hydration,
+ * so the value the bootstrap script wrote from the operating system survives.
+ */
+function RootDocument({
+  children,
+  theme
+}: PropsWithChildren<{ theme: Theme | null }>): JSX.Element {
   const { locale } = useLocale();
 
   return (
-    <html lang={localeTags[locale]}>
+    <html data-theme={theme ?? undefined} lang={localeTags[locale]}>
       <head>
         <HeadContent />
       </head>

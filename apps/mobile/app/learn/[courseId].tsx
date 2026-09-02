@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
     height: 8,
     minWidth: 6
   },
-  chunkCurrent: { backgroundColor: colors.brandYellow },
+  chunkCurrent: { backgroundColor: colors.brandGold },
   chunkDone: { backgroundColor: colors.accent },
   chunkRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   content: { gap: spacing.md, padding: spacing.lg },

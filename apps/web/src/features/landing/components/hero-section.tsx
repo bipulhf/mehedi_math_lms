@@ -69,8 +69,8 @@ export function HeroSection({ spotlightCourse }: HeroSectionProps): JSX.Element 
 
   return (
     <section className="relative overflow-hidden border-b border-hairline">
-      <GlowWash className="-left-32 top-1/2 size-[34rem] -translate-y-1/2" tint="rgba(0,207,255,0.16)" />
-      <GlowWash className="-right-40 top-16 size-[30rem]" tint="rgba(255,165,0,0.14)" />
+      <GlowWash className="-left-32 top-1/2 size-[34rem] -translate-y-1/2" tint="color-mix(in oklab, var(--color-brand-blue) 16%, transparent)" />
+      <GlowWash className="-right-40 top-16 size-[30rem]" tint="color-mix(in oklab, var(--color-brand-orange) 16%, transparent)" />
 
       <BackgroundFormula
         className="-bottom-6 left-4 hidden -rotate-3 sm:block lg:left-[6%]"

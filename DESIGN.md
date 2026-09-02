@@ -1,29 +1,34 @@
 # Design System Specification: Mehedi's Math Academy
 
 The visual language for **Mehedi's Math Academy**, a Bangla-first coaching platform.
-This specification now follows the reference implementation in `../mehedi_bhai/`:
-dark-first academy surfaces, electric cyan, orange action colour, rounded plates,
-and editorial motion. The current warm-paper implementation is a migration source,
-not the final visual authority.
 
-Until migration completes, existing token names may remain as compatibility aliases.
-New UI work follows this document and must not extend the old warm-paper palette.
+The palette is the logo's: **blue `#007BFF`** for trust and every primary
+control, **gold `#F5A723`** for warmth, and a large neutral field around both.
+Roughly 70–80% of a screen is neutral, 15–20% blue and 5–10% gold; a page that
+reads as colourful has broken the ratio, not enriched it.
+
+The web app ships two themes — a bright academic light theme and a dark navy
+one — and they are the same design, not an inversion of each other. The mobile
+app ships the dark theme only.
 
 ---
 
 ## 1. Creative north star
 
-**Night classroom.** Default surface is near-black ink. Cyan marks active learning,
-orange marks the action a section is asking for, and yellow marks ideas, formulas
-and moments worth remembering. Paper is an intentional contrast surface, not the
-page default.
+**A quiet classroom that reads for hours.** Blue marks what a student can act
+on, gold marks what is worth remembering, and everything else stays neutral so
+neither has to compete to be seen.
 
 Three rules carry most of the weight:
 
-1. **Ink first.** `data-surface="ink"` is default. Use `data-surface="paper"`
-   for sign-in sheets, print views and other deliberate light surfaces.
-2. **Three-colour hierarchy.** Cyan is the primary interactive accent, orange is
-   the decisive CTA/action colour, and yellow is reserved for highlights and ideas.
+1. **The theme is the reader's.** `<html data-theme>` decides light or dark and
+   is remembered in a cookie. `data-surface="ink|paper"` is the local override,
+   for a region that must stay dark or light whatever the reader chose — a
+   panel over a photograph, a printed certificate.
+2. **Two-colour hierarchy.** Blue is the primary interactive accent and carries
+   every primary control; gold is rationed to badges, marks, highlights and the
+   one decisive secondary action. Red, green and amber stay conventional — a
+   status colour is a message, not a brand decision.
 3. **Motion with restraint.** Marketing may use rise, fade-up, marquee and floaty
    effects. App surfaces use short colour, border and opacity transitions. Every
    animation must stop under `prefers-reduced-motion`.
@@ -32,57 +37,76 @@ Three rules carry most of the weight:
 
 ## 2. Colour
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| Ink | `#0D0D0D` | default page, app shell and footer surface |
-| Paper | `#FFFFFF` | explicit light surface and print output |
-| Panel | `#171717` | raised ink panels and dialogs |
-| Muted panel | `#1E1E1E` | secondary ink surface and footer gradient stop |
-| Body text | `rgba(255,255,255,.64)` | running copy on ink |
-| Faint text | `rgba(255,255,255,.40)` | metadata and supporting labels |
-| Hairline | `rgba(255,255,255,.14)` | ink dividers and borders |
-| Firm line | `rgba(255,255,255,.20)` | focused and emphasized borders |
-| **Cyan** | `#00CFFF` | primary links, active tabs, focus rings, positive emphasis |
-| **Orange** | `#FFA500` | primary CTA, section action, warning emphasis |
-| **Yellow** | `#FFF200` | formulas, ideas and highlight moments |
-| Error | `#FF6257` | validation and destructive feedback |
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `background` | `#F7F9FC` | `#0B1220` | the page itself |
+| `card` | `#FFFFFF` | `#172033` | the surface content sits on |
+| `panel-warm` | `#F1F5F9` | `#111827` | secondary surface, header, hover fill |
+| `popover` | `#FFFFFF` | `#1E293B` | anything that floats: dialogs, menus, toasts |
+| `input` | `#FFFFFF` | `#111827` | a field's own fill |
+| `paper` | `#FFFFFF` | `#FFFFFF` | literal white, for text and chips over media |
+| `ink` | `#172033` | `#F8FAFC` | primary text |
+| `ink-muted` | `#334155` | `#CBD5E1` | secondary text |
+| `muted` | `#5B6779` | `#94A3B8` | running copy and metadata |
+| `muted-light` / `muted-faint` | `#616D80` / `#667085` | `#8A9AB0` / `#8496AE` | supporting labels |
+| `hairline` | `#E2E8F0` | `#283548` | dividers and borders |
+| `line-strong` | `#CBD5E1` | `#3A4A63` | focused and emphasised borders |
+| **`brand-blue`** | `#007BFF` | `#007BFF` | the logo's blue: rings, tints, rules |
+| **`accent`** | `#0069DB` | `#4D9FFF` | what that blue reads at as text or a fill |
+| `on-accent` | `#FFFFFF` | `#0B1220` | text on top of `accent` |
+| **`brand-orange`** | `#F5A723` | `#F5A723` | gold badges, marks, the decisive action |
+| `brand-gold` | `#9A6300` | `#F5C066` | gold as *text*: formulas, highlights |
+| `error` | `#DC2626` | `#F87171` | validation and destructive feedback |
+| `success` | `#15803D` | `#4ADE80` | passed, settled, active |
+| `warning` | `#B45309` | `#FBBF24` | needs attention, not yet wrong |
 
-**Cyan is primary on ink.** Orange owns the single decisive action in a section.
-On paper, cyan is used for rules and fills rather than low-contrast body text.
+### Why `brand-blue` and `accent` are two tokens
+
+`#007BFF` is 3.98:1 against white and 4.09:1 against the dark card — enough for
+a 2px rule, short of the 4.5:1 a word a student is meant to click needs. So the
+logo's blue stays the identity and `accent` is the shade it actually reads at:
+a step darker on light, a step lighter on dark. `on-accent` flips with it, which
+is why a primary button is white-on-blue in the light theme and navy-on-blue in
+the dark one.
 
 ### Accent roles
 
-Do not create a rainbow status palette. Cyan, orange and yellow carry semantic
-roles. Tints use alpha on the same colour (`bg-brand-cyan/10`,
-`border-brand-orange/30`) rather than introducing near-duplicate hex values.
+Do not create a rainbow status palette. Blue and gold carry the brand roles, and
+the six `spectrum-*` hues exist only to tell a list apart (ADR-0011). Tints use
+alpha on the same colour (`bg-accent/10`, `border-brand-orange/30`) rather than
+introducing near-duplicate hex values.
 
 ### The accent is a variable
 
-Implement brand colours as theme values. Never hardcode cyan, orange or yellow in
-component markup. Surface tokens must resolve from `data-surface`, not from a
-global light/dark toggle.
+Implement brand colours as theme values. Never hardcode blue or gold in
+component markup. Both themes re-declare the whole token set in
+`apps/web/src/styles/app.css`; a colour that only exists in one of them is a
+colour that breaks in the other.
 
 ### Status colours
 
-Success uses cyan. Attention uses orange. Highlights use yellow. Destructive and
-validation states use `#FF6257`. Keep status text readable against both surfaces.
+Success is green, attention is amber, destructive and validation are red, and
+none of them are re-hued to the brand. Never communicate state by colour alone —
+pair it with a word or a mark.
 
 ---
 
 ## 3. Surface model
 
-Every major region declares a surface. `ink` is default; `paper` is explicit.
-The surface owns semantic tokens so dialogs, menus and portals do not inherit
-the wrong contrast from their trigger.
+The page-level theme is `<html data-theme="light|dark">`, set from a cookie so
+the server renders it and nothing flashes. A region that must not follow the
+reader's choice declares its own surface, and the surface owns the whole token
+set, so dialogs, menus and portals do not inherit the wrong contrast from their
+trigger.
 
 ```tsx
 <section data-surface="ink">...</section>
 <section data-surface="paper">...</section>
 ```
 
-Ink surfaces use `#0D0D0D` with `#171717` panels and white-alpha text. Paper
-surfaces use white with near-black text. Avoid global `.dark` toggles for product
-surfaces; region identity must remain stable.
+Reach for `data-surface` when the content decides the contrast — a caption over
+a video, a certificate that will be printed. Reach for nothing at all otherwise:
+the theme is already correct.
 
 ---
 
@@ -134,33 +158,41 @@ and check both locales at every breakpoint.
 
 | Variant | Style |
 | --- | --- |
-| `cyan` | `#00CFFF` fill, ink text. Primary interactive action on ink. |
-| `orange` | `#FFA500` fill, ink text. One decisive CTA per section. |
-| `outline` | transparent, cyan or alpha hairline border, foreground text |
-| `ghost` | transparent, muted text; alpha panel on hover |
-| `link` | cyan text with underline or trailing arrow |
+| `ink` | `accent` fill, `on-accent` text. The primary action. |
+| `accent` | `brand-orange` fill, navy text. One decisive CTA per section. |
+| `danger` | `error` fill, `on-error` text. Destructive only, and still red. |
+| `outline` | transparent, `line-strong` border; takes the accent on hover |
+| `ghost` | transparent, muted text; `panel-warm` on hover |
+| `accentLink` | accent text with a trailing arrow |
+
+Buttons carry hover, focus-visible, active, disabled and `aria-busy` (loading)
+states. Loading is an attribute, not a prop: a caller marks the control busy and
+it dims and stops taking clicks.
 
 Use gradients only for atmospheric background washes and footer depth. Short
 colour, opacity and scale transitions are allowed when they communicate state.
 
 ### Cards
 
-Cards are rounded plates: `14px` radius, ink-alpha fill on ink and solid white on
-paper. Use border and surface contrast to separate a plate from its surface.
+Cards are rounded plates: `14px` radius, `card` fill, one hairline. Depth comes
+from the border and the change of surface. `--shadow-plate` is the single
+exception — a hairline of lift in the light theme, where white on off-white has
+no surface contrast to fall back on, and `none` in the dark theme.
 
 ### Pills
 
-Unselected: transparent with an alpha hairline. Selected: cyan or orange tint,
+Unselected: transparent with a hairline. Selected: `chip-active` tint,
 foreground text, 100px radius.
 
 ### Inputs
 
-`8px` radius, surface-aware panel fill, alpha hairline and muted placeholder.
-Focus uses a cyan ring on ink and a visible orange/cyan border on paper.
+`8px` radius, `input` fill, one hairline and a muted placeholder. Focus takes
+the brand blue on the border and one hairline of ring — enough to find the field
+on either theme, short of a glow. An invalid field takes the `error` border.
 
 ### Tabs
 
-2px cyan bottom border on the active tab, foreground label. Inactive tabs are
+2px accent bottom border on the active tab, foreground label. Inactive tabs are
 muted with no border.
 
 ### Accordions
@@ -170,13 +202,14 @@ edge. One item open by default.
 
 ### Tables
 
-Surface-aware plate, alpha hairline outer border, alpha row dividers. Header cells
-are faint, 13–16px. Row hover uses a cyan or white-alpha wash.
+`card` plate, hairline outer border, `hairline-fainter` row dividers. The header
+row takes `panel-warm` so it separates from the rows under it. Row hover uses
+`row-hover`.
 
 ### Progress
 
-Chunked, not a thin line. Filled chunks use cyan, action milestones use orange,
-track uses white-alpha, with a small gap. The chunk-count rounding lives in
+Chunked, not a thin line. Filled chunks use `accent`, action milestones use
+`brand-orange`, the track uses `bar-track`, with a small gap. The chunk-count rounding lives in
 `resolveProgressChunks` in shared code so web and mobile fill the same number.
 
 ### Counters
@@ -197,9 +230,9 @@ needs one.
 Decorative, contextual, mostly CSS. Use the supplied mark and founder image as
 identity assets; use these effects for the public marketing surfaces:
 
-1. **Cyan/orange rule** — a short 2–3px line under a page eyebrow or beside a CTA.
-2. **Atmospheric wash** — blurred cyan or orange radial gradient on an ink slab;
-   never use it as content fill.
+1. **Blue/gold rule** — a short 2–3px line under a page eyebrow or beside a CTA.
+2. **Atmospheric wash** — a blurred blue or gold radial gradient, mixed from the
+   brand tokens so it follows the theme; never use it as content fill.
 3. **Marquee** — repeated academy statements or course categories, 46s linear;
    stop under reduced motion.
 4. **Rise / fade-up** — public content enters with a single staggered sequence.
@@ -260,8 +293,9 @@ formatters are shared so web and mobile agree.
 
 ## 11. Don'ts
 
-- Don't make paper the global default.
-- Don't use cyan, orange or yellow outside their semantic roles.
+- Don't reach for `data-surface` where the page theme is already right.
+- Don't use blue or gold outside their semantic roles.
+- Don't ship a colour to one theme and not the other.
 - Don't add shadows anywhere. Use borders, surface contrast and colour blocks.
 - Don't animate without a reduced-motion fallback.
 - Don't use a rainbow status palette; see §2.

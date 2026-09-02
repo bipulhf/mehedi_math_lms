@@ -1,7 +1,7 @@
 import confetti from "canvas-confetti";
 
-/** DESIGN.md §2 — cyan, orange, yellow. Confetti gets the same three colours as everything else. */
-const BRAND_COLORS = ["#00CFFF", "#FFA500", "#FFF200"];
+/** The brand blue and its two golds. Confetti gets the same colours as everything else. */
+const BRAND_COLORS = ["#007BFF", "#F5A723", "#DC9109"];
 
 /**
  * A short burst for the one moment in the app shell that earns motion: a

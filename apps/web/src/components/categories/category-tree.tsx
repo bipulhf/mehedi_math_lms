@@ -126,7 +126,7 @@ function CategoryTreeItem({
               type="button"
               variant="ghost"
               onClick={() => onDelete(category)}
-              className="h-10 px-4 font-bold text-xs text-red-500/60 hover:text-red-500 hover:bg-red-500/5 transition-all flex-1 sm:flex-initial"
+              className="h-10 px-4 font-bold text-xs text-error/60 hover:text-error hover:bg-error/5 transition-all flex-1 sm:flex-initial"
             >
               <Trash2 className="size-3.5 mr-2" />{t("common.discard")}</Button>
           </div>

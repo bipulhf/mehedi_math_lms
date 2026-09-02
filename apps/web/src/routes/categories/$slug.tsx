@@ -108,7 +108,7 @@ function CategoryCourseCard({ course }: { course: CourseSummary }): JSX.Element 
             width={1200}
           />
         ) : (
-          <div className="h-full w-full bg-[radial-gradient(circle_at_top_left,rgba(96,99,238,0.18),transparent_55%),linear-gradient(135deg,rgba(27,27,31,0.04),rgba(96,99,238,0.1))]" />
+          <div className="h-full w-full bg-placeholder-fill" />
         )}
       </div>
       <CardContent className="space-y-3 p-4">

@@ -9,44 +9,44 @@ const styles = StyleSheet.create({
     padding: 72
   },
   title: {
-    color: "#0d0d0d",
+    color: "#172033",
     fontFamily: "Helvetica-Bold",
     fontSize: 22,
     marginBottom: 8
   },
   subtitle: {
-    color: "#5f6368",
+    color: "#64748b",
     fontFamily: "Helvetica",
     fontSize: 12,
     marginBottom: 48
   },
   label: {
-    color: "#0d0d0d",
+    color: "#172033",
     fontFamily: "Helvetica",
     fontSize: 11,
     marginBottom: 8
   },
   name: {
-    color: "#0d0d0d",
+    color: "#172033",
     fontFamily: "Helvetica-Bold",
     fontSize: 16,
     marginBottom: 32
   },
   body: {
-    color: "#0d0d0d",
+    color: "#172033",
     fontFamily: "Helvetica",
     fontSize: 11,
     marginBottom: 8
   },
   courseTitle: {
-    color: "#262633",
+    color: "#0069db",
     fontFamily: "Helvetica-Bold",
     fontSize: 14,
     marginBottom: 32,
     marginTop: 4
   },
   issued: {
-    color: "#5f6368",
+    color: "#64748b",
     fontFamily: "Helvetica",
     fontSize: 10
   },
