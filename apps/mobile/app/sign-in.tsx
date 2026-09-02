@@ -4,15 +4,21 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
-import { Body, Button, Caption, Card, Field, Heading, Screen, Title } from "@/src/components/ui";
+import { PhoneOtpForm } from "@/src/components/phone-otp-form";
+import { Body, Button, Card, Field, Heading, Screen, Tabs, Title } from "@/src/components/ui";
 import { useT } from "@/src/lib/locale";
 import { useSignIn } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
+
+type SignInMethod = "email" | "phone";
 
 export default function SignInScreen(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const signIn = useSignIn();
+  // Phone first: it is the way most of this audience has an account at all,
+  // and it needs no password to have been remembered.
+  const [method, setMethod] = useState<SignInMethod>("phone");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -48,39 +54,53 @@ export default function SignInScreen(): JSX.Element {
             <View style={styles.form}>
               <GoogleSignInButton />
 
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Caption>{t("auth.orEmail")}</Caption>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <Field
-                autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
-                label={t("auth.email")}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                value={email}
-              />
-              <Field
-                autoCapitalize="none"
-                autoComplete="current-password"
-                label={t("auth.password")}
-                onChangeText={setPassword}
-                placeholder={t("auth.passwordPlaceholder")}
-                secureTextEntry
-                value={password}
+              <Tabs
+                label={t("auth.chooseMethod")}
+                onChange={setMethod}
+                tabs={[
+                  { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
+                  { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
+                ]}
+                value={method}
               />
 
-              {error ? <Body>{error}</Body> : null}
+              {method === "phone" ? (
+                <PhoneOtpForm
+                  onSignedIn={() => {
+                    router.replace("/");
+                  }}
+                />
+              ) : (
+                <>
+                  <Field
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    keyboardType="email-address"
+                    label={t("auth.email")}
+                    onChangeText={setEmail}
+                    placeholder="you@example.com"
+                    value={email}
+                  />
+                  <Field
+                    autoCapitalize="none"
+                    autoComplete="current-password"
+                    label={t("auth.password")}
+                    onChangeText={setPassword}
+                    placeholder={t("auth.passwordPlaceholder")}
+                    secureTextEntry
+                    value={password}
+                  />
 
-              <Button
-                disabled={!canSubmit}
-                isBusy={signIn.isPending}
-                label={t("auth.signIn")}
-                onPress={handleSubmit}
-              />
+                  {error ? <Body>{error}</Body> : null}
+
+                  <Button
+                    disabled={!canSubmit}
+                    isBusy={signIn.isPending}
+                    label={t("auth.signIn")}
+                    onPress={handleSubmit}
+                  />
+                </>
+              )}
             </View>
           </Card>
 
@@ -105,8 +125,6 @@ export default function SignInScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
-  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
-  dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   flex: { backgroundColor: colors.paper, flex: 1 },
   form: { gap: spacing.lg }
 });

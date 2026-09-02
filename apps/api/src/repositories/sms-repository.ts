@@ -8,6 +8,7 @@ import {
   inArray,
   smsBatches,
   smsRecipients,
+  sql,
   studentProfiles,
   teacherProfiles,
   users
@@ -50,16 +51,29 @@ export interface SmsBatchListRow extends SmsBatchRecord {
 }
 
 export class SmsRepository {
+  /**
+   * The number to text a person on, preferring the one they proved.
+   *
+   * `users.phone_number` is set by the sign-in OTP, so it has had a code
+   * delivered to it; `student_profiles.phone` is whatever was typed into the
+   * profile form and may be a guardian's, a landline, or a typo. The profile
+   * is still the fallback, because everybody who signed up by email has only
+   * that one.
+   *
+   * The joins below are `leftJoin` for the same reason: somebody who signed in
+   * with a handset has a verified number before they have a profile row at
+   * all, and an inner join would drop them from every broadcast.
+   */
   public async listActiveStudentPhones(): Promise<
     readonly { phone: string | null; userId: string }[]
   > {
     return db
       .select({
-        phone: studentProfiles.phone,
+        phone: sql<string | null>`coalesce(${users.phoneNumber}, ${studentProfiles.phone})`,
         userId: users.id
       })
       .from(users)
-      .innerJoin(studentProfiles, eq(studentProfiles.userId, users.id))
+      .leftJoin(studentProfiles, eq(studentProfiles.userId, users.id))
       .where(
         and(eq(users.role, "STUDENT"), eq(users.isActive, true), eq(users.banned, false))
       );
@@ -73,11 +87,11 @@ export class SmsRepository {
     if (role === "TEACHER") {
       return db
         .select({
-          phone: teacherProfiles.phone,
+          phone: sql<string | null>`coalesce(${users.phoneNumber}, ${teacherProfiles.phone})`,
           userId: users.id
         })
         .from(users)
-        .innerJoin(teacherProfiles, eq(teacherProfiles.userId, users.id))
+        .leftJoin(teacherProfiles, eq(teacherProfiles.userId, users.id))
         .where(and(eq(users.role, "TEACHER"), eq(users.isActive, true), eq(users.banned, false)));
     }
 
@@ -89,12 +103,12 @@ export class SmsRepository {
   ): Promise<readonly { phone: string | null; userId: string }[]> {
     return db
       .selectDistinct({
-        phone: studentProfiles.phone,
+        phone: sql<string | null>`coalesce(${users.phoneNumber}, ${studentProfiles.phone})`,
         userId: users.id
       })
       .from(enrollments)
       .innerJoin(users, eq(enrollments.userId, users.id))
-      .innerJoin(studentProfiles, eq(studentProfiles.userId, users.id))
+      .leftJoin(studentProfiles, eq(studentProfiles.userId, users.id))
       .where(
         and(
           eq(enrollments.courseId, courseId),

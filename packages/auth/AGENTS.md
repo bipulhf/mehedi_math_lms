@@ -11,6 +11,8 @@ Better Auth configuration, shared between the web app and the API. Root conventi
 | `@genex/auth/client` | `src/client.ts` | `apps/web` browser code (`authClient`) |
 | `@genex/auth` | `src/index.ts` | re-exports `client` + `server` |
 
+`src/phone-otp.ts` is not an entry point. It holds the phone/OTP plugin and its cooldown hook, and **both** server configs build from it — see below.
+
 ## Read this before touching the configs
 
 **`src/server.ts` and `src/tanstack-server.ts` are two near-duplicate `betterAuth({...})` calls that must be kept in sync by hand.** They differ deliberately in exactly two ways:
@@ -19,6 +21,8 @@ Better Auth configuration, shared between the web app and the API. Root conventi
 2. `server.ts` has a `databaseHooks.user.create.before` hook that generates a unique `slug` for new users. **`tanstack-server.ts` does not.**
 
 Point 2 has a consequence: since the web app is the one actually handling sign-up, users created through the web flow get no slug. That is why `tooling/scripts/backfill-user-slugs.ts` exists. If you change user creation behaviour, decide which config the change belongs in — and prefer fixing the divergence over deepening it.
+
+**Sign-in with a phone number is configured in one place, `src/phone-otp.ts`.** `createPhoneOtpPlugin()` and `phoneOtpCooldownHook` are imported by both server configs, deliberately, so the one part of this pair that is genuinely new cannot drift the way points 1 and 2 did. It reads the brand from `@genex/shared` (`appName`, `appDomain`), so nothing in it is per-deployment. [ADR-0016](../../docs/adr/0016-a-phone-number-is-a-second-front-door.md) explains the identity decisions; the short version is that a phone is a *second* door, the submitted number is the account key and must arrive already canonical, and an unknown number becomes an account on its first successful verify.
 
 **`src/factory.ts` is dead code.** It exports `createAuth()`, which nothing imports. Do not add to it or "wire it up" as part of an unrelated change; if you consolidate the three configs, that is a deliberate, standalone refactor.
 
@@ -34,11 +38,13 @@ Shared by all server configs:
 - IDs are UUIDs (`advanced.database.generateId: "uuid"`).
 - Email/password enabled, 8–128 chars, `autoSignIn: true`.
 - Password reset: `sendResetPassword` hands the link to `@genex/mailer`, tokens live one hour (`passwordResetExpirySeconds`, shared with the mail so the two cannot disagree), and `revokeSessionsOnPasswordReset` is on — a reset is how somebody takes a lost account back, so every other session goes with it. The mail throws when SMTP is unset, which Better Auth turns into a 500 in the log rather than a silent nothing. The web pages are `apps/web/src/routes/auth/forgot-password.tsx` and `reset-password.tsx`.
-- Rate limiting: 100 requests / 15 min globally, 5 / 15 min on `/sign-in/email`, `/sign-up/email` and `/reset-password`, 3 / 15 min on `/request-password-reset` — that last one sends mail to an address the caller picked, so the global limit would let a script fill somebody's inbox. **Disabled entirely when `NODE_ENV=development`.**
+- Rate limiting: 100 requests / 15 min globally, 5 / 15 min on `/sign-in/email`, `/sign-up/email` and `/reset-password`, 3 / 15 min on `/request-password-reset` and `/phone-number/send-otp`, 10 / 15 min on `/phone-number/verify`. The two low ones cost something a caller does not pay for — a mail into somebody else's inbox, an SMS out of our balance — so the global limit would let a script run up either. **Disabled entirely when `NODE_ENV=development`.**
+- `hooks.before` is the per-handset OTP cooldown from `src/phone-otp.ts`. It is a second limit, not a duplicate: Better Auth counts per IP and path, and a script rotating IPs against one number walks straight past that. It has to run before the endpoint, because the plugin writes the verification row and only then calls `sendOTP`.
 
 ### Plugins
 
 - `admin({ defaultRole: "STUDENT", adminRoles: ["ADMIN"] })` — role values come from `@genex/shared` (`STUDENT | TEACHER | ACCOUNTANT | ADMIN`).
+- `createPhoneOtpPlugin()` — Better Auth's `phoneNumber` plugin, configured in `src/phone-otp.ts`. Adds `/phone-number/send-otp`, `/phone-number/verify` and the password endpoints we do not use. It brings its own `users` columns (`phone_number`, `phone_number_verified`), so they are **not** in `additionalFields` — they are in `@genex/db`'s `users` table and the plugin's own schema.
 - `customSession(...)` — lifts `role`, `profileCompleted`, and `isActive` from the user onto the **session** object. This is why consumers read `session.session.role`, not `session.user.role`. `src/client.ts` mirrors this with `customSessionClient<ServerAuth>()`, typed against `tanstack-server.ts`.
 
 ### Additional user fields

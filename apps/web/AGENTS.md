@@ -19,7 +19,7 @@ src/routes/api/      Server route handlers: the Better Auth catch-all, and two h
 src/components/ui/   Primitives — button, card, input, label, select, textarea, checkbox, switch, badge, pill, skeleton,
                      password-input, progress-track, responsive-image, avatar, tabs, accordion, data-table,
                      empty-state, stat-card, dot-row, price-text, section-heading, doodles, field (shared classes).
-src/components/<feature>/  Feature components (courses, tests, profile, certificates, ...).
+src/components/<feature>/  Feature components (auth, courses, tests, profile, certificates, ...).
 src/components/layout/     app-shell, public-layout, dashboard-layout, auth-layout.
 src/components/common/     fade-in, route-error, data-table-skeleton.
 src/features/landing/      Landing page sections. The only thing under features/ — see below.

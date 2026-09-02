@@ -52,6 +52,11 @@ Follow `src/schema/categories.ts`:
 
 `users`, `sessions`, `accounts`, and `verificationTokens` are owned by this package but consumed by Better Auth through the drizzle adapter in `@genex/auth`, which maps them to Better Auth's expected model names. Renaming a column on those four tables means updating the adapter mapping and `additionalFields` in every server config under `packages/auth/src/`.
 
+Two of the indexes on them are load-bearing in a way that is not obvious from the column:
+
+- `users.phone_number` carries a **unique** index and is nullable. Postgres counts nulls as distinct, so it constrains the people who have a number without demanding one from everyone. It is the account key for phone sign-in and is stored in exactly one shape, `8801XXXXXXXXX` — see [ADR-0016](../../docs/adr/0016-a-phone-number-is-a-second-front-door.md).
+- `verification_tokens.token` carries a **plain** index and must not be made unique again. Better Auth's phone plugin stores an OTP there as `"123456:0"` and inserts a fresh row per request, so two people asking for a code at the same moment can draw the same six digits. Under a unique index that is a constraint violation on a request we have already paid an SMS for. Nothing reads a verification by that column; `identifier` is the key.
+
 ## Client
 
 `db` is a module-level singleton over a `pg.Pool`. `DATABASE_URL` is parsed with Zod at import time, so importing `@genex/db` in a process without that variable throws immediately — which is intended. Scripts and workers must load the root `.env` before importing (`bun --env-file ../../.env`).

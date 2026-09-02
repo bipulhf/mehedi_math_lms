@@ -166,6 +166,7 @@
         "@genex/db": "workspace:*",
         "@genex/mailer": "workspace:*",
         "@genex/shared": "workspace:*",
+        "@genex/sms": "workspace:*",
         "better-auth": "^1.6.25",
         "zod": "^4.4.3",
       },

@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:seed": "bun --env-file ../../.env seed.ts",
     "db:backfill-user-slugs": "bun --env-file ../../.env backfill-user-slugs.ts",
+    "db:backfill-user-phone-numbers": "bun --env-file ../../.env backfill-user-phone-numbers.ts",
     "db:seed-demo": "bun --env-file ../../.env seed-demo-data.ts",
     "build:katex-assets": "bun build-katex-assets.ts"
   },

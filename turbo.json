@@ -49,6 +49,10 @@
       "cache": false,
       "outputs": []
     },
+    "db:backfill-user-phone-numbers": {
+      "cache": false,
+      "outputs": []
+    },
     "db:seed-demo": {
       "cache": false,
       "outputs": []

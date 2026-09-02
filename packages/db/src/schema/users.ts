@@ -16,6 +16,13 @@ export const users = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     email: varchar("email", { length: 255 }).notNull(),
+    // The other way in. Stored the way OnecodeSoft wants it and the way
+    // `normalizeBdPhoneE164` produces it -- `8801XXXXXXXXX`, thirteen digits,
+    // no `+` -- because this string is the account key: two spellings of one
+    // number would be two accounts. Null for everybody who signed up with an
+    // email and never linked a handset.
+    phoneNumber: varchar("phone_number", { length: 32 }),
+    phoneNumberVerified: boolean("phone_number_verified").default(false).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     slug: varchar("slug", { length: 255 }),
     role: userRoleEnum("role").default("STUDENT").notNull(),
@@ -31,6 +38,9 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex("users_email_unique_idx").on(table.email),
+    // Postgres counts nulls as distinct in a unique index, so this constrains
+    // the people who have a number without demanding one from anybody else.
+    uniqueIndex("users_phone_number_unique_idx").on(table.phoneNumber),
     uniqueIndex("users_slug_unique_idx").on(table.slug)
   ]
 );
@@ -145,7 +155,13 @@ export const verificationTokens = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [
-    uniqueIndex("verification_tokens_token_unique_idx").on(table.value),
+    // Deliberately not unique. Better Auth's phone plugin stores a sign-in OTP
+    // here as `"123456:0"` and inserts a fresh row per request rather than
+    // updating one, so two people asking for a code at the same time can draw
+    // the same six digits -- under a unique index that is a constraint
+    // violation on a path the caller has already been charged an SMS for.
+    // Nothing looks a verification up by this column; `identifier` is the key.
+    index("verification_tokens_token_idx").on(table.value),
     index("verification_tokens_identifier_idx").on(table.identifier)
   ]
 );
