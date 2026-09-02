@@ -98,6 +98,8 @@ Two things that look like polish and are not. A one-line context — the marking
 
 Bijoy text is converted on paste, in the editor and in `OptionTextInput`, never on save. Every conversion is undoable and the automatic pass can be switched off from the toolbar.
 
+A whole paper can come in at once: `McqImportDialog` takes the JSON from the owner's Bijoy-to-LaTeX converter, runs it through `parseMcqImport` in `@genex/shared`, and shows every question rendered before anything is created. **Nothing is posted until each question has a correct option ticked** — the converter carries no answer key and the API refuses an MCQ question without one, so the alternative is an exam whose key is silently wrong. [ADR-0018](../../docs/adr/0018-an-imported-question-is-a-draft-until-somebody-answers-it.md).
+
 ## Images
 
 Never render an uploaded image with a bare `<img>`. Use `ResponsiveImage` from `src/components/ui/responsive-image.tsx` and give it a `sizes` — the API generates 400/800/1200-wide copies of every image it can resize and records them on the URL, and `sizes` is what lets the browser pick one before layout. Without it, every candidate is judged against the full viewport and the largest usually wins, which is the opposite of the point.
