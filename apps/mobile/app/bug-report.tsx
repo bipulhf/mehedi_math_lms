@@ -178,12 +178,14 @@ export default function BugReportScreen(): JSX.Element {
                 <HtmlContent html={report.description} muted />
                 <View style={{ height: spacing.sm }} />
                 <View style={styles.reportMeta}>
-                  <Badge tone={report.status === "RESOLVED" ? "faded" : "neutral"}>
+                  <Badge tone={report.status === "RESOLVED" ? "success" : "neutral"}>
                     {report.status}
                   </Badge>
                   <Caption>{format.date(report.createdAt)}</Caption>
                 </View>
-                {report.screenshotUrl ? <CoverImage height={160} uri={report.screenshotUrl} /> : null}
+                {report.screenshotUrl ? (
+                  <CoverImage height={160} uri={report.screenshotUrl} />
+                ) : null}
                 {report.adminNotes ? (
                   <>
                     <View style={{ height: spacing.md }} />

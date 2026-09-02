@@ -56,6 +56,8 @@ export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Elem
 
       {routine.attachmentUrl ? (
         <Pressable
+          accessibilityLabel={routine.attachmentName ?? t("routine.openAttachment")}
+          accessibilityRole="link"
           onPress={() => {
             void WebBrowser.openBrowserAsync(routine.attachmentUrl ?? "");
           }}
@@ -77,6 +79,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
+    minHeight: 44,
     padding: spacing.md
   }
 });

@@ -13,16 +13,20 @@ import {
   Card,
   EmptyState,
   Heading,
-  PresenceDot,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
-  Tabs,
   Title
 } from "@/src/components/ui";
+import { PresenceDot, Tabs } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
-import { listNotifications, markAllNotificationsRead, markNotificationRead, type NotificationRecord } from "@/src/lib/api/notifications";
+import {
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type NotificationRecord
+} from "@/src/lib/api/notifications";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";
@@ -74,7 +78,11 @@ const ConversationRow = memo(function ConversationRow({
         pathname: "/messages/[conversationId]"
       }}
     >
-      <Pressable style={styles.row}>
+      <Pressable
+        accessibilityLabel={conversation.user.name}
+        accessibilityRole="link"
+        style={styles.row}
+      >
         <Card>
           <View style={styles.rowHeader}>
             <View style={styles.rowName}>
@@ -183,6 +191,8 @@ function NotificationsPane(): JSX.Element {
 
       return (
         <Pressable
+          accessibilityLabel={item.title}
+          accessibilityRole="button"
           disabled={Boolean(item.readAt)}
           onPress={() => {
             markRead.mutate(item.id);
@@ -280,11 +290,7 @@ export default function InboxScreen(): JSX.Element {
         ]}
         value={segment}
       />
-      {segment === "messages" ? (
-        <MessagesPane canMessage={canMessage} />
-      ) : (
-        <NotificationsPane />
-      )}
+      {segment === "messages" ? <MessagesPane canMessage={canMessage} /> : <NotificationsPane />}
     </Screen>
   );
 }

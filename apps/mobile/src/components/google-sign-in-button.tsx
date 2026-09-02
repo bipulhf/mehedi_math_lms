@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { Body, Button } from "@/src/components/ui";
+import { Button, ErrorNotice } from "@/src/components/ui";
 import { useGoogleSignIn } from "@/src/lib/use-session";
 import { useT } from "@/src/lib/locale";
 import { spacing } from "@/src/theme/tokens";
@@ -40,7 +40,7 @@ export function GoogleSignInButton(): JSX.Element {
         onPress={handlePress}
         variant="outline"
       />
-      {error ? <Body>{error}</Body> : null}
+      {error ? <ErrorNotice message={error} /> : null}
     </View>
   );
 }

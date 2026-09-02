@@ -5,7 +5,6 @@ import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
-  Avatar,
   Badge,
   Body,
   Button,
@@ -15,9 +14,9 @@ import {
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
-  StreakTrack,
   Title
 } from "@/src/components/ui";
+import { Avatar, StreakTrack } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { getOwnProfile } from "@/src/lib/api/profiles";
 import { useLocale, useT } from "@/src/lib/locale";
@@ -41,6 +40,7 @@ function LanguageSwitcher(): JSX.Element {
 
         return (
           <Pressable
+            accessibilityLabel={localeNames[option]}
             key={option}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
@@ -77,6 +77,7 @@ function SettingsRow({
 }): JSX.Element {
   return (
     <Pressable
+      accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ busy: isBusy }}
       disabled={isBusy}
@@ -137,7 +138,12 @@ export default function ProfileScreen(): JSX.Element {
             <View style={styles.profileIdentity}>
               <Avatar
                 name={profile?.user.name ?? session.user.name}
-                photo={profile?.user.image ?? profile?.studentProfile?.profilePhoto ?? profile?.teacherProfile?.profilePhoto ?? null}
+                photo={
+                  profile?.user.image ??
+                  profile?.studentProfile?.profilePhoto ??
+                  profile?.teacherProfile?.profilePhoto ??
+                  null
+                }
                 size={72}
               />
               <View style={styles.profileText}>
@@ -154,7 +160,11 @@ export default function ProfileScreen(): JSX.Element {
             <View style={{ height: spacing.md }} />
             <Badge>{session.session.role}</Badge>
             <View style={styles.identityStreak}>
-              <StreakTrack days={streak.days} label={t("dash.streak")} streakCount={streak.streakCount} />
+              <StreakTrack
+                days={streak.days}
+                label={t("dash.streak")}
+                streakCount={streak.streakCount}
+              />
             </View>
           </Card>
         )}
@@ -163,7 +173,9 @@ export default function ProfileScreen(): JSX.Element {
             settings row -- an incomplete profile blocks the account, and that
             is not a fact to bury in a list. */}
         <Card>
-          <Title>{isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}</Title>
+          <Title>
+            {isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}
+          </Title>
           <View style={{ height: spacing.sm }} />
           <Body muted>
             {isProfileComplete ? t("profile.detailsLead") : t("profile.completeLead")}
@@ -219,8 +231,10 @@ const styles = StyleSheet.create({
     borderColor: colors.hairline,
     borderRadius: radius.full,
     borderWidth: 1,
+    minHeight: 44,
+    justifyContent: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.xs
   },
   languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   languageRow: { flexDirection: "row", gap: spacing.sm },

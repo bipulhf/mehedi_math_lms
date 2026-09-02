@@ -13,7 +13,13 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { createLectureComment, deleteLectureComment, type LectureComment, listLectureComments, updateLectureComment } from "@/src/lib/api/comments";
+import {
+  createLectureComment,
+  deleteLectureComment,
+  type LectureComment,
+  listLectureComments,
+  updateLectureComment
+} from "@/src/lib/api/comments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -74,7 +80,13 @@ function CommentEntry({
 
       {isEditing ? (
         <View style={styles.composer}>
-          <Field label={t("disc.editPlaceholder")} multiline onChangeText={setDraft} style={styles.multiline} value={draft} />
+          <Field
+            label={t("disc.editPlaceholder")}
+            multiline
+            onChangeText={setDraft}
+            style={styles.multiline}
+            value={draft}
+          />
           <View style={styles.editActions}>
             <Button
               disabled={draft.trim().length === 0}
@@ -85,7 +97,11 @@ function CommentEntry({
                 setIsEditing(false);
               }}
             />
-            <Button label={t("action.cancel")} onPress={() => setIsEditing(false)} variant="ghost" />
+            <Button
+              label={t("action.cancel")}
+              onPress={() => setIsEditing(false)}
+              variant="ghost"
+            />
           </View>
         </View>
       ) : (
@@ -94,7 +110,9 @@ function CommentEntry({
 
       {comment.isDeleted || isEditing ? null : (
         <View style={styles.actionsRow}>
-          {onReply ? <Button label={t("disc.reply")} onPress={() => onReply(comment.id)} variant="ghost" /> : null}
+          {onReply ? (
+            <Button label={t("disc.reply")} onPress={() => onReply(comment.id)} variant="ghost" />
+          ) : null}
           {comment.isEditable ? (
             <>
               <Button
@@ -129,10 +147,21 @@ function CommentThread({
 }): JSX.Element {
   return (
     <View style={styles.thread}>
-      <CommentEntry comment={comment} isUpdating={isUpdating} onDelete={onDelete} onReply={onReply} onUpdate={onUpdate} />
+      <CommentEntry
+        comment={comment}
+        isUpdating={isUpdating}
+        onDelete={onDelete}
+        onReply={onReply}
+        onUpdate={onUpdate}
+      />
       {comment.replies.map((reply) => (
         <View key={reply.id} style={styles.reply}>
-          <CommentEntry comment={reply} isUpdating={isUpdating} onDelete={onDelete} onUpdate={onUpdate} />
+          <CommentEntry
+            comment={reply}
+            isUpdating={isUpdating}
+            onDelete={onDelete}
+            onUpdate={onUpdate}
+          />
         </View>
       ))}
     </View>
@@ -171,14 +200,22 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
   const update = useMutation({
     mutationFn: async ({ content, id }: { content: string; id: string }) =>
       updateLectureComment(id, content),
+    onError: (cause: Error) => {
+      setError(cause.message);
+    },
     onSuccess: async () => {
+      setError(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.lectureComments(lectureId) });
     }
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => deleteLectureComment(id),
+    onError: (cause: Error) => {
+      setError(cause.message);
+    },
     onSuccess: async () => {
+      setError(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.lectureComments(lectureId) });
     }
   });

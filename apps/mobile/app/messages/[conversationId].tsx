@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Redirect, Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -19,12 +19,19 @@ import {
   Button,
   Caption,
   Card,
+  ErrorNotice,
   Heading,
-  PresenceDot,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock
 } from "@/src/components/ui";
-import { getConversation, markConversationRead, reportConversation, sendMessage } from "@/src/lib/api/messages";
+import { PresenceDot } from "@/src/components/ui-display";
+import {
+  getConversation,
+  markConversationRead,
+  reportConversation,
+  sendMessage
+} from "@/src/lib/api/messages";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useMessagingSocket } from "@/src/lib/use-messaging-socket";
@@ -45,6 +52,7 @@ export default function ConversationScreen(): JSX.Element {
   const [reportReason, setReportReason] = useState("");
   const [isReporting, setIsReporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -56,7 +64,7 @@ export default function ConversationScreen(): JSX.Element {
     []
   );
 
-  const { session } = useSession();
+  const { isPending: isSessionPending, session } = useSession();
   const [isPeerTyping, setIsPeerTyping] = useState(false);
   const { isConnected, sendTyping } = useMessagingSocket({
     conversationId,
@@ -66,6 +74,7 @@ export default function ConversationScreen(): JSX.Element {
   });
 
   const { data: thread, isPending } = useQuery({
+    enabled: Boolean(session),
     queryFn: async () => getConversation(conversationId),
     queryKey: queryKeys.conversation(conversationId),
     // The socket is the fast path; the poll is what is left when it is down —
@@ -75,13 +84,22 @@ export default function ConversationScreen(): JSX.Element {
   });
 
   useEffect(() => {
-    // Nothing awaits this, and failing to clear a badge is not worth an error
-    // banner — but an uncaught rejection here would take the screen down
-    // through its error boundary while the thread itself loaded fine.
-    void markConversationRead(conversationId)
-      .then(async () => queryClient.invalidateQueries({ queryKey: queryKeys.conversations() }))
-      .catch(() => undefined);
-  }, [conversationId, queryClient]);
+    if (!session) {
+      return;
+    }
+
+    const markRead = async (): Promise<void> => {
+      try {
+        await markConversationRead(conversationId);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.conversations() });
+      } catch {
+        // A badge that takes one more refresh is harmless; surfacing this would
+        // interrupt the conversation the student did successfully open.
+      }
+    };
+
+    void markRead();
+  }, [conversationId, queryClient, session]);
 
   // Announced on the first keystroke and withdrawn after a pause, so the other
   // side sees "typing…" rather than one event per character.
@@ -100,8 +118,12 @@ export default function ConversationScreen(): JSX.Element {
 
   const send = useMutation({
     mutationFn: async (content: string) => sendMessage(conversationId, content),
+    onError: (cause: Error) => {
+      setError(cause.message);
+    },
     onSuccess: async () => {
       setDraft("");
+      setError(null);
       sendTyping("typing:stop");
       await queryClient.invalidateQueries({ queryKey: queryKeys.conversation(conversationId) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.conversations() });
@@ -110,12 +132,24 @@ export default function ConversationScreen(): JSX.Element {
 
   const report = useMutation({
     mutationFn: async (reason: string) => reportConversation(conversationId, reason),
+    onError: (cause: Error) => {
+      setError(cause.message);
+    },
     onSuccess: () => {
+      setError(null);
       setIsReporting(false);
       setReportReason("");
       setNotice(t("msg.reportSent"));
     }
   });
+
+  if (isSessionPending) {
+    return <ScreenSkeleton rows={4} />;
+  }
+
+  if (!session) {
+    return <Redirect href="/sign-in" />;
+  }
 
   if (isPending) {
     return (
@@ -156,8 +190,9 @@ export default function ConversationScreen(): JSX.Element {
         keyboardVerticalOffset={90}
         style={styles.flex}
       >
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {notice ? <Badge tone="faded">{notice}</Badge> : null}
+          {error ? <ErrorNotice message={error} /> : null}
 
           {(thread?.items ?? []).map((message) => (
             <View
@@ -182,10 +217,12 @@ export default function ConversationScreen(): JSX.Element {
               <Body muted>{t("msg.reportDisclaimer")}</Body>
               <View style={{ height: spacing.md }} />
               <TextInput
+                accessibilityLabel={t("msg.whatHappened")}
                 multiline
                 onChangeText={setReportReason}
                 placeholder={t("msg.whatHappened")}
                 placeholderTextColor={colors.placeholder}
+                selectionColor={colors.accent}
                 style={styles.reportInput}
                 value={reportReason}
               />
@@ -197,10 +234,19 @@ export default function ConversationScreen(): JSX.Element {
                 onPress={() => report.mutate(reportReason.trim())}
               />
               <View style={{ height: spacing.sm }} />
-              <Button label={t("action.cancel")} onPress={() => setIsReporting(false)} variant="ghost" />
+              <Button
+                label={t("action.cancel")}
+                onPress={() => setIsReporting(false)}
+                variant="ghost"
+              />
             </Card>
           ) : (
-            <Pressable onPress={() => setIsReporting(true)} style={styles.reportLink}>
+            <Pressable
+              accessibilityLabel={t("msg.reportTitle")}
+              accessibilityRole="button"
+              onPress={() => setIsReporting(true)}
+              style={styles.reportLink}
+            >
               <Caption>{t("msg.reportTitle")}</Caption>
             </Pressable>
           )}
@@ -211,10 +257,12 @@ export default function ConversationScreen(): JSX.Element {
             <Caption>{t("msg.typing", { name: thread?.conversation.user.name ?? "" })}</Caption>
           ) : null}
           <TextInput
+            accessibilityLabel={t("msg.placeholder")}
             multiline
             onChangeText={handleDraftChange}
             placeholder={t("msg.placeholder")}
             placeholderTextColor={colors.placeholder}
+            selectionColor={colors.accent}
             style={styles.composerInput}
             value={draft}
           />

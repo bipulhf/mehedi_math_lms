@@ -75,6 +75,8 @@ export default function TestHistoryScreen(): JSX.Element {
 
         {submissions.map((submission) => (
           <Pressable
+            accessibilityLabel={t("test.attemptLabel", { number: submission.attemptNumber })}
+            accessibilityRole="link"
             key={submission.id}
             onPress={() =>
               router.push({
@@ -92,7 +94,7 @@ export default function TestHistoryScreen(): JSX.Element {
                   {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
                 </Badge>
                 {submission.passed !== null ? (
-                  <Badge tone={submission.passed ? "neutral" : "attention"}>
+                  <Badge tone={submission.passed ? "success" : "attention"}>
                     {submission.passed ? t("test.passed") : t("test.failed")}
                   </Badge>
                 ) : null}

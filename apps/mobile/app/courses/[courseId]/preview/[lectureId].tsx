@@ -9,7 +9,7 @@ import { Body, Button, Caption, Heading, Screen, SkeletonBlock } from "@/src/com
 import { type ContentMaterial, getLecturePreview } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { colors, fonts, spacing } from "@/src/theme/tokens";
 
 function getPdfMaterial(materials: readonly ContentMaterial[]): ContentMaterial | null {
   return materials.find((material) => material.fileType === "application/pdf") ?? null;
@@ -25,7 +25,11 @@ export default function PreviewScreen(): JSX.Element {
   const t = useT();
   const format = useFormat();
 
-  const { data: lecture, isError, isPending } = useQuery({
+  const {
+    data: lecture,
+    isError,
+    isPending
+  } = useQuery({
     queryFn: () => getLecturePreview(lectureId),
     queryKey: queryKeys.lecturePreview(lectureId)
   });
@@ -103,7 +107,7 @@ const styles = StyleSheet.create({
   panel: { backgroundColor: colors.panelWarm, padding: spacing.lg },
   textContent: {
     color: colors.ink,
-    fontFamily: "HindSiliguri_400Regular",
+    fontFamily: fonts.body,
     fontSize: 16,
     lineHeight: 28,
     padding: spacing.lg

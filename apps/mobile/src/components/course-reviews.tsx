@@ -14,7 +14,11 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { getCourseReviewSummary, listCourseReviews, submitCourseReview } from "@/src/lib/api/reviews";
+import {
+  getCourseReviewSummary,
+  listCourseReviews,
+  submitCourseReview
+} from "@/src/lib/api/reviews";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { colors, radius, spacing } from "@/src/theme/tokens";
@@ -101,6 +105,7 @@ export function CourseReviews({
       setError(cause.message);
     },
     onSuccess: async () => {
+      setError(null);
       setIsWriting(false);
       setComment("");
       await queryClient.invalidateQueries({ queryKey: queryKeys.courseReviews(courseId) });
@@ -127,7 +132,10 @@ export function CourseReviews({
         <Title>{t("detail.tabReviews")}</Title>
         {summary.count > 0 ? (
           <Caption>
-            {t("detail.reviewSummary", { average: summary.average.toFixed(1), count: summary.count })}
+            {t("detail.reviewSummary", {
+              average: summary.average.toFixed(1),
+              count: summary.count
+            })}
           </Caption>
         ) : null}
       </View>
@@ -152,8 +160,16 @@ export function CourseReviews({
               style={styles.multiline}
               value={comment}
             />
-            <Button isBusy={submit.isPending} label={t("review.post")} onPress={() => submit.mutate()} />
-            <Button label={t("action.cancel")} onPress={() => setIsWriting(false)} variant="ghost" />
+            <Button
+              isBusy={submit.isPending}
+              label={t("review.post")}
+              onPress={() => submit.mutate()}
+            />
+            <Button
+              label={t("action.cancel")}
+              onPress={() => setIsWriting(false)}
+              variant="ghost"
+            />
           </View>
         ) : (
           <Button label={t("review.write")} onPress={() => setIsWriting(true)} variant="outline" />

@@ -1,7 +1,8 @@
 import type { JSX } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { AccordionRow, Body, Caption, Title } from "@/src/components/ui";
+import { Body, Caption, Title } from "@/src/components/ui";
+import { AccordionRow } from "@/src/components/ui-display";
 import type { ContentLecture } from "@/src/lib/api/content";
 import type { AssessmentTestSummary } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
@@ -46,6 +47,8 @@ function ChapterItem({
 
   return (
     <Pressable
+      accessibilityLabel={item.title}
+      accessibilityRole="button"
       onPress={onSelect}
       style={[styles.itemRow, isSelected ? styles.itemRowActive : null]}
     >
@@ -106,6 +109,7 @@ export function LessonPickerSheet({
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.sheetRoot}>
         <Pressable
+          accessible={false}
           accessibilityLabel={t("common.close")}
           accessibilityRole="button"
           onPress={onClose}

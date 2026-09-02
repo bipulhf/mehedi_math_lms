@@ -11,12 +11,12 @@ import {
   Card,
   EmptyState,
   Heading,
-  PriceText,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
+import { PriceText } from "@/src/components/ui-display";
 import { listMyPayments, type PaymentHistoryItem } from "@/src/lib/api/payments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -43,7 +43,7 @@ const PaymentRow = memo(function PaymentRow({ item }: { item: PaymentHistoryItem
             <PriceText amount={item.amount} />
           </View>
           <View style={styles.rowMeta}>
-            <Badge tone={item.status === "SUCCESS" ? "neutral" : "attention"}>
+            <Badge tone={item.status === "SUCCESS" ? "success" : "attention"}>
               {t(STATUS_LABEL[item.status])}
             </Badge>
             <Caption>{format.dateTime(item.createdAt)}</Caption>

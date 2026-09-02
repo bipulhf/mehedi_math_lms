@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import {
-  Avatar,
   Body,
   Caption,
   Card,
@@ -13,10 +12,10 @@ import {
   ErrorNotice,
   Field,
   Heading,
-  PresenceDot,
   Screen,
   ScreenSkeleton
 } from "@/src/components/ui";
+import { Avatar, PresenceDot } from "@/src/components/ui-display";
 import { createConversation, searchMessageParticipants } from "@/src/lib/api/messages";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -95,6 +94,13 @@ export default function NewConversationScreen(): JSX.Element {
         ) : (
           participants.map((participant) => (
             <Pressable
+              accessibilityLabel={`${t("messages.start")} ${participant.name}`}
+              accessibilityRole="button"
+              accessibilityState={{
+                busy: startConversation.isPending,
+                disabled: startConversation.isPending
+              }}
+              disabled={startConversation.isPending}
               key={participant.id}
               onPress={() => {
                 setError(null);

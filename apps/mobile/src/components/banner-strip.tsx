@@ -58,6 +58,12 @@ export function BannerStrip(): JSX.Element | null {
         <Text style={[styles.message, { color: preset.foreground }]}>{message}</Text>
         {banner.linkUrl ? (
           <Pressable
+            accessibilityLabel={
+              banner.linkLabel && banner.linkLabel.length > 0
+                ? banner.linkLabel
+                : (banner.linkUrl ?? "")
+            }
+            accessibilityRole="link"
             onPress={() => {
               void WebBrowser.openBrowserAsync(banner.linkUrl ?? "");
             }}

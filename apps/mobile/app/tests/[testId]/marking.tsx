@@ -18,7 +18,16 @@ import { HtmlContent } from "@/src/components/html-content";
 import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
 import { MarkingLayer, type MarkingTool } from "@/src/components/marking-layer";
 import { PenWidthSlider } from "@/src/components/pen-width-slider";
-import { Body, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
+import {
+  Body,
+  Button,
+  Caption,
+  Card,
+  ErrorNotice,
+  Screen,
+  SkeletonBlock,
+  Title
+} from "@/src/components/ui";
 import type { MarkingAnswerView } from "@/src/lib/api/marking";
 import {
   claimAnswer,
@@ -73,6 +82,7 @@ export default function MarkingScreen(): JSX.Element {
   const [color, setColor] = useState<MarkingColor>("RED");
   const [penWidth, setPenWidth] = useState(0.004);
   const [isBusy, setIsBusy] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const saveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
   const {
@@ -106,9 +116,15 @@ export default function MarkingScreen(): JSX.Element {
       return;
     }
 
-    const interval = setInterval(() => {
-      void renewAnswerClaim(activeAnswer.id).catch(() => undefined);
-    }, claimRenewalMs);
+    const renewClaim = async (): Promise<void> => {
+      try {
+        await renewAnswerClaim(activeAnswer.id);
+      } catch {
+        // The next renewal can recover from a transient network error; the
+        // eventual save remains the authoritative failure the teacher needs.
+      }
+    };
+    const interval = setInterval(() => void renewClaim(), claimRenewalMs);
 
     return () => {
       clearInterval(interval);
@@ -120,7 +136,11 @@ export default function MarkingScreen(): JSX.Element {
 
     try {
       if (activeAnswer && activeAnswer.id !== item.answerId) {
-        await releaseAnswerClaim(activeAnswer.id).catch(() => undefined);
+        try {
+          await releaseAnswerClaim(activeAnswer.id);
+        } catch {
+          // A claim expires server-side even if this best-effort release fails.
+        }
       }
 
       const answer = await claimAnswer(item.answerId);
@@ -179,7 +199,16 @@ export default function MarkingScreen(): JSX.Element {
     saveTimersRef.current.set(
       pageId,
       setTimeout(() => {
-        void saveScriptPageMarking(pageId, marking).catch(() => undefined);
+        const save = async (): Promise<void> => {
+          try {
+            await saveScriptPageMarking(pageId, marking);
+            setSaveError(null);
+          } catch (cause) {
+            setSaveError(cause instanceof Error ? cause.message : t("marking.saveMark"));
+          }
+        };
+
+        void save();
       }, markingSaveDebounceMs)
     );
   };
@@ -205,7 +234,11 @@ export default function MarkingScreen(): JSX.Element {
 
     try {
       await setAnswerMark(activeAnswer.id, { awardedMarks });
-      await releaseAnswerClaim(activeAnswer.id).catch(() => undefined);
+      try {
+        await releaseAnswerClaim(activeAnswer.id);
+      } catch {
+        // The mark has already been written; the server expires the claim.
+      }
 
       const refreshed = await refetch();
       const paper =
@@ -261,6 +294,7 @@ export default function MarkingScreen(): JSX.Element {
     <Screen>
       <Stack.Screen options={{ title: queue?.testTitle ?? t("marking.title") }} />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        {saveError ? <ErrorNotice message={saveError} /> : null}
         <Card style={{ gap: spacing.sm }}>
           <Title>{queue?.testTitle ?? t("marking.title")}</Title>
           <View style={styles.row}>
@@ -282,6 +316,13 @@ export default function MarkingScreen(): JSX.Element {
           ) : (
             workList.map((item) => (
               <Pressable
+                accessibilityLabel={
+                  mode === "QUESTION"
+                    ? `Question ${item.questionIndex + 1}, ${item.studentName}`
+                    : `${item.studentName}, question ${item.questionIndex + 1}`
+                }
+                accessibilityRole="button"
+                accessibilityState={{ selected: item.answerId === activeAnswer?.id }}
                 key={item.answerId}
                 disabled={isBusy}
                 onPress={() => void openAnswer(item)}
@@ -384,10 +425,12 @@ export default function MarkingScreen(): JSX.Element {
 
             <View style={styles.row}>
               <TextInput
+                accessibilityLabel={t("marking.saveMark")}
                 keyboardType="decimal-pad"
                 onChangeText={setMarkInput}
                 placeholder="0"
                 placeholderTextColor={colors.placeholder}
+                selectionColor={colors.accent}
                 style={styles.markInput}
                 value={markInput}
               />
@@ -414,6 +457,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     borderWidth: 1,
     color: colors.ink,
+    minHeight: 44,
     minWidth: 80,
     padding: spacing.sm
   },

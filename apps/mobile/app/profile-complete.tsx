@@ -7,7 +7,6 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "re
 
 import {
   Body,
-  Avatar,
   Button,
   Caption,
   Card,
@@ -17,6 +16,7 @@ import {
   Screen,
   ScreenSkeleton
 } from "@/src/components/ui";
+import { Avatar } from "@/src/components/ui-display";
 import { getOwnProfile, updateOwnProfile } from "@/src/lib/api/profiles";
 import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useT } from "@/src/lib/locale";
@@ -62,7 +62,10 @@ export default function ProfileCompleteScreen(): JSX.Element {
     if (profile !== null && !hasLoadedProfile) {
       setValues(profileFormValues(profile, role));
       setPhotoUrl(
-        profile.user.image ?? profile.studentProfile?.profilePhoto ?? profile.teacherProfile?.profilePhoto ?? null
+        profile.user.image ??
+          profile.studentProfile?.profilePhoto ??
+          profile.teacherProfile?.profilePhoto ??
+          null
       );
       setHasLoadedProfile(true);
     }

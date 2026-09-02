@@ -72,7 +72,7 @@ export default function ChangePasswordScreen(): JSX.Element {
           <Body muted>{t("password.lead", { count: PASSWORD_FLOOR })}</Body>
 
           {error ? <ErrorNotice message={error} /> : null}
-          {hasChanged ? <Badge tone="faded">{t("password.changed")}</Badge> : null}
+          {hasChanged ? <Badge tone="success">{t("password.changed")}</Badge> : null}
 
           <Card style={styles.form}>
             <Field

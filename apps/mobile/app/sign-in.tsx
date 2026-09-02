@@ -12,7 +12,17 @@ import {
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { PhoneOtpForm } from "@/src/components/phone-otp-form";
-import { Body, Button, Card, Field, Heading, Screen, Tabs, Title } from "@/src/components/ui";
+import {
+  Body,
+  Button,
+  Card,
+  ErrorNotice,
+  Field,
+  Heading,
+  Screen,
+  Title
+} from "@/src/components/ui";
+import { Tabs } from "@/src/components/ui-display";
 import { useT } from "@/src/lib/locale";
 import { useSignIn } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -110,7 +120,7 @@ export default function SignInScreen(): JSX.Element {
                     value={password}
                   />
 
-                  {error ? <Body>{error}</Body> : null}
+                  {error ? <ErrorNotice message={error} /> : null}
 
                   <Button
                     disabled={!canSubmit}

@@ -82,9 +82,16 @@ export function PenWidthSlider({
     <View style={styles.row}>
       <View style={[styles.preview, { height: previewSize, width: previewSize }]} />
       <View
+        accessibilityActions={[{ name: "decrement" }, { name: "increment" }]}
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="adjustable"
         accessibilityValue={{ max, min, now: value }}
+        onAccessibilityAction={({ nativeEvent }) => {
+          const step = (max - min) / 4;
+          const next = nativeEvent.actionName === "increment" ? value + step : value - step;
+
+          onChange(Math.min(max, Math.max(min, next)));
+        }}
         onLayout={(event) => {
           trackWidthRef.current = event.nativeEvent.layout.width;
         }}
@@ -103,7 +110,7 @@ export function PenWidthSlider({
 const styles = StyleSheet.create({
   preview: { backgroundColor: colors.ink, borderRadius: radius.full },
   row: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minWidth: 120 },
-  scrubZone: { flex: 1, height: HIT_HEIGHT, justifyContent: "center" },
+  scrubZone: { flex: 1, height: Math.max(44, HIT_HEIGHT), justifyContent: "center" },
   thumb: {
     backgroundColor: colors.accent,
     borderRadius: radius.full,

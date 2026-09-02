@@ -15,12 +15,11 @@ import {
   EmptyState,
   ErrorNotice,
   Heading,
-  ProgressTrack,
   Screen,
   SkeletonBlock,
-  StreakTrack,
   Title
 } from "@/src/components/ui";
+import { ProgressTrack, StreakTrack } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
@@ -28,7 +27,7 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { colors, fonts, spacing, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
 
 /**
  * Downloading and sharing is a phone-shaped action, more so than a desktop one
@@ -47,24 +46,22 @@ function DocumentAction({
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
+  const share = async (): Promise<void> => {
+    setError(null);
+    setIsBusy(true);
+
+    try {
+      await shareEnrollmentDocument(kind, enrollmentId);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to share this document.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
   return (
     <View style={styles.rowAction}>
-      <Button
-        isBusy={isBusy}
-        label={label}
-        onPress={() => {
-          setError(null);
-          setIsBusy(true);
-          void shareEnrollmentDocument(kind, enrollmentId)
-            .catch((cause: Error) => {
-              setError(cause.message);
-            })
-            .finally(() => {
-              setIsBusy(false);
-            });
-        }}
-        variant="outline"
-      />
+      <Button isBusy={isBusy} label={label} onPress={() => void share()} variant="outline" />
       {error ? <ErrorNotice message={error} /> : null}
     </View>
   );
@@ -79,7 +76,7 @@ const EnrollmentRow = memo(function EnrollmentRow({
   const format = useFormat();
   const isComplete = enrollment.status === "COMPLETED" || enrollment.completedAt !== null;
   const card = (
-    <Pressable>
+    <Pressable accessibilityLabel={enrollment.course.title} accessibilityRole="link">
       <Card>
         <CoverImage height={140} uri={enrollment.course.coverImageUrl} />
         <View style={styles.rowBody}>
@@ -94,8 +91,12 @@ const EnrollmentRow = memo(function EnrollmentRow({
             <Body muted>
               {isComplete ? t("mine.completed") : format.percent(enrollment.progressPercentage)}
             </Body>
-            {!enrollment.accessGranted ? <Badge tone="attention">{t("mine.paymentPending")}</Badge> : null}
-            {enrollment.cancelledAt ? <Badge tone="attention">{t("mine.accessEnded")}</Badge> : null}
+            {!enrollment.accessGranted ? (
+              <Badge tone="attention">{t("mine.paymentPending")}</Badge>
+            ) : null}
+            {enrollment.cancelledAt ? (
+              <Badge tone="attention">{t("mine.accessEnded")}</Badge>
+            ) : null}
           </View>
         </View>
       </Card>
@@ -105,7 +106,10 @@ const EnrollmentRow = memo(function EnrollmentRow({
   return (
     <View style={styles.row}>
       {enrollment.accessGranted ? (
-        <Link asChild href={{ params: { courseId: enrollment.course.id }, pathname: "/learn/[courseId]" }}>
+        <Link
+          asChild
+          href={{ params: { courseId: enrollment.course.id }, pathname: "/learn/[courseId]" }}
+        >
           {card}
         </Link>
       ) : (
@@ -167,7 +171,11 @@ function PaymentReminderRow({
         asChild
         href={{ params: { courseId: enrollment.course.slug }, pathname: "/courses/[courseId]" }}
       >
-        <Pressable style={styles.paymentLink}>
+        <Pressable
+          accessibilityLabel={enrollment.course.title}
+          accessibilityRole="link"
+          style={styles.paymentLink}
+        >
           <Text numberOfLines={2} style={styles.paymentTitle}>
             {enrollment.course.title}
           </Text>
@@ -283,9 +291,12 @@ function StudentDashboardHeader({
           <Caption>{t("dash.resume")}</Caption>
           <Link
             asChild
-            href={{ params: { courseId: resumeEnrollment.course.id }, pathname: "/learn/[courseId]" }}
+            href={{
+              params: { courseId: resumeEnrollment.course.id },
+              pathname: "/learn/[courseId]"
+            }}
           >
-            <Pressable>
+            <Pressable accessibilityLabel={resumeEnrollment.course.title} accessibilityRole="link">
               <Card>
                 <CoverImage height={160} uri={resumeEnrollment.course.coverImageUrl} />
                 <View style={styles.resumeBody}>
@@ -295,11 +306,9 @@ function StudentDashboardHeader({
                     label={`${resumeEnrollment.course.title} ${t("mine.progress")}`}
                     total={100}
                   />
-                  <Button
-                    label={t("mine.resume")}
-                    onPress={() => router.push(`/learn/${resumeEnrollment.course.id}`)}
-                    variant="accent"
-                  />
+                  <View style={styles.resumeAction}>
+                    <Text style={styles.resumeActionLabel}>{t("mine.resume")}</Text>
+                  </View>
                 </View>
               </Card>
             </Pressable>
@@ -336,11 +345,7 @@ function StudentDashboardHeader({
       ) : null}
 
       <View style={styles.examsWrap}>
-        <Button
-          label={t("exams.title")}
-          onPress={() => router.push("/exams")}
-          variant="outline"
-        />
+        <Button label={t("exams.title")} onPress={() => router.push("/exams")} variant="outline" />
       </View>
 
       <View style={styles.coursesHeading}>
@@ -395,15 +400,21 @@ export default function HomeScreen(): JSX.Element {
 
   const visibleEnrollments = enrollments.filter((enrollment) => enrollment.cancelledAt === null);
   const accessibleEnrollments = visibleEnrollments.filter((enrollment) => enrollment.accessGranted);
-  const activeCourses = accessibleEnrollments.filter((enrollment) => enrollment.status === "ACTIVE");
-  const completedCourses = visibleEnrollments.filter((enrollment) => enrollment.status === "COMPLETED");
+  const activeCourses = accessibleEnrollments.filter(
+    (enrollment) => enrollment.status === "ACTIVE"
+  );
+  const completedCourses = visibleEnrollments.filter(
+    (enrollment) => enrollment.status === "COMPLETED"
+  );
   const awaitingPayment = visibleEnrollments.filter((enrollment) => !enrollment.accessGranted);
   const averageProgress =
     accessibleEnrollments.length === 0
       ? 0
       : Math.round(
-          accessibleEnrollments.reduce((total, enrollment) => total + enrollment.progressPercentage, 0) /
-            accessibleEnrollments.length
+          accessibleEnrollments.reduce(
+            (total, enrollment) => total + enrollment.progressPercentage,
+            0
+          ) / accessibleEnrollments.length
         );
   const resumeEnrollment = activeCourses
     .filter((enrollment) => enrollment.progressPercentage > 0)
@@ -476,8 +487,18 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg
   },
   padded: { padding: spacing.lg },
-  paymentAction: { color: colors.accent, fontFamily: fonts.bodySemiBold, fontSize: 14, marginTop: spacing.xs },
-  paymentDismiss: { color: colors.mutedFaint, fontFamily: fonts.monoLabel, fontSize: 20, paddingHorizontal: spacing.sm },
+  paymentAction: {
+    color: colors.accent,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    marginTop: spacing.xs
+  },
+  paymentDismiss: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 20,
+    paddingHorizontal: spacing.sm
+  },
   paymentItem: {
     alignItems: "flex-start",
     borderTopColor: colors.accent,
@@ -485,11 +506,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingTop: spacing.md
   },
-  paymentLead: { color: colors.muted, fontFamily: fonts.body, fontSize: 15, lineHeight: 23, marginVertical: spacing.md },
+  paymentLead: {
+    color: colors.muted,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    lineHeight: 23,
+    marginVertical: spacing.md
+  },
   paymentLink: { flex: 1 },
   paymentTitle: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 16 },
-  paymentWrap: { backgroundColor: colors.panelWarm, marginHorizontal: spacing.lg, marginTop: spacing.xl, padding: spacing.lg },
+  paymentWrap: {
+    backgroundColor: colors.panelWarm,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.xl,
+    padding: spacing.lg
+  },
   resumeBody: { gap: spacing.sm, paddingTop: spacing.md },
+  resumeAction: {
+    alignItems: "center",
+    backgroundColor: colors.brandOrange,
+    borderRadius: radius.sm,
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: spacing.xl
+  },
+  resumeActionLabel: {
+    color: colors.actionForeground,
+    fontFamily: fonts.displaySemiBold,
+    fontSize: 15
+  },
   resumeWrap: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   row: { gap: spacing.sm, marginBottom: spacing.lg },
   rowAction: { gap: spacing.sm },

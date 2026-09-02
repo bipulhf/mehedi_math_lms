@@ -5,7 +5,6 @@ import type { JSX } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
-  Avatar,
   Body,
   Caption,
   Card,
@@ -14,11 +13,12 @@ import {
   Screen,
   ScreenSkeleton
 } from "@/src/components/ui";
+import { Avatar } from "@/src/components/ui-display";
 import { stripHtml } from "@/src/lib/html";
 import { useFormat, useT } from "@/src/lib/locale";
 import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api/profiles";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { colors, fonts, spacing } from "@/src/theme/tokens";
 
 function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Element {
   const format = useFormat();
@@ -26,7 +26,7 @@ function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Elemen
 
   return (
     <Link asChild href={{ params: { slug: teacher.slug }, pathname: "/teachers/[slug]" }}>
-      <Pressable style={styles.row}>
+      <Pressable accessibilityLabel={teacher.name} accessibilityRole="link" style={styles.row}>
         <Card>
           <View style={styles.identity}>
             <Avatar name={teacher.name} photo={teacher.profilePhoto} size={64} />
@@ -96,8 +96,14 @@ const styles = StyleSheet.create({
   header: { gap: spacing.sm, paddingBottom: spacing.lg },
   identity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   identityText: { flex: 1, gap: spacing.xs },
-  meta: { borderTopColor: colors.hairline, borderTopWidth: 1, flexDirection: "row", gap: spacing.lg, paddingTop: spacing.md },
-  name: { color: colors.ink, fontFamily: "HindSiliguri_500Medium", fontSize: 19 },
+  meta: {
+    borderTopColor: colors.hairline,
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: spacing.lg,
+    paddingTop: spacing.md
+  },
+  name: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 19 },
   row: { marginBottom: spacing.md }
 });
 

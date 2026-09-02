@@ -48,11 +48,21 @@ jest.mock("@shopify/flash-list", () => {
   return {
     FlashList: ({
       data,
+      keyExtractor,
       renderItem
     }: {
       data: readonly unknown[];
+      keyExtractor?: (item: unknown, index: number) => string;
       renderItem: (info: { index: number; item: unknown }) => ReactNode;
-    }) => <View>{data.map((item, index) => renderItem({ index, item }))}</View>
+    }) => (
+      <View>
+        {data.map((item, index) => (
+          <View key={keyExtractor?.(item, index) ?? index}>
+            {renderItem({ index, item })}
+          </View>
+        ))}
+      </View>
+    )
   };
 });
 

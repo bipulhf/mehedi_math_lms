@@ -5,7 +5,8 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "re
 
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { PhoneOtpForm } from "@/src/components/phone-otp-form";
-import { Body, Button, Card, Field, Heading, Screen, Tabs } from "@/src/components/ui";
+import { Body, Button, Card, ErrorNotice, Field, Heading, Screen } from "@/src/components/ui";
+import { Tabs } from "@/src/components/ui-display";
 import { useT } from "@/src/lib/locale";
 import { useSignUp } from "@/src/lib/use-session";
 import { colors, spacing } from "@/src/theme/tokens";
@@ -110,7 +111,7 @@ export default function SignUpScreen(): JSX.Element {
                       {t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}
                     </Body>
                   ) : null}
-                  {error ? <Body>{error}</Body> : null}
+                  {error ? <ErrorNotice message={error} /> : null}
 
                   <Button
                     disabled={!canSubmit}

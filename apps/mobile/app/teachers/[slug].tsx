@@ -1,22 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import {
-  Avatar,
   Body,
   Caption,
   Card,
   CoverImage,
   EmptyState,
   Heading,
-  PriceText,
-  RingedWord,
   Screen,
   ScreenSkeleton,
   Title
 } from "@/src/components/ui";
+import { Avatar, PriceText, RingedWord } from "@/src/components/ui-display";
 import { HtmlContent } from "@/src/components/html-content";
 import { getPublicTeacherBySlug } from "@/src/lib/api/profiles";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -25,7 +23,6 @@ import { colors, spacing } from "@/src/theme/tokens";
 
 export default function TeacherProfileScreen(): JSX.Element {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const router = useRouter();
   const t = useT();
   const format = useFormat();
   const { data: profile, isPending } = useQuery({
@@ -46,14 +43,12 @@ export default function TeacherProfileScreen(): JSX.Element {
   }
 
   const teacherPhoto = profile.teacherProfile?.profilePhoto ?? profile.user.image;
+  const phone = profile.teacherProfile?.phone ?? null;
 
   return (
     <Screen>
       <Stack.Screen options={{ title: profile.user.name }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable onPress={() => router.back()}>
-          <Caption>{"‹ "}{t("action.back")}</Caption>
-        </Pressable>
         <View style={styles.hero}>
           <Avatar name={profile.user.name} photo={teacherPhoto} size={112} />
           <View style={styles.heroText}>
@@ -90,21 +85,31 @@ export default function TeacherProfileScreen(): JSX.Element {
           </Card>
         ) : null}
 
-        {profile.teacherProfile?.phone ? (
+        {phone ? (
           <Card>
             <Title>{t("teacher.phone")}</Title>
             <View style={{ height: spacing.sm }} />
-            <Pressable onPress={() => void Linking.openURL(`tel:${profile.teacherProfile?.phone}`)}>
-              <Body muted>{format.digits(profile.teacherProfile.phone)}</Body>
+            <Pressable
+              accessibilityLabel={`${t("teacher.phone")} ${format.digits(phone)}`}
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(`tel:${phone}`)}
+            >
+              <Body muted>{format.digits(phone)}</Body>
             </Pressable>
           </Card>
         ) : null}
 
         <View style={styles.metrics}>
-          <Metric label={t("common.courses")} value={format.number(profile.metrics.publishedCourseCount)} />
+          <Metric
+            label={t("common.courses")}
+            value={format.number(profile.metrics.publishedCourseCount)}
+          />
           <Metric label={t("common.reviews")} value={format.number(profile.metrics.reviewCount)} />
           {profile.metrics.reviewAverage === null ? null : (
-            <Metric label={t("common.rating")} value={format.rating(profile.metrics.reviewAverage)} />
+            <Metric
+              label={t("common.rating")}
+              value={format.rating(profile.metrics.reviewAverage)}
+            />
           )}
         </View>
 
@@ -113,13 +118,19 @@ export default function TeacherProfileScreen(): JSX.Element {
           <EmptyState message={t("teachers.empty")} />
         ) : (
           profile.courses.map((course) => (
-            <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }} key={course.id}>
-              <Pressable>
+            <Link
+              asChild
+              href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}
+              key={course.id}
+            >
+              <Pressable accessibilityLabel={course.title} accessibilityRole="link">
                 <Card style={styles.courseCard}>
                   <CoverImage height={120} uri={course.coverImageUrl} />
                   <View style={styles.courseText}>
                     <Title>{course.title}</Title>
-                    <Body muted numberOfLines={2}>{course.description.replace(/<[^>]*>/g, "")}</Body>
+                    <Body muted numberOfLines={2}>
+                      {course.description.replace(/<[^>]*>/g, "")}
+                    </Body>
                     <PriceText amount={course.price} />
                   </View>
                 </Card>
@@ -148,7 +159,15 @@ const styles = StyleSheet.create({
   hero: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
   heroText: { flex: 1, gap: spacing.sm },
   metric: { flex: 1, gap: spacing.xs },
-  metrics: { borderBottomColor: colors.hairline, borderBottomWidth: 1, borderTopColor: colors.hairline, borderTopWidth: 1, flexDirection: "row", gap: spacing.md, paddingVertical: spacing.md }
+  metrics: {
+    borderBottomColor: colors.hairline,
+    borderBottomWidth: 1,
+    borderTopColor: colors.hairline,
+    borderTopWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    paddingVertical: spacing.md
+  }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

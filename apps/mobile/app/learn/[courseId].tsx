@@ -19,10 +19,9 @@ import {
   Heading,
   Screen,
   SkeletonBlock,
-  StatCard,
-  Tabs,
   Title
 } from "@/src/components/ui";
+import { StatCard, Tabs } from "@/src/components/ui-display";
 import { type ContentLecture, getCourseContent } from "@/src/lib/api/content";
 import { getCourse } from "@/src/lib/api/courses";
 import { listCourseNotices } from "@/src/lib/api/notices";
@@ -301,7 +300,11 @@ export default function CoursePlayerScreen(): JSX.Element {
           ) : null}
         </Card>
 
-        <Pressable onPress={() => setIsPickerOpen(true)}>
+        <Pressable
+          accessibilityLabel={t("player.lessonsAndTests")}
+          accessibilityRole="button"
+          onPress={() => setIsPickerOpen(true)}
+        >
           <Card>
             <View style={styles.lessonsTriggerRow}>
               <View style={styles.lessonsTriggerText}>

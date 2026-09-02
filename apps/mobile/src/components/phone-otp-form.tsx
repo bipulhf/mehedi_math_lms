@@ -8,7 +8,7 @@ import {
   phoneOtpLength
 } from "@mma/shared";
 
-import { Body, Button, Caption, Field } from "@/src/components/ui";
+import { Button, Caption, ErrorNotice, Field } from "@/src/components/ui";
 import { useT } from "@/src/lib/locale";
 import { useSendPhoneOtp, useVerifyPhoneOtp } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
@@ -108,7 +108,7 @@ export function PhoneOtpForm({ onSignedIn }: PhoneOtpFormProps): JSX.Element {
         />
         <Caption>{t("auth.phoneLead")}</Caption>
 
-        {error ? <Body>{error}</Body> : null}
+        {error ? <ErrorNotice message={error} /> : null}
 
         <Button
           disabled={phoneInput.trim().length === 0}
@@ -138,7 +138,7 @@ export function PhoneOtpForm({ onSignedIn }: PhoneOtpFormProps): JSX.Element {
         {t("auth.codeExpiresIn", { minutes: phoneOtpExpirySeconds / 60 })}
       </Caption>
 
-      {error ? <Body>{error}</Body> : null}
+      {error ? <ErrorNotice message={error} /> : null}
 
       <Button
         disabled={code.length < phoneOtpLength}

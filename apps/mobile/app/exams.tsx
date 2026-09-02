@@ -12,11 +12,11 @@ import {
   Card,
   EmptyState,
   Field,
-  FilterPill,
   Heading,
   Screen,
   SkeletonBlock
 } from "@/src/components/ui";
+import { FilterPill } from "@/src/components/ui-display";
 import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { listMyEnrollments } from "@/src/lib/api/enrollments";
 import { getCourseAssessments } from "@/src/lib/api/tests";

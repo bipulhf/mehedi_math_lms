@@ -8,8 +8,6 @@ import { CourseCouponField, type AppliedCoupon } from "@/src/components/course-c
 import { CourseReviews } from "@/src/components/course-reviews";
 import { HtmlContent } from "@/src/components/html-content";
 import {
-  AccordionRow,
-  Avatar,
   Badge,
   Body,
   Button,
@@ -19,14 +17,12 @@ import {
   EmptyState,
   ErrorNotice,
   Heading,
-  PriceText,
-  RingedPlay,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
-  Tabs,
   Title
 } from "@/src/components/ui";
+import { AccordionRow, Avatar, PriceText, RingedPlay, Tabs } from "@/src/components/ui-display";
 import { type CourseOutlineChapter, getCourseOutline } from "@/src/lib/api/content";
 import { getCourseBySlugOrId } from "@/src/lib/api/courses";
 import { getMyCourseEnrollment } from "@/src/lib/api/enrollments";
@@ -64,7 +60,7 @@ export default function CourseDetailScreen(): JSX.Element {
   const isStudent = session?.session.role === "STUDENT";
   const [tab, setTab] = useState<"curriculum" | "reviews" | "teacher">("curriculum");
   const [error, setError] = useState<string | null>(null);
-  const [openChapterIds, setOpenChapterIds] = useState<ReadonlySet<string>>(new Set());
+  const [openChapterIds, setOpenChapterIds] = useState<ReadonlySet<string> | null>(null);
   // Held here rather than in the field, because the price above it and the
   // enrol call both need what the coupon resolved to.
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
@@ -90,12 +86,11 @@ export default function CourseDetailScreen(): JSX.Element {
   const enrollment = enrollmentQuery?.data ?? null;
   const hasAccess = Boolean(enrollment?.accessGranted);
 
-  const openChapters =
-    openChapterIds.size === 0 ? new Set(chapters[0] ? [chapters[0].id] : []) : openChapterIds;
+  const openChapters = openChapterIds ?? new Set(chapters[0] ? [chapters[0].id] : []);
 
   const toggleChapter = (id: string): void => {
     setOpenChapterIds((current) => {
-      const next = new Set(current);
+      const next = new Set(current ?? (chapters[0] ? [chapters[0].id] : []));
 
       if (next.has(id)) {
         next.delete(id);
@@ -255,12 +250,18 @@ export default function CourseDetailScreen(): JSX.Element {
           ) : (
             <>
               <View style={styles.outlineActions}>
-                <Pressable onPress={expandAll}>
-                  <Caption>{t("detail.expandAll")}</Caption>
-                </Pressable>
-                <Pressable onPress={collapseAll}>
-                  <Caption>{t("detail.collapseAll")}</Caption>
-                </Pressable>
+                <Button
+                  label={t("detail.expandAll")}
+                  onPress={expandAll}
+                  size="xs"
+                  variant="ghost"
+                />
+                <Button
+                  label={t("detail.collapseAll")}
+                  onPress={collapseAll}
+                  size="xs"
+                  variant="ghost"
+                />
               </View>
               {chapters.map((chapter, index) => (
                 <AccordionRow
@@ -295,6 +296,8 @@ export default function CourseDetailScreen(): JSX.Element {
 
                       return (
                         <Pressable
+                          accessibilityLabel={lesson.title}
+                          accessibilityRole="button"
                           key={lesson.id}
                           onPress={() =>
                             router.push({
@@ -335,7 +338,11 @@ export default function CourseDetailScreen(): JSX.Element {
                   href={{ params: { slug: teacher.slug }, pathname: "/teachers/[slug]" }}
                   key={teacher.id}
                 >
-                  <Pressable style={styles.teacherRow}>
+                  <Pressable
+                    accessibilityLabel={teacher.name}
+                    accessibilityRole="link"
+                    style={styles.teacherRow}
+                  >
                     <Avatar name={teacher.name} photo={teacher.profilePhoto} />
                     <View style={styles.teacherText}>
                       <Body>{teacher.name}</Body>
@@ -371,6 +378,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.sm,
     justifyContent: "space-between",
+    minHeight: 44,
     paddingVertical: spacing.xs
   },
   lessonTitle: {

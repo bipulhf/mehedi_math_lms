@@ -8,7 +8,6 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-
 
 import { BannerStrip } from "@/src/components/banner-strip";
 import {
-  Avatar,
   Badge,
   Body,
   Button,
@@ -16,12 +15,11 @@ import {
   Card,
   CoverImage,
   EmptyState,
-  FilterPill,
   Heading,
-  PriceText,
   Screen,
   SkeletonBlock
 } from "@/src/components/ui";
+import { Avatar, FilterPill, PriceText } from "@/src/components/ui-display";
 import { listCategories } from "@/src/lib/api/categories";
 import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -76,7 +74,7 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
 
   return (
     <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}>
-      <Pressable style={styles.row}>
+      <Pressable accessibilityLabel={course.title} accessibilityRole="link" style={styles.row}>
         <Card>
           <View>
             <CoverImage height={150} uri={course.coverImageUrl} />
@@ -183,6 +181,7 @@ export default function CatalogScreen(): JSX.Element {
     setSubjectId(null);
     setSearch("");
     setIsFreeOnly(false);
+    setSortOrder("newest");
   };
 
   const renderItem = useCallback(
@@ -209,14 +208,16 @@ export default function CatalogScreen(): JSX.Element {
       <View style={styles.header}>
         <Heading>{t("courses.title")}</Heading>
         <TextInput
-          accessibilityLabel="Search courses"
+          accessibilityLabel={t("courses.searchPlaceholder")}
           onChangeText={setSearch}
           placeholder={t("courses.searchPlaceholder")}
           placeholderTextColor={colors.placeholder}
+          selectionColor={colors.accent}
           style={styles.search}
           value={search}
         />
         <Pressable
+          accessibilityLabel={t("courses.filters")}
           accessibilityRole="button"
           accessibilityState={{ expanded: filtersExpanded }}
           onPress={() => setFiltersExpanded((current) => !current)}
@@ -341,8 +342,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
+    minHeight: 44,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.xs
   },
   filtersToggleChevron: { color: colors.mutedFaint, fontSize: 14 },
   filtersToggleLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 14 },

@@ -142,11 +142,17 @@ function StreamPlayer({
   // call, not a DOM Fullscreen API request, so it isn't subject to the
   // browser rule that fullscreen needs a user gesture.
   useEffect(() => {
-    videoViewRef.current?.enterFullscreen().catch(() => {
-      // Silent: an auto-attempt failing (view not ready yet, platform
-      // declines it) should fall back to the inline player, not surface an
-      // error for something the student never asked for directly.
-    });
+    const openFullscreen = async (): Promise<void> => {
+      try {
+        await videoViewRef.current?.enterFullscreen();
+      } catch {
+        // Silent: an auto-attempt failing (view not ready yet, platform
+        // declines it) should fall back to the inline player, not surface an
+        // error for something the student never asked for directly.
+      }
+    };
+
+    void openFullscreen();
   }, []);
 
   if (hasFailed) {

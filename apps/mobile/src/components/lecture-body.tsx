@@ -7,7 +7,7 @@ import { LecturePlayer } from "@/src/components/lecture-player";
 import { Body, Button, Caption, Card, Title } from "@/src/components/ui";
 import type { ContentLecture } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
-import { colors, spacing } from "@/src/theme/tokens";
+import { colors, fonts, spacing } from "@/src/theme/tokens";
 
 /** A lecture whose body is a PDF is a reading, not a video, and reads as one. */
 export function getPdfMaterial(lecture: ContentLecture) {
@@ -25,6 +25,8 @@ function MaterialRow({
 }): JSX.Element {
   return (
     <Pressable
+      accessibilityLabel={title}
+      accessibilityRole="link"
       onPress={() => {
         void WebBrowser.openBrowserAsync(fileUrl);
       }}
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
+    minHeight: 44,
     padding: spacing.md
   },
   materialText: { flex: 1, gap: 2 },
@@ -164,7 +167,7 @@ const styles = StyleSheet.create({
   },
   textContent: {
     color: colors.ink,
-    fontFamily: "HindSiliguri_400Regular",
+    fontFamily: fonts.body,
     fontSize: 16,
     lineHeight: 28,
     padding: spacing.lg

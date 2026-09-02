@@ -13,7 +13,7 @@ import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/sr
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 /**
  * What a submitted attempt shows: the headline score while the attempt is
@@ -102,7 +102,7 @@ export default function SubmissionResultScreen(): JSX.Element {
               <Badge tone="quiet">{t("test.passScore", { count: test.passingScore })}</Badge>
             ) : null}
             {submission.passed !== null ? (
-              <Badge tone={submission.passed ? "neutral" : "attention"}>
+              <Badge tone={submission.passed ? "success" : "attention"}>
                 {submission.passed ? t("test.passed") : t("test.failed")}
               </Badge>
             ) : null}
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
-  outcomePillText: { fontSize: 13, fontWeight: "600" }
+  outcomePillText: { fontFamily: fonts.bodySemiBold, fontSize: 13 }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

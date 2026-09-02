@@ -110,7 +110,8 @@ export async function uploadScriptPage(page: CapturedPage): Promise<UploadRecord
     throw new Error("Uploading pages from the app needs S3 storage");
   }
 
-  const body = await fetch(page.uri).then(async (response) => response.blob());
+  const sourceResponse = await fetch(page.uri);
+  const body = await sourceResponse.blob();
   const prepared = await apiPost<
     { contentType: string; fileName: string; fileSize: number; purpose: string },
     PreparedUploadResponse

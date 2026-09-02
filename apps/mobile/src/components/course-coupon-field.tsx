@@ -55,12 +55,18 @@ export function CourseCouponField({
   const t = useT();
   const format = useFormat();
   const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [reason, setReason] = useState<CouponRejectionReason | null>(null);
 
   const preview = useMutation({
     mutationFn: async (value: string): Promise<CouponPreview> =>
       previewCoupon({ code: value, courseId }),
+    onError: (cause: Error) => {
+      onApplied(null);
+      setError(cause.message);
+    },
     onSuccess: (result) => {
+      setError(null);
       if (result.status === "REJECTED" || !result.pricing || !result.coupon) {
         setReason(result.reason);
         onApplied(null);
@@ -127,6 +133,7 @@ export function CourseCouponField({
         maxLength={32}
         onChangeText={(value) => {
           setCode(value.toUpperCase());
+          setError(null);
           setReason(null);
         }}
         onSubmitEditing={() => submit(code)}
@@ -140,10 +147,16 @@ export function CourseCouponField({
         variant="outline"
       />
 
+      {error ? <ErrorNotice message={error} /> : null}
       {reason === null ? null : <ErrorNotice message={t(rejectionKeys[reason])} />}
 
       {publicCode === null ? null : (
-        <Pressable accessibilityRole="button" onPress={() => submit(publicCode)}>
+        <Pressable
+          accessibilityLabel={`${t("coupon.bannerApply")} ${publicCode}`}
+          accessibilityRole="button"
+          onPress={() => submit(publicCode)}
+          style={styles.publicCode}
+        >
           <Caption>
             {t("coupon.bannerApply")} — {publicCode}
           </Caption>
@@ -170,5 +183,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between"
-  }
+  },
+  publicCode: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }
 });

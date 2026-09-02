@@ -1,7 +1,7 @@
 import { MathBody } from "@/src/components/math/math-body";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -16,6 +16,7 @@ import {
   Card,
   ErrorNotice,
   Screen,
+  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -48,7 +49,7 @@ export default function TestScreen(): JSX.Element {
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const router = useRouter();
   const t = useT();
-  const { session } = useSession();
+  const { isPending: isSessionPending, session } = useSession();
   const isStaff = session?.session.role === "TEACHER" || session?.session.role === "ADMIN";
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, DraftAnswer>>({});
@@ -67,6 +68,7 @@ export default function TestScreen(): JSX.Element {
   const startedForRef = useRef<string | null>(null);
 
   const { data: test, isPending } = useQuery({
+    enabled: Boolean(session),
     queryFn: async () => getTestDetail(testId),
     queryKey: queryKeys.test(testId)
   });
@@ -79,6 +81,7 @@ export default function TestScreen(): JSX.Element {
    * refusal from the server.
    */
   const { data: attempts, isPending: isLoadingAttempts } = useQuery({
+    enabled: Boolean(session),
     queryFn: async () => listMySubmissions(testId),
     queryKey: queryKeys.myTestSubmissions(testId),
     // Never from cache: landing here decides whether to write an attempt, and a
@@ -175,12 +178,20 @@ export default function TestScreen(): JSX.Element {
     }
 
     const timeout = setTimeout(() => {
-      void saveSubmissionAnswers(submission.id, {
-        answers: Object.entries(draftAnswers).map(([questionId, draft]) => ({
-          questionId,
-          selectedOptionId: draft.selectedOptionId
-        }))
-      });
+      const save = async (): Promise<void> => {
+        try {
+          await saveSubmissionAnswers(submission.id, {
+            answers: Object.entries(draftAnswers).map(([questionId, draft]) => ({
+              questionId,
+              selectedOptionId: draft.selectedOptionId
+            }))
+          });
+        } catch (saveError) {
+          setError(saveError instanceof Error ? saveError.message : "Could not save your answers");
+        }
+      };
+
+      void save();
     }, 800);
 
     return () => {
@@ -261,6 +272,14 @@ export default function TestScreen(): JSX.Element {
   };
 
   const isLoading = isPending || isLoadingAttempts || isStartingSubmission;
+
+  if (isSessionPending) {
+    return <ScreenSkeleton rows={3} />;
+  }
+
+  if (!session) {
+    return <Redirect href="/sign-in" />;
+  }
 
   if (isShowingFinishedAttempt && finishedAttempt !== null && !isLoading) {
     const canRetake = !test || test.attemptsRemaining === null || test.attemptsRemaining > 0;
@@ -378,6 +397,8 @@ export default function TestScreen(): JSX.Element {
 
               return (
                 <Pressable
+                  accessibilityLabel={t("test.question", { number: index + 1 })}
+                  accessibilityRole="button"
                   accessibilityState={{ selected: isCurrent }}
                   key={question.id}
                   onPress={() => setCurrentQuestionIndex(index)}
@@ -392,7 +413,7 @@ export default function TestScreen(): JSX.Element {
           </View>
         </Card>
 
-        {error ? <Caption tone="error">{error}</Caption> : null}
+        {error ? <ErrorNotice message={error} /> : null}
 
         <Card style={{ gap: spacing.md }}>
           <View style={styles.metaRow}>
@@ -405,6 +426,8 @@ export default function TestScreen(): JSX.Element {
 
           {currentQuestion.images.map((image) => (
             <Image
+              accessibilityLabel={t("test.question", { number: currentQuestionIndex + 1 })}
+              accessibilityRole="image"
               contentFit="contain"
               key={image.id}
               source={{ uri: image.fileUrl }}
@@ -511,9 +534,9 @@ const styles = StyleSheet.create({
     borderColor: colors.hairline,
     borderRadius: radius.pill,
     borderWidth: 1,
-    height: 36,
+    height: 44,
     justifyContent: "center",
-    width: 36
+    width: 44
   },
   questionDotCurrent: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   questionGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

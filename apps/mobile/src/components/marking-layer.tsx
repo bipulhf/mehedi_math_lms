@@ -292,12 +292,14 @@ export function MarkingLayer({
       </Svg>
       {pendingText ? (
         <TextInput
+          accessibilityLabel={textPlaceholder}
           autoFocus
           onBlur={commitText}
           onChangeText={setTextDraft}
           onSubmitEditing={commitText}
           placeholder={textPlaceholder}
           placeholderTextColor={colors.placeholder}
+          selectionColor={colors.accent}
           style={[styles.textInput, { left: pendingText.x * width, top: pendingText.y * height }]}
           value={textDraft}
         />

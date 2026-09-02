@@ -3,7 +3,8 @@ import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StyleSheet, View } from "react-native";
 
-import { AccordionRow, Badge, Body, Button, Caption, SkeletonBlock } from "@/src/components/ui";
+import { Badge, Body, Button, Caption, SkeletonBlock } from "@/src/components/ui";
+import { AccordionRow } from "@/src/components/ui-display";
 import type { AssessmentChapterSummary } from "@/src/lib/api/tests";
 import { listMySubmissions, listTestSubmissions } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -121,7 +122,9 @@ export function CourseExamGroup({
       isOpen={isOpen}
       meta={
         <Caption tone="faint">
-          {isOpen && !isPending ? t("exams.examCount", { count: format.number(examCount) }) : subtitle}
+          {isOpen && !isPending
+            ? t("exams.examCount", { count: format.number(examCount) })
+            : subtitle}
         </Caption>
       }
       onToggle={onToggle}

@@ -98,15 +98,19 @@ export function useMessagingSocket({
       clearReconnect();
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
-        void connect().catch(() => {
-          setIsConnected(false);
-        });
+        void connectSafely();
       }, backoffMs);
       backoffMs = Math.min(backoffMs * 2, RECONNECT_CAP_MS);
     };
 
     const connect = async (): Promise<void> => {
-      const cookie = await readSessionCookie().catch(() => null);
+      let cookie: string | null;
+
+      try {
+        cookie = await readSessionCookie();
+      } catch {
+        cookie = null;
+      }
 
       if (cookie === null || isCancelled) {
         // No credential, or the keychain would not answer. Either way the poll
@@ -137,7 +141,15 @@ export function useMessagingSocket({
         setIsConnected(false);
       };
       socket.onmessage = (event: { data: unknown }) => {
-        const payload = JSON.parse(String(event.data)) as WebsocketServerEvent;
+        let payload: WebsocketServerEvent;
+
+        try {
+          payload = JSON.parse(String(event.data)) as WebsocketServerEvent;
+        } catch {
+          // A malformed transport frame is not content. The polling fallback
+          // continues to keep this screen current.
+          return;
+        }
 
         // Presence is a global broadcast, not scoped to a conversation — the
         // server always sends it with `conversationId: ""`. Handling it before
@@ -201,11 +213,17 @@ export function useMessagingSocket({
       };
     };
 
+    const connectSafely = async (): Promise<void> => {
+      try {
+        await connect();
+      } catch {
+        setIsConnected(false);
+      }
+    };
+
     // Nothing awaits this, so anything it throws would surface as an unhandled
     // rejection rather than as a failed connection.
-    void connect().catch(() => {
-      setIsConnected(false);
-    });
+    void connectSafely();
 
     return () => {
       isCancelled = true;
