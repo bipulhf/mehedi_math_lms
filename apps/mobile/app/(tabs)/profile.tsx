@@ -19,7 +19,7 @@ import {
 import { getOwnProfile } from "@/src/lib/api";
 import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { useSession, useSignOut } from "@/src/lib/use-session";
+import { useHasPassword, useSession, useSignOut } from "@/src/lib/use-session";
 import { colors, radius, spacing } from "@/src/theme/tokens";
 
 /**
@@ -55,6 +55,7 @@ export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
+  const hasPassword = useHasPassword();
   const signOut = useSignOut();
   const { data: profile, isPending } = useQuery({
     enabled: Boolean(session),
@@ -135,17 +136,19 @@ export default function ProfileScreen(): JSX.Element {
           />
         </Card>
 
-        <Card>
-          <Title>{t("profile.security")}</Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>{t("profile.securityLead")}</Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
-            label={t("profile.changePassword")}
-            onPress={() => router.push("/change-password")}
-            variant="outline"
-          />
-        </Card>
+        {hasPassword ? (
+          <Card>
+            <Title>{t("profile.security")}</Title>
+            <View style={{ height: spacing.sm }} />
+            <Body muted>{t("profile.securityLead")}</Body>
+            <View style={{ height: spacing.lg }} />
+            <Button
+              label={t("profile.changePassword")}
+              onPress={() => router.push("/change-password")}
+              variant="outline"
+            />
+          </Card>
+        ) : null}
 
         <Card>
           <Title>{t("profile.paymentTitle")}</Title>

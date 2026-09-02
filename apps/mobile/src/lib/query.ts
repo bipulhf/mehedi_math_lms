@@ -27,6 +27,9 @@ export const queryKeys = {
   payments: () => ["payments", "mine"] as const,
   participantSearch: (search: string) => ["messages", "participants", search] as const,
   profile: () => ["profile"] as const,
+  // Nested under the session key so signing out drops it with everything else
+  // that was read as that person.
+  hasPassword: () => ["session", "has-password"] as const,
   // Owned by `use-session.ts`, but named here because completing a profile
   // changes the session's `profileCompleted` flag and has to invalidate it.
   session: () => ["session"] as const,
