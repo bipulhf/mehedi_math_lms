@@ -51,7 +51,11 @@ const apiEnvSchema = z.object({
     .int()
     .positive()
     .default(15 * 60 * 1000),
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  // Per address, per window, across the whole of `/api/*`. Deliberately high:
+  // one dashboard page can fire a handful of calls, and a school or an office
+  // reaches us as a single address, so a limit sized for one person throttles
+  // the room. It is a brake on a script, not a quota on real use.
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(1000),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().optional(),
   FIREBASE_CLIENT_API_KEY: z.string().optional(),

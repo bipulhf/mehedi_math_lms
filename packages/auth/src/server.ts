@@ -129,38 +129,45 @@ export const auth = betterAuth({
     : undefined,
   rateLimit: {
     enabled: !isDevelopment,
+    // Generous on purpose. Every page in the app reads the session, a shared
+    // office or a phone on carrier NAT arrives as one address, and the limiter
+    // counts per address -- so a limit tuned to one person's browsing locks
+    // out a classroom. These numbers are here to stop a script, not to ration
+    // ordinary use; the ceiling a real person can reach is their own patience.
     window: 15 * 60,
-    max: 100,
+    max: 1000,
     customRules: {
       "/sign-in/email": {
         window: 15 * 60,
-        max: 5
+        max: 50
       },
       "/sign-up/email": {
         window: 15 * 60,
-        max: 5
+        max: 50
       },
-      // Each one of these sends a mail to an address the caller chose. Left at
-      // the global 100, a script could use this endpoint to post somebody
-      // else's inbox full.
+      // Each one of these sends a mail to an address the caller chose, so it
+      // stays below the global limit: without a rule of its own a script could
+      // use this endpoint to post somebody else's inbox full.
       "/request-password-reset": {
         window: 15 * 60,
-        max: 3
+        max: 20
       },
       "/reset-password": {
         window: 15 * 60,
-        max: 5
+        max: 50
       },
       // Every one of these costs a message. The per-handset cooldown in
       // `phone-otp.ts` is the other half: this counts per IP, that one counts
-      // per number, and a code sender needs both.
+      // per number, and a code sender needs both. One person needs two or
+      // three codes; the rest of this allowance is for everybody behind the
+      // same address.
       "/phone-number/send-otp": {
         window: 15 * 60,
-        max: 3
+        max: 15
       },
       "/phone-number/verify": {
         window: 15 * 60,
-        max: 10
+        max: 60
       }
     }
   },
