@@ -204,6 +204,28 @@ export async function fetchSession(): Promise<MobileSession | null> {
   }
 }
 
+interface LinkedAccount {
+  providerId: string;
+}
+
+/**
+ * Which credentials the account carries. Only one thing reads it: whether to
+ * offer a password change at all. Somebody who arrived through Google or a
+ * phone code has no password, and `change-password` can only answer them with
+ * an error.
+ */
+export async function fetchHasPassword(): Promise<boolean> {
+  const cookie = await readSessionCookie();
+
+  if (!cookie) {
+    return false;
+  }
+
+  const { payload } = await authRequest<LinkedAccount[] | null>("list-accounts");
+
+  return (payload ?? []).some((account) => account.providerId === "credential");
+}
+
 export async function signOut(): Promise<void> {
   try {
     await authRequest("sign-out", { body: JSON.stringify({}), method: "POST" });

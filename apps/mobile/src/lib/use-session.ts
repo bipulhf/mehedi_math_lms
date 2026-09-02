@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  fetchHasPassword,
   fetchSession,
   sendPhoneOtp,
   signInWithEmail,
@@ -76,6 +77,19 @@ export function useSignUp() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }
   });
+}
+
+/**
+ * Whether this account has a password at all. Google and phone-code accounts
+ * do not, so the change-password row is not offered to them.
+ */
+export function useHasPassword(): boolean {
+  const { data } = useQuery<boolean>({
+    queryFn: fetchHasPassword,
+    queryKey: queryKeys.hasPassword()
+  });
+
+  return data ?? false;
 }
 
 export function useSignOut() {

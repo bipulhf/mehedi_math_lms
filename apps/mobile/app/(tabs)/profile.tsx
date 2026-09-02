@@ -22,7 +22,7 @@ import {
 import { getOwnProfile } from "@/src/lib/api/profiles";
 import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { useSession, useSignOut } from "@/src/lib/use-session";
+import { useHasPassword, useSession, useSignOut } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
 import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
@@ -93,6 +93,7 @@ export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
+  const hasPassword = useHasPassword();
   const signOut = useSignOut();
   const streak = useStreak();
   const { data: profile, isPending } = useQuery({
@@ -183,10 +184,12 @@ export default function ProfileScreen(): JSX.Element {
           <SettingsRow label={t("about.title")} onPress={() => router.push("/about")} />
           <SettingsRow label={t("contact.title")} onPress={() => router.push("/contact")} />
           <SettingsRow label={t("profile.reportBug")} onPress={() => router.push("/bug-report")} />
-          <SettingsRow
-            label={t("profile.changePassword")}
-            onPress={() => router.push("/change-password")}
-          />
+          {hasPassword ? (
+            <SettingsRow
+              label={t("profile.changePassword")}
+              onPress={() => router.push("/change-password")}
+            />
+          ) : null}
           <SettingsRow label={t("exams.title")} onPress={() => router.push("/exams")} />
           <SettingsRow label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
           <SettingsRow label={t("messages.new")} onPress={() => router.push("/messages/new")} />

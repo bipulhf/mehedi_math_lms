@@ -145,6 +145,15 @@ function DashboardProfilePage(): JSX.Element {
     }
   };
 
+  const { data: hasPassword = false } = useQuery({
+    queryFn: async (): Promise<boolean> => {
+      const response = await authClient.listAccounts();
+
+      return (response.data ?? []).some((account) => account.providerId === "credential");
+    },
+    queryKey: queryKeys.auth.accounts()
+  });
+
   const handlePasswordChange = handlePasswordSubmit(async (values) => {
     setIsPasswordSubmitting(true);
     try {
@@ -218,53 +227,59 @@ function DashboardProfilePage(): JSX.Element {
         </div>
       ) : null}
 
-      <div className="w-full border border-hairline bg-card p-6 sm:p-8">
-        <div className="border-b border-hairline pb-5">
-          <h2 className="text-xl font-medium text-ink">{t("prof.changePassword")}</h2>
-          <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">
-            {t("prof.changePasswordLead")}
-          </p>
+      {/* Somebody who arrived through Google or a phone code has no password
+          to change. Better Auth answers `changePassword` with an error for
+          them, and a form whose only outcome is that error is worse than no
+          form -- so ask which credentials the account actually carries. */}
+      {hasPassword ? (
+        <div className="w-full border border-hairline bg-card p-6 sm:p-8">
+          <div className="border-b border-hairline pb-5">
+            <h2 className="text-xl font-medium text-ink">{t("prof.changePassword")}</h2>
+            <p className="mt-2 max-w-2xl text-base font-light leading-relaxed text-muted">
+              {t("prof.changePasswordLead")}
+            </p>
+          </div>
+
+          <form className="mt-6 space-y-6" onSubmit={handlePasswordChange}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="current-password">{t("prof.currentPassword")}</Label>
+                <PasswordInput
+                  id="current-password"
+                  autoComplete="current-password"
+                  error={passwordErrors.currentPassword?.message}
+                  {...registerPassword("currentPassword")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">{t("prof.newPassword")}</Label>
+                <PasswordInput
+                  id="new-password"
+                  autoComplete="new-password"
+                  error={passwordErrors.newPassword?.message}
+                  {...registerPassword("newPassword")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-new-password">{t("prof.confirmNewPassword")}</Label>
+                <PasswordInput
+                  id="confirm-new-password"
+                  autoComplete="new-password"
+                  error={passwordErrors.confirmNewPassword?.message}
+                  {...registerPassword("confirmNewPassword")}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 border-t border-hairline pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-light text-muted-light">{t("prof.passwordNote")}</p>
+              <Button className="h-11 w-full sm:w-auto" disabled={isPasswordSubmitting} type="submit">
+                {isPasswordSubmitting ? t("prof.updatingPassword") : t("prof.updatePassword")}
+              </Button>
+            </div>
+          </form>
         </div>
-
-        <form className="mt-6 space-y-6" onSubmit={handlePasswordChange}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="current-password">{t("prof.currentPassword")}</Label>
-              <PasswordInput
-                id="current-password"
-                autoComplete="current-password"
-                error={passwordErrors.currentPassword?.message}
-                {...registerPassword("currentPassword")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">{t("prof.newPassword")}</Label>
-              <PasswordInput
-                id="new-password"
-                autoComplete="new-password"
-                error={passwordErrors.newPassword?.message}
-                {...registerPassword("newPassword")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">{t("prof.confirmNewPassword")}</Label>
-              <PasswordInput
-                id="confirm-new-password"
-                autoComplete="new-password"
-                error={passwordErrors.confirmNewPassword?.message}
-                {...registerPassword("confirmNewPassword")}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 border-t border-hairline pt-6 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm font-light text-muted-light">{t("prof.passwordNote")}</p>
-            <Button className="h-11 w-full sm:w-auto" disabled={isPasswordSubmitting} type="submit">
-              {isPasswordSubmitting ? t("prof.updatingPassword") : t("prof.updatePassword")}
-            </Button>
-          </div>
-        </form>
-      </div>
+      ) : null}
     </div>
   );
 }
