@@ -297,6 +297,22 @@ Recorded because they are boundaries, not omissions, and each has a note in the 
 - **Realtime messaging.** The conversation screen polls every 10 seconds. A WebSocket that reconnects on
   every backgrounding is a worse experience on a phone than a short poll.
 
+### Eight packages are deliberately held behind their latest release
+
+Everything else in the tree is on the newest version its range allows. These eight are not, and each is
+held for a reason that a blind `bun update --latest` would walk straight past:
+
+| Package | Held at | Latest | Why |
+| --- | --- | --- | --- |
+| `typescript` | 6.0.3 | 7.0.2 | `typescript-eslint@8.69` declares `typescript: ">=4.8.4 <6.1.0"`. Lint is the thing that breaks, not the compiler. |
+| `@tanstack/charts` | 0.9.0 | 0.16.0 | Pre-1.0, and 0.16 renames the spec surface — `x`/`marks` are no longer keys of the object `defineChart` takes, and the tooltip extension no longer types against it. All three chart components would need rewriting; that is a redesign, not an upgrade. |
+| `srvx` | 0.11.22 | 1.0.0 | `@tanstack/start-plugin-core` depends on `^0.11.9`. Taking 1.0 for `apps/web/server.ts` puts two copies of the server layer on disk. Move when Start moves. |
+| `jest`, `@types/jest` | 29 | 30 | `jest-expo@57` depends on `@jest/globals`, `babel-jest`, `jest-environment-jsdom` and `jest-snapshot` at `^29.2.1`. |
+| `react-native` and friends | SDK 57's pins | newer | `react-native` 0.87, `react-native-webview` 14, `react-native-worklets` 0.12, `@react-native-async-storage/async-storage` 3, `@shopify/flash-list` 2.3, `react-native-reanimated` 4.6, `react-native-screens` 4.27, `react-native-safe-area-context` 5.9, `react-native-svg` 15.15.5. `expo install --check` is the authority here, and it reports the tree up to date — these are the versions SDK 57 expects, and React Native links exactly one copy of a native module. |
+
+Re-check them by running `bun outdated --filter '*'` and, for anything under `apps/mobile`, `bunx expo
+install --check` from that workspace rather than reading the npm registry directly.
+
 ## Findings that are not blockers
 
 - **A cancelled checkout is stored as `FAILED`.** `payment_status` has no `CANCELLED` member
