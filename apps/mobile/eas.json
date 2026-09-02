@@ -8,8 +8,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_ORIGIN": "http://10.0.2.2:3001",
-        "EXPO_PUBLIC_WEB_ORIGIN": "http://10.0.2.2:3000"
+        "EXPO_PUBLIC_API_ORIGIN": "https://api.lms.mehedismathacademy.com",
+        "EXPO_PUBLIC_WEB_ORIGIN": "https://lms.mehedismathacademy.com"
       }
     },
     "preview": {

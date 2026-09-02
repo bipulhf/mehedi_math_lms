@@ -40,7 +40,7 @@ Two origins, and confusing them is the most likely mistake here:
 - **`mobileEnv.apiBaseUrl`** — the Hono API, `/api/v1`. All product data.
 - **`mobileEnv.authBaseUrl`** — Better Auth, served by the **web** app at `/api/auth`. Sign-in, sign-up, session, sign-out.
 
-`src/lib/env.ts` infers both from the Metro connection in development, so a physical device works without editing anything. `EXPO_PUBLIC_API_ORIGIN` / `EXPO_PUBLIC_WEB_ORIGIN` override for real builds; `eas.json` sets them per profile.
+`src/lib/env.ts` defaults to the deployed origins, so Expo Go and release builds reach the same services. Set both `EXPO_PUBLIC_API_ORIGIN` and `EXPO_PUBLIC_WEB_ORIGIN` explicitly only when developing against local services; `eas.json` sets the deployed origins for every profile.
 
 Never call `fetch` directly for product data. Use `src/lib/api-client.ts`, which unwraps the `{ status, message?, data }` envelope and throws `ApiError` carrying the API's own message. Add endpoints to `src/lib/api/<feature>.ts`, one function each — one module per API feature, the same split the web app uses. There is no barrel: import from the module that owns the call, so the import path says which part of the API a screen talks to. **Check the actual route in `apps/api/src/routes/v1/` before adding one** — several paths are not where you would guess (`courses/:id/progress`, `enrollments/courses/:id/me`, `tests/submissions/:id/answers`, `tests/:testId/submit`).
 
@@ -72,7 +72,7 @@ blue as the primary control colour, gold rationed to marks and highlights,
 rounded plates, and surface contrast.
 
 **The app is the dark theme only.** There is no toggle here and no light values
-to switch to, so the names in `tokens.ts` are the web app's *dark* block, value
+to switch to, so the names in `tokens.ts` are the web app's _dark_ block, value
 for value. Keeping them identical is what lets a screen ported from web land on
 the right colour without a lookup — if a web token changes, change it here too.
 `accent` is the lighter blue the dark theme uses, and `onAccent` is the navy
