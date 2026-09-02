@@ -7,9 +7,9 @@ export const siteConfig = {
   // Rendered in the marketing header and the footer contact column. Kept here
   // rather than in the components so a change lands in one place.
   contact: {
-    address: "3rd floor, KB Plaza, Chawkbazar, Chattogram",
+    address: "4th floor, KB Plaza, Chawkbazar, Chattogram",
     // Placeholder until the client supplies a real mailbox.
-    email: "support@mehedismathacademy.com",
+    email: "info@mehedismathacademy.com",
     helpline: "01982-915202"
   }
 } as const;
