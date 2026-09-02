@@ -89,7 +89,7 @@ import { NotificationRealtimeService } from "@/services/notification-realtime-se
 import { NotificationService } from "@/services/notification-service";
 import { LandingService } from "@/services/landing-service";
 import { OgImageService } from "@/services/og-image-service";
-import { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
+import { OnecodesoftSmsProvider } from "@mma/sms";
 import { SmsService } from "@/services/sms-service";
 import { ProgressService } from "@/services/progress-service";
 import { ProfileService } from "@/services/profile-service";

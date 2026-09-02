@@ -14,6 +14,7 @@ Nested `AGENTS.md` files exist per workspace. Read the one for the workspace you
 | `packages/i18n/AGENTS.md` | Bilingual catalogue and locale formatters |
 | `packages/auth/AGENTS.md` | Better Auth wiring |
 | `packages/mailer/AGENTS.md` | SMTP transport and the password-reset mail |
+| `packages/sms/AGENTS.md` | OnecodeSoft transport, the sign-in OTP and the bulk provider |
 | `tooling/scripts/AGENTS.md` | Seed and backfill scripts |
 
 `packages/config` holds the shared `tsconfig.base.json`, `eslint.config.mjs`, and `prettier.config.mjs`. It has no other code and no nested `AGENTS.md`.
@@ -42,11 +43,13 @@ Single workspace: `bun run --filter @mma/api dev` (or `cd apps/api && bun run de
 ```
 apps/web  ──┬─> @mma/auth ──┬─> @mma/db
 apps/api  ──┤                 ├─> @mma/shared
-            │                 └─> @mma/mailer ─> @mma/i18n
+            │                 ├─> @mma/mailer ─> @mma/i18n
+            │                 └─> @mma/sms
             ├─> @mma/shared
+            ├─> @mma/sms
             └─> @mma/i18n
 tooling/scripts ─> @mma/auth, @mma/db, @mma/shared
-apps/mobile — standalone, no workspace deps yet
+apps/mobile ─> @mma/i18n, @mma/shared
 ```
 
 Packages are consumed as **TypeScript source**, not built output — `exports` in each `package.json` points at `./src/*.ts`. There is no build step between a package edit and an app picking it up.
@@ -65,6 +68,8 @@ Packages are consumed as **TypeScript source**, not built output — `exports` i
 Better Auth's HTTP handler is mounted in the **web app**, not the API — `apps/web/src/routes/api/auth/$.ts` serves `/api/auth/*` using `@mma/auth/tanstack-server`. `BETTER_AUTH_URL` therefore points at the web origin (`http://localhost:3000`).
 
 The API does not serve auth endpoints. It only *verifies* sessions: `sessionContextMiddleware` calls `auth.api.getSession()` from `@mma/auth/server` and puts `authSession` / `authUser` on the Hono context. See `packages/auth/AGENTS.md` for why there are three near-identical server configs.
+
+This is also why the sign-in OTP is sent by the **web** process rather than the API, and why `@mma/sms` is a package instead of a service under `apps/api` — see [ADR-0016](docs/adr/0016-a-phone-number-is-a-second-front-door.md).
 
 ## Conventions
 

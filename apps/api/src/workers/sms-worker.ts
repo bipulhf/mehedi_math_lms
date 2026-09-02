@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 import { createQueueConnection } from "@/lib/redis";
 import { SmsRepository } from "@/repositories/sms-repository";
 import { processSmsBatchJob } from "@/services/sms-batch-processor";
-import { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
+import { OnecodesoftSmsProvider } from "@mma/sms";
 
 // A worker with no queue is a process pretending to work. Exit loudly instead,
 // so `docker ps` and a restart loop show it rather than hiding it. ADR-0015.
