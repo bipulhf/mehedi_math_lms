@@ -5,6 +5,8 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { SymbolView } from "expo-symbols";
+
 import { getActiveBanner } from "@/src/lib/api/banners";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -77,21 +79,28 @@ export function BannerStrip(): JSX.Element | null {
       <Pressable
         accessibilityLabel={t("common.close")}
         accessibilityRole="button"
-        hitSlop={spacing.sm}
+        hitSlop={spacing.md}
         onPress={() => setDismissedId(banner.id)}
+        style={styles.dismissBtn}
       >
-        <Text style={[styles.dismiss, { color: preset.foreground }]}>&times;</Text>
+        <SymbolView
+          name="xmark.circle.fill"
+          size={22}
+          tintColor={preset.foreground}
+          style={{ opacity: 0.85 } as never}
+        />
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  dismiss: { fontSize: 22 },
+  dismissBtn: { alignItems: "center", justifyContent: "center", padding: spacing.xs },
   link: { fontFamily: fonts.bodyMedium, fontSize: 15, textDecorationLine: "underline" },
   message: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
   strip: {
-    alignItems: "flex-start",
+    alignItems: "center",
+    borderRadius: 0,
     flexDirection: "row",
     gap: spacing.md,
     paddingHorizontal: spacing.lg,

@@ -19,6 +19,8 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
+import { SymbolView } from "expo-symbols";
+
 import { ProgressTrack, StreakTrack } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
@@ -27,7 +29,7 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
+import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 /**
  * Downloading and sharing is a phone-shaped action, more so than a desktop one
@@ -76,9 +78,13 @@ const EnrollmentRow = memo(function EnrollmentRow({
   const format = useFormat();
   const isComplete = enrollment.status === "COMPLETED" || enrollment.completedAt !== null;
   const card = (
-    <Pressable accessibilityLabel={enrollment.course.title} accessibilityRole="link">
-      <Card>
-        <CoverImage height={140} uri={enrollment.course.coverImageUrl} />
+    <Pressable
+      accessibilityLabel={enrollment.course.title}
+      accessibilityRole="link"
+      style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+    >
+      <Card style={styles.rowCard}>
+        <CoverImage bleed height={140} uri={enrollment.course.coverImageUrl} />
         <View style={styles.rowBody}>
           <Title>{enrollment.course.title}</Title>
           <ProgressTrack
@@ -142,9 +148,20 @@ const EnrollmentRow = memo(function EnrollmentRow({
   );
 });
 
-function SummaryMetric({ label, value }: { label: string; value: string }): JSX.Element {
+function SummaryMetric({
+  icon,
+  label,
+  value
+}: {
+  icon: string;
+  label: string;
+  value: string;
+}): JSX.Element {
   return (
     <View style={styles.metric}>
+      <View style={styles.metricIcon}>
+        <SymbolView name={icon as never} size={16} tintColor={colors.accent} />
+      </View>
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
@@ -167,6 +184,9 @@ function PaymentReminderRow({
 
   return (
     <View style={styles.paymentItem}>
+      <View style={styles.paymentIcon}>
+        <SymbolView name="exclamationmark.circle.fill" size={20} tintColor={colors.warning} />
+      </View>
       <Link
         asChild
         href={{ params: { courseId: enrollment.course.slug }, pathname: "/courses/[courseId]" }}
@@ -179,7 +199,7 @@ function PaymentReminderRow({
           <Text numberOfLines={2} style={styles.paymentTitle}>
             {enrollment.course.title}
           </Text>
-          <Text style={styles.paymentAction}>{t("mine.finishPayment")} &gt;</Text>
+          <Text style={styles.paymentAction}>{t("mine.finishPayment")} →</Text>
         </Pressable>
       </Link>
       <Pressable
@@ -187,8 +207,9 @@ function PaymentReminderRow({
         accessibilityRole="button"
         hitSlop={spacing.sm}
         onPress={onDismiss}
+        style={styles.paymentDismissBtn}
       >
-        <Text style={styles.paymentDismiss}>&times;</Text>
+        <SymbolView name="xmark.circle.fill" size={20} tintColor={colors.mutedFaint} />
       </Pressable>
     </View>
   );
@@ -296,9 +317,13 @@ function StudentDashboardHeader({
               pathname: "/learn/[courseId]"
             }}
           >
-            <Pressable accessibilityLabel={resumeEnrollment.course.title} accessibilityRole="link">
-              <Card>
-                <CoverImage height={160} uri={resumeEnrollment.course.coverImageUrl} />
+            <Pressable
+              accessibilityLabel={resumeEnrollment.course.title}
+              accessibilityRole="link"
+              style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+            >
+              <Card style={styles.resumeCard}>
+                <CoverImage bleed height={160} uri={resumeEnrollment.course.coverImageUrl} />
                 <View style={styles.resumeBody}>
                   <Title numberOfLines={2}>{resumeEnrollment.course.title}</Title>
                   <ProgressTrack
@@ -308,6 +333,7 @@ function StudentDashboardHeader({
                   />
                   <View style={styles.resumeAction}>
                     <Text style={styles.resumeActionLabel}>{t("mine.resume")}</Text>
+                    <SymbolView name="play.fill" size={12} tintColor={colors.actionForeground} />
                   </View>
                 </View>
               </Card>
@@ -321,9 +347,21 @@ function StudentDashboardHeader({
       </View>
 
       <View style={styles.metrics}>
-        <SummaryMetric label={t("dash.activeCourses")} value={format.number(activeCourses)} />
-        <SummaryMetric label={t("dash.completedCourses")} value={format.number(completedCourses)} />
-        <SummaryMetric label={t("dash.averageProgress")} value={format.percent(averageProgress)} />
+        <SummaryMetric
+          icon="book.fill"
+          label={t("dash.activeCourses")}
+          value={format.number(activeCourses)}
+        />
+        <SummaryMetric
+          icon="checkmark.circle.fill"
+          label={t("dash.completedCourses")}
+          value={format.number(completedCourses)}
+        />
+        <SummaryMetric
+          icon="chart.bar.fill"
+          label={t("dash.averageProgress")}
+          value={format.percent(averageProgress)}
+        />
       </View>
 
       {visiblePayments.length > 0 ? (
@@ -460,74 +498,103 @@ export default function HomeScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  examsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xxl },
+  coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
   emptyWrap: { padding: spacing.lg },
-  hero: { backgroundColor: colors.background, gap: spacing.xs, padding: spacing.xl },
+  examsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  hero: {
+    backgroundColor: colors.background,
+    gap: 6,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md
+  },
   heroEyebrow: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
-    fontSize: typography.label.fontSize,
+    fontSize: 11,
     letterSpacing: 0.72,
     textTransform: "uppercase"
   },
-  heroTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 28, lineHeight: 36 },
-  list: { paddingBottom: spacing.lg },
+  heroTitle: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 38 },
+  list: { padding: spacing.lg, paddingBottom: spacing.xl },
   listFooter: { height: spacing.xxl },
-  metric: { flex: 1, gap: spacing.xs },
-  metricLabel: { color: colors.mutedFaint, fontFamily: fonts.body, fontSize: 14 },
-  metricValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 24 },
-  metrics: {
-    borderTopColor: colors.hairline,
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: spacing.md,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.xl,
-    paddingTop: spacing.lg
+  metric: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 16,
+    borderWidth: 0.5,
+    flex: 1,
+    gap: 6,
+    padding: spacing.md
   },
+  metricIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(77,159,255,0.12)",
+    borderRadius: radius.full,
+    height: 32,
+    justifyContent: "center",
+    width: 32
+  },
+  metricLabel: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 10,
+    letterSpacing: 0.5,
+    textAlign: "center",
+    textTransform: "uppercase"
+  },
+  metricValue: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 26, textAlign: "center" },
+  metrics: { flexDirection: "row", gap: spacing.sm, marginHorizontal: spacing.lg, marginTop: spacing.lg },
   padded: { padding: spacing.lg },
   paymentAction: {
     color: colors.accent,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    marginTop: spacing.xs
+    fontSize: 13,
+    marginTop: 4
   },
-  paymentDismiss: {
-    color: colors.mutedFaint,
-    fontFamily: fonts.monoLabel,
-    fontSize: 20,
-    paddingHorizontal: spacing.sm
-  },
+  paymentDismissBtn: { padding: spacing.xs },
+  paymentIcon: { paddingTop: 2 },
   paymentItem: {
-    alignItems: "flex-start",
-    borderTopColor: colors.accent,
-    borderTopWidth: 1,
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 12,
+    borderWidth: 0.5,
     flexDirection: "row",
-    paddingTop: spacing.md
+    gap: spacing.sm,
+    padding: spacing.md
   },
   paymentLead: {
     color: colors.muted,
     fontFamily: fonts.body,
-    fontSize: 15,
-    lineHeight: 23,
-    marginVertical: spacing.md
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.sm,
+    marginTop: spacing.xs
   },
   paymentLink: { flex: 1 },
-  paymentTitle: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 16 },
+  paymentTitle: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 15, lineHeight: 20 },
   paymentWrap: {
-    backgroundColor: colors.panelWarm,
+    backgroundColor: "rgba(245,167,35,0.08)",
+    borderColor: "rgba(245,167,35,0.18)",
+    borderRadius: 16,
+    borderWidth: 0.5,
+    gap: spacing.sm,
     marginHorizontal: spacing.lg,
-    marginTop: spacing.xl,
-    padding: spacing.lg
+    marginTop: spacing.lg,
+    padding: spacing.md
   },
-  resumeBody: { gap: spacing.sm, paddingTop: spacing.md },
+  resumeBody: { gap: spacing.sm, padding: spacing.lg },
+  resumeCard: { overflow: "hidden", padding: 0 },
   resumeAction: {
     alignItems: "center",
     backgroundColor: colors.brandOrange,
-    borderRadius: radius.sm,
+    borderRadius: 12,
+    flexDirection: "row",
+    gap: spacing.sm,
     justifyContent: "center",
-    minHeight: 48,
+    minHeight: 52,
     paddingHorizontal: spacing.xl
   },
   resumeActionLabel: {
@@ -535,14 +602,23 @@ const styles = StyleSheet.create({
     fontFamily: fonts.displaySemiBold,
     fontSize: 15
   },
-  resumeWrap: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  resumeWrap: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   row: { gap: spacing.sm, marginBottom: spacing.lg },
   rowAction: { gap: spacing.sm },
-  rowActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  rowBody: { gap: spacing.sm, paddingTop: spacing.md },
+  rowActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingHorizontal: spacing.xs },
+  rowBody: { gap: spacing.sm, padding: spacing.lg },
+  rowCard: { overflow: "hidden", padding: 0 },
   rowMeta: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   skeletonList: { gap: spacing.lg, padding: spacing.lg },
-  streakWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl }
+  streakWrap: {
+    backgroundColor: colors.panelWarm,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 16,
+    borderWidth: 0.5,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.lg,
+    padding: spacing.lg
+  }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

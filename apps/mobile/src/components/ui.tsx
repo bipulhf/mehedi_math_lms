@@ -1,5 +1,7 @@
 import { pickImageVariant, readImageVariants } from "@mma/shared";
 import { Image } from "expo-image";
+import * as Haptics from "expo-haptics";
+import { SymbolView } from "expo-symbols";
 import type { JSX, ReactNode } from "react";
 import { useState } from "react";
 import {
@@ -55,6 +57,23 @@ export function Card({
   style?: StyleProp<ViewStyle>;
 }): JSX.Element {
   return <View style={[styles.card, style]}>{children}</View>;
+}
+
+export function GroupedSection({
+  children,
+  style,
+  title
+}: {
+  children: ReactNode;
+  style?: StyleProp<ViewStyle>;
+  title?: string;
+}): JSX.Element {
+  return (
+    <View style={[styles.groupedSection, style]}>
+      {title ? <Text style={styles.groupedTitle}>{title}</Text> : null}
+      <View style={styles.groupedCard}>{children}</View>
+    </View>
+  );
 }
 
 /** The screen's h1 — 26px at weight 500 (DESIGN.md §4/§8). */
@@ -168,7 +187,14 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ busy: isBusy, disabled: isDisabled }}
       disabled={isDisabled}
-      onPress={onPress}
+      onPress={() => {
+        if (variant === "ink" || variant === "accent") {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } else {
+          void Haptics.selectionAsync();
+        }
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.buttonBase,
         styles[
@@ -235,9 +261,11 @@ export function Field({
 }
 
 export function CoverImage({
+  bleed = false,
   height = 180,
   uri
 }: {
+  bleed?: boolean;
   height?: number;
   uri: string | null;
 }): JSX.Element {
@@ -249,7 +277,7 @@ export function CoverImage({
     source === null ? null : pickImageVariant(source, Math.round(width * PixelRatio.get()));
 
   if (variantUri === null) {
-    return <View style={[styles.coverFallback, { height }]} />;
+    return <View style={[styles.coverFallback, bleed ? styles.coverBleed : null, { height }]} />;
   }
 
   return (
@@ -260,38 +288,56 @@ export function CoverImage({
       accessibilityLabel=""
       accessibilityRole="image"
       source={{ uri: variantUri }}
-      style={[styles.cover, { height }]}
+      style={[styles.cover, bleed ? styles.coverBleed : null, { height }]}
     />
   );
 }
 
 /**
- * A failure the user can read. Distinct from `EmptyState`, which describes a
- * screen with nothing in it. A hairline card with the validation-red text —
- * there is no red surface in the design. DESIGN.md §2.
+ * A failure the user can read. Native banner: tinted red fill, rounded, with
+ * an icon — not a hairline card with red text on transparent.
  */
 export function ErrorNotice({ message }: { message: string }): JSX.Element {
   return (
     <View accessibilityRole="alert" style={styles.errorNotice}>
+      <SymbolView name="exclamationmark.triangle.fill" size={18} tintColor={colors.error} />
       <Text style={styles.errorNoticeText}>{message}</Text>
     </View>
   );
 }
 
-/** A dashed box with one muted sentence and an optional way out. DESIGN.md §6. */
+/** Native empty state: centered icon + message, no dashed border. */
 export function EmptyState({
   action,
+  icon = "tray",
   message,
   title
 }: {
   action?: ReactNode;
+  icon?: "tray" | "book.closed" | "bubble.left" | "magnifyingglass";
   message: string;
   title?: string;
 }): JSX.Element {
+  const symbolMap: Record<string, string> = {
+    book: "book.closed",
+    "book.closed": "book.closed",
+    bubble: "bubble.left",
+    "bubble.left": "bubble.left",
+    magnifyingglass: "magnifyingglass",
+    tray: "tray"
+  };
+
   return (
     <View style={styles.emptyState}>
-      {title === undefined ? null : <Title>{title}</Title>}
-      <Text style={[styles.body, styles.emptyMessage]}>{message}</Text>
+      <View style={styles.emptyIconWrap}>
+        <SymbolView
+          name={(symbolMap[icon] ?? "tray") as never}
+          size={28}
+          tintColor={colors.mutedFaint}
+        />
+      </View>
+      {title === undefined ? null : <Text style={styles.emptyTitle}>{title}</Text>}
+      <Text style={styles.emptyMessage}>{message}</Text>
       {action === undefined ? null : <View style={styles.emptyAction}>{action}</View>}
     </View>
   );
@@ -349,17 +395,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.chipActive,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs
+    paddingVertical: 5
   },
   badgeAttention: { backgroundColor: colors.card },
-  badgeBordered: { borderColor: colors.hairline, borderWidth: 1 },
+  badgeBordered: { borderColor: colors.hairline, borderWidth: 0.5 },
   badgeFaded: { backgroundColor: colors.card },
   badgeQuiet: { backgroundColor: colors.card },
-  badgeSuccess: { backgroundColor: colors.card, borderColor: colors.success, borderWidth: 1 },
+  badgeSuccess: { backgroundColor: colors.card, borderColor: colors.success, borderWidth: 0.5 },
   badgeText: {
     color: colors.ink,
     fontFamily: fonts.displaySemiBold,
-    fontSize: typography.caption.fontSize
+    fontSize: 12,
+    letterSpacing: 0.2
   },
   badgeTextAttention: { color: colors.accent },
   badgeTextFaded: { color: colors.mutedFaint },
@@ -380,31 +427,31 @@ const styles = StyleSheet.create({
   },
   buttonBase: {
     alignItems: "center",
-    borderRadius: radius.sm,
+    borderRadius: 14,
     justifyContent: "center"
   },
-  buttonDisabled: { opacity: 0.5 },
+  buttonDisabled: { opacity: 0.45 },
   buttonGhost: { backgroundColor: "transparent" },
   buttonInk: { backgroundColor: colors.accent },
-  buttonLabel: { color: colors.actionForeground, fontFamily: fonts.displaySemiBold },
+  buttonLabel: { color: colors.onAccent, fontFamily: fonts.displaySemiBold, letterSpacing: 0.15 },
   buttonLabelAccentLink: { color: colors.accent },
   buttonLabelGhost: { color: colors.muted },
   buttonLabelInk: { color: colors.ink },
   buttonLabelOnSurface: { color: colors.paper },
   buttonLabelSizeDefault: { fontSize: 15 },
   buttonLabelSizeLg: { fontSize: 16 },
-  buttonLabelSizeSm: { fontSize: 13 },
+  buttonLabelSizeSm: { fontSize: 14 },
   buttonLabelSizeXs: { fontSize: 12 },
   buttonOutline: {
     backgroundColor: "transparent",
     borderColor: colors.lineStrong,
     borderWidth: 1
   },
-  buttonPressed: { opacity: 0.85 },
-  buttonSizeDefault: { minHeight: 48, paddingHorizontal: spacing.xl },
-  buttonSizeLg: { minHeight: 52, paddingHorizontal: spacing.xl },
+  buttonPressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
+  buttonSizeDefault: { minHeight: 52, paddingHorizontal: spacing.xl },
+  buttonSizeLg: { minHeight: 56, paddingHorizontal: spacing.xl },
   buttonSizeSm: { minHeight: 44, paddingHorizontal: spacing.lg },
-  buttonSizeXs: { minHeight: 44, paddingHorizontal: spacing.md },
+  buttonSizeXs: { minHeight: 36, paddingHorizontal: spacing.md },
   caption: {
     color: colors.muted,
     fontFamily: fonts.body,
@@ -415,64 +462,103 @@ const styles = StyleSheet.create({
   captionFaint: { color: colors.mutedFaint },
   card: {
     backgroundColor: colors.card,
-    borderColor: colors.hairline,
+    borderColor: colors.hairlineFaint,
     borderRadius: radius.square,
-    borderWidth: 1,
+    borderWidth: 0.5,
+    overflow: "hidden",
     padding: spacing.lg
   },
-  cover: { width: "100%" },
-  coverFallback: { backgroundColor: colors.placeholderFill, width: "100%" },
-  emptyAction: { paddingTop: spacing.sm },
-  emptyMessage: { textAlign: "center" },
+  cover: { borderRadius: 10, overflow: "hidden", width: "100%" },
+  coverBleed: { borderRadius: 0 },
+  coverFallback: {
+    backgroundColor: colors.placeholderFill,
+    borderRadius: 10,
+    width: "100%"
+  },
+  emptyAction: { paddingTop: spacing.md },
+  emptyIconWrap: {
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.full,
+    height: 56,
+    justifyContent: "center",
+    width: 56
+  },
+  emptyMessage: { color: colors.muted, fontFamily: fonts.body, fontSize: 15, lineHeight: 22, textAlign: "center" },
   emptyState: {
     alignItems: "center",
-    borderColor: colors.dotIdle,
-    borderStyle: "dashed",
-    borderWidth: 1,
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: radius.square,
+    borderWidth: 0.5,
     gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xxl
   },
+  emptyTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 17, textAlign: "center" },
   errorNotice: {
-    borderColor: colors.hairline,
-    borderWidth: 1,
-    padding: spacing.lg
+    alignItems: "center",
+    backgroundColor: "rgba(248, 113, 113, 0.1)",
+    borderColor: "rgba(248, 113, 113, 0.2)",
+    borderRadius: 12,
+    borderWidth: 0.5,
+    flexDirection: "row",
+    gap: spacing.sm,
+    padding: spacing.md
   },
   errorNoticeText: {
     color: colors.error,
+    flex: 1,
     fontFamily: fonts.bodyMedium,
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight
+    fontSize: 14,
+    lineHeight: 20
   },
   field: { gap: spacing.xs },
   fieldLabel: {
     color: colors.mutedLight,
     fontFamily: fonts.monoLabel,
-    fontSize: 12,
+    fontSize: 11,
     letterSpacing: 0.72,
+    textTransform: "uppercase"
+  },
+  groupedCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: radius.square,
+    borderWidth: 0.5,
+    overflow: "hidden"
+  },
+  groupedSection: { gap: spacing.sm },
+  groupedTitle: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    paddingHorizontal: spacing.sm,
     textTransform: "uppercase"
   },
   heading: {
     color: colors.ink,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: typography.display.fontSize,
-    lineHeight: typography.display.lineHeight
+    fontFamily: fonts.displayExtraBold,
+    fontSize: 28,
+    lineHeight: 34
   },
   input: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.input,
     borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
+    borderRadius: 12,
+    borderWidth: 0.5,
     color: colors.ink,
     fontFamily: fonts.body,
     fontSize: 16,
-    minHeight: 48,
+    minHeight: 52,
     paddingHorizontal: spacing.lg
   },
-  inputFocused: { borderColor: colors.accent, borderWidth: 2, paddingHorizontal: spacing.lg - 1 },
+  inputFocused: { borderColor: colors.accent, borderWidth: 1.2 },
   screen: { backgroundColor: colors.background, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
-  skeleton: { backgroundColor: colors.placeholderFill, borderRadius: radius.sm },
+  skeleton: { backgroundColor: colors.placeholderFill, borderRadius: 10 },
   title: {
     color: colors.ink,
     fontFamily: fonts.displaySemiBold,

@@ -2,14 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 import { LecturePlayer } from "@/src/components/lecture-player";
-import { Body, Button, Caption, Heading, Screen, SkeletonBlock } from "@/src/components/ui";
+import { Body, Button, Caption, Card, Heading, Screen, SkeletonBlock } from "@/src/components/ui";
 import { type ContentMaterial, getLecturePreview } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, fonts, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
 
 function getPdfMaterial(materials: readonly ContentMaterial[]): ContentMaterial | null {
   return materials.find((material) => material.fileType === "application/pdf") ?? null;
@@ -67,15 +67,14 @@ export default function PreviewScreen(): JSX.Element {
         ) : null}
 
         {lecture.description ? (
-          <View style={styles.panel}>
+          <Card>
             <Body muted>{lecture.description}</Body>
-          </View>
+          </Card>
         ) : null}
 
         {pdf !== null ? (
-          <View style={styles.panel}>
+          <Card style={{ gap: spacing.md }}>
             <Body muted>{t("player.pdfLead")}</Body>
-            <View style={{ height: spacing.md }} />
             <Button
               label={t("player.openPdf")}
               onPress={() => {
@@ -83,9 +82,11 @@ export default function PreviewScreen(): JSX.Element {
               }}
               variant="outline"
             />
-          </View>
+          </Card>
         ) : lecture.type === "TEXT" ? (
-          <Text style={styles.textContent}>{lecture.content ?? ""}</Text>
+          <Card>
+            <Body>{lecture.content ?? ""}</Body>
+          </Card>
         ) : (
           <LecturePlayer
             isCompleted={false}
@@ -103,15 +104,7 @@ export default function PreviewScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.md, padding: spacing.lg },
-  padded: { padding: spacing.lg },
-  panel: { backgroundColor: colors.panelWarm, padding: spacing.lg },
-  textContent: {
-    color: colors.ink,
-    fontFamily: fonts.body,
-    fontSize: 16,
-    lineHeight: 28,
-    padding: spacing.lg
-  }
+  padded: { padding: spacing.lg }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

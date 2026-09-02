@@ -123,9 +123,13 @@ export default function TeacherProfileScreen(): JSX.Element {
               href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}
               key={course.id}
             >
-              <Pressable accessibilityLabel={course.title} accessibilityRole="link">
+              <Pressable
+                accessibilityLabel={course.title}
+                accessibilityRole="link"
+                style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+              >
                 <Card style={styles.courseCard}>
-                  <CoverImage height={120} uri={course.coverImageUrl} />
+                  <CoverImage bleed height={120} uri={course.coverImageUrl} />
                   <View style={styles.courseText}>
                     <Title>{course.title}</Title>
                     <Body muted numberOfLines={2}>
@@ -154,8 +158,8 @@ function Metric({ label, value }: { label: string; value: string }): JSX.Element
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
-  courseCard: { gap: spacing.md, marginBottom: spacing.md, padding: spacing.md },
-  courseText: { gap: spacing.sm },
+  courseCard: { gap: 0, marginBottom: spacing.md, overflow: "hidden", padding: 0 },
+  courseText: { gap: spacing.sm, padding: spacing.md },
   hero: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
   heroText: { flex: 1, gap: spacing.sm },
   metric: { flex: 1, gap: spacing.xs },

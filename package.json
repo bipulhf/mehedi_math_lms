@@ -26,6 +26,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.4.1",
     "@types/pg": "^8.23.1",
+    "eas-cli": "^23.2.0",
     "eslint": "^10.9.1",
     "globals": "^17.12.0",
     "prettier": "^3.9.6",
@@ -34,8 +35,11 @@
     "typescript-eslint": "^8.69.0"
   },
   "dependencies": {
+    "@expo/ui": "^57.0.15",
     "expo-asset": "^57.0.16",
     "expo-constants": "^57.0.17",
-    "expo-notifications": "^57.0.16"
+    "expo-haptics": "^57.0.2",
+    "expo-notifications": "^57.0.16",
+    "yallist": "4.0.0"
   }
 }

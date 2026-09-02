@@ -1,5 +1,7 @@
 import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@mma/shared";
 import { Image } from "expo-image";
+import * as Haptics from "expo-haptics";
+import { SymbolView } from "expo-symbols";
 import type { JSX, ReactNode } from "react";
 import { PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Polygon, Svg } from "react-native-svg";
@@ -165,7 +167,7 @@ export function FilterPill({
   );
 }
 
-/** A text tab strip with an explicit 44-point target and 2px active rule. */
+/** Native segmented control — pill container, selected pill is card background. Scrollable when >3. */
 export function Tabs<TValue extends string>({
   label,
   onChange,
@@ -177,38 +179,83 @@ export function Tabs<TValue extends string>({
   tabs: readonly { isActive: boolean; label: string; value: TValue }[];
   value: TValue;
 }): JSX.Element {
+  const isCompact = tabs.length <= 3;
+
+  if (isCompact) {
+    return (
+      <View accessibilityLabel={label} accessibilityRole="tablist" style={styles.segmentedWrap}>
+        <View style={styles.segmented}>
+          {tabs.map((tab) => {
+            const isActive = tab.value === value;
+
+            return (
+              <Pressable
+                accessibilityLabel={tab.label}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                key={tab.value}
+                onPress={() => {
+                  void Haptics.selectionAsync();
+                  onChange(tab.value);
+                }}
+                style={[styles.segmentItem, isActive ? styles.segmentItemActive : null]}
+              >
+                <Text style={[styles.segmentLabel, isActive ? styles.segmentLabelActive : null]}>
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    );
+  }
+
   return (
-    <View accessibilityLabel={label} accessibilityRole="tablist" style={styles.tabs}>
+    <View accessibilityLabel={label} accessibilityRole="tablist" style={styles.segmentedWrap}>
       <ScrollView
-        contentContainerStyle={styles.tabsContent}
+        contentContainerStyle={styles.segmentedScroll}
         horizontal
         showsHorizontalScrollIndicator={false}
       >
-        {tabs.map((tab) => {
-          const isActive = tab.value === value;
+        <View style={styles.segmented}>
+          {tabs.map((tab) => {
+            const isActive = tab.value === value;
 
-          return (
-            <Pressable
-              accessibilityLabel={tab.label}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              key={tab.value}
-              onPress={() => onChange(tab.value)}
-              style={({ pressed }) => [styles.tab, pressed ? styles.controlPressed : null]}
-            >
-              <Text style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}>
-                {tab.label}
-              </Text>
-              <View style={[styles.tabUnderline, isActive ? styles.tabUnderlineActive : null]} />
-            </Pressable>
-          );
-        })}
+            return (
+              <Pressable
+                accessibilityLabel={tab.label}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+                key={tab.value}
+                onPress={() => {
+                  void Haptics.selectionAsync();
+                  onChange(tab.value);
+                }}
+                style={[
+                  styles.segmentItemScroll,
+                  isActive ? styles.segmentItemActive : null
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentLabel,
+                    isActive ? styles.segmentLabelActive : null,
+                    styles.segmentLabelScroll
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-/** One independent accordion row. Opening it never closes its siblings. */
+/** One independent accordion row — native chevron, not +/– text. */
 export function AccordionRow({
   children,
   isOpen,
@@ -228,16 +275,22 @@ export function AccordionRow({
         accessibilityLabel={title}
         accessibilityRole="button"
         accessibilityState={{ expanded: isOpen }}
-        onPress={onToggle}
+        onPress={() => {
+          void Haptics.selectionAsync();
+          onToggle();
+        }}
         style={({ pressed }) => [styles.accordionHeader, pressed ? styles.controlPressed : null]}
       >
         <Text numberOfLines={2} style={styles.accordionTitle}>
           {title}
         </Text>
         {meta === undefined ? null : <Text style={styles.accordionMeta}>{meta}</Text>}
-        <Text style={[styles.accordionMarker, isOpen ? styles.accordionMarkerOpen : null]}>
-          {isOpen ? "–" : "+"}
-        </Text>
+        <SymbolView
+          name={isOpen ? "chevron.up" : "chevron.down"}
+          size={14}
+          tintColor={isOpen ? colors.accent : colors.mutedFaint}
+          weight="semibold"
+        />
       </Pressable>
       {isOpen ? <View style={styles.accordionBody}>{children}</View> : null}
     </View>
@@ -336,30 +389,31 @@ export function PriceText({ amount }: { amount: number | string }): JSX.Element 
 }
 
 const styles = StyleSheet.create({
-  accordionBody: { paddingBottom: spacing.lg, paddingHorizontal: spacing.sm },
+  accordionBody: { paddingBottom: spacing.md, paddingHorizontal: spacing.sm, paddingTop: spacing.xs },
   accordionHeader: {
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.md
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
   },
-  accordionMarker: {
-    color: colors.muted,
-    fontFamily: fonts.body,
-    fontSize: 22,
-    fontStyle: "italic",
-    width: 20
+  accordionMeta: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
+  accordionRow: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 0.5 },
+  accordionTitle: { color: colors.ink, flex: 1, fontFamily: fonts.displaySemiBold, fontSize: 16 },
+  avatar: {
+    backgroundColor: colors.placeholderFill,
+    borderColor: colors.hairlineFaint,
+    borderWidth: 0.5,
+    overflow: "hidden"
   },
-  accordionMarkerOpen: { color: colors.accent },
-  accordionMeta: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 14 },
-  accordionRow: { borderBottomColor: colors.hairline, borderBottomWidth: 1 },
-  accordionTitle: { color: colors.ink, flex: 1, fontFamily: fonts.displaySemiBold, fontSize: 17 },
-  avatar: { backgroundColor: colors.placeholderFill, overflow: "hidden" },
-  avatarFallback: { alignItems: "center", justifyContent: "center" },
+  avatarFallback: {
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    justifyContent: "center"
+  },
   avatarText: { color: colors.mutedLight, fontFamily: fonts.displaySemiBold },
-  controlPressed: { opacity: 0.78 },
+  controlPressed: { opacity: 0.72 },
   eyebrow: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
@@ -370,19 +424,23 @@ const styles = StyleSheet.create({
   filterPill: {
     alignItems: "center",
     backgroundColor: colors.card,
-    borderColor: colors.hairline,
+    borderColor: colors.hairlineFaint,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: 0.5,
     justifyContent: "center",
-    minHeight: 44,
+    minHeight: 36,
     paddingHorizontal: spacing.lg
   },
-  filterPillActive: { backgroundColor: colors.chipActive, borderColor: colors.accent },
+  filterPillActive: {
+    backgroundColor: colors.chipActive,
+    borderColor: colors.accent,
+    borderWidth: 1
+  },
   filterPillLabel: {
     color: colors.muted,
-    fontFamily: fonts.body,
-    fontSize: typography.caption.fontSize,
-    lineHeight: typography.caption.lineHeight
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    lineHeight: 18
   },
   filterPillLabelActive: { color: colors.ink },
   playGlyph: { marginLeft: 2 },
@@ -391,25 +449,25 @@ const styles = StyleSheet.create({
   price: {
     color: colors.ink,
     fontFamily: fonts.displaySemiBold,
-    fontSize: typography.title.fontSize
+    fontSize: 22
   },
   ringedPlay: {
     alignItems: "center",
     borderColor: colors.hairline,
     borderRadius: radius.full,
-    borderWidth: 1,
-    height: 22,
+    borderWidth: 0.5,
+    height: 28,
     justifyContent: "center",
-    width: 22
+    width: 28
   },
-  ringedPlayAccent: { borderColor: colors.accent },
+  ringedPlayAccent: { borderColor: colors.accent, borderWidth: 1.2 },
   ringedWordRing: {
     borderColor: colors.accent,
     borderRadius: radius.full,
     borderWidth: 2,
     bottom: -2,
     left: -12,
-    opacity: 0.4,
+    opacity: 0.35,
     position: "absolute",
     right: -12,
     top: -2,
@@ -426,27 +484,65 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: colors.ink,
     fontFamily: fonts.displaySemiBold,
-    fontSize: typography.title.fontSize,
-    lineHeight: typography.title.lineHeight
+    fontSize: 20,
+    lineHeight: 27
   },
-  statCard: { borderColor: colors.hairline, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
+  segmented: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    gap: 4,
+    padding: 4
+  },
+  segmentedScroll: { gap: spacing.sm, paddingRight: spacing.lg },
+  segmentedWrap: { paddingHorizontal: spacing.lg },
+  segmentItem: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 36,
+    paddingHorizontal: spacing.md
+  },
+  segmentItemActive: { backgroundColor: colors.card, borderColor: colors.hairlineFaint, borderWidth: 0.5 },
+  segmentItemScroll: {
+    alignItems: "center",
+    borderRadius: radius.pill,
+    justifyContent: "center",
+    minHeight: 36,
+    paddingHorizontal: spacing.lg
+  },
+  segmentLabel: { color: colors.muted, fontFamily: fonts.bodyMedium, fontSize: 14, textAlign: "center" },
+  segmentLabelActive: { color: colors.ink, fontFamily: fonts.displaySemiBold },
+  segmentLabelScroll: { fontSize: 14 },
+  statCard: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flex: 1,
+    gap: 6,
+    minWidth: 0,
+    padding: spacing.md
+  },
   statLabel: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
-    fontSize: 11,
+    fontSize: 10,
     letterSpacing: 0.66,
     textTransform: "uppercase"
   },
-  statValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 26 },
+  statValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 22 },
   streakChunk: {
     backgroundColor: colors.barTrack,
-    borderRadius: radius.sm / 2,
-    height: 20,
+    borderRadius: 4,
+    height: 22,
     width: "100%"
   },
   streakChunkFilled: { backgroundColor: colors.accent },
   streakChunkToday: { borderColor: colors.accent, borderWidth: 1.5 },
-  streakCount: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 26 },
+  streakCount: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 28 },
   streakDay: { alignItems: "center", flex: 1, gap: spacing.xs },
   streakEyebrow: {
     color: colors.mutedFaint,
@@ -458,29 +554,29 @@ const styles = StyleSheet.create({
   streakHeader: {
     alignItems: "baseline",
     flexDirection: "row",
-    gap: spacing.xs,
+    gap: spacing.sm,
     marginBottom: spacing.sm
   },
-  streakRow: { flexDirection: "row", gap: 3 },
+  streakRow: { flexDirection: "row", gap: 4 },
   tab: { alignItems: "center", justifyContent: "flex-end", minHeight: 44 },
   tabLabel: {
     color: colors.muted,
     fontFamily: fonts.displaySemiBold,
-    fontSize: 16,
+    fontSize: 15,
     paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.md,
     paddingTop: spacing.md
   },
   tabLabelActive: { color: colors.ink },
   tabUnderline: { backgroundColor: "transparent", height: 2, width: "100%" },
   tabUnderlineActive: { backgroundColor: colors.accent },
   tabs: {
-    borderBottomColor: colors.hairline,
-    borderBottomWidth: 1
+    borderBottomColor: colors.hairlineFaint,
+    borderBottomWidth: 0.5
   },
   tabsContent: { gap: spacing.xl, paddingHorizontal: spacing.lg },
-  trackChunk: { backgroundColor: colors.barTrack, flex: 1, height: 6, minWidth: 4 },
+  trackChunk: { backgroundColor: colors.barTrack, borderRadius: 3, flex: 1, height: 6, minWidth: 4 },
   trackChunkComplete: { backgroundColor: colors.lineStrong },
   trackChunkFilled: { backgroundColor: colors.accent },
-  trackRow: { flexDirection: "row", gap: 3 }
+  trackRow: { flexDirection: "row", gap: 4 }
 });

@@ -6,6 +6,10 @@ import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { BottomSheet } from "@expo/ui";
+import { SymbolView } from "expo-symbols";
+import * as Haptics from "expo-haptics";
+
 import { BannerStrip } from "@/src/components/banner-strip";
 import {
   Badge,
@@ -17,7 +21,8 @@ import {
   EmptyState,
   Heading,
   Screen,
-  SkeletonBlock
+  SkeletonBlock,
+  Title
 } from "@/src/components/ui";
 import { Avatar, FilterPill, PriceText } from "@/src/components/ui-display";
 import { listCategories } from "@/src/lib/api/categories";
@@ -74,10 +79,14 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
 
   return (
     <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}>
-      <Pressable accessibilityLabel={course.title} accessibilityRole="link" style={styles.row}>
-        <Card>
+      <Pressable
+        accessibilityLabel={course.title}
+        accessibilityRole="link"
+        style={({ pressed }) => [styles.row, pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+      >
+        <Card style={styles.rowCard}>
           <View>
-            <CoverImage height={150} uri={course.coverImageUrl} />
+            <CoverImage bleed height={150} uri={course.coverImageUrl} />
             {course.isExamOnly ? (
               <View style={styles.coverBadge}>
                 <Badge tone="attention">{t("course.examOnly")}</Badge>
@@ -151,7 +160,7 @@ export default function CatalogScreen(): JSX.Element {
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [isFreeOnly, setIsFreeOnly] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const { data: categories = [] } = useQuery({
     queryFn: listCategories,
@@ -207,35 +216,96 @@ export default function CatalogScreen(): JSX.Element {
 
       <View style={styles.header}>
         <Heading>{t("courses.title")}</Heading>
-        <TextInput
-          accessibilityLabel={t("courses.searchPlaceholder")}
-          onChangeText={setSearch}
-          placeholder={t("courses.searchPlaceholder")}
-          placeholderTextColor={colors.placeholder}
-          selectionColor={colors.accent}
-          style={styles.search}
-          value={search}
-        />
-        <Pressable
-          accessibilityLabel={t("courses.filters")}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: filtersExpanded }}
-          onPress={() => setFiltersExpanded((current) => !current)}
-          style={styles.filtersToggle}
-        >
-          <Text style={styles.filtersToggleLabel}>
-            {t("courses.filters")}
-            {activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-          </Text>
-          <Text style={styles.filtersToggleChevron}>{filtersExpanded ? "⌃" : "⌄"}</Text>
-        </Pressable>
-        {filtersExpanded ? (
-          <>
-            <ScrollView
-              contentContainerStyle={styles.filters}
-              horizontal
-              showsHorizontalScrollIndicator={false}
+        <View style={styles.searchRow}>
+          <View style={styles.searchWrap}>
+            <SymbolView
+              name="magnifyingglass"
+              size={18}
+              tintColor={colors.mutedFaint}
+              style={styles.searchIcon as never}
+            />
+            <TextInput
+              accessibilityLabel={t("courses.searchPlaceholder")}
+              onChangeText={setSearch}
+              placeholder={t("courses.searchPlaceholder")}
+              placeholderTextColor={colors.placeholder}
+              selectionColor={colors.accent}
+              style={styles.search}
+              value={search}
+            />
+            {search.length > 0 ? (
+              <Pressable
+                accessibilityLabel={t("action.clearFilters")}
+                accessibilityRole="button"
+                hitSlop={spacing.sm}
+                onPress={() => setSearch("")}
+                style={styles.searchClear}
+              >
+                <SymbolView name="xmark.circle.fill" size={18} tintColor={colors.mutedFaint} />
+              </Pressable>
+            ) : null}
+          </View>
+          <Pressable
+            accessibilityLabel={t("courses.filters")}
+            accessibilityRole="button"
+            onPress={() => {
+              void Haptics.selectionAsync();
+              setIsFilterSheetOpen(true);
+            }}
+            style={({ pressed }) => [
+              styles.filterButton,
+              activeFilterCount > 0 ? styles.filterButtonActive : null,
+              pressed ? { opacity: 0.7 } : null
+            ]}
+          >
+            <SymbolView
+              name="slider.horizontal.3"
+              size={18}
+              tintColor={activeFilterCount > 0 ? colors.onAccent : colors.ink}
+            />
+            {activeFilterCount > 0 ? (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            ) : null}
+          </Pressable>
+        </View>
+        <View style={styles.resultRow}>
+          <Caption>
+            {t("courses.resultCount", {
+              shown: format.number(courses.length),
+              total: format.number(data?.items.length ?? courses.length)
+            })}
+          </Caption>
+          {activeFilterCount > 0 ? (
+            <Pressable onPress={resetFilters}>
+              <Text style={styles.clearLink}>{t("action.clearFilters")}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+
+      <BottomSheet
+        isPresented={isFilterSheetOpen}
+        onDismiss={() => setIsFilterSheetOpen(false)}
+        showDragIndicator
+      >
+        <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.sheetHeader}>
+            <Title>{t("courses.filters")}</Title>
+            <Pressable
+              accessibilityLabel={t("common.close")}
+              accessibilityRole="button"
+              hitSlop={spacing.sm}
+              onPress={() => setIsFilterSheetOpen(false)}
             >
+              <SymbolView name="xmark.circle.fill" size={26} tintColor={colors.mutedFaint} />
+            </Pressable>
+          </View>
+
+          <View style={styles.sheetSection}>
+            <Text style={styles.sheetLabel}>{t("courses.allLevels")}</Text>
+            <View style={styles.sheetPills}>
               <FilterPill
                 isSelected={levelId === null}
                 label={t("courses.allLevels")}
@@ -255,13 +325,13 @@ export default function CatalogScreen(): JSX.Element {
                   }}
                 />
               ))}
-            </ScrollView>
-            {selectedLevel !== null ? (
-              <ScrollView
-                contentContainerStyle={styles.filters}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-              >
+            </View>
+          </View>
+
+          {selectedLevel !== null ? (
+            <View style={styles.sheetSection}>
+              <Text style={styles.sheetLabel}>{selectedLevel.name}</Text>
+              <View style={styles.sheetPills}>
                 <FilterPill
                   isSelected={subjectId === null}
                   label={t("courses.allLevels")}
@@ -275,18 +345,24 @@ export default function CatalogScreen(): JSX.Element {
                     onPress={() => setSubjectId(subject.id)}
                   />
                 ))}
-              </ScrollView>
-            ) : null}
-            <ScrollView
-              contentContainerStyle={styles.filters}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            >
+              </View>
+            </View>
+          ) : null}
+
+          <View style={styles.sheetSection}>
+            <Text style={styles.sheetLabel}>Options</Text>
+            <View style={styles.sheetPills}>
               <FilterPill
                 isSelected={isFreeOnly}
                 label={t("courses.freeOnly")}
                 onPress={() => setIsFreeOnly((current) => !current)}
               />
+            </View>
+          </View>
+
+          <View style={styles.sheetSection}>
+            <Text style={styles.sheetLabel}>Sort</Text>
+            <View style={styles.sheetPills}>
               {sortOptions.map((option) => (
                 <FilterPill
                   isSelected={sortOrder === option.value}
@@ -295,16 +371,27 @@ export default function CatalogScreen(): JSX.Element {
                   onPress={() => setSortOrder(option.value)}
                 />
               ))}
-            </ScrollView>
-          </>
-        ) : null}
-        <Caption>
-          {t("courses.resultCount", {
-            shown: format.number(courses.length),
-            total: format.number(data?.items.length ?? courses.length)
-          })}
-        </Caption>
-      </View>
+            </View>
+          </View>
+
+          <View style={styles.sheetFooter}>
+            <Button
+              label={t("action.clearFilters")}
+              onPress={() => {
+                resetFilters();
+                setIsFilterSheetOpen(false);
+              }}
+              variant="outline"
+            />
+            <View style={{ flex: 1 }}>
+              <Button
+                label={t("common.close")}
+                onPress={() => setIsFilterSheetOpen(false)}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </BottomSheet>
 
       {isPending ? (
         <CatalogSkeleton />
@@ -333,21 +420,32 @@ export default function CatalogScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  clearLink: { color: colors.accent, fontFamily: fonts.bodyMedium, fontSize: 13 },
   coverBadge: { left: spacing.sm, position: "absolute", top: spacing.sm },
-  filters: { gap: spacing.sm, paddingRight: spacing.lg },
-  filtersToggle: {
+  filterBadge: {
     alignItems: "center",
-    borderColor: colors.hairline,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs
+    backgroundColor: colors.onAccent,
+    borderRadius: radius.full,
+    height: 16,
+    justifyContent: "center",
+    minWidth: 16,
+    paddingHorizontal: 3,
+    position: "absolute",
+    right: -6,
+    top: -6
   },
-  filtersToggleChevron: { color: colors.mutedFaint, fontSize: 14 },
-  filtersToggleLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 14 },
+  filterBadgeText: { color: colors.accent, fontFamily: fonts.displayBold, fontSize: 10 },
+  filterButton: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    height: 52,
+    justifyContent: "center",
+    width: 52
+  },
+  filterButtonActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   footer: {
     alignItems: "center",
     flexDirection: "row",
@@ -357,17 +455,47 @@ const styles = StyleSheet.create({
   header: { gap: spacing.md, padding: spacing.lg },
   list: { padding: spacing.lg },
   metaText: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
+  resultRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   row: { marginBottom: spacing.lg },
-  rowBody: { gap: spacing.sm, paddingTop: spacing.md },
+  rowBody: { gap: spacing.sm, padding: spacing.lg },
+  rowCard: { overflow: "hidden", padding: 0 },
   search: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
     color: colors.ink,
-    minHeight: 48,
-    paddingHorizontal: spacing.lg
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 16,
+    paddingVertical: spacing.md
   },
+  searchClear: { padding: spacing.xs },
+  searchIcon: { marginRight: spacing.sm },
+  searchRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  searchWrap: {
+    alignItems: "center",
+    backgroundColor: colors.input,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flex: 1,
+    flexDirection: "row",
+    minHeight: 52,
+    paddingHorizontal: spacing.md
+  },
+  sheetContent: { gap: spacing.xl, padding: spacing.lg, paddingBottom: spacing.xxl },
+  sheetFooter: { flexDirection: "row", gap: spacing.md, paddingTop: spacing.md },
+  sheetHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  sheetLabel: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    textTransform: "uppercase"
+  },
+  sheetPills: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingTop: spacing.sm },
+  sheetSection: { gap: spacing.xs },
   skeletonList: { gap: spacing.lg, padding: spacing.lg },
   teacherName: { color: colors.muted, flex: 1, fontFamily: fonts.body, fontSize: 14 },
   teacherRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },

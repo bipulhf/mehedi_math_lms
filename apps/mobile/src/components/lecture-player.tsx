@@ -248,7 +248,9 @@ export function LecturePlayer({
 const styles = StyleSheet.create({
   stage: {
     backgroundColor: colors.background,
-    borderRadius: radius.sm,
+    borderColor: colors.hairlineFaint,
+    borderRadius: radius.square,
+    borderWidth: 0.5,
     overflow: "hidden"
   },
   video: { aspectRatio: 16 / 9, width: "100%" }

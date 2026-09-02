@@ -3,18 +3,31 @@ import { Tabs } from "expo-router";
 import type { JSX } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import {
-  CatalogIcon,
-  LearningIcon,
-  MessagesIcon,
-  ProfileIcon
-} from "@/src/components/tab-icons";
+import { SymbolView } from "expo-symbols";
+
 import { listConversations } from "@/src/lib/api/messages";
 import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { colors, fonts, radius } from "@/src/theme/tokens";
+
+function TabSymbol({
+  focused,
+  name
+}: {
+  focused: boolean;
+  name: "book.fill" | "square.grid.2x2.fill" | "bubble.left.and.bubble.right.fill" | "person.crop.circle.fill";
+}): JSX.Element {
+  return (
+    <SymbolView
+      name={name}
+      size={24}
+      tintColor={focused ? colors.accent : colors.muted}
+      weight={focused ? "semibold" : "regular"}
+    />
+  );
+}
 
 /** Native views avoid Fabric re-parenting failures in the tab bar. */
 
@@ -25,7 +38,7 @@ function Badge({ count }: { count: number }): JSX.Element | null {
 
   return (
     <View style={styles.badge}>
-      <Text style={styles.badgeText}>{count > 99 ? "99+" : count}</Text>
+      <Text style={styles.badgeText}>{count > 99 ? "99+" : String(count)}</Text>
     </View>
   );
 }
@@ -57,25 +70,32 @@ export default function TabsLayout(): JSX.Element {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.ink,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.muted,
+        tabBarLabelStyle: { fontFamily: fonts.displaySemiBold, fontSize: 11, marginTop: 2 },
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.hairline
+          backgroundColor: "rgba(23, 32, 51, 0.96)",
+          borderTopColor: colors.hairlineFaint,
+          borderTopWidth: 0.5,
+          height: 83,
+          paddingBottom: 20,
+          paddingTop: 6
         }
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ focused }) => <LearningIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabSymbol focused={focused} name="book.fill" />,
           title: t("nav.home")
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          tabBarIcon: ({ focused }) => <CatalogIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabSymbol focused={focused} name="square.grid.2x2.fill" />
+          ),
           title: t("nav.explore")
         }}
       />
@@ -84,7 +104,7 @@ export default function TabsLayout(): JSX.Element {
         options={{
           tabBarIcon: ({ focused }) => (
             <View>
-              <MessagesIcon focused={focused} />
+              <TabSymbol focused={focused} name="bubble.left.and.bubble.right.fill" />
               <Badge count={unreadInbox} />
             </View>
           ),
@@ -94,7 +114,9 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => <ProfileIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabSymbol focused={focused} name="person.crop.circle.fill" />
+          ),
           title: t("nav.profile")
         }}
       />
@@ -110,8 +132,8 @@ const styles = StyleSheet.create({
     minWidth: 18,
     paddingHorizontal: 4,
     position: "absolute",
-    right: -12,
-    top: -4
+    right: -10,
+    top: -6
   },
-  badgeText: { color: colors.card, fontFamily: fonts.displayBold, fontSize: 10 }
+  badgeText: { color: colors.onAccent, fontFamily: fonts.displayBold, fontSize: 10 }
 });

@@ -58,11 +58,16 @@ export const colors = {
 /**
  * Cards are rounded plates and buttons are soft controls. `pill` is for pills
  * and chips, `full` for dots and avatars.
+ *
+ * `square` (16) is the default card radius — slightly larger than DESIGN.md's
+ * 14 to read as a native iOS grouped card. `xl` is for hero / cover plates
+ * that deserve extra presence.
  */
 export const radius = {
   pill: 100,
-  sm: 8,
-  square: 14,
+  sm: 10,
+  square: 16,
+  xl: 20,
   full: 999
 } as const;
 
@@ -75,6 +80,22 @@ export const spacing = {
   xs: 4,
   xxl: 32,
   xxxl: 48
+} as const;
+
+/**
+ * Native surface tokens — not a second theme, just the pieces a native shell
+ * needs that the web theme doesn't name: translucent bar fills, the grouped
+ * list background, and the subtle elevation a dark card needs to lift off
+ * navy without a shadow (DESIGN.md §2 forbids shadows).
+ */
+export const native = {
+  /** Translucent navigation / tab bar fill — card at 92% over background. */
+  barTranslucent: "rgba(23, 32, 51, 0.92)",
+  groupedBackground: "#0b1220",
+  groupedCard: "#172033",
+  /** The 0.5pt hairline iOS draws between grouped rows. */
+  separator: "rgba(40, 53, 72, 0.8)",
+  tabBarHeight: 49
 } as const;
 
 /**

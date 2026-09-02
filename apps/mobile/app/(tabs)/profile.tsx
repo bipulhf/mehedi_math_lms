@@ -1,21 +1,12 @@
 import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
+import { SymbolView } from "expo-symbols";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import {
-  Badge,
-  Body,
-  Button,
-  Caption,
-  Card,
-  Heading,
-  Screen,
-  ScreenSkeleton,
-  SkeletonBlock,
-  Title
-} from "@/src/components/ui";
+import { Badge, Body, Button, Card, Heading, Screen, ScreenSkeleton, SkeletonBlock, Title } from "@/src/components/ui";
 import { Avatar, StreakTrack } from "@/src/components/ui-display";
 import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { getOwnProfile } from "@/src/lib/api/profiles";
@@ -44,10 +35,15 @@ function LanguageSwitcher(): JSX.Element {
             key={option}
             accessibilityRole="button"
             accessibilityState={{ selected: isActive }}
-            onPress={() => setLocale(option)}
+            onPress={() => {
+              void Haptics.selectionAsync();
+              setLocale(option);
+            }}
             style={[styles.languagePill, isActive ? styles.languagePillActive : null]}
           >
-            <Caption>{localeNames[option]}</Caption>
+            <Text style={[styles.languageLabel, isActive ? styles.languageLabelActive : null]}>
+              {localeNames[option]}
+            </Text>
           </Pressable>
         );
       })}
@@ -65,11 +61,13 @@ function LanguageSwitcher(): JSX.Element {
  * this consolidation exists to remove.
  */
 function SettingsRow({
+  icon,
   isBusy = false,
   isLast = false,
   label,
   onPress
 }: {
+  icon?: string;
   isBusy?: boolean;
   isLast?: boolean;
   label: string;
@@ -81,11 +79,25 @@ function SettingsRow({
       accessibilityRole="button"
       accessibilityState={{ busy: isBusy }}
       disabled={isBusy}
-      onPress={onPress}
-      style={[styles.settingsRow, isLast ? null : styles.settingsRowDivider]}
+      onPress={() => {
+        void Haptics.selectionAsync();
+        onPress();
+      }}
+      style={({ pressed }) => [
+        styles.settingsRow,
+        isLast ? null : styles.settingsRowDivider,
+        pressed ? styles.rowPressed : null
+      ]}
     >
-      <Text style={styles.settingsRowLabel}>{isBusy ? `${label}…` : label}</Text>
-      <Text style={styles.settingsRowChevron}>&#8250;</Text>
+      <View style={styles.settingsRowLeft}>
+        {icon ? (
+          <View style={styles.settingsIconWrap}>
+            <SymbolView name={icon as never} size={16} tintColor={colors.muted} />
+          </View>
+        ) : null}
+        <Text style={styles.settingsRowLabel}>{isBusy ? `${label}…` : label}</Text>
+      </View>
+      <SymbolView name="chevron.right" size={14} tintColor={colors.mutedFaint} weight="semibold" />
     </Pressable>
   );
 }
@@ -188,28 +200,39 @@ export default function ProfileScreen(): JSX.Element {
           />
         </Card>
 
+        <View style={styles.groupLabel}>
+          <Text style={styles.groupLabelText}>{t("locale.label").toUpperCase()}</Text>
+        </View>
         <Card style={styles.settingsCard}>
           <View style={[styles.settingsRow, styles.settingsRowDivider]}>
-            <Text style={styles.settingsRowLabel}>{t("locale.label")}</Text>
+            <View style={styles.settingsRowLeft}>
+              <View style={styles.settingsIconWrap}>
+                <SymbolView name="globe" size={16} tintColor={colors.muted} />
+              </View>
+              <Text style={styles.settingsRowLabel}>{t("locale.label")}</Text>
+            </View>
             <LanguageSwitcher />
           </View>
-          <SettingsRow label={t("about.title")} onPress={() => router.push("/about")} />
-          <SettingsRow label={t("contact.title")} onPress={() => router.push("/contact")} />
-          <SettingsRow label={t("profile.reportBug")} onPress={() => router.push("/bug-report")} />
+          <SettingsRow icon="info.circle" label={t("about.title")} onPress={() => router.push("/about")} />
+          <SettingsRow icon="envelope" label={t("contact.title")} onPress={() => router.push("/contact")} />
+          <SettingsRow icon="ladybug" label={t("profile.reportBug")} onPress={() => router.push("/bug-report")} />
           {hasPassword ? (
             <SettingsRow
+              icon="key"
               label={t("profile.changePassword")}
               onPress={() => router.push("/change-password")}
             />
           ) : null}
-          <SettingsRow label={t("exams.title")} onPress={() => router.push("/exams")} />
-          <SettingsRow label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
-          <SettingsRow label={t("messages.new")} onPress={() => router.push("/messages/new")} />
+          <SettingsRow icon="doc.text" label={t("exams.title")} onPress={() => router.push("/exams")} />
+          <SettingsRow icon="creditcard" label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
+          <SettingsRow icon="plus.bubble" label={t("messages.new")} onPress={() => router.push("/messages/new")} />
           <SettingsRow
+            icon="rectangle.portrait.and.arrow.right"
             isBusy={signOut.isPending}
             isLast
             label={t("profile.signOut")}
             onPress={() => {
+              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               signOut.mutate(undefined, {
                 onSuccess: () => {
                   router.replace("/sign-in");
@@ -225,33 +248,52 @@ export default function ProfileScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   content: { gap: spacing.lg, padding: spacing.lg },
+  groupLabel: { paddingHorizontal: spacing.sm, paddingTop: spacing.md },
+  groupLabelText: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    textTransform: "uppercase"
+  },
   identityStreak: { paddingTop: spacing.lg },
+  languageLabel: { color: colors.muted, fontFamily: fonts.bodyMedium, fontSize: 13 },
+  languageLabelActive: { color: colors.ink },
   languagePill: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
+    backgroundColor: colors.panelWarm,
+    borderColor: colors.hairlineFaint,
     borderRadius: radius.full,
-    borderWidth: 1,
-    minHeight: 44,
+    borderWidth: 0.5,
     justifyContent: "center",
-    paddingHorizontal: spacing.lg,
+    minHeight: 32,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
-  languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
+  languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.accent },
   languageRow: { flexDirection: "row", gap: spacing.sm },
   profileIdentity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   profileText: { flex: 1, gap: spacing.xs },
-  settingsCard: { padding: 0 },
+  rowPressed: { backgroundColor: colors.rowHover },
+  settingsCard: { overflow: "hidden", padding: 0 },
+  settingsIconWrap: {
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    borderRadius: 7,
+    height: 28,
+    justifyContent: "center",
+    width: 28
+  },
   settingsRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
     minHeight: 52,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
   },
-  settingsRowChevron: { color: colors.mutedFaint, fontSize: 20 },
-  settingsRowDivider: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 1 },
-  settingsRowLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 16 }
+  settingsRowDivider: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 0.5 },
+  settingsRowLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 15 },
+  settingsRowLeft: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

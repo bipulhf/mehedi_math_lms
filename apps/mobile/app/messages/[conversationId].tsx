@@ -280,33 +280,52 @@ export default function ConversationScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   bubble: {
-    borderRadius: radius.sm,
-    gap: spacing.xs,
-    maxWidth: "85%",
-    padding: spacing.md
+    borderRadius: 18,
+    gap: 4,
+    maxWidth: "82%",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
   },
   bubbleHidden: {
     backgroundColor: colors.panelWarm,
-    borderColor: colors.hairline,
+    borderColor: colors.hairlineFaint,
     borderStyle: "dashed",
-    borderWidth: 1
+    borderWidth: 0.5
   },
-  bubbleOther: { alignSelf: "flex-start", backgroundColor: colors.card },
-  bubbleOwn: { alignSelf: "flex-end", backgroundColor: colors.chipActive },
-  composer: {
+  bubbleOther: {
+    alignSelf: "flex-start",
     backgroundColor: colors.card,
-    borderTopColor: colors.hairline,
-    borderTopWidth: 1,
+    borderBottomLeftRadius: 6
+  },
+  bubbleOwn: {
+    alignSelf: "flex-end",
+    backgroundColor: colors.chipActive,
+    borderBottomRightRadius: 6,
+    borderColor: colors.accent,
+    borderWidth: 0.5
+  },
+  composer: {
+    alignItems: "flex-end",
+    backgroundColor: colors.background,
+    borderTopColor: colors.hairlineFaint,
+    borderTopWidth: 0.5,
+    flexDirection: "row",
     gap: spacing.sm,
-    padding: spacing.lg
+    padding: spacing.md
   },
   composerInput: {
-    backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 20,
+    borderWidth: 0.5,
     color: colors.ink,
-    maxHeight: 120,
-    minHeight: 48,
-    padding: spacing.md
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 16,
+    maxHeight: 110,
+    minHeight: 44,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
   },
   content: { gap: spacing.md, padding: spacing.lg },
   flex: { flex: 1 },

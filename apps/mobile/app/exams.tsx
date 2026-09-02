@@ -2,20 +2,14 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+
+import { BottomSheet } from "@expo/ui";
+import { SymbolView } from "expo-symbols";
+import * as Haptics from "expo-haptics";
 
 import { CourseExamGroup } from "@/src/components/course-exam-group";
-import {
-  Body,
-  Button,
-  Caption,
-  Card,
-  EmptyState,
-  Field,
-  Heading,
-  Screen,
-  SkeletonBlock
-} from "@/src/components/ui";
+import { Body, Button, Caption, EmptyState, Heading, Screen, SkeletonBlock, Title } from "@/src/components/ui";
 import { FilterPill } from "@/src/components/ui-display";
 import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { listMyEnrollments } from "@/src/lib/api/enrollments";
@@ -32,7 +26,9 @@ import {
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
+import { Pressable, Text } from "react-native";
+
+import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
 
 /** The course list endpoint's own maximum. */
 const PAGE_SIZE = 50;
@@ -81,6 +77,7 @@ export default function ExamsScreen(): JSX.Element {
   const isStaff = role === "TEACHER" || role === "ADMIN";
   const [openCourseIds, setOpenCourseIds] = useState<ReadonlySet<string>>(new Set());
   const [filters, setFilters] = useState<ExamFilterState>(emptyExamFilters);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const staffCourses = useQuery({
     enabled: isStaff,
@@ -198,55 +195,121 @@ export default function ExamsScreen(): JSX.Element {
           <EmptyState message={t("exams.noCourses")} />
         ) : (
           <>
-            <Card style={{ gap: spacing.md }}>
-              <Field
-                label={t("exams.search")}
-                onChangeText={(value) => setFilters({ ...filters, search: value })}
-                placeholder={t("exams.search")}
-                value={filters.search}
-              />
-
-              <View style={styles.pillRow}>
-                {kinds.map((kind) => (
-                  <FilterPill
-                    isSelected={filters.kind === kind.value}
-                    key={kind.value}
-                    label={kind.label}
-                    onPress={() => setFilters({ ...filters, kind: kind.value })}
-                  />
-                ))}
-              </View>
-
-              {/* Draft/published is staff-only, because a student is never
-                  shown a draft in the first place. */}
-              {isStudent ? null : (
-                <View style={styles.pillRow}>
-                  {statuses.map((status) => (
-                    <FilterPill
-                      isSelected={filters.status === status.value}
-                      key={status.value}
-                      label={status.label}
-                      onPress={() => setFilters({ ...filters, status: status.value })}
-                    />
-                  ))}
-                </View>
-              )}
-
-              {isSearching ? (
-                <Button
-                  label={t("exams.clearFilters")}
-                  onPress={() => setFilters(emptyExamFilters)}
-                  size="sm"
-                  variant="ghost"
+            <View style={styles.searchRow}>
+              <View style={styles.searchWrap}>
+                <SymbolView
+                  name="magnifyingglass"
+                  size={18}
+                  tintColor={colors.mutedFaint}
+                  style={styles.searchIcon as never}
                 />
-              ) : null}
-            </Card>
+                <TextInput
+                  accessibilityLabel={t("exams.search")}
+                  onChangeText={(value) => setFilters({ ...filters, search: value })}
+                  placeholder={t("exams.search")}
+                  placeholderTextColor={colors.placeholder}
+                  selectionColor={colors.accent}
+                  style={styles.searchInput}
+                  value={filters.search}
+                />
+              </View>
+              <Pressable
+                accessibilityLabel={t("exams.title")}
+                accessibilityRole="button"
+                onPress={() => {
+                  void Haptics.selectionAsync();
+                  setIsFilterSheetOpen(true);
+                }}
+                style={({ pressed }) => [
+                  styles.filterButton,
+                  isSearching ? styles.filterButtonActive : null,
+                  pressed ? { opacity: 0.7 } : null
+                ]}
+              >
+                <SymbolView
+                  name="slider.horizontal.3"
+                  size={18}
+                  tintColor={isSearching ? colors.onAccent : colors.ink}
+                />
+                {isSearching ? (
+                  <View style={styles.filterBadge}>
+                    <Text style={styles.filterBadgeText}>•</Text>
+                  </View>
+                ) : null}
+              </Pressable>
+            </View>
 
             {isSearching ? (
-              <Caption tone="faint">
-                {t("exams.matchCount", { count: format.number(matchCount) })}
-              </Caption>
+              <View style={styles.matchRow}>
+                <Caption tone="faint">
+                  {t("exams.matchCount", { count: format.number(matchCount) })}
+                </Caption>
+                <Pressable onPress={() => setFilters(emptyExamFilters)}>
+                  <Text style={styles.clearLink}>{t("exams.clearFilters")}</Text>
+                </Pressable>
+              </View>
             ) : null}
+
+            <BottomSheet
+              isPresented={isFilterSheetOpen}
+              onDismiss={() => setIsFilterSheetOpen(false)}
+              showDragIndicator
+            >
+              <View style={styles.sheetContent}>
+                <View style={styles.sheetHeader}>
+                  <Title>{t("exams.title")}</Title>
+                  <Pressable
+                    accessibilityLabel={t("common.close")}
+                    accessibilityRole="button"
+                    hitSlop={spacing.sm}
+                    onPress={() => setIsFilterSheetOpen(false)}
+                  >
+                    <SymbolView name="xmark.circle.fill" size={26} tintColor={colors.mutedFaint} />
+                  </Pressable>
+                </View>
+                <View style={styles.sheetSection}>
+                  <Text style={styles.sheetLabel}>Kind</Text>
+                  <View style={styles.pillRow}>
+                    {kinds.map((kind) => (
+                      <FilterPill
+                        isSelected={filters.kind === kind.value}
+                        key={kind.value}
+                        label={kind.label}
+                        onPress={() => setFilters({ ...filters, kind: kind.value })}
+                      />
+                    ))}
+                  </View>
+                </View>
+                {isStudent ? null : (
+                  <View style={styles.sheetSection}>
+                    <Text style={styles.sheetLabel}>Status</Text>
+                    <View style={styles.pillRow}>
+                      {statuses.map((status) => (
+                        <FilterPill
+                          isSelected={filters.status === status.value}
+                          key={status.value}
+                          label={status.label}
+                          onPress={() => setFilters({ ...filters, status: status.value })}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                )}
+                <View style={styles.sheetFooter}>
+                  <Button
+                    label={t("exams.clearFilters")}
+                    onPress={() => {
+                      setFilters(emptyExamFilters);
+                      setIsFilterSheetOpen(false);
+                    }}
+                    variant="outline"
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Button label={t("common.close")} onPress={() => setIsFilterSheetOpen(false)} />
+                  </View>
+                </View>
+              </View>
+            </BottomSheet>
 
             {visibleGroups.length === 0 ? (
               <EmptyState message={t("exams.noMatches")} />
@@ -272,8 +335,69 @@ export default function ExamsScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  clearLink: { color: colors.accent, fontFamily: fonts.bodyMedium, fontSize: 13 },
   content: { gap: spacing.md, padding: spacing.lg },
-  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }
+  filterBadge: {
+    alignItems: "center",
+    backgroundColor: colors.onAccent,
+    borderRadius: radius.full,
+    height: 12,
+    justifyContent: "center",
+    position: "absolute",
+    right: -2,
+    top: -2,
+    width: 12
+  },
+  filterBadgeText: { color: colors.accent, fontFamily: fonts.displayBold, fontSize: 8 },
+  filterButton: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    height: 52,
+    justifyContent: "center",
+    width: 52
+  },
+  filterButtonActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  matchRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  searchIcon: { marginRight: spacing.sm },
+  searchInput: {
+    color: colors.ink,
+    flex: 1,
+    fontFamily: fonts.body,
+    fontSize: 16,
+    paddingVertical: spacing.md
+  },
+  searchRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  searchWrap: {
+    alignItems: "center",
+    backgroundColor: colors.input,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 14,
+    borderWidth: 0.5,
+    flex: 1,
+    flexDirection: "row",
+    minHeight: 52,
+    paddingHorizontal: spacing.md
+  },
+  sheetContent: { gap: spacing.xl, padding: spacing.lg, paddingBottom: spacing.xxl },
+  sheetFooter: { flexDirection: "row", gap: spacing.md, paddingTop: spacing.md },
+  sheetHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: spacing.md
+  },
+  sheetLabel: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.66,
+    textTransform: "uppercase"
+  },
+  sheetSection: { gap: spacing.xs }
 });
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

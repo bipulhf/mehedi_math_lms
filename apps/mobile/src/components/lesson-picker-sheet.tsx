@@ -1,12 +1,14 @@
+import { BottomSheet } from "@expo/ui";
+import { SymbolView } from "expo-symbols";
 import type { JSX } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { Body, Caption, Title } from "@/src/components/ui";
 import { AccordionRow } from "@/src/components/ui-display";
 import type { ContentLecture } from "@/src/lib/api/content";
 import type { AssessmentTestSummary } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { colors, spacing } from "@/src/theme/tokens";
 
 /**
  * A lecture and its chapter's test are one sequence in the player, so both
@@ -106,97 +108,83 @@ export function LessonPickerSheet({
   const t = useT();
 
   return (
-    <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <View style={styles.sheetRoot}>
+    <BottomSheet
+      isPresented={visible}
+      onDismiss={onClose}
+      showDragIndicator
+      snapPoints={["half", "full"]}
+    >
+      <View style={styles.sheetHeader}>
+        <Title>{t("player.navigator")}</Title>
         <Pressable
-          accessible={false}
           accessibilityLabel={t("common.close")}
           accessibilityRole="button"
+          hitSlop={spacing.sm}
           onPress={onClose}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.sheetPanel}>
-          <View style={styles.sheetHandle} />
-          <View style={styles.sheetHeader}>
-            <Title>{t("player.navigator")}</Title>
-            <Pressable
-              accessibilityLabel={t("common.close")}
-              accessibilityRole="button"
-              hitSlop={spacing.sm}
-              onPress={onClose}
-            >
-              <Text style={styles.sheetClose}>&times;</Text>
-            </Pressable>
-          </View>
-          <ScrollView contentContainerStyle={styles.sheetContent}>
-            {chapters.map((chapter) => {
-              const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
-
-              return (
-                <AccordionRow
-                  isOpen={openChapterId === chapter.id}
-                  key={chapter.id}
-                  meta={chapterItems.length}
-                  onToggle={() => onToggleChapter(chapter.id)}
-                  title={chapter.title}
-                >
-                  <View style={{ gap: spacing.xs }}>
-                    {chapterItems.map((item) => (
-                      <ChapterItem
-                        isCompleted={
-                          item.kind === "lecture" && Boolean(completedIds.has(item.lecture.id))
-                        }
-                        isSelected={selectedItemId === item.id}
-                        item={item}
-                        key={item.id}
-                        onSelect={() => onSelect(item.id)}
-                      />
-                    ))}
-                  </View>
-                </AccordionRow>
-              );
-            })}
-          </ScrollView>
-        </View>
+          style={styles.closeButton}
+        >
+          <SymbolView name="xmark.circle.fill" size={26} tintColor={colors.mutedFaint} />
+        </Pressable>
       </View>
-    </Modal>
+      <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+        {chapters.map((chapter) => {
+          const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
+
+          return (
+            <AccordionRow
+              isOpen={openChapterId === chapter.id}
+              key={chapter.id}
+              meta={chapterItems.length}
+              onToggle={() => onToggleChapter(chapter.id)}
+              title={chapter.title}
+            >
+              <View style={{ gap: spacing.xs }}>
+                {chapterItems.map((item) => (
+                  <ChapterItem
+                    isCompleted={
+                      item.kind === "lecture" && Boolean(completedIds.has(item.lecture.id))
+                    }
+                    isSelected={selectedItemId === item.id}
+                    item={item}
+                    key={item.id}
+                    onSelect={() => onSelect(item.id)}
+                  />
+                ))}
+              </View>
+            </AccordionRow>
+          );
+        })}
+        <View style={{ height: spacing.xl }} />
+      </ScrollView>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
+  closeButton: { padding: spacing.xs },
   itemRow: {
     alignItems: "center",
-    borderRadius: radius.sm,
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderRadius: 12,
+    borderWidth: 0.5,
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md
   },
-  itemRowActive: { backgroundColor: colors.chipActive },
+  itemRowActive: { backgroundColor: colors.chipActive, borderColor: colors.accent },
   itemRowText: { flex: 1, gap: 2 },
-  sheetClose: { color: colors.muted, fontSize: 24, padding: spacing.xs },
-  sheetContent: { padding: spacing.lg },
-  sheetHandle: {
-    alignSelf: "center",
-    backgroundColor: colors.hairline,
-    borderRadius: radius.pill,
-    height: 4,
-    marginTop: spacing.sm,
-    width: 36
-  },
+  sheetContent: { gap: spacing.md, padding: spacing.lg },
   sheetHeader: {
     alignItems: "center",
+    borderBottomColor: colors.hairlineFaint,
+    borderBottomWidth: 0.5,
     flexDirection: "row",
     justifyContent: "space-between",
+    paddingBottom: spacing.md,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md
-  },
-  sheetPanel: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.square,
-    borderTopRightRadius: radius.square,
-    maxHeight: "75%"
-  },
-  sheetRoot: { backgroundColor: "rgba(0, 0, 0, 0.5)", flex: 1, justifyContent: "flex-end" }
+    paddingTop: spacing.sm
+  }
 });

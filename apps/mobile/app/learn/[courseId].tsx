@@ -2,7 +2,9 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+
+import { SymbolView } from "expo-symbols";
 
 import { CourseCompletionNotice } from "@/src/components/course-completion-notice";
 import { CourseRoutinePanel } from "@/src/components/course-routine-panel";
@@ -304,6 +306,7 @@ export default function CoursePlayerScreen(): JSX.Element {
           accessibilityLabel={t("player.lessonsAndTests")}
           accessibilityRole="button"
           onPress={() => setIsPickerOpen(true)}
+          style={({ pressed }) => [pressed ? { opacity: 0.85 } : null]}
         >
           <Card>
             <View style={styles.lessonsTriggerRow}>
@@ -311,7 +314,14 @@ export default function CoursePlayerScreen(): JSX.Element {
                 <Caption tone="faint">{t("player.lessonsAndTests")}</Caption>
                 <Body numberOfLines={1}>{selectedItem?.title ?? t("player.noLectures")}</Body>
               </View>
-              <Text style={styles.lessonsTriggerChevron}>&#8250;</Text>
+              <View style={styles.chevronWrap}>
+                <SymbolView
+                  name="chevron.right"
+                  size={16}
+                  tintColor={colors.mutedFaint}
+                  weight="semibold"
+                />
+              </View>
             </View>
           </Card>
         </Pressable>
@@ -499,6 +509,14 @@ export default function CoursePlayerScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   badgesRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
+  chevronWrap: {
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.full,
+    height: 28,
+    justifyContent: "center",
+    width: 28
+  },
   chunk: {
     backgroundColor: colors.chipActive,
     borderRadius: radius.full,
@@ -510,7 +528,6 @@ const styles = StyleSheet.create({
   chunkDone: { backgroundColor: colors.accent },
   chunkRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   content: { gap: spacing.md, padding: spacing.lg },
-  lessonsTriggerChevron: { color: colors.mutedFaint, fontSize: 22 },
   lessonsTriggerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   lessonsTriggerText: { flex: 1, gap: 2 },
   noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm },

@@ -14,6 +14,8 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { Host } from "@expo/ui";
+
 import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
 import { colors, fonts } from "@/src/theme/tokens";
@@ -39,14 +41,18 @@ function AppStack(): JSX.Element {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar animated style="light" />
       <Stack
         screenOptions={{
+          animation: "slide_from_right",
           contentStyle: { backgroundColor: colors.background },
+          headerBlurEffect: "dark",
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: "transparent" },
           headerTintColor: colors.ink,
-          headerTitleStyle: { fontFamily: fonts.displayBold }
+          headerTitleStyle: { fontFamily: fonts.displayBold, fontSize: 17 },
+          headerLargeTitle: false,
+          headerTransparent: false
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -101,14 +107,16 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <SafeAreaProvider>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
-      >
-        <LocaleProvider>
-          <AppStack />
-        </LocaleProvider>
-      </PersistQueryClientProvider>
+      <Host style={{ flex: 1 }}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
+        >
+          <LocaleProvider>
+            <AppStack />
+          </LocaleProvider>
+        </PersistQueryClientProvider>
+      </Host>
     </SafeAreaProvider>
   );
 }
