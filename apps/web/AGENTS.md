@@ -230,7 +230,7 @@ Auth gating is **client-side**, in the layout route. `src/routes/dashboard.tsx` 
 
 `src/lib/auth.ts` re-exports `authClient` from `@mma/auth/client`; `src/lib/auth-server.ts` re-exports the server `auth` from `@mma/auth/tanstack-server`. The Better Auth HTTP handler is served by **this app** at `src/routes/api/auth/$.ts`, which lazily imports the server module so it never reaches the browser bundle. Keep that dynamic import.
 
-Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`. Role lives at `session.session.role`.
+Read session state with `useAuthSession()` from `src/hooks/use-auth-session.ts`. Role lives at `session.session.role`. It is a TanStack Query under `queryKeys.auth.session()`, deliberately: the header, the dashboard shell and the page all ask, and one shared key means one request instead of three per navigation. Never fetch the session directly with `authClient.getSession()` in a component — that reintroduces the storm, and enough of it trips Better Auth's rate limiter, at which point `/sign-out` answers 429 and the person clicking it stays signed in.
 
 ## The two hops for the mobile app
 

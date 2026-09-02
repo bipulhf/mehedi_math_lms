@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState, type JSX, type PropsWithChildren, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -49,6 +51,7 @@ export function AppShell({
   primaryAction,
   title
 }: AppShellProps): JSX.Element {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const t = useT();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -62,8 +65,26 @@ export function AppShell({
     setIsSigningOut(true);
 
     try {
-      await authClient.signOut();
-      await router.navigate({ to: "/auth/sign-in" });
+      // Better Auth's client answers with an error rather than throwing, so an
+      // unchecked call looks identical whether the session was revoked or the
+      // request came back 429. Navigating on that would show the sign-in page
+      // to somebody who is still signed in -- which is the version of this
+      // that sends people back to refresh and check.
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(t("nav.signOutFailed"));
+
+        return;
+      }
+
+      // Everything cached was fetched as that person. Dropping it all is both
+      // the correctness fix -- the next mount would otherwise read a session
+      // out of the cache and still look signed in -- and the reason the next
+      // person at this browser cannot page back through their data.
+      queryClient.clear();
+
+      await router.navigate({ replace: true, to: "/auth/sign-in" });
     } finally {
       setIsSigningOut(false);
     }

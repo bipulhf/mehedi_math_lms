@@ -536,6 +536,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "nav.menu": "Menu",
   "nav.login": "Log in",
   "nav.signOut": "Sign out",
+  "nav.signOutFailed": "Could not sign out. Try again.",
   "nav.teachers": "Teachers",
 
   "status.archived": "Archived",

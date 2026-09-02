@@ -26,6 +26,11 @@ export const queryKeys = {
     course: (courseId: string) => ["analytics", "course", courseId] as const,
     teacher: () => ["analytics", "teacher"] as const
   },
+  auth: {
+    accounts: () => ["auth", "accounts"] as const,
+    all: () => ["auth"] as const,
+    session: () => ["auth", "session"] as const
+  },
   banners: {
     active: () => ["banners", "active"] as const,
     all: () => ["banners"] as const,
