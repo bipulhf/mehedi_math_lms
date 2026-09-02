@@ -4,15 +4,20 @@ const path = require("node:path");
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
+const sharedSourceFolders = [
+  path.resolve(workspaceRoot, "packages/i18n"),
+  path.resolve(workspaceRoot, "packages/shared")
+];
 
 const config = getDefaultConfig(projectRoot);
 
 /**
  * `@mma/shared` is consumed unbuilt — its package `exports` point at `.ts`
- * source. Metro will not leave the app directory or compile TypeScript from
- * another package unless it is told to, so both are configured here.
+ * source, as does `@mma/i18n`. Metro must watch both packages, but watching
+ * the workspace root also recursively watches its hoisted `node_modules`.
+ * That uses tens of thousands of Linux inotify watches before Metro can start.
  */
-config.watchFolders = [workspaceRoot];
+config.watchFolders = sharedSourceFolders;
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules")
