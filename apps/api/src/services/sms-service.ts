@@ -1,12 +1,12 @@
+import { normalizeBdPhoneE164 } from "@genex/shared";
 import type { AdminSendSmsInput, AdminSmsHistoryQuery } from "@genex/shared";
+import type { OnecodesoftSmsProvider } from "@genex/sms";
 
 import { env } from "@/lib/env";
 import { enqueue } from "@/lib/queues";
 import { processSmsBatchJob } from "@/services/sms-batch-processor";
 import type { CourseRepository } from "@/repositories/course-repository";
 import type { SmsRepository, SmsTargetKind } from "@/repositories/sms-repository";
-import type { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
-import { normalizeBdPhoneE164 } from "@/utils/phone-bd";
 import { ValidationError } from "@/utils/errors";
 
 export interface SmsBatchListView {

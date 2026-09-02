@@ -1,3 +1,4 @@
+import { smsEnv } from "@genex/sms";
 import { z } from "zod";
 
 const apiEnvSchema = z.object({
@@ -57,9 +58,7 @@ const apiEnvSchema = z.object({
   FIREBASE_CLIENT_AUTH_DOMAIN: z.string().optional(),
   FIREBASE_CLIENT_PROJECT_ID: z.string().optional(),
   FIREBASE_CLIENT_MESSAGING_SENDER_ID: z.string().optional(),
-  FIREBASE_CLIENT_APP_ID: z.string().optional(),
-  ONECODESOFT_API_KEY: z.string().optional(),
-  ONECODESOFT_SENDER_ID: z.string().optional()
+  FIREBASE_CLIENT_APP_ID: z.string().optional()
 });
 
 const parsedEnv = apiEnvSchema.parse(process.env);
@@ -104,9 +103,10 @@ export const env = {
   isSslCommerzConfigured:
     parsedEnv.SSLCOMMERZ_STORE_ID !== "replace-me" &&
     parsedEnv.SSLCOMMERZ_STORE_PASSWORD !== "replace-me",
-  isOnecodesoftSmsConfigured:
-    Boolean(parsedEnv.ONECODESOFT_API_KEY && parsedEnv.ONECODESOFT_API_KEY.trim().length > 0) &&
-    Boolean(parsedEnv.ONECODESOFT_SENDER_ID && parsedEnv.ONECODESOFT_SENDER_ID.trim().length > 0),
+  // `@genex/sms` owns the credentials now -- the auth package sends the sign-in
+  // OTP through the same provider and cannot import this file. Kept here under
+  // its old name because it is what the admin SMS page reads.
+  isOnecodesoftSmsConfigured: smsEnv.isSmsConfigured,
   corsOrigins: parsedEnv.CORS_ORIGINS
     ? parsedEnv.CORS_ORIGINS.split(",")
         .map((origin) => origin.trim())

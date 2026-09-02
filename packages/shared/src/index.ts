@@ -5,6 +5,7 @@ export * from "./math-html";
 export * from "./math-plain-text";
 export * from "./math-segments";
 export * from "./math-symbols";
+export * from "./phone-bd";
 export * from "./progress-chunks";
 export * from "./script-capture";
 export * from "./slug";

@@ -21,6 +21,7 @@
     "@genex/auth": "workspace:*",
     "@genex/db": "workspace:*",
     "@genex/shared": "workspace:*",
+    "@genex/sms": "workspace:*",
     "@resvg/resvg-js": "^2.6.2",
     "bullmq": "^6",
     "dotenv": "^17.4.2",

@@ -1,3 +1,9 @@
+/**
+ * A Bangladesh mobile number in the shape the provider wants: `8801XXXXXXXXX`,
+ * thirteen digits, no `+`. Anything this cannot place returns null rather than
+ * a guess -- a wrong number is an SMS delivered to a stranger, and on the OTP
+ * path it is a code delivered to a stranger.
+ */
 export function normalizeBdPhoneE164(raw: string): string | null {
   const digits = raw.replaceAll(/\D/g, "");
 

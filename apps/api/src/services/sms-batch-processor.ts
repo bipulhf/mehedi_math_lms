@@ -1,4 +1,4 @@
-import type { OnecodesoftSmsProvider } from "@/services/onecodesoft-sms-provider";
+import type { OnecodesoftSmsProvider } from "@genex/sms";
 import type { SmsRepository } from "@/repositories/sms-repository";
 
 const CHUNK_SIZE = 50;

@@ -1,4 +1,4 @@
-import { env } from "@/lib/env";
+import { smsEnv } from "./env";
 
 const ONECODESOFT_URL = "https://sms.onecodesoft.com/api/send-bulk-sms";
 
@@ -15,27 +15,21 @@ interface OnecodesoftRequestBody {
 
 export class OnecodesoftSmsProvider {
   public isConfigured(): boolean {
-    return (
-      Boolean(env.ONECODESOFT_API_KEY && env.ONECODESOFT_API_KEY.length > 0) &&
-      Boolean(env.ONECODESOFT_SENDER_ID && env.ONECODESOFT_SENDER_ID.length > 0)
-    );
+    return smsEnv.isSmsConfigured;
   }
 
   public async sendBulk(parameters: readonly OnecodesoftMessageParameter[]): Promise<{
     responseText: string;
     statusCode: number;
   }> {
-    const apiKey = env.ONECODESOFT_API_KEY;
-    const senderId = env.ONECODESOFT_SENDER_ID;
-
-    if (!apiKey || !senderId) {
+    if (!smsEnv.isSmsConfigured) {
       throw new Error("Onecodesoft SMS is not configured");
     }
 
     const body: OnecodesoftRequestBody = {
       MessageParameters: [...parameters],
-      api_key: apiKey,
-      senderid: senderId
+      api_key: smsEnv.ONECODESOFT_API_KEY,
+      senderid: smsEnv.ONECODESOFT_SENDER_ID
     };
 
     const response = await fetch(ONECODESOFT_URL, {
