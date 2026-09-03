@@ -11,11 +11,12 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import type { JSX } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Host } from "@expo/ui";
 
+import { BootSplash } from "@/src/components/boot-splash";
 import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
 import { colors, fonts } from "@/src/theme/tokens";
@@ -26,9 +27,11 @@ export const unstable_settings = {
   initialRouteName: "(tabs)"
 };
 
-// Held until the type scale is real. React Native substitutes the system font
-// for an unresolved family without warning, so a first frame drawn before the
-// fonts land is a frame in the wrong typeface.
+// Held until this file has a frame of its own to hand over to. React Native
+// substitutes the system font for an unresolved family without warning, so the
+// frame that replaces it is `BootSplash` -- the mark and the name, both as
+// bundled images -- and not a screen that would draw words in the wrong
+// typeface.
 void SplashScreen.preventAutoHideAsync();
 
 /**
@@ -80,7 +83,7 @@ function AppStack(): JSX.Element {
   );
 }
 
-export default function RootLayout(): JSX.Element | null {
+export default function RootLayout(): JSX.Element {
   // Created in state, not at module scope: a fast refresh would otherwise keep
   // a client whose cache no longer matches the code that filled it.
   const [queryClient] = useState(createMobileQueryClient);
@@ -95,6 +98,12 @@ export default function RootLayout(): JSX.Element | null {
   });
   const isReady = fontsLoaded || fontError !== null;
 
+  // Handing over on layout rather than on mount: hiding the native splash
+  // before this view has been drawn shows the window behind it for a frame.
+  const handleBootLayout = useCallback(() => {
+    void SplashScreen.hideAsync();
+  }, []);
+
   useEffect(() => {
     if (isReady) {
       void SplashScreen.hideAsync();
@@ -102,7 +111,7 @@ export default function RootLayout(): JSX.Element | null {
   }, [isReady]);
 
   if (!isReady) {
-    return null;
+    return <BootSplash onLayout={handleBootLayout} />;
   }
 
   return (
