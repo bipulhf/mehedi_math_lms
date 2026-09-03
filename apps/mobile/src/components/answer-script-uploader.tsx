@@ -2,14 +2,15 @@ import { maxScriptPagesPerAnswer } from "@mma/shared";
 import { Image } from "expo-image";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, View } from "react-native";
 
 import { Body, Button, Caption } from "@/src/components/ui";
 import type { ScriptPageView } from "@/src/lib/api/tests";
 import { addScriptPage, removeScriptPage, reorderScriptPages } from "@/src/lib/api/tests";
 import { pickScriptPage, uploadScriptPage } from "@/src/lib/script-capture";
 import { useT } from "@/src/lib/locale";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 interface AnswerScriptUploaderProps {
   onPagesChange: (pages: readonly ScriptPageView[]) => void;
@@ -31,6 +32,7 @@ export function AnswerScriptUploader({
   questionId,
   submissionId
 }: AnswerScriptUploaderProps): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const [isBusy, setIsBusy] = useState(false);
   // A dimmed button with an ellipsis was the only sign a page was going up,
@@ -201,7 +203,7 @@ export function AnswerScriptUploader({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   container: { gap: spacing.sm },
   empty: {
@@ -227,4 +229,4 @@ const styles = StyleSheet.create({
     padding: spacing.sm
   },
   thumbnail: { borderRadius: radius.sm, height: 220, width: "100%" }
-});
+}));

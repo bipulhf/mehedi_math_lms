@@ -1,68 +1,15 @@
 /**
- * The Mehedi's Math Academy palette, transcribed from the dark theme in
- * `apps/web/src/styles/app.css` into plain values React Native can use.
- * `DESIGN.md` is the authority; this file only restates it in a form Metro can
- * bundle.
+ * The parts of the design system that do not change with the theme: the radius
+ * scale, the 4pt spacing scale, the font families and the type scale.
  *
- * The app ships the dark theme only — there is no toggle here, and a light
- * value would have nothing to switch it. Keeping the names identical to the
- * web tokens is what makes a screen ported from web land on the right colour
- * without a lookup.
+ * Colour lives in `palettes.ts` and is reached through `useTheme()` /
+ * `makeStyles()` in `theme.tsx`, because it depends on which theme is on.
+ * `DESIGN.md` is the authority for all of it; these files only restate it in a
+ * form Metro can bundle.
  */
-export const colors = {
-  /** Interactive blue. Lighter than the logo's #007bff, which is 4.1:1 on this
-   * navy — readable as a rule, not as the word a student is meant to tap. */
-  accent: "#4d9fff",
-  accentStrong: "#7ab6ff",
-  /** Dark text on a bright constant fill: a gold badge, a white chip. */
-  actionForeground: "#172033",
-  background: "#0b1220",
-  barIdle: "#334155",
-  barTrack: "#1e293b",
-  brandBlue: "#007bff",
-  brandGold: "#f5c066",
-  brandOrange: "#f5a723",
-  brandOrangeStrong: "#ffbf4d",
-  card: "#172033",
-  chipActive: "rgba(77, 159, 255, 0.16)",
-  correct: "#4ade80",
-  dotIdle: "#3a4a63",
-  error: "#f87171",
-  hairline: "#283548",
-  hairlineFaint: "#1f2b3d",
-  ink: "#f8fafc",
-  inkMuted: "#cbd5e1",
-  /** A field's own fill, one step below the card it sits on. */
-  input: "#111827",
-  lineStrong: "#3a4a63",
-  muted: "#94a3b8",
-  mutedFaint: "#8496ae",
-  mutedLight: "#8a9ab0",
-  /** What text on top of `accent` is — the page's navy, not white, which is
-   * 2.6:1 on this blue. */
-  onAccent: "#0b1220",
-  onError: "#0b1220",
-  online: "#4ade80",
-  panelWarm: "#111827",
-  /** Literal white, for anything sitting on a photograph or a video. */
-  paper: "#ffffff",
-  placeholder: "#8496ae",
-  placeholderFill: "#1e293b",
-  /** Anything that floats over the page needs a fill you cannot see through. */
-  popover: "#1e293b",
-  rowHover: "rgba(77, 159, 255, 0.1)",
-  success: "#4ade80",
-  warning: "#fbbf24"
-} as const;
 
-/**
- * Cards are rounded plates and buttons are soft controls. `pill` is for pills
- * and chips, `full` for dots and avatars.
- *
- * `square` (16) is the default card radius — slightly larger than DESIGN.md's
- * 14 to read as a native iOS grouped card. `xl` is for hero / cover plates
- * that deserve extra presence.
- */
+export { darkColors, lightColors, palettes, type ColorScheme, type ThemeColors } from "@/src/theme/palettes";
+
 export const radius = {
   pill: 100,
   sm: 10,
@@ -80,22 +27,6 @@ export const spacing = {
   xs: 4,
   xxl: 32,
   xxxl: 48
-} as const;
-
-/**
- * Native surface tokens — not a second theme, just the pieces a native shell
- * needs that the web theme doesn't name: translucent bar fills, the grouped
- * list background, and the subtle elevation a dark card needs to lift off
- * navy without a shadow (DESIGN.md §2 forbids shadows).
- */
-export const native = {
-  /** Translucent navigation / tab bar fill — card at 92% over background. */
-  barTranslucent: "rgba(23, 32, 51, 0.92)",
-  groupedBackground: "#0b1220",
-  groupedCard: "#172033",
-  /** The 0.5pt hairline iOS draws between grouped rows. */
-  separator: "rgba(40, 53, 72, 0.8)",
-  tabBarHeight: 49
 } as const;
 
 /**
@@ -134,4 +65,9 @@ export const typography = {
   heading: { fontFamily: fonts.displaySemiBold, fontSize: 22, lineHeight: 30 },
   label: { fontFamily: fonts.monoLabel, fontSize: 12, letterSpacing: 0.72, lineHeight: 16 },
   title: { fontFamily: fonts.displaySemiBold, fontSize: 20, lineHeight: 27 }
+} as const;
+
+/** The one measurement the native shell needs that the scales above do not name. */
+export const layout = {
+  tabBarHeight: 49
 } as const;

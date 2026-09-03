@@ -2,16 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Redirect, Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
-} from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import {
   Badge,
@@ -36,7 +27,8 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useMessagingSocket } from "@/src/lib/use-messaging-socket";
 import { useSession } from "@/src/lib/use-session";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 const MINIMUM_REPORT_LENGTH = 10;
 const POLL_INTERVAL_MS = 10_000;
@@ -44,6 +36,8 @@ const POLL_INTERVAL_MS = 10_000;
 const TYPING_IDLE_MS = 2_000;
 
 export default function ConversationScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
   const format = useFormat();
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
@@ -278,7 +272,7 @@ export default function ConversationScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   bubble: {
     borderRadius: 18,
     gap: 4,
@@ -341,6 +335,6 @@ const styles = StyleSheet.create({
     textAlignVertical: "top"
   },
   reportLink: { alignSelf: "center", padding: spacing.md }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

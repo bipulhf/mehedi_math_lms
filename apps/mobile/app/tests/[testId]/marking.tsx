@@ -4,15 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View
-} from "react-native";
+import { Alert, Pressable, ScrollView, TextInput, useWindowDimensions, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
 import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
@@ -45,7 +37,8 @@ import {
   type MarkingWorkItem
 } from "@/src/lib/marking-work-list";
 import { queryKeys } from "@/src/lib/query";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /** Renewed well inside the API's two-minute claim, so a working teacher never loses it. */
 const claimRenewalMs = 45_000;
@@ -70,6 +63,8 @@ const markingColors: readonly MarkingColor[] = ["RED", "GREEN", "BLUE", "BLACK"]
  * every answered question has a mark.
  */
 export default function MarkingScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const t = useT();
   const { width: windowWidth } = useWindowDimensions();
@@ -448,7 +443,7 @@ export default function MarkingScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   content: { gap: spacing.md, padding: spacing.lg },
   guide: { backgroundColor: colors.panelWarm, borderRadius: radius.sm, padding: spacing.md },
   markInput: {
@@ -471,6 +466,6 @@ const styles = StyleSheet.create({
   },
   queueRowActive: { backgroundColor: colors.chipActive },
   row: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

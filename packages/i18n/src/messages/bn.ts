@@ -664,6 +664,7 @@ export const bn = {
   "common.name": "নাম",
   "common.description": "বিস্তারিত",
   "common.cancel": "বাদ দাও",
+  "common.or": "অথবা",
   "admin.bugs.title": "সমস্যার তালিকা",
   "admin.bugs.statusFilter": "অবস্থা",
   "admin.bugs.allStatuses": "সবগুলো",

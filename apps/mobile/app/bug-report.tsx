@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Redirect, Stack } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 
 import {
   Badge,
@@ -25,7 +25,8 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { HtmlContent } from "@/src/components/html-content";
 import { useSession } from "@/src/lib/use-session";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * The app had no way to report the app. Everything a student hits on a phone —
@@ -44,6 +45,7 @@ import { colors, spacing } from "@/src/theme/tokens";
 const DESCRIPTION_FLOOR = 20;
 
 export default function BugReportScreen(): JSX.Element {
+  const styles = useStyles();
   const queryClient = useQueryClient();
   const t = useT();
   const format = useFormat();
@@ -204,7 +206,7 @@ export default function BugReportScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   content: { gap: spacing.lg, padding: spacing.lg },
   flex: { flex: 1 },
   form: { gap: spacing.lg },
@@ -218,6 +220,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   reportMeta: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

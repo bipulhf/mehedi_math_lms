@@ -1,8 +1,9 @@
 import type { JSX } from "react";
 import { useRef, useState } from "react";
-import { PanResponder, StyleSheet, View } from "react-native";
+import { PanResponder, View } from "react-native";
 
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 const TRACK_HEIGHT = 3;
 const THUMB_SIZE = 12;
@@ -35,6 +36,7 @@ export function PenWidthSlider({
   onChange: (value: number) => void;
   value: number;
 }): JSX.Element {
+  const styles = useStyles();
   const trackWidthRef = useRef(0);
   const dragStartFractionRef = useRef(0);
   const [dragFraction, setDragFraction] = useState<number | null>(null);
@@ -107,7 +109,7 @@ export function PenWidthSlider({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   preview: { backgroundColor: colors.ink, borderRadius: radius.full },
   row: { alignItems: "center", flexDirection: "row", gap: spacing.sm, minWidth: 120 },
   scrubZone: { flex: 1, height: Math.max(44, HIT_HEIGHT), justifyContent: "center" },
@@ -130,4 +132,4 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     height: TRACK_HEIGHT
   }
-});
+}));

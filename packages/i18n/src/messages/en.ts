@@ -665,6 +665,7 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "common.name": "Name",
   "common.description": "Description",
   "common.cancel": "Cancel",
+  "common.or": "or",
   "admin.bugs.title": "Bug triage",
   "admin.bugs.statusFilter": "Status",
   "admin.bugs.allStatuses": "All statuses",

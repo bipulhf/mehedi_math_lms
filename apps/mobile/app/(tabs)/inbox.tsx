@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import {
   Badge,
@@ -32,7 +32,8 @@ import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";
 import { usePushRegistration } from "@/src/lib/use-push-registration";
 import { useSession } from "@/src/lib/use-session";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * Messages and notifications, one tab instead of two — the 2026 edtech
@@ -67,6 +68,7 @@ const ConversationRow = memo(function ConversationRow({
 }: {
   conversation: MessageConversation;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
 
@@ -104,6 +106,7 @@ const ConversationRow = memo(function ConversationRow({
 });
 
 function MessagesPane({ canMessage }: { canMessage: boolean }): JSX.Element {
+  const styles = useStyles();
   const router = useRouter();
   const t = useT();
   const { data: conversations = [], isPending } = useQuery({
@@ -157,6 +160,7 @@ function MessagesPane({ canMessage }: { canMessage: boolean }): JSX.Element {
 }
 
 function NotificationsPane(): JSX.Element {
+  const styles = useStyles();
   const router = useRouter();
   const t = useT();
   const format = useFormat();
@@ -257,6 +261,7 @@ function NotificationsPane(): JSX.Element {
 }
 
 export default function InboxScreen(): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const [segment, setSegment] = useState<InboxSegment>("messages");
   const { isPending: isSessionPending, session } = useSession();
@@ -295,7 +300,7 @@ export default function InboxScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   cardRead: { backgroundColor: colors.panelWarm },
   header: { padding: spacing.lg },
   list: { padding: spacing.lg },
@@ -311,6 +316,6 @@ const styles = StyleSheet.create({
   },
   rowName: { alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.sm },
   skeletonList: { gap: spacing.md, padding: spacing.lg }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

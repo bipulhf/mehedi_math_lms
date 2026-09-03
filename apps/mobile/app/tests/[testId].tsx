@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { Redirect, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 
 import { AnswerScriptUploader } from "@/src/components/answer-script-uploader";
 import { HtmlContent } from "@/src/components/html-content";
@@ -33,7 +33,8 @@ import { useExamFocusGuard } from "@/src/lib/use-exam-focus-guard";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 interface DraftAnswer {
   selectedOptionId?: string | undefined;
@@ -47,6 +48,7 @@ function formatRemaining(seconds: number): string {
 }
 
 export default function TestScreen(): JSX.Element {
+  const styles = useStyles();
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const router = useRouter();
   const t = useT();
@@ -532,7 +534,7 @@ export default function TestScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   content: { gap: spacing.md, padding: spacing.lg },
   metaRow: {
@@ -567,6 +569,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.md
   }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

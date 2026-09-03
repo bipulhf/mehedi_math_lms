@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import { Badge, Body, Button, Caption, SkeletonBlock } from "@/src/components/ui";
 import { AccordionRow } from "@/src/components/ui-display";
@@ -9,7 +9,8 @@ import type { AssessmentChapterSummary } from "@/src/lib/api/tests";
 import { listMySubmissions, listTestSubmissions } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * Where one exam stands, from the reader's own point of view: how many papers
@@ -112,6 +113,7 @@ export function CourseExamGroup({
   onToggle: () => void;
   subtitle: string;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const router = useRouter();
@@ -184,7 +186,7 @@ export function CourseExamGroup({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   examCard: {
     backgroundColor: colors.card,
@@ -193,4 +195,4 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md
   }
-});
+}));

@@ -1,14 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
 import { Body, Caption, Card, EmptyState, SkeletonBlock, Title } from "@/src/components/ui";
 import { getCourseRoutine } from "@/src/lib/api/routines";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * The routine as a student reads it: whichever halves the teacher published.
@@ -17,6 +18,7 @@ import { colors, spacing } from "@/src/theme/tokens";
  * public storage, so unlike a certificate it needs no cookie replayed at it.
  */
 export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
 
   const { data, isPending } = useQuery({
@@ -71,7 +73,7 @@ export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Elem
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   attachmentRow: {
     alignItems: "center",
     borderColor: colors.hairline,
@@ -82,4 +84,4 @@ const styles = StyleSheet.create({
     minHeight: 44,
     padding: spacing.md
   }
-});
+}));

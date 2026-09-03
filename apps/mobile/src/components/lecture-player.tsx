@@ -10,7 +10,8 @@ import { Caption, ErrorNotice } from "@/src/components/ui";
 import { mobileEnv } from "@/src/lib/env";
 import { resolveLectureVideo } from "@/src/lib/lecture-video";
 import { useT } from "@/src/lib/locale";
-import { colors, radius } from "@/src/theme/tokens";
+import { radius } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * Lecture playback. `expo-video` plays a media file directly; a YouTube/Vimeo
@@ -38,6 +39,7 @@ function StreamPlayer({
   onWatched: () => void;
   uri: string;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const [hasFailed, setHasFailed] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -206,6 +208,7 @@ function buildEmbedPlayerUrl(videoUrl: string, title: string): string {
 }
 
 function EmbedPlayer({ title, videoUrl }: { title: string; videoUrl: string }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.stage}>
       <WebView
@@ -245,7 +248,7 @@ export function LecturePlayer({
   return <StreamPlayer isCompleted={isCompleted} onWatched={onWatched} uri={source.uri} />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   stage: {
     backgroundColor: colors.background,
     borderColor: colors.hairlineFaint,
@@ -254,4 +257,4 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   video: { aspectRatio: 16 / 9, width: "100%" }
-});
+}));

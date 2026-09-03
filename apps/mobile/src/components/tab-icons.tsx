@@ -1,7 +1,6 @@
 import type { JSX } from "react";
 import { StyleSheet, View } from "react-native";
-
-import { colors } from "@/src/theme/tokens";
+import { useThemeColors } from "@/src/theme/theme";
 
 /**
  * The four tab icons, drawn with plain views.
@@ -31,6 +30,7 @@ type IconProps = {
 };
 
 function strokeColor(focused: boolean): string {
+  const colors = useThemeColors();
   return focused ? colors.ink : colors.muted;
 }
 

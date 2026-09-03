@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { BottomSheet } from "@expo/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -30,7 +30,8 @@ import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 type SortOrder = "newest" | "priceLow" | "priceHigh";
 
@@ -71,6 +72,7 @@ function sortCourses(
  * re-renders the whole visible window on every keystroke in the search field.
  */
 const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const teacher = course.teachers[0];
@@ -135,6 +137,7 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
 });
 
 function CatalogSkeleton(): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.skeletonList}>
       {[0, 1, 2].map((key) => (
@@ -152,6 +155,8 @@ function CatalogSkeleton(): JSX.Element {
 }
 
 export default function CatalogScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
   const format = useFormat();
 
@@ -414,7 +419,7 @@ export default function CatalogScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   clearLink: { color: colors.accent, fontFamily: fonts.bodyMedium, fontSize: 13 },
   coverBadge: { left: spacing.sm, position: "absolute", top: spacing.sm },
   filterBadge: {
@@ -495,6 +500,6 @@ const styles = StyleSheet.create({
   teacherName: { color: colors.muted, flex: 1, fontFamily: fonts.body, fontSize: 14 },
   teacherRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   titleText: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 18, lineHeight: 24 }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

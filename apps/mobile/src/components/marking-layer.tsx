@@ -13,7 +13,8 @@ import { PanResponder, StyleSheet, TextInput, View } from "react-native";
 import { Image } from "expo-image";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
 
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 export type MarkingTool = "PEN" | "ERASER" | "NOTE" | MarkingStamp;
 
@@ -68,6 +69,8 @@ export function MarkingLayer({
   tool,
   width
 }: MarkingLayerProps): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const aspect = pageWidth > 0 && pageHeight > 0 ? pageHeight / pageWidth : 1.4142;
   const height = width * aspect;
   const [draftPoints, setDraftPoints] = useState<{ x: number; y: number }[]>([]);
@@ -308,7 +311,7 @@ export function MarkingLayer({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   textInput: {
     backgroundColor: colors.card,
     borderColor: colors.hairline,
@@ -319,4 +322,4 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
     position: "absolute"
   }
-});
+}));

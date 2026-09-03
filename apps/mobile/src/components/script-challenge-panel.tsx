@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 import {
   Badge,
@@ -17,7 +17,8 @@ import {
 import { listScriptChallenges, raiseScriptChallenge } from "@/src/lib/api/challenges";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /** The floor `raiseScriptChallengeSchema` enforces; shown so it is not a surprise. */
 const REASON_MIN_LENGTH = 20;
@@ -39,6 +40,7 @@ export function ScriptChallengePanel({
   canRaise: boolean;
   submissionId: string;
 }): JSX.Element | null {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const queryClient = useQueryClient();
@@ -163,7 +165,7 @@ export function ScriptChallengePanel({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   entry: {
     borderLeftColor: colors.hairline,
     borderLeftWidth: 2,
@@ -183,4 +185,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   multiline: { minHeight: 96, paddingTop: spacing.md, textAlignVertical: "top" }
-});
+}));

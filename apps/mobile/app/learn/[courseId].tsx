@@ -2,7 +2,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -33,7 +33,8 @@ import { ApiError } from "@/src/lib/api-client";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useRecordStudyActivity } from "@/src/lib/use-streak";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * The course player. Lectures and tests are unified into one `sortOrder`-ordered
@@ -62,6 +63,7 @@ function ChunkedProgress({
   currentLectureId: string | null;
   lectures: readonly ContentLecture[];
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.chunkRow}>
       {lectures.map((lecture) => (
@@ -79,6 +81,8 @@ function ChunkedProgress({
 }
 
 export default function CoursePlayerScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const { courseId } = useLocalSearchParams<{ courseId: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -502,7 +506,7 @@ export default function CoursePlayerScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
   chevronWrap: {
     alignItems: "center",
@@ -528,6 +532,6 @@ const styles = StyleSheet.create({
   noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   prevNext: { flexDirection: "row", gap: spacing.md },
   statsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

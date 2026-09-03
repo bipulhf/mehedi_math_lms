@@ -1,7 +1,7 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
 import {
@@ -21,7 +21,8 @@ import {
 } from "@/src/lib/api/reviews";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * Course reviews. The app could enrol but not review, so mobile students never
@@ -50,6 +51,7 @@ function RatingPicker({
   onChange: (rating: number) => void;
   value: number;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.ratingRow}>
       {RATINGS.map((rating) => (
@@ -75,6 +77,7 @@ export function CourseReviews({
   canReview: boolean;
   courseId: string;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
@@ -193,7 +196,7 @@ export function CourseReviews({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   form: { gap: spacing.md, paddingBottom: spacing.lg },
   header: {
     alignItems: "center",
@@ -214,4 +217,4 @@ const styles = StyleSheet.create({
   ratingChipActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   ratingRow: { flexDirection: "row", gap: spacing.sm },
   review: { gap: spacing.xs, paddingVertical: spacing.sm }
-});
+}));

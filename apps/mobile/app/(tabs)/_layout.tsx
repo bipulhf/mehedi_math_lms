@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import type { JSX } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -10,7 +10,8 @@ import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { colors, fonts, radius } from "@/src/theme/tokens";
+import { fonts, radius } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 function TabIcon({
   focused,
@@ -19,6 +20,7 @@ function TabIcon({
   focused: boolean;
   name: keyof typeof Ionicons.glyphMap;
 }): JSX.Element {
+  const colors = useThemeColors();
   return (
     <Ionicons color={focused ? colors.accent : colors.muted} name={name} size={24} />
   );
@@ -27,6 +29,7 @@ function TabIcon({
 /** Native views avoid Fabric re-parenting failures in the tab bar. */
 
 function Badge({ count }: { count: number }): JSX.Element | null {
+  const styles = useStyles();
   if (count <= 0) {
     return null;
   }
@@ -39,6 +42,7 @@ function Badge({ count }: { count: number }): JSX.Element | null {
 }
 
 export default function TabsLayout(): JSX.Element {
+  const colors = useThemeColors();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
@@ -75,7 +79,8 @@ export default function TabsLayout(): JSX.Element {
         tabBarInactiveTintColor: colors.muted,
         tabBarLabelStyle: { fontFamily: fonts.displaySemiBold, fontSize: 11, marginTop: 2 },
         tabBarStyle: {
-          backgroundColor: "rgba(23, 32, 51, 0.96)",
+          // The palette, not a literal: this bar was navy on both themes.
+          backgroundColor: colors.barTranslucent,
           borderTopColor: colors.hairlineFaint,
           borderTopWidth: 0.5,
           height: 83,
@@ -128,7 +133,7 @@ export default function TabsLayout(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badge: {
     alignItems: "center",
     backgroundColor: colors.accent,
@@ -140,4 +145,4 @@ const styles = StyleSheet.create({
     top: -6
   },
   badgeText: { color: colors.onAccent, fontFamily: fonts.displayBold, fontSize: 10 }
-});
+}));

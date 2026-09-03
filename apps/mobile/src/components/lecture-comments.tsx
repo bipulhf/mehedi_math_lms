@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
+import { Alert, View } from "react-native";
 
 import {
   Body,
@@ -22,7 +22,8 @@ import {
 } from "@/src/lib/api/comments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * Lecture discussion — the one place a student asks a question mid-lesson.
@@ -55,6 +56,7 @@ function CommentEntry({
   onReply?: (parentId: string) => void;
   onUpdate: (id: string, content: string) => void;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const [isEditing, setIsEditing] = useState(false);
@@ -145,6 +147,7 @@ function CommentThread({
   onReply: (parentId: string) => void;
   onUpdate: (id: string, content: string) => void;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.thread}>
       <CommentEntry
@@ -169,6 +172,7 @@ function CommentThread({
 }
 
 export function LectureComments({ lectureId }: { lectureId: string }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
@@ -281,7 +285,7 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   actionsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   comment: { gap: spacing.xs },
   commentHeader: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
@@ -302,4 +306,4 @@ const styles = StyleSheet.create({
   },
   skeleton: { gap: spacing.sm },
   thread: { gap: spacing.sm, paddingVertical: spacing.sm }
-});
+}));

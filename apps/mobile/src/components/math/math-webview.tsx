@@ -6,7 +6,8 @@ import { StyleSheet, View } from "react-native";
 import { WebView } from "react-native-webview";
 
 import { katexCss } from "@/src/components/math/katex-css";
-import { colors, fonts, typography } from "@/src/theme/tokens";
+import { fonts, typography } from "@/src/theme/tokens";
+import { useThemeColors } from "@/src/theme/theme";
 
 /**
  * Rich text with typeset maths, on a phone.
@@ -42,6 +43,7 @@ const MEASURE_SCRIPT = `
 `;
 
 function buildDocument(bodyHtml: string, isMuted: boolean): string {
+  const colors = useThemeColors();
   const textColor = isMuted ? colors.muted : colors.ink;
 
   return `<!doctype html>

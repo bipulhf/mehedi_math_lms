@@ -4,7 +4,8 @@ import { useWindowDimensions } from "react-native";
 import RenderHTML, { type HTMLSource } from "react-native-render-html";
 
 import { MathWebView } from "@/src/components/math/math-webview";
-import { colors, fonts, typography } from "@/src/theme/tokens";
+import { fonts, typography } from "@/src/theme/tokens";
+import { useThemeColors } from "@/src/theme/theme";
 
 export interface HtmlContentProps {
   html: string | null | undefined;
@@ -12,6 +13,7 @@ export interface HtmlContentProps {
 }
 
 export function HtmlContent({ html, muted = false }: HtmlContentProps): JSX.Element | null {
+  const colors = useThemeColors();
   const { width } = useWindowDimensions();
   const trimmed = html?.trim() ?? "";
 

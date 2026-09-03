@@ -3,7 +3,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ScrollView, Text, useWindowDimensions, View } from "react-native";
 
 import { CourseCompletionNotice } from "@/src/components/course-completion-notice";
 import { HtmlContent } from "@/src/components/html-content";
@@ -13,13 +13,16 @@ import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/sr
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * What a submitted attempt shows: the headline score while the attempt is
  * ungraded, then each question with the student's answer once it is.
  */
 export default function SubmissionResultScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const { width: windowWidth } = useWindowDimensions();
   // A page is laid out inside a card, so the drawable width is the screen less
   // the screen padding and the card's own.
@@ -229,7 +232,7 @@ export default function SubmissionResultScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { gap: spacing.md, padding: spacing.lg },
   optionRow: {
@@ -254,6 +257,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs
   },
   outcomePillText: { fontFamily: fonts.bodySemiBold, fontSize: 13 }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

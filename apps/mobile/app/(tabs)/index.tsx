@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import {
   Badge,
@@ -28,7 +28,8 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 function sfToIon(sf: string): string {
   const map: Record<string, string> = {
@@ -53,6 +54,7 @@ function DocumentAction({
   kind: DocumentKind;
   label: string;
 }): JSX.Element {
+  const styles = useStyles();
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -82,6 +84,7 @@ const EnrollmentRow = memo(function EnrollmentRow({
 }: {
   enrollment: StudentEnrollment;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const isComplete = enrollment.status === "COMPLETED" || enrollment.completedAt !== null;
@@ -165,6 +168,8 @@ function SummaryMetric({
   label: string;
   value: string;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   return (
     <View style={styles.metric}>
       <View style={styles.metricIcon}>
@@ -188,6 +193,8 @@ function PaymentReminderRow({
   enrollment: StudentEnrollment;
   onDismiss: () => void;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
 
   return (
@@ -229,6 +236,7 @@ function PaymentReminderRow({
  * that the real screen doesn't visibly jump into place once it loads.
  */
 function HomeSkeleton(): JSX.Element {
+  const styles = useStyles();
   return (
     <View>
       <View style={styles.hero}>
@@ -302,6 +310,8 @@ function StudentDashboardHeader({
   router: ReturnType<typeof useRouter>;
   t: ReturnType<typeof useT>;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const streak = useStreak();
   const [dismissedPaymentIds, setDismissedPaymentIds] = useState<ReadonlySet<string>>(new Set());
   const visiblePayments = awaitingPayment.filter(
@@ -402,6 +412,7 @@ function StudentDashboardHeader({
 }
 
 export default function HomeScreen(): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const { isPending: isSessionPending, session } = useSession();
@@ -503,7 +514,7 @@ export default function HomeScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
   emptyWrap: { padding: spacing.lg },
   examsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
@@ -625,6 +636,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     padding: spacing.lg
   }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

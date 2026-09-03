@@ -19,7 +19,8 @@ import { Host } from "@expo/ui";
 import { BootSplash } from "@/src/components/boot-splash";
 import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
-import { colors, fonts } from "@/src/theme/tokens";
+import { fonts } from "@/src/theme/tokens";
+import { ThemeProvider, useTheme } from "@/src/theme/theme";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -40,16 +41,19 @@ void SplashScreen.preventAutoHideAsync();
  * one level up, so this cannot be inlined into the component that mounts it.
  */
 function AppStack(): JSX.Element {
+  const { colors, isDark } = useTheme();
   const t = useT();
 
   return (
     <>
-      <StatusBar animated style="light" />
+      {/* The bar's own glyphs, not the app's: light content over a dark theme,
+          dark content over a light one. */}
+      <StatusBar animated style={isDark ? "light" : "dark"} />
       <Stack
         screenOptions={{
           animation: "slide_from_right",
           contentStyle: { backgroundColor: colors.background },
-          headerBlurEffect: "dark",
+          headerBlurEffect: isDark ? "dark" : "light",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "transparent" },
           headerTintColor: colors.ink,
@@ -111,7 +115,11 @@ export default function RootLayout(): JSX.Element {
   }, [isReady]);
 
   if (!isReady) {
-    return <BootSplash onLayout={handleBootLayout} />;
+    return (
+      <ThemeProvider>
+        <BootSplash onLayout={handleBootLayout} />
+      </ThemeProvider>
+    );
   }
 
   return (
@@ -121,9 +129,11 @@ export default function RootLayout(): JSX.Element {
           client={queryClient}
           persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
         >
-          <LocaleProvider>
-            <AppStack />
-          </LocaleProvider>
+          <ThemeProvider>
+            <LocaleProvider>
+              <AppStack />
+            </LocaleProvider>
+          </ThemeProvider>
         </PersistQueryClientProvider>
       </Host>
     </SafeAreaProvider>

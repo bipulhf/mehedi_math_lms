@@ -10,7 +10,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { getActiveBanner } from "@/src/lib/api/banners";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, fonts, spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { useThemeColors, type ThemeColors } from "@/src/theme/theme";
 
 /**
  * The same curated backgrounds the web strip uses, as values Metro can bundle
@@ -21,13 +22,17 @@ import { colors, fonts, spacing } from "@/src/theme/tokens";
  * a native dependency, so it takes the middle stop, which is the one the other
  * two were chosen around.
  */
-const presetStyles: Record<BannerPreset, { background: string; foreground: string }> = {
-  CYAN: { background: colors.accent, foreground: colors.onAccent },
-  INK: { background: colors.panelWarm, foreground: colors.ink },
-  ORANGE: { background: colors.brandOrange, foreground: colors.actionForeground },
-  SPECTRUM: { background: colors.brandOrangeStrong, foreground: colors.actionForeground },
-  YELLOW: { background: colors.brandOrangeStrong, foreground: colors.actionForeground }
-};
+function presetColors(
+  colors: ThemeColors
+): Record<BannerPreset, { background: string; foreground: string }> {
+  return {
+    CYAN: { background: colors.accent, foreground: colors.onAccent },
+    INK: { background: colors.panelWarm, foreground: colors.ink },
+    ORANGE: { background: colors.brandOrange, foreground: colors.actionForeground },
+    SPECTRUM: { background: colors.brandOrangeStrong, foreground: colors.actionForeground },
+    YELLOW: { background: colors.brandOrangeStrong, foreground: colors.actionForeground }
+  };
+}
 
 /**
  * The site-wide promo strip an admin manages. Nothing renders until an active
@@ -39,6 +44,7 @@ const presetStyles: Record<BannerPreset, { background: string; foreground: strin
  * reads as a sentence rather than as markup.
  */
 export function BannerStrip(): JSX.Element | null {
+  const colors = useThemeColors();
   const t = useT();
   const [dismissedId, setDismissedId] = useState<string | null>(null);
 
@@ -51,7 +57,7 @@ export function BannerStrip(): JSX.Element | null {
     return null;
   }
 
-  const preset = presetStyles[banner.backgroundPreset];
+  const preset = presetColors(colors)[banner.backgroundPreset];
   const message = richTextToPlainText(banner.message);
 
   return (

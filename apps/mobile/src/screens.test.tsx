@@ -11,6 +11,7 @@ import type { CourseSummary } from "@/src/lib/api/courses";
 import type { StudentEnrollment } from "@/src/lib/api/enrollments";
 import * as auth from "@/src/lib/auth";
 import { LocaleProvider } from "@/src/lib/locale";
+import { ThemeProvider } from "@/src/theme/theme";
 
 import CatalogScreen from "@/app/(tabs)/explore";
 import HomeScreen from "@/app/(tabs)/index";
@@ -129,9 +130,11 @@ function renderScreen(node: JSX.Element): void {
         insets: { bottom: 0, left: 0, right: 0, top: 0 }
       }}
     >
-      <LocaleProvider>
-        <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
-      </LocaleProvider>
+      <ThemeProvider>
+        <LocaleProvider>
+          <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+        </LocaleProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

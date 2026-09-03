@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { LecturePlayer } from "@/src/components/lecture-player";
 import { Body, Button, Caption, Card, Title } from "@/src/components/ui";
 import type { ContentLecture } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
-import { colors, fonts, spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /** A lecture whose body is a PDF is a reading, not a video, and reads as one. */
 export function getPdfMaterial(lecture: ContentLecture) {
@@ -23,6 +24,7 @@ function MaterialRow({
   fileUrl: string;
   title: string;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityLabel={title}
@@ -83,6 +85,7 @@ export function LectureBody({
   lecture: ContentLecture;
   onMarkComplete: () => void;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const router = useRouter();
@@ -148,7 +151,7 @@ export function LectureBody({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
   bodyStack: { gap: spacing.md },
   materialRow: {
@@ -172,4 +175,4 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     padding: spacing.lg
   }
-});
+}));

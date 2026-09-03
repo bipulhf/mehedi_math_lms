@@ -4,21 +4,11 @@ import * as Haptics from "expo-haptics";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX, ReactNode } from "react";
 import { useState } from "react";
-import {
-  PixelRatio,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle
-} from "react-native";
+import { PixelRatio, Pressable, Text, TextInput, useWindowDimensions, View, type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
+import { fonts, radius, spacing, typography } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * The primitives every screen is built from. Deliberately small: the web app's
@@ -40,6 +30,7 @@ export function Screen({
    */
   noHeader?: boolean;
 }): JSX.Element {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
 
   return (
@@ -56,6 +47,7 @@ export function Card({
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
 }): JSX.Element {
+  const styles = useStyles();
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
@@ -68,6 +60,7 @@ export function GroupedSection({
   style?: StyleProp<ViewStyle>;
   title?: string;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={[styles.groupedSection, style]}>
       {title ? <Text style={styles.groupedTitle}>{title}</Text> : null}
@@ -78,6 +71,7 @@ export function GroupedSection({
 
 /** The screen's h1 — 26px at weight 500 (DESIGN.md §4/§8). */
 export function Heading({ children }: { children: ReactNode }): JSX.Element {
+  const styles = useStyles();
   return <Text style={styles.heading}>{children}</Text>;
 }
 
@@ -89,6 +83,7 @@ export function Title({
   children: ReactNode;
   numberOfLines?: number;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <Text numberOfLines={numberOfLines} style={styles.title}>
       {children}
@@ -105,6 +100,7 @@ export function Body({
   muted?: boolean;
   numberOfLines?: number;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <Text numberOfLines={numberOfLines} style={[styles.body, muted ? styles.bodyMuted : null]}>
       {children}
@@ -119,6 +115,7 @@ export function Caption({
   children: ReactNode;
   tone?: "muted" | "faint" | "error";
 }): JSX.Element {
+  const styles = useStyles();
   const toneStyle =
     tone === "error" ? styles.captionError : tone === "faint" ? styles.captionFaint : null;
 
@@ -136,6 +133,7 @@ export function Badge({
   children: ReactNode;
   tone?: "attention" | "faded" | "neutral" | "quiet" | "success";
 }): JSX.Element {
+  const styles = useStyles();
   const isNeutral = tone === "neutral";
 
   return (
@@ -179,6 +177,7 @@ export function Button({
   size?: "lg" | "default" | "sm" | "xs";
   variant?: "accent" | "accentLink" | "ghost" | "ink" | "outline";
 }): JSX.Element {
+  const styles = useStyles();
   const isDisabled = disabled || isBusy;
 
   return (
@@ -233,6 +232,8 @@ export function Field({
   style,
   ...inputProps
 }: TextInputProps & { label: string }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -269,6 +270,7 @@ export function CoverImage({
   height?: number;
   uri: string | null;
 }): JSX.Element {
+  const styles = useStyles();
   const { width } = useWindowDimensions();
   // Device pixels, not layout points: a 390pt-wide phone at 3x needs 1170 real
   // pixels, and asking for 390 would put a blurred image on the best screen.
@@ -298,6 +300,8 @@ export function CoverImage({
  * an icon — not a hairline card with red text on transparent.
  */
 export function ErrorNotice({ message }: { message: string }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   return (
     <View accessibilityRole="alert" style={styles.errorNotice}>
       <Ionicons color={colors.error} name="warning" size={18} />
@@ -318,6 +322,8 @@ export function EmptyState({
   message: string;
   title?: string;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
     book: "book",
     "book.closed": "book",
@@ -351,6 +357,7 @@ export function ScreenSkeleton({
   /** See `Screen`'s `noHeader` — same reasoning, same four tab screens. */
   noHeader?: boolean;
 }): JSX.Element {
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
 
   return (
@@ -382,10 +389,11 @@ export function SkeletonBlock({
   style?: StyleProp<ViewStyle>;
   width?: number | `${number}%`;
 }): JSX.Element {
+  const styles = useStyles();
   return <View style={[styles.skeleton, { height, width: width ?? "100%" }, style]} />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badge: {
     alignSelf: "flex-start",
     backgroundColor: colors.chipActive,
@@ -461,8 +469,16 @@ const styles = StyleSheet.create({
     borderColor: colors.hairlineFaint,
     borderRadius: radius.square,
     borderWidth: 0.5,
+    // Elevation on light, nothing on dark. A white card on a near-white page
+    // has no contrast left to separate it; on navy the border already does
+    // that work, and DESIGN.md §2 forbids the shadow there.
+    elevation: colors.shadowOpacity === 0 ? 0 : 2,
     overflow: "hidden",
-    padding: spacing.lg
+    padding: spacing.lg,
+    shadowColor: colors.shadow,
+    shadowOffset: { height: 4, width: 0 },
+    shadowOpacity: colors.shadowOpacity,
+    shadowRadius: 12
   },
   cover: { borderRadius: 10, overflow: "hidden", width: "100%" },
   coverBleed: { borderRadius: 0 },
@@ -523,7 +539,12 @@ const styles = StyleSheet.create({
     borderColor: colors.hairlineFaint,
     borderRadius: radius.square,
     borderWidth: 0.5,
-    overflow: "hidden"
+    elevation: colors.shadowOpacity === 0 ? 0 : 2,
+    overflow: "hidden",
+    shadowColor: colors.shadow,
+    shadowOffset: { height: 4, width: 0 },
+    shadowOpacity: colors.shadowOpacity,
+    shadowRadius: 12
   },
   groupedSection: { gap: spacing.sm },
   groupedTitle: {
@@ -543,8 +564,8 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.input,
     borderColor: colors.hairline,
-    borderRadius: 12,
-    borderWidth: 0.5,
+    borderRadius: radius.sm + 2,
+    borderWidth: 1,
     color: colors.ink,
     fontFamily: fonts.body,
     fontSize: 16,
@@ -561,4 +582,4 @@ const styles = StyleSheet.create({
     fontSize: typography.title.fontSize,
     lineHeight: typography.title.lineHeight
   }
-});
+}));

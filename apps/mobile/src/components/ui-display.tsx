@@ -3,11 +3,12 @@ import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX, ReactNode } from "react";
-import { PixelRatio, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { PixelRatio, Pressable, ScrollView, Text, View } from "react-native";
 import { Polygon, Svg } from "react-native-svg";
 
 import { useFormat } from "@/src/lib/locale";
-import { colors, fonts, radius, spacing, typography } from "@/src/theme/tokens";
+import { fonts, radius, spacing, typography } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /** The shared chunked progress tracker. DESIGN.md §6. */
 export function ProgressTrack({
@@ -21,6 +22,7 @@ export function ProgressTrack({
   label: string;
   total: number;
 }): JSX.Element {
+  const styles = useStyles();
   const chunks = resolveProgressChunks(completed, total);
 
   return (
@@ -64,6 +66,7 @@ export function StreakTrack({
   label: string;
   streakCount: number;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View
       accessibilityLabel={label}
@@ -98,6 +101,7 @@ export function StreakTrack({
 
 /** Green when online, muted when not — an explicit semantic-status exception. */
 export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
+  const styles = useStyles();
   return (
     <View
       accessibilityElementsHidden
@@ -109,6 +113,7 @@ export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
 
 /** A hand-drawn ring around a heading word, with no visual-only accessibility noise. */
 export function RingedWord({ children }: { children: ReactNode }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.ringedWordWrap}>
       {children}
@@ -122,6 +127,7 @@ export function RingedWord({ children }: { children: ReactNode }): JSX.Element {
 }
 
 function PlayGlyph({ color }: { color: string }): JSX.Element {
+  const styles = useStyles();
   return (
     <Svg height={10} style={styles.playGlyph} viewBox="0 0 10 10" width={10}>
       <Polygon fill={color} points="0,0 10,5 0,10" />
@@ -131,6 +137,8 @@ function PlayGlyph({ color }: { color: string }): JSX.Element {
 
 /** A play glyph inside a hairline ring for free lessons and resume actions. */
 export function RingedPlay({ tone = "hairline" }: { tone?: "accent" | "hairline" }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   return (
     <View style={[styles.ringedPlay, tone === "accent" ? styles.ringedPlayAccent : null]}>
       <PlayGlyph color={tone === "accent" ? colors.accent : colors.ink} />
@@ -148,6 +156,7 @@ export function FilterPill({
   label: string;
   onPress: () => void;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityLabel={label}
@@ -169,21 +178,28 @@ export function FilterPill({
 
 /** Native segmented control — pill container, selected pill is card background. Scrollable when >3. */
 export function Tabs<TValue extends string>({
+  inset = true,
   label,
   onChange,
   tabs,
   value
 }: {
+  /**
+   * False inside something that already has padding — a card, the auth plate.
+   * True on a bare screen, where the control supplies its own gutter.
+   */
+  inset?: boolean;
   label: string;
   onChange: (value: TValue) => void;
   tabs: readonly { isActive: boolean; label: string; value: TValue }[];
   value: TValue;
 }): JSX.Element {
+  const styles = useStyles();
   const isCompact = tabs.length <= 3;
 
   if (isCompact) {
     return (
-      <View accessibilityLabel={label} accessibilityRole="tablist" style={styles.segmentedWrap}>
+      <View accessibilityLabel={label} accessibilityRole="tablist" style={inset ? styles.segmentedWrap : null}>
         <View style={styles.segmented}>
           {tabs.map((tab) => {
             const isActive = tab.value === value;
@@ -212,7 +228,7 @@ export function Tabs<TValue extends string>({
   }
 
   return (
-    <View accessibilityLabel={label} accessibilityRole="tablist" style={styles.segmentedWrap}>
+    <View accessibilityLabel={label} accessibilityRole="tablist" style={inset ? styles.segmentedWrap : null}>
       <ScrollView
         contentContainerStyle={styles.segmentedScroll}
         horizontal
@@ -269,6 +285,8 @@ export function AccordionRow({
   onToggle: () => void;
   title: string;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   return (
     <View style={styles.accordionRow}>
       <Pressable
@@ -315,6 +333,7 @@ export function Avatar({
   photo: string | null;
   size?: number;
 }): JSX.Element {
+  const styles = useStyles();
   if (photo !== null && photo.length > 0) {
     const source = readImageVariants(photo);
     const variantUri = pickImageVariant(source, Math.round(size * PixelRatio.get()));
@@ -358,6 +377,7 @@ export function SectionHeading({
   eyebrow?: string;
   title: ReactNode;
 }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.sectionHeading}>
       {eyebrow === undefined ? null : <Text style={styles.eyebrow}>{eyebrow}</Text>}
@@ -372,6 +392,7 @@ export function SectionHeading({
 
 /** The KPI tile — a muted label over a large number. */
 export function StatCard({ label, value }: { label: string; value: ReactNode }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.statCard}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -382,12 +403,13 @@ export function StatCard({ label, value }: { label: string; value: ReactNode }):
 
 /** A price formatted through the shared locale formatter. */
 export function PriceText({ amount }: { amount: number | string }): JSX.Element {
+  const styles = useStyles();
   const format = useFormat();
 
   return <Text style={styles.price}>{format.currency(amount)}</Text>;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   accordionBody: { paddingBottom: spacing.md, paddingHorizontal: spacing.sm, paddingTop: spacing.xs },
   accordionHeader: {
     alignItems: "center",
@@ -487,9 +509,11 @@ const styles = StyleSheet.create({
     lineHeight: 27
   },
   segmented: {
-    alignSelf: "flex-start",
+    alignSelf: "stretch",
     backgroundColor: colors.panelWarm,
+    borderColor: colors.hairlineFaint,
     borderRadius: radius.pill,
+    borderWidth: 0.5,
     flexDirection: "row",
     gap: 4,
     padding: 4
@@ -504,9 +528,19 @@ const styles = StyleSheet.create({
     minHeight: 36,
     paddingHorizontal: spacing.md
   },
-  segmentItemActive: { backgroundColor: colors.card, borderColor: colors.hairlineFaint, borderWidth: 0.5 },
+  segmentItemActive: {
+    backgroundColor: colors.card,
+    borderColor: colors.hairlineFaint,
+    borderWidth: 0.5,
+    elevation: colors.shadowOpacity === 0 ? 0 : 2,
+    shadowColor: colors.shadow,
+    shadowOffset: { height: 1, width: 0 },
+    shadowOpacity: colors.shadowOpacity * 2,
+    shadowRadius: 3
+  },
   segmentItemScroll: {
     alignItems: "center",
+    alignSelf: "flex-start",
     borderRadius: radius.pill,
     justifyContent: "center",
     minHeight: 36,
@@ -578,4 +612,4 @@ const styles = StyleSheet.create({
   trackChunkComplete: { backgroundColor: colors.lineStrong },
   trackChunkFilled: { backgroundColor: colors.accent },
   trackRow: { flexDirection: "row", gap: 4 }
-});
+}));

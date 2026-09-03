@@ -2,7 +2,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
-import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 
 import { BottomSheet } from "@expo/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -28,7 +28,8 @@ import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { Pressable, Text } from "react-native";
 
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /** The course list endpoint's own maximum. */
 const PAGE_SIZE = 50;
@@ -69,6 +70,8 @@ async function listAllStaffCourses(mine: boolean): Promise<readonly CourseSummar
  * differ.
  */
 export default function ExamsScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
   const format = useFormat();
   const { isPending: isSessionPending, session } = useSession();
@@ -325,7 +328,7 @@ export default function ExamsScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   clearLink: { color: colors.accent, fontFamily: fonts.bodyMedium, fontSize: 13 },
   content: { gap: spacing.md, padding: spacing.lg },
   filterBadge: {
@@ -389,6 +392,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase"
   },
   sheetSection: { gap: spacing.xs }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

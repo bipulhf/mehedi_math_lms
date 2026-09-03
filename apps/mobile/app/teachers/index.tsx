@@ -2,7 +2,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { Link, Stack } from "expo-router";
 import type { JSX } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import {
   Body,
@@ -18,9 +18,11 @@ import { stripHtml } from "@/src/lib/html";
 import { useFormat, useT } from "@/src/lib/locale";
 import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api/profiles";
 import { queryKeys } from "@/src/lib/query";
-import { colors, fonts, spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Element {
+  const styles = useStyles();
   const format = useFormat();
   const t = useT();
 
@@ -61,6 +63,7 @@ function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Elemen
 }
 
 export default function TeachersScreen(): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const { data: teachers = [], isPending } = useQuery({
     queryFn: listPublicTeachers,
@@ -91,7 +94,7 @@ export default function TeachersScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   content: { padding: spacing.lg },
   header: { gap: spacing.sm, paddingBottom: spacing.lg },
   identity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
@@ -105,6 +108,6 @@ const styles = StyleSheet.create({
   },
   name: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 19 },
   row: { marginBottom: spacing.md }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

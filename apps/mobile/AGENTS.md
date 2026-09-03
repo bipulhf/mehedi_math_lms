@@ -24,7 +24,10 @@ Read it before any parity or redesign work.
 app/                     Expo Router file routes. (tabs)/ is the signed-in shell.
 src/lib/                 env, api-client, auth, session-store, query, hooks
 src/lib/api/             One module per API feature. Thin typed wrappers over api-client.
+src/theme/palettes.ts    darkColors and lightColors, both filling one ThemeColors shape
+src/theme/theme.tsx      ThemeProvider, useTheme, useThemeColors, makeStyles
 src/components/ui.tsx    Every primitive: Screen, Card, Button, Field, Badge, skeletons
+src/components/auth-scaffold.tsx  The shape sign-in, sign-up and the reset share
 src/components/*.tsx     Composed pieces: lecture player, comments, reviews, route error
 src/theme/tokens.ts      The dark navy palette, radii, spacing and type scale
 ```
@@ -71,12 +74,43 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 blue as the primary control colour, gold rationed to marks and highlights,
 rounded plates, and surface contrast.
 
-**The app is the dark theme only.** There is no toggle here and no light values
-to switch to, so the names in `tokens.ts` are the web app's _dark_ block, value
-for value. Keeping them identical is what lets a screen ported from web land on
-the right colour without a lookup — if a web token changes, change it here too.
-`accent` is the lighter blue the dark theme uses, and `onAccent` is the navy
-that reads on top of it; white on that blue is 2.6:1.
+**The app has both themes, and follows the phone by default.**
+`src/theme/palettes.ts` holds `darkColors` and `lightColors`, each a value-for-value
+transcription of the matching block in `apps/web/src/styles/app.css`. Both fill
+the same `ThemeColors` shape, which is what lets a component ask for
+`colors.card` and get white on light and navy on dark. If a web token changes,
+change it here too.
+
+**Colour is reached through the theme, never imported.** `tokens.ts` holds only
+what does not change — radii, spacing, families, the type scale. A component
+gets colour one of two ways:
+
+```ts
+const useStyles = makeStyles((colors) => ({ card: { backgroundColor: colors.card } }));
+
+function Card(): JSX.Element {
+  const styles = useStyles();          // a sheet per scheme, built once
+  const colors = useThemeColors();     // for a colour that goes in a prop
+```
+
+`StyleSheet.create` at module scope is the thing to avoid: it runs once, so a
+sheet built that way keeps the colours of whichever theme was on at import.
+`makeStyles` builds one sheet per scheme, lazily, and hands back the one that
+matches — two `StyleSheet.create` calls per file for the life of the process,
+not one per render.
+
+`ThemeProvider` in `src/theme/theme.tsx` reads the choice — `system`, `light` or
+`dark` — from AsyncStorage and falls back to `useColorScheme()`. The switcher is
+three pills on the profile screen, beside the language one.
+
+Two palette entries exist for the light theme alone: `shadow` and
+`shadowOpacity`. A white card on a near-white page has no contrast left to
+separate it, so it gets elevation; on dark the border does that work and
+DESIGN.md §2 forbids the shadow. `colors.shadowOpacity === 0` is the test a
+style uses to decide.
+
+`accent` is the lighter blue on dark and the darker one on light, and `onAccent`
+is whatever reads on top of it — navy on dark, white on light.
 
 Type is Hind Siliguri for Bangla display, Solaiman Lipi for Bangla body, and
 Geist/Archivo for Latin numerals, ids and small all-caps labels. Several `fonts` entries deliberately

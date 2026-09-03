@@ -1,35 +1,22 @@
 import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import {
-  BackHandler,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View
-} from "react-native";
+import { BackHandler, Pressable, Text, View } from "react-native";
 
+import { AuthScaffold, OrDivider } from "@/src/components/auth-scaffold";
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { PhoneOtpForm } from "@/src/components/phone-otp-form";
-import {
-  Body,
-  Button,
-  Card,
-  ErrorNotice,
-  Field,
-  Heading,
-  Screen,
-  Title
-} from "@/src/components/ui";
+import { Body, Button, ErrorNotice, Field } from "@/src/components/ui";
 import { Tabs } from "@/src/components/ui-display";
 import { useT } from "@/src/lib/locale";
 import { useSignIn } from "@/src/lib/use-session";
-import { colors, spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 type SignInMethod = "email" | "phone";
 
 export default function SignInScreen(): JSX.Element {
+  const styles = useStyles();
   const router = useRouter();
   const t = useT();
   const signIn = useSignIn();
@@ -48,6 +35,7 @@ export default function SignInScreen(): JSX.Element {
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
       router.replace("/explore");
+
       return true;
     });
 
@@ -70,94 +58,98 @@ export default function SignInScreen(): JSX.Element {
   };
 
   return (
-    <Screen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.flex}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>{t("auth.welcomeBack")}</Heading>
-          <Body muted>{t("auth.signInLead")}</Body>
+    <AuthScaffold
+      footer={
+        <>
+          <Body muted>{t("auth.newHere")}</Body>
+          <Link asChild href="/sign-up">
+            <Pressable accessibilityRole="link" hitSlop={spacing.sm}>
+              <Text style={styles.footerLink}>{t("auth.signUp")}</Text>
+            </Pressable>
+          </Link>
+        </>
+      }
+      lead={t("auth.signInLead")}
+      title={t("auth.welcomeBack")}
+    >
+      <Tabs
+        inset={false}
+        label={t("auth.chooseMethod")}
+        onChange={setMethod}
+        tabs={[
+          { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
+          { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
+        ]}
+        value={method}
+      />
 
-          <Card>
-            <View style={styles.form}>
-              <GoogleSignInButton />
+      {method === "phone" ? (
+        <PhoneOtpForm
+          onSignedIn={() => {
+            router.replace("/");
+          }}
+        />
+      ) : (
+        <>
+          <Field
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            label={t("auth.email")}
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            returnKeyType="next"
+            value={email}
+          />
+          <Field
+            autoCapitalize="none"
+            autoComplete="current-password"
+            label={t("auth.password")}
+            onChangeText={setPassword}
+            onSubmitEditing={() => {
+              if (canSubmit) {
+                handleSubmit();
+              }
+            }}
+            placeholder={t("auth.passwordPlaceholder")}
+            returnKeyType="go"
+            secureTextEntry
+            value={password}
+          />
 
-              <Tabs
-                label={t("auth.chooseMethod")}
-                onChange={setMethod}
-                tabs={[
-                  { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
-                  { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
-                ]}
-                value={method}
-              />
+          {error ? <ErrorNotice message={error} /> : null}
 
-              {method === "phone" ? (
-                <PhoneOtpForm
-                  onSignedIn={() => {
-                    router.replace("/");
-                  }}
-                />
-              ) : (
-                <>
-                  <Field
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    keyboardType="email-address"
-                    label={t("auth.email")}
-                    onChangeText={setEmail}
-                    placeholder="you@example.com"
-                    value={email}
-                  />
-                  <Field
-                    autoCapitalize="none"
-                    autoComplete="current-password"
-                    label={t("auth.password")}
-                    onChangeText={setPassword}
-                    placeholder={t("auth.passwordPlaceholder")}
-                    secureTextEntry
-                    value={password}
-                  />
+          <Button
+            disabled={!canSubmit}
+            isBusy={signIn.isPending}
+            label={t("auth.signIn")}
+            onPress={handleSubmit}
+            size="lg"
+          />
 
-                  {error ? <ErrorNotice message={error} /> : null}
+          {/* Right-aligned and quiet: the way out of a problem, not one of the
+              two things this screen is for. */}
+          <View style={styles.forgotRow}>
+            <Button
+              label={t("auth.forgotPassword")}
+              onPress={() => router.push("/forgot-password")}
+              size="sm"
+              variant="accentLink"
+            />
+          </View>
+        </>
+      )}
 
-                  <Button
-                    disabled={!canSubmit}
-                    isBusy={signIn.isPending}
-                    label={t("auth.signIn")}
-                    onPress={handleSubmit}
-                  />
+      <OrDivider label={t("common.or")} />
 
-                  <Button
-                    label={t("auth.forgotPassword")}
-                    onPress={() => router.push("/forgot-password")}
-                    variant="ghost"
-                  />
-                </>
-              )}
-            </View>
-          </Card>
-
-          <Card>
-            <Title>{t("auth.newHere")}</Title>
-            <View style={{ height: spacing.sm }} />
-            <Body muted>{t("auth.signUpLead")}</Body>
-            <View style={{ height: spacing.lg }} />
-            <Link asChild href="/sign-up">
-              <Button label={t("auth.signUp")} onPress={() => undefined} variant="outline" />
-            </Link>
-          </Card>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Screen>
+      <GoogleSignInButton />
+    </AuthScaffold>
   );
 }
 
-const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg },
-  flex: { backgroundColor: colors.background, flex: 1 },
-  form: { gap: spacing.lg }
-});
+const useStyles = makeStyles((colors) => ({
+  footerLink: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 16 },
+  forgotRow: { alignItems: "flex-end" }
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

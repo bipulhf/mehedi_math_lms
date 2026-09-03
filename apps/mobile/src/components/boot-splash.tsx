@@ -1,8 +1,9 @@
 import { Image } from "expo-image";
 import type { JSX } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Expo bundled image asset
 const mark = require("@/assets/images/splash-icon.png") as number;
@@ -22,6 +23,7 @@ const WORDMARK_ASPECT = 1402 / 122;
  * warning -- the name would render in whatever the handset happened to have.
  */
 export function BootSplash({ onLayout }: { onLayout?: () => void }): JSX.Element {
+  const styles = useStyles();
   return (
     <View onLayout={onLayout} style={styles.root}>
       <Image contentFit="contain" source={mark} style={styles.mark} />
@@ -30,7 +32,7 @@ export function BootSplash({ onLayout }: { onLayout?: () => void }): JSX.Element
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   mark: { height: 200, width: 200 },
   root: {
     alignItems: "center",
@@ -40,4 +42,4 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   wordmark: { aspectRatio: WORDMARK_ASPECT, width: 240 }
-});
+}));

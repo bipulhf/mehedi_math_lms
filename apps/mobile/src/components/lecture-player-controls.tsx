@@ -4,7 +4,8 @@ import { PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 import { Path, Rect, Svg } from "react-native-svg";
 
 import { useT } from "@/src/lib/locale";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 const ICON_SIZE = 22;
 const SCRUB_HIT_HEIGHT = 28;
@@ -24,6 +25,7 @@ function formatTime(seconds: number): string {
 }
 
 function PlayIcon(): JSX.Element {
+  const colors = useThemeColors();
   return (
     <Svg height={ICON_SIZE} viewBox="0 0 24 24" width={ICON_SIZE}>
       <Path d="M7 5v14l12-7z" fill={colors.ink} />
@@ -32,6 +34,7 @@ function PlayIcon(): JSX.Element {
 }
 
 function PauseIcon(): JSX.Element {
+  const colors = useThemeColors();
   return (
     <Svg height={ICON_SIZE} viewBox="0 0 24 24" width={ICON_SIZE}>
       <Rect fill={colors.ink} height={14} rx={1} width={4} x={6} y={5} />
@@ -41,6 +44,7 @@ function PauseIcon(): JSX.Element {
 }
 
 function FullscreenIcon(): JSX.Element {
+  const colors = useThemeColors();
   return (
     <Svg height={18} viewBox="0 0 24 24" width={18}>
       <Path
@@ -70,6 +74,7 @@ function SeekBar({
   onScrub: () => void;
   onScrubEnd: (seconds: number) => void;
 }): JSX.Element {
+  const styles = useStyles();
   const trackWidthRef = useRef(0);
   const dragStartFractionRef = useRef(0);
   const [dragFraction, setDragFraction] = useState<number | null>(null);
@@ -153,6 +158,7 @@ export function VideoControls({
   onScrubEnd: (seconds: number) => void;
   onTogglePlay: () => void;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const handleTogglePlay = useCallback(() => onTogglePlay(), [onTogglePlay]);
 
@@ -190,7 +196,7 @@ export function VideoControls({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   bottomBar: {
     alignItems: "center",
     bottom: 0,
@@ -263,4 +269,4 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     height: BAR_HEIGHT
   }
-});
+}));

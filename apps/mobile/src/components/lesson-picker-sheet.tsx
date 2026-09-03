@@ -1,14 +1,15 @@
 import { BottomSheet } from "@expo/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 import { Body, Caption, Title } from "@/src/components/ui";
 import { AccordionRow } from "@/src/components/ui-display";
 import type { ContentLecture } from "@/src/lib/api/content";
 import type { AssessmentTestSummary } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * A lecture and its chapter's test are one sequence in the player, so both
@@ -45,6 +46,7 @@ function ChapterItem({
   item: NavigationItem;
   onSelect: () => void;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
 
   return (
@@ -105,6 +107,8 @@ export function LessonPickerSheet({
   selectedItemId: string | null;
   visible: boolean;
 }): JSX.Element {
+  const colors = useThemeColors();
+  const styles = useStyles();
   const t = useT();
 
   return (
@@ -160,7 +164,7 @@ export function LessonPickerSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   closeButton: { padding: spacing.xs },
   itemRow: {
     alignItems: "center",
@@ -187,4 +191,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm
   }
-});
+}));

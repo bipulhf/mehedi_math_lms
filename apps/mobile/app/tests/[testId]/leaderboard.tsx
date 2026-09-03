@@ -2,7 +2,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useQueries } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import {
   Badge,
@@ -17,13 +17,15 @@ import {
 import { getTestDetail, getTestLeaderboard, type LeaderboardEntry } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * The same board a browser shows, and the same rows for a student and a
  * teacher. The reader's own line is the only thing marked out.
  */
 export default function TestLeaderboardScreen(): JSX.Element {
+  const styles = useStyles();
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const t = useT();
 
@@ -76,7 +78,7 @@ export default function TestLeaderboardScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { padding: spacing.lg },
   header: { gap: spacing.md, paddingBottom: spacing.md },
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
   row: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   rowBody: { flex: 1, gap: spacing.sm },
   rowWrap: { paddingBottom: spacing.md }
-});
+}));
 
 function LeaderboardRow({
   entry,
@@ -93,6 +95,7 @@ function LeaderboardRow({
   entry: LeaderboardEntry;
   totalMarks: number;
 }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
 

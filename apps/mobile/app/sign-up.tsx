@@ -1,21 +1,24 @@
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, Text } from "react-native";
 
+import { AuthScaffold, OrDivider } from "@/src/components/auth-scaffold";
 import { GoogleSignInButton } from "@/src/components/google-sign-in-button";
 import { PhoneOtpForm } from "@/src/components/phone-otp-form";
-import { Body, Button, Card, ErrorNotice, Field, Heading, Screen } from "@/src/components/ui";
+import { Body, Button, Caption, ErrorNotice, Field } from "@/src/components/ui";
 import { Tabs } from "@/src/components/ui-display";
 import { useT } from "@/src/lib/locale";
 import { useSignUp } from "@/src/lib/use-session";
-import { colors, spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 const MINIMUM_PASSWORD_LENGTH = 8;
 
 type SignUpMethod = "email" | "phone";
 
 export default function SignUpScreen(): JSX.Element {
+  const styles = useStyles();
   const router = useRouter();
   const t = useT();
   const signUp = useSignUp();
@@ -49,90 +52,100 @@ export default function SignUpScreen(): JSX.Element {
   };
 
   return (
-    <Screen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.flex}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Heading>{t("auth.signUp")}</Heading>
-          <Body muted>{t("auth.signUpLead")}</Body>
+    <AuthScaffold
+      footer={
+        <>
+          <Body muted>{t("auth.haveAccount")}</Body>
+          <Link asChild href="/sign-in">
+            <Pressable accessibilityRole="link" hitSlop={spacing.sm}>
+              <Text style={styles.footerLink}>{t("auth.signIn")}</Text>
+            </Pressable>
+          </Link>
+        </>
+      }
+      lead={t("auth.signUpLead")}
+      title={t("auth.signUp")}
+    >
+      <Tabs
+        inset={false}
+        label={t("auth.chooseMethod")}
+        onChange={setMethod}
+        tabs={[
+          { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
+          { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
+        ]}
+        value={method}
+      />
 
-          <Card>
-            <View style={styles.form}>
-              <GoogleSignInButton allowSignUp />
+      {method === "phone" ? (
+        <PhoneOtpForm
+          onSignedIn={() => {
+            router.replace("/");
+          }}
+        />
+      ) : (
+        <>
+          <Field
+            autoComplete="name"
+            label={t("auth.name")}
+            onChangeText={setName}
+            placeholder={t("auth.namePlaceholder")}
+            returnKeyType="next"
+            value={name}
+          />
+          <Field
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            label={t("auth.email")}
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            returnKeyType="next"
+            value={email}
+          />
+          <Field
+            autoCapitalize="none"
+            autoComplete="new-password"
+            label={t("auth.password")}
+            onChangeText={setPassword}
+            onSubmitEditing={() => {
+              if (canSubmit) {
+                handleSubmit();
+              }
+            }}
+            placeholder={t("password.placeholderNew", { count: MINIMUM_PASSWORD_LENGTH })}
+            returnKeyType="go"
+            secureTextEntry
+            value={password}
+          />
 
-              <Tabs
-                label={t("auth.chooseMethod")}
-                onChange={setMethod}
-                tabs={[
-                  { isActive: method === "phone", label: t("auth.withPhone"), value: "phone" },
-                  { isActive: method === "email", label: t("auth.withEmail"), value: "email" }
-                ]}
-                value={method}
-              />
+          {/* The rule, shown only once it is being broken. */}
+          {passwordTooShort ? (
+            <Caption tone="error">
+              {t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}
+            </Caption>
+          ) : null}
+          {error ? <ErrorNotice message={error} /> : null}
 
-              {method === "phone" ? (
-                <PhoneOtpForm
-                  onSignedIn={() => {
-                    router.replace("/");
-                  }}
-                />
-              ) : (
-                <>
-                  <Field
-                    autoComplete="name"
-                    label={t("auth.name")}
-                    onChangeText={setName}
-                    placeholder={t("auth.namePlaceholder")}
-                    value={name}
-                  />
-                  <Field
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    keyboardType="email-address"
-                    label={t("auth.email")}
-                    onChangeText={setEmail}
-                    placeholder="you@example.com"
-                    value={email}
-                  />
-                  <Field
-                    autoCapitalize="none"
-                    autoComplete="new-password"
-                    label={t("auth.password")}
-                    onChangeText={setPassword}
-                    placeholder={t("password.placeholderNew", { count: MINIMUM_PASSWORD_LENGTH })}
-                    secureTextEntry
-                    value={password}
-                  />
+          <Button
+            disabled={!canSubmit}
+            isBusy={signUp.isPending}
+            label={t("auth.signUp")}
+            onPress={handleSubmit}
+            size="lg"
+          />
+        </>
+      )}
 
-                  {passwordTooShort ? (
-                    <Body muted>
-                      {t("auth.passwordMinLength", { count: MINIMUM_PASSWORD_LENGTH })}
-                    </Body>
-                  ) : null}
-                  {error ? <ErrorNotice message={error} /> : null}
+      <OrDivider label={t("common.or")} />
 
-                  <Button
-                    disabled={!canSubmit}
-                    isBusy={signUp.isPending}
-                    label={t("auth.signUp")}
-                    onPress={handleSubmit}
-                  />
-                </>
-              )}
-            </View>
-          </Card>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Screen>
+      <GoogleSignInButton allowSignUp />
+    </AuthScaffold>
   );
 }
 
-const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg },
-  flex: { backgroundColor: colors.background, flex: 1 },
-  form: { gap: spacing.lg }
-});
+const useStyles = makeStyles((colors) => ({
+  footerLink: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 16 }
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

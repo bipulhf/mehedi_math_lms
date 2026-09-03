@@ -1,13 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Body, Button, Caption, ErrorNotice, Field } from "@/src/components/ui";
 import type { CouponPreview, CouponRejectionReason } from "@/src/lib/api/coupons";
 import { previewCoupon } from "@/src/lib/api/coupons";
 import { useFormat, useT } from "@/src/lib/locale";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 import type { MessageKey } from "@mma/i18n";
 
 /** What the screen holds once a code has been checked and accepted. */
@@ -52,6 +53,7 @@ export function CourseCouponField({
   onApplied,
   publicCode
 }: CourseCouponFieldProps): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
   const [code, setCode] = useState("");
@@ -166,7 +168,7 @@ export function CourseCouponField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   appliedRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -185,4 +187,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   publicCode: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }
-});
+}));

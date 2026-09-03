@@ -4,7 +4,7 @@ import * as Haptics from "expo-haptics";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Badge, Body, Button, Card, Heading, Screen, ScreenSkeleton, SkeletonBlock, Title } from "@/src/components/ui";
 import { Avatar, StreakTrack } from "@/src/components/ui-display";
@@ -14,7 +14,8 @@ import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useHasPassword, useSession, useSignOut } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { colors, fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 function sfToIon(sf: string): string {
   const map: Record<string, string> = {
@@ -37,6 +38,7 @@ function sfToIon(sf: string): string {
  * not read the label.
  */
 function LanguageSwitcher(): JSX.Element {
+  const styles = useStyles();
   const { locale, setLocale } = useLocale();
 
   return (
@@ -88,6 +90,8 @@ function SettingsRow({
   label: string;
   onPress: () => void;
 }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   return (
     <Pressable
       accessibilityLabel={label}
@@ -118,6 +122,8 @@ function SettingsRow({
 }
 
 export default function ProfileScreen(): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
@@ -261,7 +267,7 @@ export default function ProfileScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   content: { gap: spacing.lg, padding: spacing.lg },
   groupLabel: { paddingHorizontal: spacing.sm, paddingTop: spacing.md },
   groupLabelText: {
@@ -309,6 +315,6 @@ const styles = StyleSheet.create({
   settingsRowDivider: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 0.5 },
   settingsRowLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 15 },
   settingsRowLeft: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

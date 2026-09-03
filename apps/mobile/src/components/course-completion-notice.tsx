@@ -1,9 +1,10 @@
 import type { JSX } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { Body, Title } from "@/src/components/ui";
 import { useT } from "@/src/lib/locale";
-import { colors, radius, spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * The one moment in the app shell that earns a celebration: a student just
@@ -15,6 +16,7 @@ import { colors, radius, spacing } from "@/src/theme/tokens";
  * one thing a toast does not: being looked at again a moment later.
  */
 export function CourseCompletionNotice({ onDismiss }: { onDismiss: () => void }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
 
   return (
@@ -35,7 +37,7 @@ export function CourseCompletionNotice({ onDismiss }: { onDismiss: () => void })
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   dismiss: { color: colors.muted, fontSize: 24 },
   notice: {
     alignItems: "flex-start",
@@ -47,4 +49,4 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   text: { flex: 1, gap: spacing.xs }
-});
+}));

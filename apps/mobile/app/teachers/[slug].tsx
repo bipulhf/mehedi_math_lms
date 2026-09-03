@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
-import { Linking, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Linking, Pressable, ScrollView, View } from "react-native";
 
 import {
   Body,
@@ -19,9 +19,11 @@ import { HtmlContent } from "@/src/components/html-content";
 import { getPublicTeacherBySlug } from "@/src/lib/api/profiles";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { colors, spacing } from "@/src/theme/tokens";
+import { spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 export default function TeacherProfileScreen(): JSX.Element {
+  const styles = useStyles();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const t = useT();
   const format = useFormat();
@@ -148,6 +150,7 @@ export default function TeacherProfileScreen(): JSX.Element {
 }
 
 function Metric({ label, value }: { label: string; value: string }): JSX.Element {
+  const styles = useStyles();
   return (
     <View style={styles.metric}>
       <Title>{value}</Title>
@@ -156,7 +159,7 @@ function Metric({ label, value }: { label: string; value: string }): JSX.Element
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   content: { gap: spacing.lg, padding: spacing.lg },
   courseCard: { gap: 0, marginBottom: spacing.md, overflow: "hidden", padding: 0 },
   courseText: { gap: spacing.sm, padding: spacing.md },
@@ -172,6 +175,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md
   }
-});
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";
