@@ -29,6 +29,7 @@ import {
   type SubmissionDetail,
   submitTest
 } from "@/src/lib/api/tests";
+import { useExamFocusGuard } from "@/src/lib/use-exam-focus-guard";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
@@ -60,6 +61,7 @@ export default function TestScreen(): JSX.Element {
   const [isRetaking, setIsRetaking] = useState(false);
   const [isStartingSubmission, setIsStartingSubmission] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [wasAutoSubmitted, setWasAutoSubmitted] = useState(false);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Answers are hydrated from the server exactly once, after `startSubmission`
@@ -207,6 +209,20 @@ export default function TestScreen(): JSX.Element {
     void handleSubmit();
   }, [isSubmitting, submission, test, timeRemainingSeconds]);
 
+  /**
+   * An MCQ paper is sat here and nowhere else: sending the app to the
+   * background submits what has been answered so far. Written papers are
+   * exempt, because photographing a script means leaving the app and the same
+   * rule would make them impossible to sit.
+   */
+  useExamFocusGuard({
+    enabled: test?.type === "MCQ" && submission !== null && !isShowingFinishedAttempt && !isSubmitting,
+    onLeave: () => {
+      setWasAutoSubmitted(true);
+      void handleSubmit();
+    }
+  });
+
   const currentQuestion = useMemo(
     () => test?.questions[currentQuestionIndex] ?? null,
     [currentQuestionIndex, test]
@@ -239,6 +255,10 @@ export default function TestScreen(): JSX.Element {
                 selectedOptionId: draft.selectedOptionId
               }))
       });
+
+      if (wasAutoSubmitted) {
+        Alert.alert(t("test.submitted"), t("test.autoSubmittedLeft"));
+      }
 
       // `replace`, not `push`: back from the results must not land on a
       // submitted attempt.
@@ -372,6 +392,7 @@ export default function TestScreen(): JSX.Element {
               variant="outline"
             />
           ) : null}
+          {test.type === "MCQ" ? <Body muted>{t("test.focusWarningApp")}</Body> : null}
           <View style={styles.badgeRow}>
             <Badge>
               {t("test.answered", { count: answeredCount, total: test.questions.length })}

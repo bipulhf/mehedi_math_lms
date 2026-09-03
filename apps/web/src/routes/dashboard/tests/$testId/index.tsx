@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { TestTakingSkeleton } from "@/components/common/skeletons";
 import { RouteErrorView } from "@/components/common/route-error";
+import { useExamFocusGuard } from "@/lib/exam-focus-guard";
 import { MathText } from "@/components/ui/math-text";
 import { BackButton } from "@/components/ui/back-button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ import {
   saveSubmissionAnswers,
   listMyTestSubmissions,
   startSubmission,
-  submitTest
+  submitTest,
+  submitTestOnUnload
 } from "@/lib/api/tests";
 
 interface DraftAnswer {
@@ -82,6 +84,7 @@ function StudentTestPage(): JSX.Element {
   const [isConfirmingSubmit, setIsConfirmingSubmit] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
+  const [wasAutoSubmitted, setWasAutoSubmitted] = useState(false);
   const isHydratingAnswersRef = useRef(true);
   const startedForRef = useRef<string | null>(null);
   const latestAttempt = attempts?.[0] ?? null;
@@ -195,6 +198,36 @@ function StudentTestPage(): JSX.Element {
     void handleSubmit();
   }, [isSubmitting, submission, test, timeRemainingSeconds]);
 
+  /**
+   * An MCQ paper is sat in this tab and nowhere else. Switching away from it,
+   * minimising the window, or letting another window take focus submits what
+   * has been answered so far -- see `exam-focus-guard.ts` for what the browser
+   * can and cannot tell apart. Written papers are exempt: photographing a
+   * script means leaving the tab, so the same rule would make them impossible.
+   */
+  const isGuardedExam =
+    test?.type === "MCQ" && submission !== null && !isShowingFinishedAttempt && !isSubmitting;
+
+  useExamFocusGuard({
+    enabled: isGuardedExam,
+    onLeave: () => {
+      setWasAutoSubmitted(true);
+      void handleSubmit();
+    },
+    onUnload: () => {
+      if (test === null) {
+        return;
+      }
+
+      submitTestOnUnload(test.id, {
+        answers: Object.entries(draftAnswers).map(([questionId, answer]) => ({
+          questionId,
+          selectedOptionId: answer.selectedOptionId
+        }))
+      });
+    }
+  });
+
   const currentQuestion = useMemo(
     () => test?.questions[currentQuestionIndex] ?? null,
     [currentQuestionIndex, test]
@@ -228,7 +261,7 @@ function StudentTestPage(): JSX.Element {
                 selectedOptionId: answer.selectedOptionId
               }))
       });
-      toast.success(t("test.submitted"));
+      toast.success(wasAutoSubmitted ? t("test.autoSubmittedLeft") : t("test.submitted"));
       // The results page re-fetches by id rather than reusing this response,
       // so `courseCompletedJustNow` — true only on the submission that just
       // crossed the finish line — would otherwise be lost the moment it
@@ -331,6 +364,11 @@ function StudentTestPage(): JSX.Element {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {test.type === "MCQ" ? (
+            <p className="rounded-[calc(var(--radius)-0.125rem)] border border-hairline bg-panel-warm p-4 text-sm font-light leading-6 text-ink">
+              {t("test.focusWarning")}
+            </p>
+          ) : null}
           {timeRemainingSeconds !== null ? (
             <div className="rounded-[calc(var(--radius)-0.125rem)] bg-panel-warm p-4">
               <p className="text-xs uppercase tracking-[0.2em] text-ink/62">{t("test.timeRemaining")}</p>
