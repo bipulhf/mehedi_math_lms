@@ -2,6 +2,8 @@ import type {
   adminUpdateBugSchema,
   adminUsersQuerySchema,
   auditLogsQuerySchema,
+  deviceConflictsQuerySchema,
+  resolveDeviceConflictSchema,
   bugReportPrioritySchema,
   bugReportStatusSchema,
   createAdminUserSchema,
@@ -11,6 +13,7 @@ import {
   userListStatusSchema,
   type AdminSendNotificationInput,
   type AdminSendSmsInput,
+  type DeviceConflictStatus,
   type UserRole
 } from "@mma/shared";
 import type { z } from "zod";
@@ -287,6 +290,85 @@ export async function listAdminAuditLogActions(): Promise<readonly string[]> {
   const response = await apiGet<readonly string[]>("admin/logs/actions");
 
   return response.data;
+}
+
+export interface AdminDeviceConflictRecord {
+  activeDeviceCount: number;
+  attemptedDeviceId: string | null;
+  attemptedIpAddress: string | null;
+  attemptedPlatform: string;
+  attemptedUserAgent: string | null;
+  createdAt: string;
+  deviceLimit: number;
+  id: string;
+  note: string | null;
+  reviewedAt: string | null;
+  status: DeviceConflictStatus;
+  user: {
+    email: string;
+    id: string;
+    isActive: boolean;
+    multiDeviceAllowed: boolean;
+    name: string;
+  };
+}
+
+export interface AdminUserDeviceRecord {
+  deviceId: string;
+  firstSeenAt: string;
+  hasLiveSession: boolean;
+  id: string;
+  lastIpAddress: string | null;
+  lastSeenAt: string;
+  platform: string;
+  userAgent: string | null;
+}
+
+export type AdminDeviceConflictsQuery = z.infer<typeof deviceConflictsQuerySchema>;
+
+export async function listAdminDeviceConflicts(
+  query: AdminDeviceConflictsQuery
+): Promise<PaginatedEnvelope<AdminDeviceConflictRecord>> {
+  return apiGet<readonly AdminDeviceConflictRecord[]>(
+    `admin/device-conflicts${buildQueryString({
+      limit: query.limit,
+      page: query.page,
+      search: query.search,
+      status: query.status
+    })}`
+  ) as Promise<PaginatedEnvelope<AdminDeviceConflictRecord>>;
+}
+
+export async function resolveAdminDeviceConflict(
+  conflictId: string,
+  input: z.infer<typeof resolveDeviceConflictSchema>
+): Promise<void> {
+  await apiPatch<typeof input, { id: string }>(`admin/device-conflicts/${conflictId}`, input);
+}
+
+export async function listAdminUserDevices(
+  userId: string
+): Promise<readonly AdminUserDeviceRecord[]> {
+  const response = await apiGet<readonly AdminUserDeviceRecord[]>(`admin/users/${userId}/devices`);
+
+  return response.data;
+}
+
+export async function setAdminUserDevicePolicy(
+  userId: string,
+  multiDeviceAllowed: boolean
+): Promise<void> {
+  await apiPatch<{ multiDeviceAllowed: boolean }, { userId: string }>(
+    `admin/users/${userId}/device-policy`,
+    { multiDeviceAllowed }
+  );
+}
+
+export async function resetAdminUserDevices(userId: string): Promise<void> {
+  await apiPost<Record<string, never>, { userId: string }>(
+    `admin/users/${userId}/devices/reset`,
+    {}
+  );
 }
 
 export { userListStatusSchema };

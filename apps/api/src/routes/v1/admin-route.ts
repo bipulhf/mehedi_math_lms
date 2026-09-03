@@ -11,13 +11,16 @@ import {
   conversationMessagesQuerySchema,
   courseIdParamsSchema,
   createAdminUserSchema,
+  deviceConflictsQuerySchema,
   featuredCoursesSchema,
   idParamsSchema,
   messageConversationIdParamsSchema,
   profileIdParamsSchema,
   rejectCourseSchema,
+  resolveDeviceConflictSchema,
   updateAdminUserSchema,
-  updateAdminUserStatusSchema
+  updateAdminUserStatusSchema,
+  updateDevicePolicySchema
 } from "@mma/shared";
 
 import {
@@ -27,6 +30,7 @@ import {
   auditLogService,
   bugReportController,
   courseController,
+  deviceController,
   landingController,
   messageController,
   notificationController,
@@ -319,3 +323,86 @@ adminRoutes.get("/logs", requireAdmin(), (context) => {
 });
 
 adminRoutes.get("/logs/actions", requireAdmin(), (context) => auditLogController.listActions(context));
+
+// Refused sign-ins: an account that already held sessions on its full
+// allowance of devices and tried for another. One row is one attempt, and the
+// three things that can answer it -- lift the limit, sign the account out
+// everywhere, disable it on the user screen -- are the routes below plus the
+// one that already exists. ADR-0019.
+adminRoutes.get("/device-conflicts", requireAdmin(), (context) => {
+  const query = deviceConflictsQuerySchema.parse(context.req.query());
+
+  return deviceController.listConflicts(context, {
+    limit: query.limit,
+    page: query.page,
+    search: query.search,
+    status: query.status
+  });
+});
+
+adminRoutes.patch("/device-conflicts/:id", requireAdmin(), async (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const payload = resolveDeviceConflictSchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const { response, userId } = await deviceController.resolveConflict(context, {
+    conflictId: params.id,
+    note: payload.note,
+    reviewerId: authUser!.id,
+    status: payload.status
+  });
+
+  auditLogService.log({
+    action: "device_conflict.reviewed",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "device_conflict",
+    metadata: { status: payload.status, userId }
+  });
+
+  return response;
+});
+
+adminRoutes.get("/users/:id/devices", requireAdmin(), (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+
+  return deviceController.listUserDevices(context, params.id);
+});
+
+adminRoutes.patch("/users/:id/device-policy", requireAdmin(), async (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const payload = updateDevicePolicySchema.parse(await context.req.json());
+  const authUser = context.get("authUser");
+  const response = await deviceController.setMultiDeviceAllowed(
+    context,
+    params.id,
+    payload.multiDeviceAllowed
+  );
+
+  auditLogService.log({
+    action: payload.multiDeviceAllowed
+      ? "user.multi_device_allowed"
+      : "user.multi_device_revoked",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "user"
+  });
+
+  return response;
+});
+
+// The way back in for somebody whose two slots are held by a phone they no
+// longer have. Everything signed out, device history kept.
+adminRoutes.post("/users/:id/devices/reset", requireAdmin(), async (context) => {
+  const params = idParamsSchema.parse(context.req.param());
+  const authUser = context.get("authUser");
+  const response = await deviceController.resetSessions(context, params.id);
+
+  auditLogService.log({
+    action: "user.devices_reset",
+    actorId: authUser!.id,
+    entityId: params.id,
+    entityType: "user"
+  });
+
+  return response;
+});

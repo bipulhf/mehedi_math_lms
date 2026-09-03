@@ -2,7 +2,11 @@ import type { UserRole } from "@mma/shared";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 
+import { deviceIdHeader, devicePlatformHeader } from "@mma/shared";
+
 import { REQUEST_TIMEOUT_MS } from "@/src/lib/api-client";
+import { claimSessionDevice } from "@/src/lib/api/devices";
+import { readDeviceId, readDevicePlatform } from "@/src/lib/device-id";
 import { mobileEnv } from "@/src/lib/env";
 import {
   clearSessionCookie,
@@ -50,6 +54,11 @@ async function authRequest<TResponse>(
   const headers = new Headers(init.headers);
 
   headers.set("Accept", "application/json");
+  // Which handset this is. The device limit is counted where a session is
+  // created, but the header rides along on everything -- one place to set it
+  // beats remembering which call is a sign-in. ADR-0019.
+  headers.set(deviceIdHeader, await readDeviceId());
+  headers.set(devicePlatformHeader, readDevicePlatform());
 
   if (init.body !== undefined) {
     headers.set("Content-Type", "application/json");
@@ -175,6 +184,15 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
   });
 
   await persistCookie(setCookie);
+
+  // The session was created in the in-app browser, which sent none of this
+  // app's headers, so it is holding a slot as an unknown device until the API
+  // is told whose it is. Never fatal: the sign-in has already worked.
+  try {
+    await claimSessionDevice();
+  } catch {
+    // Nothing to tell the person who just signed in.
+  }
 
   return "signed-in";
 }

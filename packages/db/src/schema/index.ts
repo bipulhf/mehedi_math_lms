@@ -7,6 +7,7 @@ export * from "./comments";
 export * from "./course-routines";
 export * from "./coupons";
 export * from "./courses";
+export * from "./devices";
 export * from "./enrollments";
 export * from "./enums";
 export * from "./lectures";

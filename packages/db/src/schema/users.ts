@@ -33,6 +33,11 @@ export const users = pgTable(
     image: text("image"),
     profileCompleted: boolean("profile_completed").default(false).notNull(),
     isActive: boolean("is_active").default(true).notNull(),
+    // The administrator's override on the two-device limit. Off by default:
+    // the limit is the policy, and this is the exception somebody has to
+    // decide to make -- a student with a shared family laptop, an account
+    // used from a classroom machine.
+    multiDeviceAllowed: boolean("multi_device_allowed").default(false).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
@@ -138,13 +143,19 @@ export const sessions = pgTable(
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     ipAddress: varchar("ip_address", { length: 64 }),
     userAgent: text("user_agent"),
+    // The client's own persistent id, copied off the request that opened this
+    // session. Null for anything that sent no header -- an old build, a
+    // script -- and the device limit counts those as a device each.
+    deviceId: varchar("device_id", { length: 64 }),
     impersonatedBy: uuid("impersonated_by"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
   },
   (table) => [
     uniqueIndex("sessions_token_unique_idx").on(table.token),
-    index("sessions_user_id_idx").on(table.userId)
+    index("sessions_user_id_idx").on(table.userId),
+    // The device limit reads every live session of one user on every sign-in.
+    index("sessions_user_id_expires_at_idx").on(table.userId, table.expiresAt)
   ]
 );
 

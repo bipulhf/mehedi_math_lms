@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import { credentialAccountIssuer } from "./account-issuer";
 import { createPhoneOtpPlugin, phoneOtpCooldownHook } from "./phone-otp";
+import { enforceDeviceLimit, recordDevice } from "./single-device";
 
 const authEnvSchema = z.object({
   APP_URL: z.url().default("https://mehedismathacademy.com"),
@@ -189,11 +190,29 @@ export const auth = betterAuth({
         required: false,
         defaultValue: true,
         input: false
+      },
+      // The administrator's override on the device limit. `input: false` for
+      // the same reason `isActive` is -- it is a decision made about an
+      // account, never one the account makes about itself.
+      multiDeviceAllowed: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false
       }
     }
   },
   session: {
-    modelName: "sessions"
+    modelName: "sessions",
+    additionalFields: {
+      // Written by the device guard, never by a client: the header is read in
+      // the hook and the column is set from there.
+      deviceId: {
+        type: "string",
+        required: false,
+        input: false
+      }
+    }
   },
   account: {
     modelName: "accounts",
@@ -220,7 +239,13 @@ export const auth = betterAuth({
     },
     session: {
       create: {
-        after: async (session) => {
+        // The device limit lives here rather than in a request middleware:
+        // this is the one place every way in goes through, and refusing a
+        // session is the only refusal that cannot be worked around by
+        // replaying a cookie. ADR-0019.
+        before: async (session, context) => enforceDeviceLimit(session, context),
+        after: async (session, context) => {
+          await recordDevice(session, context);
           await recordAuthAuditEvent("session.created", session.userId);
         }
       },

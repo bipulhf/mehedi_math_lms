@@ -1,5 +1,14 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
+// Where an administrator has got to with a refused sign-in. OPEN is a queue,
+// the other two are both "dealt with" -- REVIEWED means it was acted on,
+// DISMISSED means it was somebody's new phone.
+export const deviceConflictStatusEnum = pgEnum("device_conflict_status", [
+  "OPEN",
+  "REVIEWED",
+  "DISMISSED"
+]);
+
 export const userRoleEnum = pgEnum("user_role", [
   "STUDENT",
   "TEACHER",
