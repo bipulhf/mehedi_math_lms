@@ -168,7 +168,12 @@ export function NotificationBell(): JSX.Element | null {
   };
 
   return (
-    <div className="relative" ref={panelRef}>
+    // Static on a phone so the panel below is positioned against the header
+    // rather than against this button: anchored to the button, a panel nearly
+    // as wide as the viewport starts about 90px from the right edge and runs
+    // off the left one. `relative` comes back once there is room for a real
+    // dropdown.
+    <div className="static sm:relative" ref={panelRef}>
       <button
         type="button"
         aria-label={t("notif.title")}
@@ -188,7 +193,7 @@ export function NotificationBell(): JSX.Element | null {
       {open ? (
         <div
           className={cn(
-            "absolute right-0 z-50 mt-3 w-[min(100vw-1.5rem,24rem)] rounded-[calc(var(--radius)+0.25rem)]",
+            "absolute inset-x-3 top-full z-50 mt-2 sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-3 sm:w-96 rounded-[calc(var(--radius)+0.25rem)]",
             "border border-hairline bg-paper p-3 shadow-[0_18px_38px_-20px_rgba(19,27,46,0.2)]"
           )}
           onClick={(event) => event.stopPropagation()}
