@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
 import { useState, type JSX } from "react";
@@ -51,6 +52,7 @@ const resetPasswordSchema = z
 export function ResetPasswordPage(): JSX.Element {
   const t = useT();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const search = Route.useSearch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useZodForm({
@@ -87,7 +89,9 @@ export function ResetPasswordPage(): JSX.Element {
 
       toast.success(t("auth.resetDone"));
       // Every session was revoked with the password, this one included, so the
-      // only place to go is back through the door.
+      // only place to go is back through the door -- and the cache has to be
+      // told, or the header goes on rendering the account it read before.
+      queryClient.clear();
       await router.navigate({ to: "/auth/sign-in" });
     } finally {
       setIsSubmitting(false);

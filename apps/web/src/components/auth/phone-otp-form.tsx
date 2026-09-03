@@ -7,6 +7,7 @@ import {
   phoneOtpLength
 } from "@mma/shared";
 
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ export interface PhoneOtpFormProps {
 export function PhoneOtpForm({ courseSlug }: PhoneOtpFormProps): JSX.Element {
   const router = useRouter();
   const t = useT();
+  const { refetch: refetchSession } = useAuthSession();
   const [phoneInput, setPhoneInput] = useState("");
   const [code, setCode] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -109,6 +111,10 @@ export function PhoneOtpForm({ courseSlug }: PhoneOtpFormProps): JSX.Element {
 
         return;
       }
+
+      // The code just created the session this page's cached query says does
+      // not exist, and `/dashboard` believes the cache -- see sign-in.tsx.
+      await refetchSession();
 
       // `/dashboard` sends a half-finished profile on to the wizard by itself
       // (routes/dashboard.tsx), so a brand-new account needs no special case
