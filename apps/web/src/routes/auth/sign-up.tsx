@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { PhoneOtpForm } from "@/components/auth/phone-otp-form";
 import { RouteErrorView } from "@/components/common/route-error";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -58,6 +59,7 @@ function AuthSignUpRoutePage(): JSX.Element {
 export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
   const t = useT();
   const router = useRouter();
+  const { refetch: refetchSession } = useAuthSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Phone first, as on sign-in: a code on a handset is fewer things to
   // remember than an address and a password.
@@ -103,6 +105,9 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
       }
 
       toast.success(t("auth.signUp"));
+      // Signing up signs you in, and the cached session still says otherwise
+      // -- see the same call in sign-in.tsx.
+      await refetchSession();
       await router.navigate({
         to: "/dashboard/profile-complete",
         search: courseSlug ? { courseSlug } : {}

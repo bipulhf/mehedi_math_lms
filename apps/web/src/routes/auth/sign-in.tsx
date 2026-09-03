@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { PhoneOtpForm } from "@/components/auth/phone-otp-form";
 import { RouteErrorView } from "@/components/common/route-error";
+import { useAuthSession } from "@/hooks/use-auth-session";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ const signInSchema = z.object({
 export function SignInPage(): JSX.Element {
   const router = useRouter();
   const t = useT();
+  const { refetch: refetchSession } = useAuthSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Phone first: it is the way most of this audience has an account at all,
   // and it needs no password to have been remembered.
@@ -66,6 +68,12 @@ export function SignInPage(): JSX.Element {
         return;
       }
 
+      // The session query is cached for five minutes and this page has already
+      // filled it with `null`. Without this, `/dashboard` reads that cached
+      // null, decides nobody is signed in and sends the person straight back
+      // here -- to a freshly mounted form on its default tab, which looks like
+      // the sign-in silently failed.
+      await refetchSession();
       await router.navigate({ to: "/dashboard" });
     } finally {
       setIsSubmitting(false);
