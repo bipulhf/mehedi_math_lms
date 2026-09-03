@@ -28,6 +28,15 @@ export default defineConfig(({ command, mode }) => {
     }
   }
 
+  // Only `VITE_`-prefixed values reach the browser bundle, and the web-push
+  // key is the one piece of Firebase configuration the client needs directly:
+  // the rest it fetches from the API at runtime. `FIREBASE_WEB_VAPID_KEY` is
+  // what the Firebase console calls it, so it is accepted under that name and
+  // promoted here rather than silently ignored.
+  if (process.env.VITE_FIREBASE_VAPID_KEY === undefined && process.env.FIREBASE_WEB_VAPID_KEY) {
+    process.env.VITE_FIREBASE_VAPID_KEY = process.env.FIREBASE_WEB_VAPID_KEY;
+  }
+
   return {
     plugins: [tanstackStart(), viteReact(), tailwindcss()],
     envDir: repoRoot,
