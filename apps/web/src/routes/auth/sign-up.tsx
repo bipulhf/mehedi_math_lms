@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState, type JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { PhoneOtpForm } from "@/components/auth/phone-otp-form";
@@ -16,7 +16,9 @@ import { useT } from "@/lib/i18n/locale-context";
 import { seo } from "@/lib/seo";
 
 export const signUpSearchSchema = z.object({
-  courseSlug: z.string().trim().min(1).optional()
+  courseSlug: z.string().trim().min(1).optional(),
+  /** What Better Auth appends when its OAuth callback fails. */
+  error: z.string().trim().min(1).optional()
 });
 
 export const Route = createFileRoute("/auth/sign-up")({
@@ -48,15 +50,16 @@ const signUpSchema = z
 
 interface SignUpPageProps {
   courseSlug?: string | undefined;
+  oauthError?: string | undefined;
 }
 
 function AuthSignUpRoutePage(): JSX.Element {
   const search = Route.useSearch();
 
-  return <SignUpPage courseSlug={search.courseSlug} />;
+  return <SignUpPage courseSlug={search.courseSlug} oauthError={search.error} />;
 }
 
-export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
+export function SignUpPage({ courseSlug, oauthError }: SignUpPageProps): JSX.Element {
   const t = useT();
   const router = useRouter();
   const { refetch: refetchSession } = useAuthSession();
@@ -79,6 +82,12 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
     handleSubmit,
     register
   } = form;
+
+  useEffect(() => {
+    if (oauthError !== undefined) {
+      toast.error(t("auth.googleFailed"));
+    }
+  }, [oauthError, t]);
 
   const onSubmit = handleSubmit(async (values) => {
     setIsSubmitting(true);
@@ -128,7 +137,11 @@ export function SignUpPage({ courseSlug }: SignUpPageProps): JSX.Element {
 
           await authClient.signIn.social({
             callbackURL,
-            provider: "google"
+            errorCallbackURL: "/auth/sign-up",
+            provider: "google",
+            // The screen that is allowed to make an account. Google sign-in
+            // does not create one anywhere else.
+            requestSignUp: true
           });
         }}
         size="lg"

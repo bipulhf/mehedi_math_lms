@@ -49,6 +49,9 @@ export const en: Readonly<Record<MessageKey, string>> = {
   "auth.feature3Desc": "Ask questions and receive guidance directly from teachers.",
   "auth.feature3Title": "Direct teacher support",
   "auth.google": "Continue with Google",
+  "auth.googleNoAccount": "No account uses that Google address. Create one first, then Google will sign you in.",
+  "auth.googleFailed": "Google sign-in did not finish. Try again.",
+
   "auth.haveAccount": "Already have an account?",
   "auth.heroTitle": "All your courses and tests in {ring} place",
   "auth.heroTitleRing": "one",

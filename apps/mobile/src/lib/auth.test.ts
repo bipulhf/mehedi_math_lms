@@ -147,6 +147,35 @@ describe("signInWithGoogle", () => {
     expect(body.callbackURL).toContain("/api/mobile-auth-handoff?redirect=");
   });
 
+  // The account does not exist, which is a sentence the screen can say. It is
+  // not a failure, so it comes back as an outcome rather than a thrown error.
+  test("an unknown Google address is an outcome, not an error", async () => {
+    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
+    openAuthSession.mockResolvedValueOnce({
+      type: "success",
+      url: "genex://auth-callback?error=signup_disabled"
+    });
+
+    await expect(signInWithGoogle()).resolves.toBe("account-not-found");
+    // The social request and nothing after it: no token was exchanged.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("only the sign-up screen asks Google to create an account", async () => {
+    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
+    respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=2" });
+    openAuthSession.mockResolvedValue({ type: WebBrowser.WebBrowserResultType.CANCEL });
+
+    await signInWithGoogle();
+    await signInWithGoogle({ allowSignUp: true });
+
+    const [, signInInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [, signUpInit] = fetchMock.mock.calls[1] as [string, RequestInit];
+
+    expect(JSON.parse(String(signInInit.body)).requestSignUp).toBe(false);
+    expect(JSON.parse(String(signUpInit.body)).requestSignUp).toBe(true);
+  });
+
   test("a callback carrying no token fails rather than appearing to sign in", async () => {
     respondWith({ url: "https://accounts.google.test/o/oauth2/auth?x=1" });
     openAuthSession.mockResolvedValueOnce({

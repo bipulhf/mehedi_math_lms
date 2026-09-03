@@ -124,7 +124,13 @@ export const auth = betterAuth({
     ? {
         google: {
           clientId: parsedAuthEnv.GOOGLE_CLIENT_ID,
-          clientSecret: parsedAuthEnv.GOOGLE_CLIENT_SECRET
+          clientSecret: parsedAuthEnv.GOOGLE_CLIENT_SECRET,
+          // "Continue with Google" on the sign-in screen means sign in. Without
+          // this it also means sign up, silently, so somebody typing the wrong
+          // Google address gets a brand new empty account instead of being
+          // told their account is not this one. The sign-up screen asks for the
+          // account explicitly, with `requestSignUp`.
+          disableImplicitSignUp: true
         }
       }
     : undefined,

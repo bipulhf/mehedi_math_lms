@@ -52,6 +52,9 @@ export const bn = {
   "auth.feature3Desc": "যেকোনো জটিল টপিকে শিক্ষকের সাহায্য ও নোটিশ পাবে।",
   "auth.feature3Title": "শিক্ষকের সরাসরি সাহায্য",
   "auth.google": "গুগল দিয়ে ঢোকো",
+  "auth.googleNoAccount": "ওই গুগল ঠিকানায় কোনো অ্যাকাউন্ট নেই। আগে একটি অ্যাকাউন্ট খোলো, তারপর গুগল দিয়ে ঢুকতে পারবে।",
+  "auth.googleFailed": "গুগল দিয়ে লগ ইন শেষ হয়নি। আবার চেষ্টা করো।",
+
   "auth.haveAccount": "অ্যাকাউন্ট আছে?",
   "auth.heroTitle": "তোমার সব কোর্স আর পরীক্ষা {ring} জায়গায়",
   "auth.heroTitleRing": "একই",

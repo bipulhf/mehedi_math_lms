@@ -1,5 +1,5 @@
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState, type JSX } from "react";
+import { Link, createFileRoute, useRouter, useSearch } from "@tanstack/react-router";
+import { useEffect, useState, type JSX } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -16,7 +16,17 @@ import { useZodForm } from "@/lib/forms/use-zod-form";
 import { useT } from "@/lib/i18n/locale-context";
 import { seo } from "@/lib/seo";
 
+/**
+ * What Better Auth appends when its OAuth callback fails. `signup_disabled` is
+ * the one with a real answer for the person reading it: there is no account on
+ * that Google address, and the way to get one is the sign-up screen.
+ */
+export const signInSearchSchema = z.object({
+  error: z.string().trim().min(1).optional()
+});
+
 export const Route = createFileRoute("/auth/sign-in")({
+  validateSearch: (search) => signInSearchSchema.parse(search),
   head: () =>
     seo({
       description: "Sign in to Genex with a mobile number, email or Google.",
@@ -37,6 +47,10 @@ const signInSchema = z.object({
 export function SignInPage(): JSX.Element {
   const router = useRouter();
   const t = useT();
+  // `strict: false` because /login renders this page too, and that route does
+  // not declare the search schema.
+  const search = useSearch({ strict: false }) as { error?: string };
+  const oauthError = search.error;
   const { refetch: refetchSession } = useAuthSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Phone first: it is the way most of this audience has an account at all,
@@ -52,6 +66,16 @@ export function SignInPage(): JSX.Element {
     handleSubmit,
     register
   } = form;
+
+  useEffect(() => {
+    if (oauthError === undefined) {
+      return;
+    }
+
+    toast.error(
+      oauthError === "signup_disabled" ? t("auth.googleNoAccount") : t("auth.googleFailed")
+    );
+  }, [oauthError, t]);
 
   const onSubmit = handleSubmit(async (values) => {
     setIsSubmitting(true);
@@ -85,7 +109,13 @@ export function SignInPage(): JSX.Element {
       <Button
         className="group flex w-full items-center justify-center gap-3 border-line-strong transition-all duration-200 hover:border-accent hover:text-accent"
         onClick={async () => {
-          await authClient.signIn.social({ callbackURL: "/dashboard", provider: "google" });
+          await authClient.signIn.social({
+            callbackURL: "/dashboard",
+            // Where Better Auth lands a failed callback. Without it the person
+            // is dropped on the API's own error page with a code in the query.
+            errorCallbackURL: "/auth/sign-in",
+            provider: "google"
+          });
         }}
         size="lg"
         type="button"

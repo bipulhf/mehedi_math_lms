@@ -137,7 +137,16 @@ export async function verifyPhoneOtp(input: { code: string; phoneE164: string })
   await persistCookie(setCookie);
 }
 
-export type GoogleSignInOutcome = "cancelled" | "signed-in";
+export type GoogleSignInOutcome = "account-not-found" | "cancelled" | "signed-in";
+
+export interface GoogleSignInOptions {
+  /**
+   * Whether this press is allowed to create an account. Only the sign-up
+   * screen sets it: everywhere else an unknown Google address is answered
+   * with a message rather than a new empty account.
+   */
+  allowSignUp?: boolean;
+}
 
 /**
  * Google sign-in, which cannot work the way it does on the web: the OAuth
@@ -150,11 +159,21 @@ export type GoogleSignInOutcome = "cancelled" | "signed-in";
  *
  * @see apps/web/src/routes/api/mobile-auth-handoff.ts
  */
-export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
+export async function signInWithGoogle(
+  options: GoogleSignInOptions = {}
+): Promise<GoogleSignInOutcome> {
   const returnUrl = Linking.createURL("auth-callback");
   const callbackURL = `/api/mobile-auth-handoff?redirect=${encodeURIComponent(returnUrl)}`;
   const { payload } = await authRequest<{ redirect?: boolean; url?: string }>("sign-in/social", {
-    body: JSON.stringify({ callbackURL, provider: "google" }),
+    // Google creates an account only where the screen asked for one -- the
+    // sign-up screen. Everywhere else an unknown Google address comes back as
+    // `error=signup_disabled`, which is a sentence rather than a new account.
+    body: JSON.stringify({
+      callbackURL,
+      errorCallbackURL: callbackURL,
+      provider: "google",
+      requestSignUp: options.allowSignUp === true
+    }),
     method: "POST"
   });
 
@@ -173,7 +192,16 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
     throw new AuthError("Google sign-in did not complete.");
   }
 
-  const token = new URL(result.url).searchParams.get("token");
+  const callbackParams = new URL(result.url).searchParams;
+
+  // The handoff forwards Better Auth's own code. `signup_disabled` is the one
+  // the caller can say something useful about: there is no account on that
+  // Google address yet.
+  if (callbackParams.get("error") === "signup_disabled") {
+    return "account-not-found";
+  }
+
+  const token = callbackParams.get("token");
 
   if (token === null) {
     throw new AuthError("Google sign-in did not complete.");

@@ -10,9 +10,16 @@ import { spacing } from "@/src/theme/tokens";
 
 /**
  * Shared by sign-in and sign-up: a Google account is the same account either
- * way, so the two screens must not drift into offering different ones.
+ * way, so the two screens must not drift into offering different ones. What
+ * does differ is whether the press may create one -- only the sign-up screen
+ * passes `allowSignUp`, and everywhere else an unknown Google address is
+ * answered with a message.
  */
-export function GoogleSignInButton(): JSX.Element {
+export function GoogleSignInButton({
+  allowSignUp = false
+}: {
+  allowSignUp?: boolean;
+} = {}): JSX.Element {
   const router = useRouter();
   const t = useT();
   const googleSignIn = useGoogleSignIn();
@@ -20,16 +27,25 @@ export function GoogleSignInButton(): JSX.Element {
 
   const handlePress = (): void => {
     setError(null);
-    googleSignIn.mutate(undefined, {
-      onError: (mutationError) => {
-        setError(mutationError.message);
-      },
-      onSuccess: (outcome) => {
-        if (outcome === "signed-in") {
-          router.replace("/");
+    googleSignIn.mutate(
+      { allowSignUp },
+      {
+        onError: (mutationError) => {
+          setError(mutationError.message);
+        },
+        onSuccess: (outcome) => {
+          if (outcome === "signed-in") {
+            router.replace("/");
+
+            return;
+          }
+
+          if (outcome === "account-not-found") {
+            setError(t("auth.googleNoAccount"));
+          }
         }
       }
-    });
+    );
   };
 
   return (
