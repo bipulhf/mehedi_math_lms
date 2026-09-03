@@ -28,10 +28,15 @@ import ProfileScreen from "@/app/(tabs)/profile";
  */
 
 const mockRouterPush = jest.fn();
+const mockRedirect = jest.fn();
 
 jest.mock("expo-router", () => ({
   Link: ({ children }: { children: ReactNode }) => children,
-  Redirect: () => null,
+  Redirect: ({ href }: { href: string }) => {
+    mockRedirect(href);
+
+    return null;
+  },
   Stack: { Screen: () => null },
   useLocalSearchParams: () => ({ courseId: "course-1" }),
   useRouter: () => ({ back: jest.fn(), push: mockRouterPush, replace: jest.fn() })
@@ -134,6 +139,7 @@ function renderScreen(node: JSX.Element): void {
 beforeEach(() => {
   jest.restoreAllMocks();
   mockRouterPush.mockReset();
+  mockRedirect.mockReset();
   jest.spyOn(auth, "fetchSession").mockResolvedValue(SESSION);
 });
 
@@ -234,19 +240,17 @@ describe("signed-out tabs", () => {
     jest.spyOn(auth, "fetchSession").mockResolvedValue(null);
   });
 
-  test("home stops loading and offers sign-in or the public catalogue", async () => {
+  // Home's tab is not in the bar while signed out, so the screen sends the
+  // visitor to the one public tab rather than holding them on a dead end.
+  test("home redirects to the public catalogue", async () => {
     const enrollments = jest.spyOn(enrollmentsApi, "listMyEnrollments");
 
     renderScreen(<HomeScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+      expect(mockRedirect).toHaveBeenCalledWith("/explore");
     });
     expect(enrollments).not.toHaveBeenCalled();
-
-    fireEvent.press(screen.getByRole("button", { name: "লগ ইন" }));
-
-    expect(mockRouterPush).toHaveBeenCalledWith("/sign-in");
   });
 
   test("inbox stops at a sign-in prompt instead of navigating during tab mount", async () => {
@@ -257,7 +261,10 @@ describe("signed-out tabs", () => {
     });
   });
 
-  test("profile stops at a sign-in prompt instead of navigating during tab mount", async () => {
+  // The account tab is the signed-out visitor's way in, so it offers both
+  // routes -- someone without an account should not have to find sign-up
+  // inside the sign-in screen.
+  test("profile offers both sign-in and sign-up instead of navigating during tab mount", async () => {
     const profile = jest.spyOn(profilesApi, "getOwnProfile");
 
     renderScreen(<ProfileScreen />);
@@ -266,5 +273,11 @@ describe("signed-out tabs", () => {
       expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
     });
     expect(profile).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole("button", { name: "লগ ইন" }));
+    expect(mockRouterPush).toHaveBeenCalledWith("/sign-in");
+
+    fireEvent.press(screen.getByRole("button", { name: "অ্যাকাউন্ট খোল" }));
+    expect(mockRouterPush).toHaveBeenCalledWith("/sign-up");
   });
 });

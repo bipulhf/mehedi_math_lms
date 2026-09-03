@@ -1,6 +1,6 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useRouter } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -22,7 +22,6 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { ProgressTrack, StreakTrack } from "@/src/components/ui-display";
-import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -427,14 +426,12 @@ export default function HomeScreen(): JSX.Element {
     );
   }
 
-  // Explore is public, but Home needs an account. Keeping this prompt in the
-  // selected tab avoids navigation while the native tab view is mounting.
+  // Home needs an account, and while signed out its tab is not in the bar at
+  // all — so a visitor who lands here (cold start, deep link) is sent to the
+  // one public tab rather than left on a screen they cannot navigate away
+  // from. Explore carries the sign-in prompt from the account tab.
   if (!session) {
-    return (
-      <Screen noHeader style={styles.padded}>
-        <SignInPrompt showExplore />
-      </Screen>
-    );
+    return <Redirect href="/explore" />;
   }
 
   if (!isStudent) {

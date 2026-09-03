@@ -40,8 +40,14 @@ function Badge({ count }: { count: number }): JSX.Element | null {
 
 export default function TabsLayout(): JSX.Element {
   const t = useT();
-  const { session } = useSession();
+  const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
+  // Explore is the only public tab, so a signed-out visitor gets it and a way
+  // in — nothing else. `href: null` keeps the routes registered (a deep link
+  // or a redirect still resolves) while taking them out of the bar. The
+  // pending session counts as signed out: showing four tabs for a frame and
+  // then dropping to two is worse than showing two and adding to them.
+  const isSignedIn = !isSessionPending && session !== null;
 
   const { data: conversations } = useQuery({
     enabled: canMessage,
@@ -81,6 +87,7 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="index"
         options={{
+          href: isSignedIn ? "/" : null,
           tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="book" />,
           title: t("nav.home")
         }}
@@ -95,6 +102,7 @@ export default function TabsLayout(): JSX.Element {
       <Tabs.Screen
         name="inbox"
         options={{
+          href: isSignedIn ? "/inbox" : null,
           tabBarIcon: ({ focused }) => (
             <View>
               <TabIcon focused={focused} name="chatbubbles" />
@@ -104,11 +112,16 @@ export default function TabsLayout(): JSX.Element {
           title: t("nav.inbox")
         }}
       />
+      {/* The one tab that stays in both states, because it is where the way
+          in lives: signed out it is the sign-in prompt, signed in it is the
+          account. */}
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="person-circle" />,
-          title: t("nav.profile")
+          tabBarIcon: ({ focused }) => (
+            <TabIcon focused={focused} name={isSignedIn ? "person-circle" : "log-in"} />
+          ),
+          title: isSignedIn ? t("nav.profile") : t("auth.signIn")
         }}
       />
     </Tabs>
