@@ -21,8 +21,18 @@ export function SiteFooter(): JSX.Element {
   return (
     <footer className="mt-auto">
       <HatchedRule />
-      <div className="bg-panel-warm">
-        <div className="mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-14">
+      <div className="relative overflow-hidden bg-panel-warm">
+        {/* The mark again, oversized and nearly out of ink, bled off the
+            bottom-right corner. Decorative only: it repeats the logo three
+            rows above it, so it is hidden from the accessibility tree and
+            takes no clicks. */}
+        <img
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 -right-10 w-72 select-none opacity-[0.05] sm:w-96 lg:-bottom-24 lg:-right-16 lg:w-[32rem]"
+          src="/brand/mma-logo.png"
+        />
+        <div className="relative mx-auto grid w-full max-w-[90rem] gap-10 px-4 py-14 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-14">
           <div className="space-y-4">
             <Link aria-label={t("brand.name")} className="flex items-center" to="/">
               <img
@@ -82,7 +92,7 @@ export function SiteFooter(): JSX.Element {
           </FooterColumn>
         </div>
 
-        <div className="mx-auto w-full max-w-[90rem] border-t border-hairline px-4 py-6 sm:px-8 lg:px-14">
+        <div className="relative mx-auto w-full max-w-[90rem] border-t border-hairline px-4 py-6 sm:px-8 lg:px-14">
           <p className="text-sm text-muted-faint">
             {t("footer.copyright", { year: format.digits(String(year)) })} · {t("footer.rights")}
           </p>
