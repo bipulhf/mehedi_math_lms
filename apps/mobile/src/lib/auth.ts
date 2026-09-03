@@ -141,7 +141,16 @@ export async function verifyPhoneOtp(input: { code: string; phoneE164: string })
   await persistCookie(setCookie);
 }
 
-export type GoogleSignInOutcome = "cancelled" | "signed-in";
+export type GoogleSignInOutcome = "account-not-found" | "cancelled" | "signed-in";
+
+export interface GoogleSignInOptions {
+  /**
+   * Whether this press is allowed to create an account. Only the sign-up
+   * screen sets it: everywhere else an unknown Google address is answered
+   * with a message rather than a new empty account.
+   */
+  allowSignUp?: boolean;
+}
 
 /**
  * Google sign-in, which cannot work the way it does on the web: the OAuth
@@ -155,11 +164,17 @@ export type GoogleSignInOutcome = "cancelled" | "signed-in";
  *
  * @see apps/web/src/routes/api/mobile-auth-handoff.ts
  */
-export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
+export async function signInWithGoogle(
+  options: GoogleSignInOptions = {}
+): Promise<GoogleSignInOutcome> {
   const returnUrl = Linking.createURL("auth-callback");
   const startUrl = new URL("/api/mobile-google-start", mobileEnv.webOrigin);
 
   startUrl.searchParams.set("redirect", returnUrl);
+
+  if (options.allowSignUp === true) {
+    startUrl.searchParams.set("signUp", "1");
+  }
 
   const result = await WebBrowser.openAuthSessionAsync(startUrl.toString(), returnUrl);
 
@@ -172,7 +187,16 @@ export async function signInWithGoogle(): Promise<GoogleSignInOutcome> {
     throw new AuthError("Google sign-in did not complete.");
   }
 
-  const token = new URL(result.url).searchParams.get("token");
+  const callbackParams = new URL(result.url).searchParams;
+
+  // The handoff forwards Better Auth's own code. `signup_disabled` is the one
+  // the caller can say something useful about: there is no account on that
+  // Google address yet.
+  if (callbackParams.get("error") === "signup_disabled") {
+    return "account-not-found";
+  }
+
+  const token = callbackParams.get("token");
 
   if (token === null) {
     throw new AuthError("Google sign-in did not complete.");

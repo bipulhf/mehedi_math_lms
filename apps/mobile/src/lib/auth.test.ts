@@ -141,6 +141,31 @@ describe("signInWithGoogle", () => {
     expect(returnUrl).toBe("mma://auth-callback");
   });
 
+  // The account does not exist, which is a sentence the screen can say. It is
+  // not a failure, so it comes back as an outcome rather than a thrown error.
+  test("an unknown Google address is an outcome, not an error", async () => {
+    openAuthSession.mockResolvedValueOnce({
+      type: "success",
+      url: "mma://auth-callback?error=signup_disabled"
+    });
+
+    await expect(signInWithGoogle()).resolves.toBe("account-not-found");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test("only the sign-up screen asks Google to create an account", async () => {
+    openAuthSession.mockResolvedValue({ type: WebBrowser.WebBrowserResultType.CANCEL });
+
+    await signInWithGoogle();
+    await signInWithGoogle({ allowSignUp: true });
+
+    const [signInUrl] = openAuthSession.mock.calls[0] as [string, string];
+    const [signUpUrl] = openAuthSession.mock.calls[1] as [string, string];
+
+    expect(signInUrl).not.toContain("signUp=1");
+    expect(signUpUrl).toContain("signUp=1");
+  });
+
   test("a callback carrying no token fails rather than appearing to sign in", async () => {
     openAuthSession.mockResolvedValueOnce({
       type: "success",

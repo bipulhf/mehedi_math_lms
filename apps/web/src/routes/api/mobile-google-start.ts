@@ -34,10 +34,22 @@ export const Route = createFileRoute("/api/mobile-google-start")({
         }
 
         const callbackURL = `/api/mobile-auth-handoff?redirect=${encodeURIComponent(redirectTarget)}`;
+        // Google creates an account only where the app asked to create one --
+        // its sign-up screen. Everywhere else an unknown Google address is a
+        // message, not a new empty account. The provider carries
+        // `disableImplicitSignUp`, so this flag is what lifts it.
+        const isSignUp = new URL(request.url).searchParams.get("signUp") === "1";
         const { auth } = await import("../../lib/auth-server");
         const signInResponse = await auth.api.signInSocial({
           asResponse: true,
-          body: { callbackURL, provider: "google" },
+          body: {
+            callbackURL,
+            // Failures land on the handoff too, which is the only route that
+            // knows how to get back into the app.
+            errorCallbackURL: callbackURL,
+            provider: "google",
+            requestSignUp: isSignUp
+          },
           headers: request.headers
         });
 

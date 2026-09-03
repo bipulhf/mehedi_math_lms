@@ -9,6 +9,7 @@ import {
   signOut,
   signUpWithEmail,
   verifyPhoneOtp,
+  type GoogleSignInOptions,
   type MobileSession
 } from "@/src/lib/auth";
 import { queryKeys } from "@/src/lib/query";
@@ -61,7 +62,7 @@ export function useGoogleSignIn() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: signInWithGoogle,
+    mutationFn: async (options: GoogleSignInOptions = {}) => signInWithGoogle(options),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.session() });
     }

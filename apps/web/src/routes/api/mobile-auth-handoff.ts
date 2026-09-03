@@ -28,6 +28,15 @@ export const Route = createFileRoute("/api/mobile-auth-handoff")({
           return new Response("Unsupported redirect target", { status: 400 });
         }
 
+        // Better Auth sends a failed callback here as well, with its own code
+        // in the query. Forwarding it is what lets the app say "there is no
+        // account on that Google address" rather than "something went wrong".
+        const oauthError = new URL(request.url).searchParams.get("error");
+
+        if (oauthError !== null) {
+          return Response.redirect(withAppLinkParam(redirectTarget, "error", oauthError), 302);
+        }
+
         const { auth } = await import("../../lib/auth-server");
 
         try {

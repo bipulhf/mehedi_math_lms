@@ -60,7 +60,7 @@ export default function SignUpScreen(): JSX.Element {
 
           <Card>
             <View style={styles.form}>
-              <GoogleSignInButton />
+              <GoogleSignInButton allowSignUp />
 
               <Tabs
                 label={t("auth.chooseMethod")}
