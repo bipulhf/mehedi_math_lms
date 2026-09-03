@@ -53,6 +53,27 @@ Shared by all server configs:
 
 `slug`, `profileCompleted` (default `false`), `isActive` (default `true`). The latter two are `input: false` — they cannot be set by a client and must be changed server-side. Adding a field means updating `additionalFields` in **both** server configs, the `customSession` callback if it should reach the session, and the `users` table in `@genex/db`.
 
+## The device limit
+
+`src/single-device.ts` is the two-device rule, and **both server configs run
+it** — `enforceDeviceLimit` on `session.create.before`, `recordDevice` on
+`session.create.after`. `tanstack-server.ts` is the one that matters most: the
+web app serves the Better Auth handler, so every sign-in in the product,
+including the mobile app's, goes through that config.
+
+It counts devices rather than sessions. A client mints its own id and sends it
+as `x-device-id` (`readBrowserDeviceId` here for the browser,
+`src/lib/device-id.ts` in the app); two sessions under one id are one device,
+and a session with no id counts as a device of its own. The decision itself is
+`resolveDeviceLimit` in `@genex/shared`, which is pure and has the tests.
+
+Three sign-ins are never refused, and each exemption is load-bearing: a user
+row that does not exist yet (sign-up writes user and session together), an
+impersonation session (support has to be able to open the account whose devices
+are full), and an account with `users.multi_device_allowed` set. Staff are not
+counted at all. [ADR-0019](../../docs/adr/0019-an-account-signs-in-on-two-devices-and-the-third-is-a-log-entry.md)
+has the reasoning; the administrator's side of it is in `apps/api`.
+
 ## Exported types
 
 `AuthSessionPayload`, `AuthUser`, `AuthSession` (from `src/server.ts`) — the API's `AppVariables` in `apps/api/src/types/app-bindings.ts` is typed against these.

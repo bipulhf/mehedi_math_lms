@@ -118,10 +118,18 @@ describe("signInWithGoogle", () => {
     await expect(signInWithGoogle()).resolves.toBe("signed-in");
     await expect(readSessionCookie()).resolves.toBe("better-auth.session_token=fresh");
 
-    const [verifyUrl, verifyInit] = fetchMock.mock.calls.at(-1) as [string, RequestInit];
+    // Not the last call: the device claim follows the exchange, because a
+    // session opened in the in-app browser carries none of this app's headers.
+    const verifyCall = fetchMock.mock.calls.find(([url]: [string]) =>
+      String(url).includes("one-time-token/verify")
+    ) as [string, RequestInit] | undefined;
 
-    expect(verifyUrl).toContain("one-time-token/verify");
-    expect(JSON.parse(String(verifyInit.body))).toEqual({ token: "one-time-abc" });
+    expect(verifyCall).toBeDefined();
+    expect(JSON.parse(String(verifyCall?.[1].body))).toEqual({ token: "one-time-abc" });
+
+    const [claimUrl] = fetchMock.mock.calls.at(-1) as [string, RequestInit];
+
+    expect(claimUrl).toContain("auth/device");
   });
 
   test("sends Better Auth to the handoff route, not to a dashboard", async () => {

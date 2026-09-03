@@ -6,6 +6,7 @@ import { categories } from "./categories";
 import { chapterMaterials, chapters } from "./chapters";
 import { comments } from "./comments";
 import { coupons } from "./coupons";
+import { deviceConflictLogs, userDevices } from "./devices";
 import { courseProgress, enrollments } from "./enrollments";
 import { courseRoutines } from "./course-routines";
 import { scriptChallenges } from "./script-challenges";
@@ -483,5 +484,25 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   actor: one(users, {
     fields: [auditLogs.actorId],
     references: [users.id]
+  })
+}));
+
+export const userDevicesRelations = relations(userDevices, ({ one }) => ({
+  user: one(users, {
+    fields: [userDevices.userId],
+    references: [users.id]
+  })
+}));
+
+export const deviceConflictLogsRelations = relations(deviceConflictLogs, ({ one }) => ({
+  reviewer: one(users, {
+    fields: [deviceConflictLogs.reviewedBy],
+    references: [users.id],
+    relationName: "deviceConflictReviewer"
+  }),
+  user: one(users, {
+    fields: [deviceConflictLogs.userId],
+    references: [users.id],
+    relationName: "deviceConflictSubject"
   })
 }));

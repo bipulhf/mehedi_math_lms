@@ -169,6 +169,13 @@
       "when": 1788358901573,
       "tag": "0023_require_account_issuer",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1788455872846,
+      "tag": "0025_productive_the_executioner",
+      "breakpoints": true
     }
   ]
 }

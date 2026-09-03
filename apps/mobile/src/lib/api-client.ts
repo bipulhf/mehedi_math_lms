@@ -1,3 +1,6 @@
+import { deviceIdHeader, devicePlatformHeader } from "@genex/shared";
+
+import { readDeviceId, readDevicePlatform } from "@/src/lib/device-id";
 import { mobileEnv } from "@/src/lib/env";
 import { clearSessionCookie, readSessionCookie } from "@/src/lib/session-store";
 
@@ -60,6 +63,11 @@ async function request<TResponse>(path: string, init: RequestInit = {}): Promise
   const headers = new Headers(init.headers);
 
   headers.set("Accept", "application/json");
+  // Which handset this is. The device limit is counted where a session is
+  // created, but the header rides along on everything -- one place to set it
+  // beats remembering which call is a sign-in. ADR-0019.
+  headers.set(deviceIdHeader, await readDeviceId());
+  headers.set(devicePlatformHeader, readDevicePlatform());
 
   if (init.body !== undefined) {
     headers.set("Content-Type", "application/json");

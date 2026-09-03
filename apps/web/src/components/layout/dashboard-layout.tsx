@@ -6,6 +6,7 @@ import {
   ChartColumn,
   ClipboardCheck,
   History,
+  MonitorSmartphone,
   Layers3,
   LayoutDashboard,
   ListOrdered,
@@ -65,6 +66,7 @@ const dashboardNavigation = {
     { icon: ShieldAlert, labelKey: "nav.reports", to: "/dashboard/admin/message-reports" },
     { icon: TicketPercent, labelKey: "coupon.title", to: "/dashboard/coupons" },
     { icon: ChartColumn, labelKey: "nav.analytics", to: "/dashboard/admin/analytics" },
+    { icon: MonitorSmartphone, labelKey: "nav.devices", to: "/dashboard/admin/devices" },
     { icon: History, labelKey: "nav.logs", to: "/dashboard/admin/logs" }
   ],
   STUDENT: [

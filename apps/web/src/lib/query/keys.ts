@@ -12,6 +12,9 @@ export const queryKeys = {
     bugs: (filters: Record<string, unknown>) => ["admin", "bugs", filters] as const,
     courses: (filters: Record<string, unknown>) => ["admin", "courses", filters] as const,
     dashboard: () => ["admin", "dashboard"] as const,
+    deviceConflicts: (filters: Record<string, unknown>) =>
+      ["admin", "device-conflicts", filters] as const,
+    devices: (userId: string) => ["admin", "users", userId, "devices"] as const,
     featured: () => ["admin", "landing", "featured"] as const,
     logActions: () => ["admin", "logs", "actions"] as const,
     logs: (filters: Record<string, unknown>) => ["admin", "logs", filters] as const,

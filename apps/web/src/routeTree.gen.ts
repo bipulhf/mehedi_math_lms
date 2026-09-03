@@ -44,6 +44,7 @@ import { Route as DashboardAdminAnalyticsRouteImport } from './routes/dashboard/
 import { Route as DashboardAdminBannersRouteImport } from './routes/dashboard/admin/banners'
 import { Route as DashboardAdminCategoriesRouteImport } from './routes/dashboard/admin/categories'
 import { Route as DashboardAdminCoursesRouteImport } from './routes/dashboard/admin/courses'
+import { Route as DashboardAdminDevicesRouteImport } from './routes/dashboard/admin/devices'
 import { Route as DashboardAdminFeaturedCoursesRouteImport } from './routes/dashboard/admin/featured-courses'
 import { Route as DashboardAdminMessageReportsRouteImport } from './routes/dashboard/admin/message-reports'
 import { Route as DashboardAdminSmsRouteImport } from './routes/dashboard/admin/sms'
@@ -260,6 +261,11 @@ const DashboardAdminCategoriesRoute =
 const DashboardAdminCoursesRoute = DashboardAdminCoursesRouteImport.update({
   id: '/admin/courses',
   path: '/admin/courses',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminDevicesRoute = DashboardAdminDevicesRouteImport.update({
+  id: '/admin/devices',
+  path: '/admin/devices',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardAdminFeaturedCoursesRoute =
@@ -512,6 +518,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/devices': typeof DashboardAdminDevicesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
@@ -586,6 +593,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/devices': typeof DashboardAdminDevicesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
@@ -663,6 +671,7 @@ export interface FileRoutesById {
   '/dashboard/admin/banners': typeof DashboardAdminBannersRoute
   '/dashboard/admin/categories': typeof DashboardAdminCategoriesRoute
   '/dashboard/admin/courses': typeof DashboardAdminCoursesRoute
+  '/dashboard/admin/devices': typeof DashboardAdminDevicesRoute
   '/dashboard/admin/featured-courses': typeof DashboardAdminFeaturedCoursesRoute
   '/dashboard/admin/message-reports': typeof DashboardAdminMessageReportsRoute
   '/dashboard/admin/sms': typeof DashboardAdminSmsRoute
@@ -741,6 +750,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/devices'
     | '/dashboard/admin/featured-courses'
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
@@ -815,6 +825,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/devices'
     | '/dashboard/admin/featured-courses'
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
@@ -891,6 +902,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/banners'
     | '/dashboard/admin/categories'
     | '/dashboard/admin/courses'
+    | '/dashboard/admin/devices'
     | '/dashboard/admin/featured-courses'
     | '/dashboard/admin/message-reports'
     | '/dashboard/admin/sms'
@@ -1198,6 +1210,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/courses'
       fullPath: '/dashboard/admin/courses'
       preLoaderRoute: typeof DashboardAdminCoursesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/devices': {
+      id: '/dashboard/admin/devices'
+      path: '/admin/devices'
+      fullPath: '/dashboard/admin/devices'
+      preLoaderRoute: typeof DashboardAdminDevicesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/admin/featured-courses': {
@@ -1533,6 +1552,7 @@ interface DashboardRouteChildren {
   DashboardAdminBannersRoute: typeof DashboardAdminBannersRoute
   DashboardAdminCategoriesRoute: typeof DashboardAdminCategoriesRoute
   DashboardAdminCoursesRoute: typeof DashboardAdminCoursesRoute
+  DashboardAdminDevicesRoute: typeof DashboardAdminDevicesRoute
   DashboardAdminFeaturedCoursesRoute: typeof DashboardAdminFeaturedCoursesRoute
   DashboardAdminMessageReportsRoute: typeof DashboardAdminMessageReportsRoute
   DashboardAdminSmsRoute: typeof DashboardAdminSmsRoute
@@ -1585,6 +1605,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminBannersRoute: DashboardAdminBannersRoute,
   DashboardAdminCategoriesRoute: DashboardAdminCategoriesRoute,
   DashboardAdminCoursesRoute: DashboardAdminCoursesRoute,
+  DashboardAdminDevicesRoute: DashboardAdminDevicesRoute,
   DashboardAdminFeaturedCoursesRoute: DashboardAdminFeaturedCoursesRoute,
   DashboardAdminMessageReportsRoute: DashboardAdminMessageReportsRoute,
   DashboardAdminSmsRoute: DashboardAdminSmsRoute,
