@@ -7,15 +7,8 @@ import { success } from "@/utils/response";
 export const publicConfigRoutes = new Hono<AppBindings>();
 
 publicConfigRoutes.get("/firebase-config", (context) => {
-  if (!env.isFirebaseClientConfigured) {
-    return success(context, null);
-  }
-
-  return success(context, {
-    apiKey: env.FIREBASE_CLIENT_API_KEY,
-    appId: env.FIREBASE_CLIENT_APP_ID,
-    authDomain: env.FIREBASE_CLIENT_AUTH_DOMAIN,
-    messagingSenderId: env.FIREBASE_CLIENT_MESSAGING_SENDER_ID,
-    projectId: env.FIREBASE_CLIENT_PROJECT_ID
-  });
+  // Null rather than an error: a browser with no push configuration behind it
+  // is a working browser with one feature off, and both the page and the
+  // service worker are written to read it that way.
+  return success(context, env.firebaseClientConfig);
 });

@@ -8,28 +8,31 @@ export class FcmPushService {
   private readonly app: App | null;
 
   public constructor() {
-    if (!env.isFirebaseConfigured || !env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+    const credentials = env.firebaseServiceAccount;
+
+    // Push is feature-gated, not required. Reading the credentials -- from the
+    // service-account JSON or from the three fields it can also arrive as --
+    // is `@/lib/env`'s job; this only reports whether there is anything to
+    // send with.
+    if (credentials === null) {
+      logger.info("Firebase is not configured; push notifications are disabled");
       this.app = null;
+
       return;
     }
 
     try {
-      const credentials = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON) as {
-        client_email: string;
-        private_key: string;
-        project_id: string;
-      };
-
       if (getApps().length > 0) {
         this.app = getApps()[0] ?? null;
+
         return;
       }
 
       this.app = initializeApp({
         credential: cert({
-          clientEmail: credentials.client_email,
-          privateKey: credentials.private_key,
-          projectId: credentials.project_id
+          clientEmail: credentials.clientEmail,
+          privateKey: credentials.privateKey,
+          projectId: credentials.projectId
         })
       });
     } catch (error) {

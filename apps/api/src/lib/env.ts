@@ -57,13 +57,110 @@ const apiEnvSchema = z.object({
   // the room. It is a brake on a script, not a quota on real use.
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(1000),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
+  // The service account, in either shape it comes in. The console hands out a
+  // JSON file; a host whose secret store will not take a multi-line blob hands
+  // out three fields. Both are accepted, and the JSON wins where both are set.
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
+  // The public web-app config. `FIREBASE_WEB_*` is what the Firebase console
+  // calls these; `FIREBASE_CLIENT_*` is what this file called them first. Both
+  // are read so neither spelling is silently ignored.
   FIREBASE_CLIENT_API_KEY: z.string().optional(),
   FIREBASE_CLIENT_AUTH_DOMAIN: z.string().optional(),
   FIREBASE_CLIENT_PROJECT_ID: z.string().optional(),
   FIREBASE_CLIENT_MESSAGING_SENDER_ID: z.string().optional(),
-  FIREBASE_CLIENT_APP_ID: z.string().optional()
+  FIREBASE_CLIENT_APP_ID: z.string().optional(),
+  FIREBASE_WEB_API_KEY: z.string().optional(),
+  FIREBASE_WEB_AUTH_DOMAIN: z.string().optional(),
+  FIREBASE_WEB_PROJECT_ID: z.string().optional(),
+  FIREBASE_WEB_MESSAGING_SENDER_ID: z.string().optional(),
+  FIREBASE_WEB_APP_ID: z.string().optional()
 });
+
+/** A value that was never filled in is not a value. */
+function configured(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+
+  return trimmed && trimmed !== "replace-me" ? trimmed : undefined;
+}
+
+export interface FirebaseServiceAccount {
+  clientEmail: string;
+  privateKey: string;
+  projectId: string;
+}
+
+export interface FirebaseClientConfig {
+  apiKey: string;
+  appId: string;
+  authDomain: string;
+  messagingSenderId: string;
+  projectId: string;
+}
+
+/**
+ * The credentials the admin SDK signs with, from whichever shape was supplied.
+ *
+ * The private key is the part that goes wrong: a `.env` file holds it with the
+ * newlines escaped, and Firebase rejects the key without them restored. That
+ * single `replaceAll` is the difference between push working and a
+ * "Failed to parse private key" nobody sees because the send is fire-and-forget.
+ */
+function resolveServiceAccount(
+  raw: z.infer<typeof apiEnvSchema>
+): FirebaseServiceAccount | null {
+  const json = configured(raw.FIREBASE_SERVICE_ACCOUNT_JSON);
+
+  if (json) {
+    try {
+      const parsed = JSON.parse(json) as {
+        client_email?: string;
+        private_key?: string;
+        project_id?: string;
+      };
+
+      if (parsed.client_email && parsed.private_key && parsed.project_id) {
+        return {
+          clientEmail: parsed.client_email,
+          privateKey: parsed.private_key.replaceAll("\\n", "\n"),
+          projectId: parsed.project_id
+        };
+      }
+    } catch {
+      // Falls through to the split fields, and to the warning below.
+    }
+  }
+
+  const clientEmail = configured(raw.FIREBASE_CLIENT_EMAIL);
+  const privateKey = configured(raw.FIREBASE_PRIVATE_KEY);
+  const projectId = configured(raw.FIREBASE_PROJECT_ID);
+
+  if (clientEmail && privateKey && projectId) {
+    return { clientEmail, privateKey: privateKey.replaceAll("\\n", "\n"), projectId };
+  }
+
+  return null;
+}
+
+function resolveClientConfig(raw: z.infer<typeof apiEnvSchema>): FirebaseClientConfig | null {
+  const apiKey = configured(raw.FIREBASE_CLIENT_API_KEY) ?? configured(raw.FIREBASE_WEB_API_KEY);
+  const appId = configured(raw.FIREBASE_CLIENT_APP_ID) ?? configured(raw.FIREBASE_WEB_APP_ID);
+  const authDomain =
+    configured(raw.FIREBASE_CLIENT_AUTH_DOMAIN) ?? configured(raw.FIREBASE_WEB_AUTH_DOMAIN);
+  const messagingSenderId =
+    configured(raw.FIREBASE_CLIENT_MESSAGING_SENDER_ID) ??
+    configured(raw.FIREBASE_WEB_MESSAGING_SENDER_ID);
+  const projectId =
+    configured(raw.FIREBASE_CLIENT_PROJECT_ID) ?? configured(raw.FIREBASE_WEB_PROJECT_ID);
+
+  if (!apiKey || !appId || !authDomain || !messagingSenderId || !projectId) {
+    return null;
+  }
+
+  return { apiKey, appId, authDomain, messagingSenderId, projectId };
+}
 
 const parsedEnv = apiEnvSchema.parse(process.env);
 const isS3Configured =
@@ -89,19 +186,15 @@ const defaultCorsOrigins = [
   "exp://127.0.0.1:8081"
 ];
 
+const firebaseServiceAccount = resolveServiceAccount(parsedEnv);
+const firebaseClientConfig = resolveClientConfig(parsedEnv);
+
 export const env = {
   ...parsedEnv,
-  isFirebaseConfigured: Boolean(
-    parsedEnv.FIREBASE_SERVICE_ACCOUNT_JSON &&
-    parsedEnv.FIREBASE_SERVICE_ACCOUNT_JSON.trim().length > 0
-  ),
-  isFirebaseClientConfigured: Boolean(
-    parsedEnv.FIREBASE_CLIENT_API_KEY &&
-    parsedEnv.FIREBASE_CLIENT_AUTH_DOMAIN &&
-    parsedEnv.FIREBASE_CLIENT_PROJECT_ID &&
-    parsedEnv.FIREBASE_CLIENT_MESSAGING_SENDER_ID &&
-    parsedEnv.FIREBASE_CLIENT_APP_ID
-  ),
+  firebaseClientConfig,
+  firebaseServiceAccount,
+  isFirebaseConfigured: firebaseServiceAccount !== null,
+  isFirebaseClientConfigured: firebaseClientConfig !== null,
   isRedisEnabled: parsedEnv.REDIS_ENABLED,
   isS3Configured,
   isSslCommerzConfigured:
