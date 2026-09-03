@@ -18,6 +18,7 @@ import type {
 } from "@genex/shared";
 
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
+import { clientEnv } from "@/lib/env";
 
 export interface AssessmentOption {
   id: string;
@@ -320,6 +321,26 @@ export async function submitTest(
   );
 
   return response.data;
+}
+
+/**
+ * The same submit, sent from a document that is being torn down.
+ *
+ * `keepalive` is the whole point: a closing tab cancels its in-flight requests,
+ * and this is the one that has to outlive the page. It goes through `fetch`
+ * rather than the shared client because nothing here can be awaited or
+ * retried, and there is no response to read.
+ */
+export function submitTestOnUnload(testId: string, values: SubmitTestInput): void {
+  void fetch(`${clientEnv.apiBaseUrl}/tests/${testId}/submit`, {
+    body: JSON.stringify(values),
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    method: "POST"
+  }).catch(() => {
+    // There is no page left to tell.
+  });
 }
 
 export async function listTestSubmissions(testId: string): Promise<readonly SubmissionSummary[]> {
