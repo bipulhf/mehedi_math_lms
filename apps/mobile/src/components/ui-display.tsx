@@ -297,7 +297,10 @@ export function FilterPill({
         pressed ? styles.controlPressed : null
       ]}
     >
-      <Text style={[styles.filterPillLabel, isSelected ? styles.filterPillLabelActive : null]}>
+      <Text
+        numberOfLines={1}
+        style={[styles.filterPillLabel, isSelected ? styles.filterPillLabelActive : null]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -344,7 +347,10 @@ export function Tabs<TValue extends string>({
           isActive ? styles.segmentItemActive : null
         ]}
       >
-        <Text style={[styles.segmentLabel, isActive ? styles.segmentLabelActive : null]}>
+        <Text
+          numberOfLines={1}
+          style={[styles.segmentLabel, isActive ? styles.segmentLabelActive : null]}
+        >
           {tab.label}
         </Text>
       </Pressable>
@@ -640,12 +646,17 @@ const useStyles = makeStyles((colors) => ({
     letterSpacing: 0.9,
     textTransform: "uppercase"
   },
+  // A capsule is as wide as the words in it and no narrower. Without
+  // `flexShrink: 0` a row of them is free to compress the long ones, and since
+  // the pill is a fixed height the label then wraps onto a second line that the
+  // pill clips — "স্কুল ও কলেজ" reading as "স্কুল ও".
   filterPill: {
     alignItems: "center",
     backgroundColor: colors.card,
     borderColor: colors.hairline,
     borderRadius: radius.pill,
     borderWidth: 1.5,
+    flexShrink: 0,
     justifyContent: "center",
     minHeight: 42,
     paddingHorizontal: spacing.lg
@@ -739,6 +750,7 @@ const useStyles = makeStyles((colors) => ({
     alignItems: "center",
     alignSelf: "flex-start",
     borderRadius: radius.pill,
+    flexShrink: 0,
     justifyContent: "center",
     minHeight: 42,
     paddingHorizontal: spacing.lg

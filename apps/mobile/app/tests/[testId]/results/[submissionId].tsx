@@ -288,6 +288,7 @@ const useStyles = makeStyles((colors) => ({
     alignSelf: "flex-start",
     borderRadius: radius.pill,
     borderWidth: 1,
+    flexShrink: 0,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
@@ -298,7 +299,9 @@ const useStyles = makeStyles((colors) => ({
   resultScoreRow: { alignItems: "center", flexDirection: "row", gap: spacing.xl },
   resultScoreText: { alignItems: "flex-start", flex: 1, gap: spacing.sm },
   verdict: {
+    alignSelf: "flex-start",
     borderRadius: radius.pill,
+    flexShrink: 0,
     paddingHorizontal: spacing.lg,
     paddingVertical: 7
   },

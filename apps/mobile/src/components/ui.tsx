@@ -564,6 +564,7 @@ const useStyles = makeStyles((colors) => ({
     backgroundColor: colors.tint.brand.bg,
     borderRadius: radius.pill,
     flexDirection: "row",
+    flexShrink: 0,
     gap: 6,
     paddingHorizontal: spacing.md,
     paddingVertical: 6

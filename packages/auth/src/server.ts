@@ -17,6 +17,8 @@ import { enforceDeviceLimit, recordDevice } from "./single-device";
 const authEnvSchema = z.object({
   APP_URL: z.url().default("https://mehedismathacademy.com"),
   BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
+  /** Comma-separated extra origins to trust. Development only — see below. */
+  DEV_TRUSTED_ORIGINS: z.string().default(""),
   BETTER_AUTH_URL: z.url().default("http://localhost:3001"),
   GOOGLE_CLIENT_ID: z.string().min(1).default("replace-me"),
   GOOGLE_CLIENT_SECRET: z.string().min(1).default("replace-me")
@@ -33,7 +35,20 @@ const trustedOrigins = [
   "exp://127.0.0.1:8081",
   // The Expo app's deep-link scheme (app.json `scheme`). The mobile Google
   // flow finishes by redirecting the in-app browser back into the app.
-  "mma://"
+  "mma://",
+  // A phone or emulator running the mobile app reaches this machine by its LAN
+  // address, never by `localhost` — that name resolves to the handset itself.
+  // React Native's fetch sends no `Origin` header either, so Better Auth falls
+  // back to the request's own host and rejects `http://192.168.x.x:3000` with
+  // "Missing or null Origin". Listing the machine's address here is what lets
+  // a device sign in against a dev server. Development only: the parse below
+  // drops the whole list outside it, so a stray value in a production
+  // environment cannot widen what the deployed server trusts.
+  ...(process.env.NODE_ENV === "development"
+    ? parsedAuthEnv.DEV_TRUSTED_ORIGINS.split(",")
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0)
+    : [])
 ];
 
 const isGoogleConfigured =

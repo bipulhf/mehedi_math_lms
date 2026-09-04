@@ -280,6 +280,7 @@ const useStyles = makeStyles((colors) => ({
   languagePill: {
     backgroundColor: colors.panelWarm,
     borderRadius: radius.pill,
+    flexShrink: 0,
     justifyContent: "center",
     minHeight: 34,
     paddingHorizontal: spacing.md

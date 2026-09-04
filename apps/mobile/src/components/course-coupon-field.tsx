@@ -199,6 +199,7 @@ const useStyles = makeStyles((colors) => ({
     alignSelf: "flex-start",
     backgroundColor: colors.tint.gold.bg,
     borderRadius: radius.pill,
+    flexShrink: 0,
     justifyContent: "center",
     minHeight: 40,
     paddingHorizontal: spacing.md

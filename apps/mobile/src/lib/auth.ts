@@ -59,6 +59,17 @@ async function authRequest<TResponse>(
   // beats remembering which call is a sign-in. ADR-0019.
   headers.set(deviceIdHeader, await readDeviceId());
   headers.set(devicePlatformHeader, readDevicePlatform());
+  // React Native sends `Origin: null` on a request it did not originate from a
+  // document, and Better Auth's origin check rejects that string outright --
+  // `originToValidate === "null"` throws `MISSING_OR_NULL_ORIGIN` before
+  // `trustedOrigins` is ever consulted, so no server config can allow it.
+  //
+  // The check only runs on a request that carries a cookie, which is what made
+  // this look intermittent: the first sign-in after a fresh install has no
+  // session cookie yet and sails through, and every sign-in after that is
+  // rejected. Naming the origin we are actually posting to fixes both. Setting
+  // `Origin` is forbidden to a browser's fetch and allowed to this one.
+  headers.set("Origin", mobileEnv.webOrigin);
 
   if (init.body !== undefined) {
     headers.set("Content-Type", "application/json");
@@ -70,6 +81,16 @@ async function authRequest<TResponse>(
 
   const response = await fetch(`${mobileEnv.authBaseUrl}/${path.replace(/^\//, "")}`, {
     ...init,
+    // React Native keeps its own native cookie store, and it overwrites the
+    // `Cookie` header set above with whatever that store holds for the host --
+    // which is nothing, because Better Auth scopes the cookie to
+    // `Domain=localhost` while the app talks to a LAN address. The session
+    // cookie was therefore dropped on the way out and every authenticated
+    // request came back as signed out, with the sign-in itself succeeding and
+    // a session row sitting in the database. `omit` takes the native store out
+    // of the exchange and lets the header we set survive, which is the whole
+    // point of replaying the cookie by hand.
+    credentials: "omit",
     headers,
     // Same ceiling as api-client.ts: a stalled connection should fail loudly
     // rather than leave the session query pending forever.

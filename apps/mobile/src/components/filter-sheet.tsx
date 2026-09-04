@@ -255,6 +255,7 @@ const useStyles = makeStyles((colors) => ({
     alignSelf: "flex-start",
     backgroundColor: colors.accentSoft,
     borderRadius: radius.pill,
+    flexShrink: 0,
     paddingHorizontal: spacing.md,
     paddingVertical: 6
   },
