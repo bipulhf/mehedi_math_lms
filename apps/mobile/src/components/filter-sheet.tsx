@@ -284,7 +284,7 @@ const useStyles = makeStyles((colors) => ({
     textTransform: "uppercase"
   },
   sections: { gap: spacing.lg, padding: spacing.lg, paddingTop: spacing.xs },
-  sheet: { width: "100%" },
+  sheet: { alignSelf: "stretch" },
   summary: { color: colors.muted, fontFamily: fonts.bodySemiBold, fontSize: 13, textAlign: "center" },
   track: {
     backgroundColor: colors.barTrack,

@@ -157,11 +157,19 @@ shut with velocity, fades its scrim with the drag, answers the back gesture),
 and a React Native `Modal` with `animationType="slide"` has none of it and reads
 as a web drawer.
 
-The trap is colour. On Android the sheet's surface comes from the **Compose**
-theme, which follows the system dark mode — so on a handset in dark mode it
-arrives as a black slab with our content floating on it. **`containerColor` is
-the fix**, and `scrimColor` with it; `contentPadding={0}` hands the padding back
-to us. `children` are ordinary RN views and inherit no content colour, so
+Two traps, both on Android, both already handled in `Sheet`:
+
+- **Colour.** The sheet's surface comes from the **Compose** theme, which
+  follows the system dark mode — on a handset in dark mode it arrives as a black
+  slab with our content floating on it. `containerColor` fixes it, `scrimColor`
+  with it, and `contentPadding={0}` hands the padding back to us.
+- **Width.** Children are hosted inside a Compose `Column`, which measures to
+  its content's intrinsic width. A React Native `width: "100%"` in there has no
+  parent width to resolve against, so the sheet renders as one narrow column
+  with the rest of it empty. The content root takes `useWindowDimensions().width`
+  explicitly; anything inside it can then use percentages as usual.
+
+`children` are ordinary RN views and inherit no content colour either, so
 everything inside still styles itself. `FilterSheet` and the lesson picker both
 sit on `Sheet`.
 

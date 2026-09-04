@@ -1,6 +1,6 @@
 import { BottomSheet, type SnapPoint } from "@expo/ui";
 import type { JSX, ReactNode } from "react";
-import { Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Text, useWindowDimensions, View, type StyleProp, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { IconButton } from "@/src/components/ui";
@@ -28,6 +28,12 @@ import { makeStyles, useThemeColors } from "@/src/theme/theme";
  *
  * `children` are ordinary React Native views, so they do **not** inherit a
  * content colour from the sheet: everything inside still styles itself.
+ *
+ * They also do not inherit a **width**. Android hosts them inside a Compose
+ * `Column`, which measures to its content's intrinsic width — so a React Native
+ * `width: "100%"` has no parent width to resolve against and the whole sheet
+ * renders as one narrow column with the rest of the sheet empty. The content
+ * root is therefore given the window width in points, explicitly.
  */
 export function Sheet({
   children,
@@ -49,6 +55,7 @@ export function Sheet({
   const styles = useStyles();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const t = useT();
 
   return (
@@ -64,7 +71,11 @@ export function Sheet({
       {...(snapPoints === undefined ? {} : { snapPoints: [...snapPoints] })}
     >
       <View
-        style={[styles.content, { paddingBottom: Math.max(insets.bottom, spacing.lg) }, contentStyle]}
+        style={[
+          styles.content,
+          { paddingBottom: Math.max(insets.bottom, spacing.lg), width },
+          contentStyle
+        ]}
       >
         {title === undefined ? null : (
           <View style={styles.header}>
@@ -86,7 +97,7 @@ export function Sheet({
 }
 
 const useStyles = makeStyles((colors) => ({
-  content: { backgroundColor: colors.background, width: "100%" },
+  content: { backgroundColor: colors.background },
   header: {
     alignItems: "center",
     flexDirection: "row",

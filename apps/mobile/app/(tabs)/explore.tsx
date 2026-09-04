@@ -3,7 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -123,20 +123,53 @@ const CourseTile = memo(function CourseTile({ course }: { course: CourseSummary 
   );
 });
 
+/**
+ * Two tiles on one row, and that row is what the list recycles.
+ *
+ * FlashList's own `numColumns` is not used here. A recycled item must not carry
+ * `flex: 1` — the list warns about it, and a flexed tile measures wrong in a
+ * column cell, which put every course in the left column and left the right one
+ * empty. Owning the row means the halves are ours to size and the list only
+ * ever sees a full-width item.
+ */
+const CourseGridRow = memo(function CourseGridRow({
+  pair
+}: {
+  pair: { key: string; left: CourseSummary; right: CourseSummary | null };
+}): JSX.Element {
+  const styles = useStyles();
+
+  return (
+    <View style={styles.gridRow}>
+      <CourseTile course={pair.left} />
+      {pair.right === null ? (
+        // The odd tile keeps its half of the row rather than stretching across it.
+        <View style={styles.tileWrap} />
+      ) : (
+        <CourseTile course={pair.right} />
+      )}
+    </View>
+  );
+});
+
 function CatalogSkeleton(): JSX.Element {
   const styles = useStyles();
   return (
-    <View style={styles.skeletonGrid}>
-      {[0, 1, 2, 3].map((key) => (
-        <View key={key} style={styles.tileWrap}>
-          <Card flush style={styles.tile}>
-            <SkeletonBlock height={112} />
-            <View style={styles.tileBody}>
-              <SkeletonBlock height={10} width="50%" />
-              <SkeletonBlock height={16} width="90%" />
-              <SkeletonBlock height={14} width="40%" />
+    <View>
+      {[0, 1].map((row) => (
+        <View key={row} style={styles.gridRow}>
+          {[0, 1].map((key) => (
+            <View key={key} style={styles.tileWrap}>
+              <Card flush style={styles.tile}>
+                <SkeletonBlock height={112} />
+                <View style={styles.tileBody}>
+                  <SkeletonBlock height={10} width="50%" />
+                  <SkeletonBlock height={16} width="90%" />
+                  <SkeletonBlock height={14} width="40%" />
+                </View>
+              </Card>
             </View>
-          </Card>
+          ))}
         </View>
       ))}
     </View>
@@ -187,11 +220,35 @@ export default function CatalogScreen(): JSX.Element {
     setSortOrder("newest");
   };
 
+  // Paired here rather than by `numColumns`, so the list item is always a full
+  // row. `courses` is a fresh array each render only when the query or the sort
+  // changes, which is exactly when the pairing has to be redone.
+  const pairs = useMemo(() => {
+    const rows: { key: string; left: CourseSummary; right: CourseSummary | null }[] = [];
+
+    for (let index = 0; index < courses.length; index += 2) {
+      const left = courses[index];
+
+      if (left === undefined) {
+        break;
+      }
+
+      rows.push({ key: left.id, left, right: courses[index + 1] ?? null });
+    }
+
+    return rows;
+  }, [courses]);
+
   const renderItem = useCallback(
-    ({ item }: { item: CourseSummary }) => <CourseTile course={item} />,
+    ({ item }: { item: { key: string; left: CourseSummary; right: CourseSummary | null } }) => (
+      <CourseGridRow pair={item} />
+    ),
     []
   );
-  const keyExtractor = useCallback((item: CourseSummary) => item.id, []);
+  const keyExtractor = useCallback(
+    (item: { key: string; left: CourseSummary; right: CourseSummary | null }) => item.key,
+    []
+  );
 
   const sortOptions: readonly { label: string; value: SortOrder }[] = [
     { label: t("courses.sort.newest"), value: "newest" },
@@ -393,10 +450,9 @@ export default function CatalogScreen(): JSX.Element {
       ) : (
         <FlashList
           contentContainerStyle={styles.grid}
-          data={courses}
+          data={pairs}
           keyExtractor={keyExtractor}
           ListHeaderComponent={listHeader}
-          numColumns={2}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
         />
@@ -411,6 +467,7 @@ const useStyles = makeStyles((colors) => ({
   chipStrip: { flexGrow: 0 },
   clearLink: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 13 },
   grid: { paddingBottom: tabScrollInset, paddingHorizontal: spacing.sm },
+  gridRow: { flexDirection: "row" },
   header: { gap: spacing.lg, paddingBottom: spacing.lg },
   headerTitle: {
     color: colors.paper,
@@ -444,7 +501,6 @@ const useStyles = makeStyles((colors) => ({
     minHeight: 52,
     paddingHorizontal: spacing.lg
   },
-  skeletonGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: spacing.sm },
   tile: { flex: 1 },
   tileBody: { gap: 4, padding: spacing.md },
   tileCategory: {
