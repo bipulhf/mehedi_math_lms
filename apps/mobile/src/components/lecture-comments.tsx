@@ -300,7 +300,7 @@ const useStyles = makeStyles((colors) => ({
   composer: { gap: spacing.md, paddingBottom: spacing.lg },
   editActions: { flexDirection: "row", gap: spacing.sm },
   multiline: { minHeight: 80, paddingTop: spacing.md, textAlignVertical: "top" },
-  // A reply is indented behind a cobalt rule rather than a grey hairline: it
+  // A reply is indented behind an indigo rule rather than a grey hairline: it
   // is the one place in a thread where depth has to be read at a glance.
   reply: {
     borderLeftColor: colors.accentSoft,

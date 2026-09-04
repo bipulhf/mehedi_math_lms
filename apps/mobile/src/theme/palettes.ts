@@ -1,14 +1,18 @@
 /**
- * The app's one palette: **cream and cobalt**.
+ * The app's one palette: **cream and indigo**.
  *
  * The page is a warm off-white rather than a cool grey, which is the single
  * decision the rest of the design hangs off — paper, not glass. On it sit white
- * plates, one saturated cobalt that every action is drawn in, and a gold that
- * marks the thing worth noticing. The five other families are supporting
- * colour: a subject, a status, a category, never decoration.
+ * plates, one calm indigo that every action is drawn in, and a gold that marks
+ * the thing worth noticing. The five other families are supporting colour: a
+ * subject, a status, a category, never decoration.
  *
- * Cobalt is the brand blue taken to full strength (`#007bff` is the logo's, and
- * it is too pale to carry a button on cream), and the gold is the brand's own.
+ * The blue is deliberately held back from full saturation. An electric cobalt
+ * is a near-complement of warm cream, and the two vibrate against each other:
+ * fine on a chip, painful across a full-width header. So the blue comes in two
+ * steps — `accent` for controls, and the deeper `accentStrong` for anything
+ * wider than a button, because a large area of colour should recede rather than
+ * shout.
  *
  * The app is light only. A dark transcription of this would be a different
  * design wearing the same names.
@@ -85,11 +89,20 @@ export interface ThemeColors {
 }
 
 export const lightColors: ThemeColors = {
-  /** Cobalt. Everything a student taps to move forward is this. */
-  accent: "#2B4FF6",
-  accentGradient: ["#3A63FF", "#1B34C7"],
-  accentSoft: "#E7ECFF",
-  accentStrong: "#1B34C7",
+  /**
+   * Indigo. Everything a student taps to move forward is this.
+   *
+   * It is deliberately *not* an electric cobalt. A fully saturated blue at this
+   * lightness vibrates against the warm cream page — the two are near
+   * complements — and a full-width header of it is tiring within a minute.
+   * Pulling the blue channel back from 246 to 192 keeps the same contrast
+   * (6.1:1 on white) and stops the buzz.
+   */
+  accent: "#3B5BC0",
+  accentGradient: ["#4A68CE", "#2E4694"],
+  accentSoft: "#EAEDFA",
+  /** The large-surface blue: headers and any fill wider than a button. */
+  accentStrong: "#2E4694",
   actionForeground: "#ffffff",
   /** Cream. The whole design starts here. */
   background: "#FBF7F1",
@@ -101,7 +114,7 @@ export const lightColors: ThemeColors = {
   brandOrange: "#FF6B4A",
   brandOrangeStrong: "#E04B2A",
   card: "#ffffff",
-  chipActive: "#E7ECFF",
+  chipActive: "#EAEDFA",
   correct: "#0E9F6E",
   dotIdle: "#CFC7BA",
   error: "#E5484D",
@@ -124,7 +137,7 @@ export const lightColors: ThemeColors = {
   placeholder: "#A7AAB6",
   placeholderFill: "#EFE9DF",
   popover: "#ffffff",
-  rowHover: "#F3F1FF",
+  rowHover: "#F3F5FC",
   separator: "#F2ECE2",
   /** Warm shadow, so a white plate on cream looks lit rather than dirty. */
   shadow: "#4A3B26",
@@ -132,7 +145,7 @@ export const lightColors: ThemeColors = {
   success: "#0E9F6E",
   successSoft: "#E3F7EF",
   tint: {
-    brand: { bg: "#E7ECFF", fg: "#1B34C7", solid: "#2B4FF6" },
+    brand: { bg: "#EAEDFA", fg: "#2E4694", solid: "#3B5BC0" },
     coral: { bg: "#FFEBE6", fg: "#C13A1E", solid: "#FF6B4A" },
     gold: { bg: "#FFF3DC", fg: "#96610A", solid: "#F5A524" },
     lilac: { bg: "#F1EBFF", fg: "#5B34C4", solid: "#8B5CF6" },

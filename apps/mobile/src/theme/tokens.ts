@@ -10,7 +10,7 @@
  *
  * - **The squircle.** Icons live in a rounded square (`radius.tile`), never a
  *   circle. Circles are for people — an avatar, a presence dot.
- * - **The curved header.** Every top-level screen opens with a cobalt block
+ * - **The curved header.** Every top-level screen opens with an indigo block
  *   whose bottom corners are `radius.curve`, and the first card of the screen
  *   overlaps it. That overlap is what makes a phone screen read as layered
  *   rather than as a scrolling document.

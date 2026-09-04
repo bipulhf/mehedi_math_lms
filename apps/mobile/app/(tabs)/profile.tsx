@@ -29,7 +29,7 @@ import { makeStyles } from "@/src/theme/theme";
 /**
  * The account.
  *
- * Identity is a plate lifted into the cobalt header, and everything the student
+ * Identity is a plate lifted into the indigo header, and everything the student
  * can actually do is one list of rows under it — the same row component the
  * exams and payments screens use, so a tap here looks like a tap there.
  */

@@ -95,14 +95,21 @@ A rejected cookie is treated as "signed out", not as an error — it is cleared 
 ## Design tokens and locale
 
 `src/theme/tokens.ts` and `src/theme/palettes.ts` are the design. **The app is
-light only, and it is cream and cobalt**: a warm off-white page (`background`),
-white plates, one saturated cobalt (`accent`) that everything actionable is
-drawn in, a brand gold for the thing worth noticing, and four supporting
-families — mint, coral, lilac, sky — reached as `colors.tint.<name>`.
+light only, and it is cream and indigo**: a warm off-white page (`background`),
+white plates, one calm indigo (`accent`) that everything actionable is drawn in,
+a brand gold for the thing worth noticing, and four supporting families — mint,
+coral, lilac, sky — reached as `colors.tint.<name>`.
 
 Cream rather than cool grey is the decision the rest hangs off: paper, not
 glass. It is also why `colors.shadow` is warm — a grey shadow on cream reads as
 dirt.
+
+**The blue comes in two steps, and mixing them up is the mistake to avoid.**
+`accent` is the control blue: buttons, the focused tab, a filled check, a
+selected pill. `accentStrong` is the large-surface blue and is what
+`CurvedHeader` fills with. A saturated blue is a near-complement of warm cream,
+so the two vibrate; that is tolerable on a chip and tiring across a full-width
+header, which is why the header takes the deeper, quieter end.
 
 **This is a deliberate divergence from `DESIGN.md`.** That document describes
 the web app's ink-first dark surface and forbids both shadows and animation; the
@@ -130,7 +137,7 @@ provider exists and freezes whatever the palette was at import.
 A screen here is not a scrolling document with a title on top. It is built from
 `src/components/ui-layout.tsx`:
 
-- **`CurvedHeader`** — the cobalt block every top-level screen opens with. It
+- **`CurvedHeader`** — the indigo block every top-level screen opens with. It
   pads for the status bar itself, so a screen using one sets
   `headerShown: false` and does *not* pass `noHeader` to `Screen`.
 - **The overlap** — the first white plate under a header pulls itself up by
@@ -168,7 +175,7 @@ tab's icon, and under Fabric that kills the process.
 **The brand is drawn, not typed.** `BrandLockup` pairs `mma-mark.png` with
 `mma-wordmark.png` and appears in the catalogue's header and at the top of the
 ways in. Both facts about the artwork matter: the mark needs a white plate under
-it (dropped straight onto cobalt its blue half disappears), and the wordmark is
+it (dropped straight onto the header its blue half disappears), and the wordmark is
 **near-white**, drawn for a dark surface — on cream it must be tinted to ink,
 which is `onColor={false}`. The boot splash tints it for the same reason; before
 that it was white on cream and the name did not render at all.

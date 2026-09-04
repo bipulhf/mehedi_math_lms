@@ -111,7 +111,7 @@ export function ProgressRing({
   percent: number;
   size?: number;
   tint?: TintName;
-  /** `onColor` draws the ring in white over a cobalt block. */
+  /** `onColor` draws the ring in white over an indigo block. */
   tone?: "onCard" | "onColor";
 }): JSX.Element {
   const styles = useStyles();
@@ -177,7 +177,7 @@ export interface StreakDay {
 
 /**
  * The week as seven squircles with the day's letter inside each. A studied day
- * is filled cobalt; today is ringed in gold whether or not it has been earned
+ * is filled indigo; today is ringed in gold whether or not it has been earned
  * yet, which is the only nudge this screen makes.
  */
 export function StreakTrack({
@@ -306,7 +306,7 @@ export function FilterPill({
 
 /**
  * The segmented control: no trough, no box. The options sit on the page and the
- * selected one is a filled cobalt pill — the same mark the nav bar uses for the
+ * selected one is a filled indigo pill — the same mark the nav bar uses for the
  * tab you are on, so "where am I" reads the same everywhere.
  */
 export function Tabs<TValue extends string>({

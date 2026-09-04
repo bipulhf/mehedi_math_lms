@@ -14,7 +14,7 @@ import { makeStyles, shadow, useThemeColors } from "@/src/theme/theme";
  * under it.
  *
  * Each destination is an icon in a squircle with its name under it. The one you
- * are on has the squircle filled cobalt — the same mark the segmented control
+ * are on has the squircle filled indigo — the same mark the segmented control
  * uses, so "where am I" reads identically everywhere in the app.
  *
  * **Nothing in here may be an `SvgView`.** React Navigation re-parents a tab's

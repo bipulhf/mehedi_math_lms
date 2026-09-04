@@ -60,7 +60,7 @@ function ChapterItem({
       style={[styles.itemRow, isSelected ? styles.itemRowActive : null]}
     >
       {/* What kind of stop this is, in colour: a paper is coral, a class is
-          cobalt, and a class already watched is mint. Glyphs in text
+          indigo, and a class already watched is mint. Glyphs in text
           (▶ ✓ ○) were doing this job and read as typos. */}
       <IconTile
         icon={isTest ? "document-text" : item.lecture.type === "TEXT" ? "book" : "play"}

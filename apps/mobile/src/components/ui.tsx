@@ -31,7 +31,7 @@ import { makeStyles, shadow, useThemeColors } from "@/src/theme/theme";
  * The primitives every screen is built from.
  *
  * The shapes carry the design: cream paper, white plates at 24pt, icons in
- * squircles, buttons as bold 18pt rectangles rather than pills, and one cobalt
+ * squircles, buttons as bold 18pt rectangles rather than pills, and one indigo
  * that means "this is the way forward". A screen reaching past these for a raw
  * hex or a right angle is the screen that will look like a web page.
  */
@@ -120,7 +120,7 @@ export function Heading({
   onPaper = false
 }: {
   children: ReactNode;
-  /** True inside a cobalt block, where the ink is white. */
+  /** True inside an indigo block, where the ink is white. */
   onPaper?: boolean;
 }): JSX.Element {
   const styles = useStyles();
@@ -244,9 +244,9 @@ const SIZE_KEY: Record<ButtonSize, string> = {
 
 /**
  * The button is a bold rounded rectangle, not a pill and not a gradient: one
- * flat cobalt fill, one shape, at four sizes.
+ * flat indigo fill, one shape, at four sizes.
  *
- * `ink` is the primary (cobalt), `accent` is the gold one a screen may use
+ * `ink` is the primary (indigo), `accent` is the gold one a screen may use
  * exactly once, `soft` is the tinted quiet action, `outline` sits on cream, and
  * `accentLink` is a word with an arrow after it.
  */

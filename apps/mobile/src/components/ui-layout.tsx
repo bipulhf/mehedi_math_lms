@@ -12,7 +12,7 @@ import { makeStyles, shadow, useThemeColors } from "@/src/theme/theme";
  * The three structures every screen is assembled from.
  *
  * A screen in this app is not a scrolling document with a title at the top. It
- * is a **curved cobalt header**, a body that **overlaps** into it, and — where
+ * is a **curved indigo header**, a body that **overlaps** into it, and — where
  * there is one decision to make — a **bar docked to the bottom edge**. Get
  * those three right and a screen looks native before a single card is styled.
  */
@@ -215,8 +215,10 @@ const useStyles = makeStyles((colors) => ({
     overflow: "hidden",
     ...shadow(colors, "card")
   },
+  // The deep end of the blue, not the control blue: this block is the largest
+  // area of colour on any screen, and large areas should recede.
   header: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentStrong,
     borderBottomLeftRadius: radius.curve,
     borderBottomRightRadius: radius.curve,
     paddingHorizontal: spacing.lg

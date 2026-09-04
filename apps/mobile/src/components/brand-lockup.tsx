@@ -17,10 +17,10 @@ const WORDMARK_ASPECT = 1402 / 122;
  * The academy's mark and name, side by side.
  *
  * Two details decide whether this reads or not. The mark is the blue-and-gold
- * artwork, which needs a white plate under it — dropped straight onto cobalt
- * the blue half of it disappears. The wordmark artwork is near-white, drawn for
+ * artwork, which needs a white plate under it — dropped straight onto the
+ * header, the blue half of it disappears. The wordmark artwork is near-white, drawn for
  * a dark surface, so on cream it has to be tinted to ink; `onColor` is the
- * default because the only place it sits today is inside a cobalt header.
+ * default because the only place it sits today is inside an indigo header.
  */
 export function BrandLockup({
   onColor = true,

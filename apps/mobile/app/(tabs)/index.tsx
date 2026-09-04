@@ -41,7 +41,7 @@ import { makeStyles, useThemeColors } from "@/src/theme/theme";
  * The student's home.
  *
  * The screen answers one question before any other — *where was I* — so the
- * cobalt header carries only identity, and the first white plate, half of it
+ * indigo header carries only identity, and the first white plate, half of it
  * lifted into that colour, is the course in progress with the ring showing how
  * far in. Everything else is a shelf under it.
  */
