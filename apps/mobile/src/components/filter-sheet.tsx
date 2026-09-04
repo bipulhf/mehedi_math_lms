@@ -273,7 +273,7 @@ const useStyles = makeStyles((colors) => ({
   rowPressed: { backgroundColor: colors.rowHover },
   rowSubtitle: { color: colors.muted, fontFamily: fonts.body, fontSize: 13 },
   rowText: { flex: 1, gap: 1 },
-  scroll: { flexGrow: 0 },
+  scroll: { flexGrow: 0, maxHeight: 400 },
   section: { gap: spacing.sm },
   sectionLabel: {
     color: colors.mutedFaint,

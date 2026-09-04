@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 
 import { Body, Caption } from "@/src/components/ui";
 import { Sheet } from "@/src/components/sheet";
@@ -121,11 +121,21 @@ export function LessonPickerSheet({
   visible: boolean;
 }): JSX.Element {
   const styles = useStyles();
+  const { height } = useWindowDimensions();
   const t = useT();
 
   return (
-    <Sheet isPresented={visible} onDismiss={onClose} title={t("player.navigator")}>
-      <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
+    <Sheet
+      isPresented={visible}
+      onDismiss={onClose}
+      snapPoints={["half", "full"]}
+      title={t("player.navigator")}
+    >
+      <ScrollView
+        contentContainerStyle={styles.sheetContent}
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: height * 0.68 }}
+      >
         <View style={styles.sheetPlate}>
           {chapters.map((chapter) => {
             const chapterItems = navigationItems.filter(

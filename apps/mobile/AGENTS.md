@@ -150,13 +150,20 @@ A screen here is not a scrolling document with a title on top. It is built from
 `ListRow` + `ListGroup` are the fourth repeated thing: one row component for
 settings, exams, payments and contact, so a tap looks the same everywhere.
 
-**Sheets are ours, not `@expo/ui`'s.** `src/components/sheet.tsx` is a plain
-React Native `Modal` with a dimmed backdrop and a cream panel. `BottomSheet`
-from `@expo/ui` is a Compose `ModalBottomSheet` on Android and takes its surface
-colour from the **native** theme, not from JavaScript — on a build whose Android
-theme is not light it renders as a black slab with the content floating on it,
-and no prop fixes that. `FilterSheet` (the catalogue and exams filters) and the
-lesson picker both sit on `Sheet`.
+**Sheets are the platform's, wearing our colours.** `src/components/sheet.tsx`
+wraps `@expo/ui`'s `BottomSheet` — a Material 3 `ModalBottomSheet` on Android.
+That is deliberate: a sheet is mostly *behaviour* (it follows the thumb, flings
+shut with velocity, fades its scrim with the drag, answers the back gesture),
+and a React Native `Modal` with `animationType="slide"` has none of it and reads
+as a web drawer.
+
+The trap is colour. On Android the sheet's surface comes from the **Compose**
+theme, which follows the system dark mode — so on a handset in dark mode it
+arrives as a black slab with our content floating on it. **`containerColor` is
+the fix**, and `scrimColor` with it; `contentPadding={0}` hands the padding back
+to us. `children` are ordinary RN views and inherit no content colour, so
+everything inside still styles itself. `FilterSheet` and the lesson picker both
+sit on `Sheet`.
 
 ### Shapes
 
