@@ -1,16 +1,72 @@
-import { pickImageVariant, readImageVariants, resolveProgressChunks } from "@mma/shared";
+import { pickImageVariant, readImageVariants } from "@mma/shared";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX, ReactNode } from "react";
 import { PixelRatio, Pressable, ScrollView, Text, View } from "react-native";
-import { Polygon, Svg } from "react-native-svg";
+import { Circle, Svg } from "react-native-svg";
 
 import { useFormat } from "@/src/lib/locale";
-import { fonts, radius, spacing, typography } from "@/src/theme/tokens";
-import { makeStyles, useThemeColors } from "@/src/theme/theme";
+import { fonts, radius, spacing, typography, type TintName } from "@/src/theme/tokens";
+import { makeStyles, shadow, useThemeColors } from "@/src/theme/theme";
 
-/** The shared chunked progress tracker. DESIGN.md §6. */
+/**
+ * The composed pieces every screen shares: progress, identity, filters, tiles.
+ *
+ * Colour carries meaning here rather than decorating it — a family names a
+ * subject, a filled track is progress, a green dot is a person who is actually
+ * there. Anything that needs a colour asks for a `TintName`, never a hex.
+ */
+
+/**
+ * A rounded square with an icon in it: the app's most repeated shape.
+ *
+ * Squircles, not circles. Circles in this design belong to people — an avatar,
+ * a presence dot — so a round icon well would read as a face at a glance.
+ */
+export function IconTile({
+  icon,
+  size = 44,
+  solid = false,
+  tint = "brand"
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  /** Filled with the family's saturated colour instead of its wash. */
+  solid?: boolean;
+  size?: number;
+  tint?: TintName;
+}): JSX.Element {
+  const colors = useThemeColors();
+  const family = colors.tint[tint];
+
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        backgroundColor: solid ? family.solid : family.bg,
+        borderRadius: size / 2.6,
+        height: size,
+        justifyContent: "center",
+        width: size
+      }}
+    >
+      <Ionicons
+        color={solid ? colors.paper : family.fg}
+        name={icon}
+        size={Math.round(size * 0.46)}
+      />
+    </View>
+  );
+}
+
+/**
+ * Progress as one continuous bar with a rounded cap.
+ *
+ * It used to be a row of chunks. A chunked bar reads as a segmented control at
+ * small sizes, and on a shelf of six courses that is six controls the student
+ * cannot press. The player keeps a chunked tracker, because there a chunk is a
+ * named lecture and pressing it is exactly the point.
+ */
 export function ProgressTrack({
   completed,
   isComplete = false,
@@ -23,7 +79,7 @@ export function ProgressTrack({
   total: number;
 }): JSX.Element {
   const styles = useStyles();
-  const chunks = resolveProgressChunks(completed, total);
+  const percent = total <= 0 ? 0 : Math.max(0, Math.min(100, (completed / total) * 100));
 
   return (
     <View
@@ -32,31 +88,98 @@ export function ProgressTrack({
       accessibilityValue={{ max: total, min: 0, now: completed }}
       style={styles.trackRow}
     >
-      {Array.from({ length: chunks.total }, (_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.trackChunk,
-            index < chunks.filled
-              ? isComplete
-                ? styles.trackChunkComplete
-                : styles.trackChunkFilled
-              : null
-          ]}
+      <View
+        style={[
+          styles.trackFill,
+          isComplete ? styles.trackFillComplete : null,
+          { width: `${Math.max(percent, percent > 0 ? 6 : 0)}%` }
+        ]}
+      />
+    </View>
+  );
+}
+
+/** A percentage as a ring, for a tile with room for one number and no more. */
+export function ProgressRing({
+  label,
+  percent,
+  size = 56,
+  tint = "brand",
+  tone = "onCard"
+}: {
+  label: string;
+  percent: number;
+  size?: number;
+  tint?: TintName;
+  /** `onColor` draws the ring in white over a cobalt block. */
+  tone?: "onCard" | "onColor";
+}): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
+  const stroke = size < 48 ? 5 : 7;
+  const centre = size / 2;
+  const ringRadius = centre - stroke / 2;
+  const circumference = 2 * Math.PI * ringRadius;
+  const clamped = Math.max(0, Math.min(100, percent));
+  const isOnColor = tone === "onColor";
+
+  return (
+    <View
+      accessibilityLabel={label}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ max: 100, min: 0, now: clamped }}
+      style={{ height: size, width: size }}
+    >
+      <Svg height={size} width={size}>
+        <Circle
+          cx={centre}
+          cy={centre}
+          fill="none"
+          r={ringRadius}
+          stroke={isOnColor ? "rgba(255,255,255,0.3)" : colors.tint[tint].bg}
+          strokeWidth={stroke}
         />
-      ))}
+        <Circle
+          cx={centre}
+          cy={centre}
+          fill="none"
+          origin={`${centre}, ${centre}`}
+          r={ringRadius}
+          rotation={-90}
+          stroke={isOnColor ? colors.paper : colors.tint[tint].solid}
+          strokeDasharray={`${circumference}`}
+          strokeDashoffset={circumference * (1 - clamped / 100)}
+          strokeLinecap="round"
+          strokeWidth={stroke}
+        />
+      </Svg>
+      <View style={styles.ringLabelWrap}>
+        <Text
+          style={[
+            styles.ringLabel,
+            isOnColor ? styles.ringLabelOnColor : null,
+            { fontSize: size * 0.3 }
+          ]}
+        >
+          {Math.round(clamped)}
+        </Text>
+      </View>
     </View>
   );
 }
 
 export interface StreakDay {
   isToday: boolean;
-  /** A single-character weekday initial — the strip is 7 chunks wide, not a calendar. */
+  /** A single-character weekday initial — the strip is 7 marks wide, not a calendar. */
   label: string;
   studied: boolean;
 }
 
-/** A compact week of study activity with an accessible total. */
+/**
+ * The week as seven squircles with the day's letter inside each. A studied day
+ * is filled cobalt; today is ringed in gold whether or not it has been earned
+ * yet, which is the only nudge this screen makes.
+ */
 export function StreakTrack({
   days,
   label,
@@ -67,6 +190,8 @@ export function StreakTrack({
   streakCount: number;
 }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
+
   return (
     <View
       accessibilityLabel={label}
@@ -78,20 +203,27 @@ export function StreakTrack({
       }}
     >
       <View style={styles.streakHeader}>
-        <Text style={styles.streakCount}>{streakCount}</Text>
-        <Text style={styles.streakEyebrow}>{label}</Text>
+        <View style={styles.streakFlame}>
+          <Ionicons color={colors.tint.gold.fg} name="flame" size={19} />
+        </View>
+        <View style={styles.streakHeaderText}>
+          <Text style={styles.streakCount}>{streakCount}</Text>
+          <Text style={styles.streakEyebrow}>{label}</Text>
+        </View>
       </View>
       <View style={styles.streakRow}>
         {days.map((day, index) => (
-          <View key={index} style={styles.streakDay}>
-            <View
-              style={[
-                styles.streakChunk,
-                day.studied ? styles.streakChunkFilled : null,
-                day.isToday ? styles.streakChunkToday : null
-              ]}
-            />
-            <Text style={styles.streakEyebrow}>{day.label}</Text>
+          <View
+            key={index}
+            style={[
+              styles.streakDay,
+              day.studied ? styles.streakDayFilled : null,
+              day.isToday ? styles.streakDayToday : null
+            ]}
+          >
+            <Text style={[styles.streakDayText, day.studied ? styles.streakDayTextFilled : null]}>
+              {day.label}
+            </Text>
           </View>
         ))}
       </View>
@@ -99,7 +231,7 @@ export function StreakTrack({
   );
 }
 
-/** Green when online, muted when not — an explicit semantic-status exception. */
+/** Green when online, grey when not, with a ring so it reads on any fill. */
 export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
   const styles = useStyles();
   return (
@@ -111,42 +243,35 @@ export function PresenceDot({ isOnline }: { isOnline: boolean }): JSX.Element {
   );
 }
 
-/** A hand-drawn ring around a heading word, with no visual-only accessibility noise. */
+/** A gold highlighter stroke behind a heading word, the way a student marks a book. */
 export function RingedWord({ children }: { children: ReactNode }): JSX.Element {
   const styles = useStyles();
   return (
     <View style={styles.ringedWordWrap}>
-      {children}
       <View
         accessibilityElementsHidden
         importantForAccessibility="no"
-        style={styles.ringedWordRing}
+        style={styles.ringedWordStroke}
       />
+      {children}
     </View>
   );
 }
 
-function PlayGlyph({ color }: { color: string }): JSX.Element {
-  const styles = useStyles();
-  return (
-    <Svg height={10} style={styles.playGlyph} viewBox="0 0 10 10" width={10}>
-      <Polygon fill={color} points="0,0 10,5 0,10" />
-    </Svg>
-  );
-}
-
-/** A play glyph inside a hairline ring for free lessons and resume actions. */
+/** A play glyph in a squircle, for a free lesson or a resume action. */
 export function RingedPlay({ tone = "hairline" }: { tone?: "accent" | "hairline" }): JSX.Element {
   const styles = useStyles();
   const colors = useThemeColors();
+  const isAccent = tone === "accent";
+
   return (
-    <View style={[styles.ringedPlay, tone === "accent" ? styles.ringedPlayAccent : null]}>
-      <PlayGlyph color={tone === "accent" ? colors.accent : colors.ink} />
+    <View style={[styles.ringedPlay, isAccent ? styles.ringedPlayAccent : null]}>
+      <Ionicons color={isAccent ? colors.paper : colors.accent} name="play" size={13} />
     </View>
   );
 }
 
-/** One shared 44-point filter chip for every horizontal filter strip. */
+/** One shared filter chip for every horizontal filter strip. */
 export function FilterPill({
   isSelected,
   label,
@@ -162,7 +287,10 @@ export function FilterPill({
       accessibilityLabel={label}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
-      onPress={onPress}
+      onPress={() => {
+        void Haptics.selectionAsync();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.filterPill,
         isSelected ? styles.filterPillActive : null,
@@ -176,7 +304,11 @@ export function FilterPill({
   );
 }
 
-/** Native segmented control — pill container, selected pill is card background. Scrollable when >3. */
+/**
+ * The segmented control: no trough, no box. The options sit on the page and the
+ * selected one is a filled cobalt pill — the same mark the nav bar uses for the
+ * tab you are on, so "where am I" reads the same everywhere.
+ */
 export function Tabs<TValue extends string>({
   inset = true,
   label,
@@ -184,10 +316,7 @@ export function Tabs<TValue extends string>({
   tabs,
   value
 }: {
-  /**
-   * False inside something that already has padding — a card, the auth plate.
-   * True on a bare screen, where the control supplies its own gutter.
-   */
+  /** False inside something that already has padding — a card, a header. */
   inset?: boolean;
   label: string;
   onChange: (value: TValue) => void;
@@ -197,81 +326,58 @@ export function Tabs<TValue extends string>({
   const styles = useStyles();
   const isCompact = tabs.length <= 3;
 
+  const item = (tab: { label: string; value: TValue }, scroll: boolean): JSX.Element => {
+    const isActive = tab.value === value;
+
+    return (
+      <Pressable
+        accessibilityLabel={tab.label}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: isActive }}
+        key={tab.value}
+        onPress={() => {
+          void Haptics.selectionAsync();
+          onChange(tab.value);
+        }}
+        style={[
+          scroll ? styles.segmentItemScroll : styles.segmentItem,
+          isActive ? styles.segmentItemActive : null
+        ]}
+      >
+        <Text style={[styles.segmentLabel, isActive ? styles.segmentLabelActive : null]}>
+          {tab.label}
+        </Text>
+      </Pressable>
+    );
+  };
+
   if (isCompact) {
     return (
-      <View accessibilityLabel={label} accessibilityRole="tablist" style={inset ? styles.segmentedWrap : null}>
-        <View style={styles.segmented}>
-          {tabs.map((tab) => {
-            const isActive = tab.value === value;
-
-            return (
-              <Pressable
-                accessibilityLabel={tab.label}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
-                key={tab.value}
-                onPress={() => {
-                  void Haptics.selectionAsync();
-                  onChange(tab.value);
-                }}
-                style={[styles.segmentItem, isActive ? styles.segmentItemActive : null]}
-              >
-                <Text style={[styles.segmentLabel, isActive ? styles.segmentLabelActive : null]}>
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <View
+        accessibilityLabel={label}
+        accessibilityRole="tablist"
+        style={[styles.segmented, inset ? styles.segmentedInset : null]}
+      >
+        {tabs.map((tab) => item(tab, false))}
       </View>
     );
   }
 
   return (
-    <View accessibilityLabel={label} accessibilityRole="tablist" style={inset ? styles.segmentedWrap : null}>
-      <ScrollView
-        contentContainerStyle={styles.segmentedScroll}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        <View style={styles.segmented}>
-          {tabs.map((tab) => {
-            const isActive = tab.value === value;
-
-            return (
-              <Pressable
-                accessibilityLabel={tab.label}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
-                key={tab.value}
-                onPress={() => {
-                  void Haptics.selectionAsync();
-                  onChange(tab.value);
-                }}
-                style={[
-                  styles.segmentItemScroll,
-                  isActive ? styles.segmentItemActive : null
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.segmentLabel,
-                    isActive ? styles.segmentLabelActive : null,
-                    styles.segmentLabelScroll
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </ScrollView>
-    </View>
+    <ScrollView
+      accessibilityLabel={label}
+      accessibilityRole="tablist"
+      contentContainerStyle={[styles.segmented, inset ? styles.segmentedInset : null]}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.segmentedScroll}
+    >
+      {tabs.map((tab) => item(tab, true))}
+    </ScrollView>
   );
 }
 
-/** One independent accordion row — native chevron, not +/– text. */
+/** One independent accordion row — a squircle chevron well, not a +/– glyph. */
 export function AccordionRow({
   children,
   isOpen,
@@ -297,17 +403,21 @@ export function AccordionRow({
           void Haptics.selectionAsync();
           onToggle();
         }}
-        style={({ pressed }) => [styles.accordionHeader, pressed ? styles.controlPressed : null]}
+        style={({ pressed }) => [styles.accordionHeader, pressed ? styles.rowPressed : null]}
       >
-        <Text numberOfLines={2} style={styles.accordionTitle}>
-          {title}
-        </Text>
-        {meta === undefined ? null : <Text style={styles.accordionMeta}>{meta}</Text>}
-        <Ionicons
-          color={isOpen ? colors.accent : colors.mutedFaint}
-          name={isOpen ? "chevron-up" : "chevron-down"}
-          size={14}
-        />
+        <View style={styles.accordionText}>
+          <Text numberOfLines={2} style={styles.accordionTitle}>
+            {title}
+          </Text>
+          {meta === undefined ? null : <Text style={styles.accordionMeta}>{meta}</Text>}
+        </View>
+        <View style={[styles.accordionChevron, isOpen ? styles.accordionChevronOpen : null]}>
+          <Ionicons
+            color={isOpen ? colors.onAccent : colors.muted}
+            name={isOpen ? "chevron-up" : "chevron-down"}
+            size={15}
+          />
+        </View>
       </Pressable>
       {isOpen ? <View style={styles.accordionBody}>{children}</View> : null}
     </View>
@@ -323,17 +433,24 @@ function initials(name: string): string {
     .join("");
 }
 
-/** A source-aware profile image with a quiet initials fallback. */
+/** A profile image with a tinted initials fallback and an optional white ring. */
 export function Avatar({
   name,
   photo,
+  ring = false,
   size = 40
 }: {
   name: string;
   photo: string | null;
+  ring?: boolean;
   size?: number;
 }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
+  // Written out rather than taken from the sheet: the same ring lands on an
+  // `Image` here, and `ImageStyle` will not take a `ViewStyle`.
+  const ringStyle = ring ? { borderColor: colors.paper, borderWidth: 3 } : null;
+
   if (photo !== null && photo.length > 0) {
     const source = readImageVariants(photo);
     const variantUri = pickImageVariant(source, Math.round(size * PixelRatio.get()));
@@ -344,7 +461,7 @@ export function Avatar({
           accessibilityLabel={name}
           accessibilityRole="image"
           source={{ uri: variantUri }}
-          style={[styles.avatar, { borderRadius: size / 2, height: size, width: size }]}
+          style={[styles.avatar, ringStyle, { borderRadius: size / 2, height: size, width: size }]}
         />
       );
     }
@@ -357,10 +474,11 @@ export function Avatar({
       style={[
         styles.avatar,
         styles.avatarFallback,
+        ringStyle,
         { borderRadius: size / 2, height: size, width: size }
       ]}
     >
-      <Text style={[styles.avatarText, { fontSize: size * 0.35 }]}>{initials(name)}</Text>
+      <Text style={[styles.avatarText, { fontSize: size * 0.38 }]}>{initials(name)}</Text>
     </View>
   );
 }
@@ -390,226 +508,298 @@ export function SectionHeading({
   );
 }
 
-/** The KPI tile — a muted label over a large number. */
-export function StatCard({ label, value }: { label: string; value: ReactNode }): JSX.Element {
+/** A row that opens a list: the title on the left, one way onward on the right. */
+export function SectionHeader({
+  actionLabel,
+  onAction,
+  title
+}: {
+  actionLabel?: string;
+  onAction?: () => void;
+  title: string;
+}): JSX.Element {
+  const styles = useStyles();
+  return (
+    <View style={styles.sectionHeaderRow}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {actionLabel === undefined || onAction === undefined ? null : (
+        <Pressable
+          accessibilityLabel={actionLabel}
+          accessibilityRole="button"
+          hitSlop={spacing.sm}
+          onPress={() => {
+            void Haptics.selectionAsync();
+            onAction();
+          }}
+          style={({ pressed }) => (pressed ? styles.controlPressed : null)}
+        >
+          <Text style={styles.sectionAction}>{actionLabel}</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+/** The KPI tile: the number first, at size, then what it counts. */
+export function StatCard({
+  icon,
+  label,
+  tint = "brand",
+  value
+}: {
+  icon?: keyof typeof Ionicons.glyphMap;
+  label: string;
+  tint?: TintName;
+  value: ReactNode;
+}): JSX.Element {
   const styles = useStyles();
   return (
     <View style={styles.statCard}>
-      <Text style={styles.statLabel}>{label}</Text>
+      {icon === undefined ? null : <IconTile icon={icon} size={34} tint={tint} />}
       <Text style={styles.statValue}>{value}</Text>
+      <Text numberOfLines={2} style={styles.statLabel}>
+        {label}
+      </Text>
     </View>
   );
 }
 
 /** A price formatted through the shared locale formatter. */
-export function PriceText({ amount }: { amount: number | string }): JSX.Element {
+export function PriceText({
+  amount,
+  onColor = false
+}: {
+  amount: number | string;
+  onColor?: boolean;
+}): JSX.Element {
   const styles = useStyles();
   const format = useFormat();
 
-  return <Text style={styles.price}>{format.currency(amount)}</Text>;
+  return (
+    <Text style={[styles.price, onColor ? styles.priceOnColor : null]}>
+      {format.currency(amount)}
+    </Text>
+  );
+}
+
+/** A star and a number, for a course's rating. Small, and never a row of stars. */
+export function RatingMark({ value }: { value: number }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
+  const format = useFormat();
+
+  return (
+    <View style={styles.rating}>
+      <Ionicons color={colors.tint.gold.solid} name="star" size={13} />
+      <Text style={styles.ratingText}>{format.rating(value)}</Text>
+    </View>
+  );
 }
 
 const useStyles = makeStyles((colors) => ({
-  accordionBody: { paddingBottom: spacing.md, paddingHorizontal: spacing.sm, paddingTop: spacing.xs },
+  accordionBody: { paddingBottom: spacing.lg, paddingHorizontal: spacing.lg, paddingTop: 2 },
+  accordionChevron: {
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
+    height: 32,
+    justifyContent: "center",
+    width: 32
+  },
+  accordionChevronOpen: { backgroundColor: colors.accent },
   accordionHeader: {
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 52,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
+    minHeight: 64,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
   },
   accordionMeta: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
-  accordionRow: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 0.5 },
-  accordionTitle: { color: colors.ink, flex: 1, fontFamily: fonts.displaySemiBold, fontSize: 16 },
-  avatar: {
-    backgroundColor: colors.placeholderFill,
-    borderColor: colors.hairlineFaint,
-    borderWidth: 0.5,
-    overflow: "hidden"
-  },
+  accordionRow: { borderBottomColor: colors.separator, borderBottomWidth: 1 },
+  accordionText: { flex: 1, gap: 1 },
+  accordionTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 16 },
+  avatar: { backgroundColor: colors.placeholderFill, overflow: "hidden" },
   avatarFallback: {
     alignItems: "center",
-    backgroundColor: colors.panelWarm,
+    backgroundColor: colors.accentSoft,
     justifyContent: "center"
   },
-  avatarText: { color: colors.mutedLight, fontFamily: fonts.displaySemiBold },
-  controlPressed: { opacity: 0.72 },
+  avatarText: { color: colors.accent, fontFamily: fonts.displayBold },
+  controlPressed: { opacity: 0.7 },
   eyebrow: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
     fontSize: 11,
-    letterSpacing: 0.66,
+    letterSpacing: 0.9,
     textTransform: "uppercase"
   },
   filterPill: {
     alignItems: "center",
     backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
+    borderColor: colors.hairline,
     borderRadius: radius.pill,
-    borderWidth: 0.5,
+    borderWidth: 1.5,
     justifyContent: "center",
-    minHeight: 36,
+    minHeight: 42,
     paddingHorizontal: spacing.lg
   },
-  filterPillActive: {
-    backgroundColor: colors.chipActive,
-    borderColor: colors.accent,
-    borderWidth: 1
-  },
+  filterPillActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   filterPillLabel: {
-    color: colors.muted,
+    color: colors.inkMuted,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    lineHeight: 18
+    fontSize: 14,
+    lineHeight: 19
   },
-  filterPillLabelActive: { color: colors.ink },
-  playGlyph: { marginLeft: 2 },
-  presenceDot: { backgroundColor: colors.dotIdle, borderRadius: radius.full, height: 8, width: 8 },
+  filterPillLabelActive: { color: colors.onAccent },
+  presenceDot: {
+    backgroundColor: colors.dotIdle,
+    borderColor: colors.paper,
+    borderRadius: radius.full,
+    borderWidth: 2.5,
+    height: 14,
+    width: 14
+  },
   presenceDotOnline: { backgroundColor: colors.online },
-  price: {
-    color: colors.ink,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: 22
+  price: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 20 },
+  priceOnColor: { color: colors.paper },
+  rating: { alignItems: "center", flexDirection: "row", gap: 4 },
+  ratingText: { color: colors.inkMuted, fontFamily: fonts.bodySemiBold, fontSize: 13 },
+  ringLabel: { color: colors.ink, fontFamily: fonts.numeric },
+  ringLabelOnColor: { color: colors.paper },
+  ringLabelWrap: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    left: 0,
+    position: "absolute",
+    right: 0,
+    top: 0
   },
   ringedPlay: {
     alignItems: "center",
-    borderColor: colors.hairline,
-    borderRadius: radius.full,
-    borderWidth: 0.5,
-    height: 28,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.sm,
+    height: 30,
     justifyContent: "center",
-    width: 28
+    width: 30
   },
-  ringedPlayAccent: { borderColor: colors.accent, borderWidth: 1.2 },
-  ringedWordRing: {
-    borderColor: colors.accent,
-    borderRadius: radius.full,
-    borderWidth: 2,
-    bottom: -2,
-    left: -12,
-    opacity: 0.35,
+  ringedPlayAccent: { backgroundColor: colors.accent },
+  // A highlighter stroke sitting behind the word rather than around it.
+  ringedWordStroke: {
+    backgroundColor: colors.tint.gold.bg,
+    borderRadius: radius.sm,
+    bottom: 1,
+    height: 13,
+    left: -4,
     position: "absolute",
-    right: -12,
-    top: -2,
-    transform: [{ rotate: "-3deg" }]
+    right: -4
   },
   ringedWordWrap: { alignSelf: "flex-start", position: "relative" },
+  rowPressed: { backgroundColor: colors.rowHover },
+  sectionAction: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 14 },
   sectionDescription: {
     color: colors.muted,
     fontFamily: fonts.body,
     fontSize: typography.body.fontSize,
     lineHeight: typography.body.lineHeight
   },
+  sectionHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
   sectionHeading: { gap: spacing.sm },
   sectionTitle: {
     color: colors.ink,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: 20,
-    lineHeight: 27
+    fontFamily: fonts.displayBold,
+    fontSize: 19,
+    lineHeight: 26
   },
-  segmented: {
-    alignSelf: "stretch",
-    backgroundColor: colors.panelWarm,
-    borderColor: colors.hairlineFaint,
-    borderRadius: radius.pill,
-    borderWidth: 0.5,
-    flexDirection: "row",
-    gap: 4,
-    padding: 4
-  },
-  segmentedScroll: { gap: spacing.sm, paddingRight: spacing.lg },
-  segmentedWrap: { paddingHorizontal: spacing.lg },
+  segmented: { flexDirection: "row", gap: spacing.sm },
+  segmentedInset: { paddingHorizontal: spacing.lg },
+  segmentedScroll: { flexGrow: 0 },
   segmentItem: {
     alignItems: "center",
     borderRadius: radius.pill,
     flex: 1,
     justifyContent: "center",
-    minHeight: 36,
+    minHeight: 42,
     paddingHorizontal: spacing.md
   },
-  segmentItemActive: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderWidth: 0.5,
-    elevation: colors.shadowOpacity === 0 ? 0 : 2,
-    shadowColor: colors.shadow,
-    shadowOffset: { height: 1, width: 0 },
-    shadowOpacity: colors.shadowOpacity * 2,
-    shadowRadius: 3
-  },
+  segmentItemActive: { backgroundColor: colors.accent },
   segmentItemScroll: {
     alignItems: "center",
     alignSelf: "flex-start",
     borderRadius: radius.pill,
     justifyContent: "center",
-    minHeight: 36,
+    minHeight: 42,
     paddingHorizontal: spacing.lg
   },
-  segmentLabel: { color: colors.muted, fontFamily: fonts.bodyMedium, fontSize: 14, textAlign: "center" },
-  segmentLabelActive: { color: colors.ink, fontFamily: fonts.displaySemiBold },
-  segmentLabelScroll: { fontSize: 14 },
+  segmentLabel: {
+    color: colors.muted,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    textAlign: "center"
+  },
+  segmentLabelActive: { color: colors.onAccent, fontFamily: fonts.displaySemiBold },
   statCard: {
+    alignItems: "flex-start",
     backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 14,
-    borderWidth: 0.5,
+    borderRadius: radius.square,
     flex: 1,
-    gap: 6,
+    gap: 4,
     minWidth: 0,
-    padding: spacing.md
+    padding: spacing.md,
+    ...shadow(colors, "card")
   },
-  statLabel: {
-    color: colors.mutedFaint,
-    fontFamily: fonts.monoLabel,
-    fontSize: 10,
-    letterSpacing: 0.66,
-    textTransform: "uppercase"
+  statLabel: { color: colors.muted, fontFamily: fonts.body, fontSize: 12, lineHeight: 16 },
+  statValue: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 24, marginTop: 2 },
+  streakCount: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 26, lineHeight: 32 },
+  streakDay: {
+    alignItems: "center",
+    aspectRatio: 1,
+    backgroundColor: colors.panelWarm,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 2,
+    flex: 1,
+    justifyContent: "center"
   },
-  statValue: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 22 },
-  streakChunk: {
-    backgroundColor: colors.barTrack,
-    borderRadius: 4,
-    height: 22,
-    width: "100%"
-  },
-  streakChunkFilled: { backgroundColor: colors.accent },
-  streakChunkToday: { borderColor: colors.accent, borderWidth: 1.5 },
-  streakCount: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 28 },
-  streakDay: { alignItems: "center", flex: 1, gap: spacing.xs },
+  streakDayFilled: { backgroundColor: colors.accent },
+  streakDayText: { color: colors.mutedLight, fontFamily: fonts.displaySemiBold, fontSize: 13 },
+  streakDayTextFilled: { color: colors.onAccent },
+  streakDayToday: { borderColor: colors.tint.gold.solid },
   streakEyebrow: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
     fontSize: 11,
-    letterSpacing: 0.66,
+    letterSpacing: 0.9,
     textTransform: "uppercase"
   },
+  streakFlame: {
+    alignItems: "center",
+    backgroundColor: colors.tint.gold.bg,
+    borderRadius: radius.md,
+    height: 40,
+    justifyContent: "center",
+    width: 40
+  },
   streakHeader: {
-    alignItems: "baseline",
+    alignItems: "center",
     flexDirection: "row",
-    gap: spacing.sm,
-    marginBottom: spacing.sm
+    gap: spacing.md,
+    marginBottom: spacing.md
   },
-  streakRow: { flexDirection: "row", gap: 4 },
-  tab: { alignItems: "center", justifyContent: "flex-end", minHeight: 44 },
-  tabLabel: {
-    color: colors.muted,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: 15,
-    paddingBottom: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md
-  },
-  tabLabelActive: { color: colors.ink },
-  tabUnderline: { backgroundColor: "transparent", height: 2, width: "100%" },
-  tabUnderlineActive: { backgroundColor: colors.accent },
-  tabs: {
-    borderBottomColor: colors.hairlineFaint,
-    borderBottomWidth: 0.5
-  },
-  tabsContent: { gap: spacing.xl, paddingHorizontal: spacing.lg },
-  trackChunk: { backgroundColor: colors.barTrack, borderRadius: 3, flex: 1, height: 6, minWidth: 4 },
-  trackChunkComplete: { backgroundColor: colors.lineStrong },
-  trackChunkFilled: { backgroundColor: colors.accent },
-  trackRow: { flexDirection: "row", gap: 4 }
+  streakHeaderText: { flex: 1 },
+  streakRow: { flexDirection: "row", gap: 6 },
+  trackFill: { backgroundColor: colors.accent, borderRadius: radius.full, height: "100%" },
+  trackFillComplete: { backgroundColor: colors.success },
+  trackRow: {
+    backgroundColor: colors.barTrack,
+    borderRadius: radius.full,
+    height: 8,
+    overflow: "hidden",
+    width: "100%"
+  }
 }));

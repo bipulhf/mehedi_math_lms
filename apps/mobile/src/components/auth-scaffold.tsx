@@ -1,25 +1,13 @@
-import { Image } from "expo-image";
 import { Stack, useRouter } from "expo-router";
 import type { JSX, ReactNode } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Ionicons from "@expo/vector-icons/Ionicons";
-
-import { Screen } from "@/src/components/ui";
+import { BrandLockup } from "@/src/components/brand-lockup";
+import { Card, IconButton, Screen } from "@/src/components/ui";
 import { useT } from "@/src/lib/locale";
-import { fonts, radius, spacing } from "@/src/theme/tokens";
-import { makeStyles, useThemeColors } from "@/src/theme/theme";
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports -- Expo bundled image asset
-const mark = require("@/assets/images/splash-icon.png") as number;
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
  * A rule with a word set into it, for the seam between the ways in.
@@ -51,14 +39,17 @@ export interface AuthScaffoldProps {
 }
 
 /**
- * The shape all three ways in share: a mark, a sentence, one plate, one
- * footer.
+ * The shape all three ways in share.
  *
- * It exists because sign-in, sign-up and the password reset are the same
- * screen with different fields in the middle, and three copies of a layout
- * drift into three different layouts. There is no native header on any of
- * them — the brand is the header, and a bar reading "Sign in" above a screen
- * reading "Sign in" is 44 points of a phone spent saying it twice.
+ * Cream page, the brand lockup at the top, a headline set hard against the
+ * left margin, and the form on one white plate. It is deliberately *not* the
+ * coloured-header layout the signed-in screens use: arriving here should feel
+ * like the front door of the app rather than another room inside it, and a
+ * left-aligned headline over a single plate is the calmest way to say that.
+ *
+ * There is no native header on any of these screens — the brand is the header,
+ * and a bar reading "Sign in" above a screen reading "Sign in" is 44 points of
+ * a phone spent saying it twice.
  */
 export function AuthScaffold({
   children,
@@ -68,7 +59,6 @@ export function AuthScaffold({
   title
 }: AuthScaffoldProps): JSX.Element {
   const styles = useStyles();
-  const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const t = useT();
@@ -86,26 +76,23 @@ export function AuthScaffold({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.topRow}>
-            <Pressable
+            <IconButton
               accessibilityLabel={t("common.back")}
-              accessibilityRole="button"
-              hitSlop={spacing.md}
+              icon="chevron-back"
               onPress={onBack ?? (() => router.replace("/explore"))}
-              style={({ pressed }) => [styles.backButton, pressed ? styles.backPressed : null]}
-            >
-              <Ionicons color={colors.muted} name="chevron-back" size={22} />
-            </Pressable>
+            />
           </View>
 
           <View style={styles.hero}>
-            <Image contentFit="contain" source={mark} style={styles.mark} />
+            {/* Whose app this is, before it asks for anything. */}
+            <BrandLockup onColor={false} />
             <Text style={styles.heroTitle}>{title}</Text>
             <Text style={styles.heroLead}>{lead}</Text>
           </View>
 
           {/* One plate, not a card per method: the ways in are alternatives to
               each other, and a card each reads as unrelated offers. */}
-          <View style={styles.panel}>{children}</View>
+          <Card style={styles.panel}>{children}</Card>
 
           {footer ? <View style={styles.footer}>{footer}</View> : null}
         </ScrollView>
@@ -115,26 +102,15 @@ export function AuthScaffold({
 }
 
 const useStyles = makeStyles((colors) => ({
-  backButton: {
-    alignItems: "center",
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: radius.full,
-    borderWidth: 0.5,
-    height: 40,
-    justifyContent: "center",
-    width: 40
-  },
-  backPressed: { opacity: 0.7, transform: [{ scale: 0.96 }] },
-  content: { gap: spacing.xl, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+  content: { gap: spacing.lg, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
   dividerLabel: {
     color: colors.mutedFaint,
     fontFamily: fonts.monoLabel,
     fontSize: 11,
-    letterSpacing: 0.6,
+    letterSpacing: 0.9,
     textTransform: "uppercase"
   },
-  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 0.5 },
+  dividerLine: { backgroundColor: colors.hairline, flex: 1, height: 1 },
   dividerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   flex: { backgroundColor: colors.background, flex: 1 },
   footer: {
@@ -142,42 +118,23 @@ const useStyles = makeStyles((colors) => ({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-    justifyContent: "center"
+    justifyContent: "center",
+    paddingTop: spacing.sm
   },
-  hero: { alignItems: "center", gap: spacing.xs },
+  hero: { gap: spacing.sm },
   heroLead: {
     color: colors.muted,
     fontFamily: fonts.body,
     fontSize: 15,
-    lineHeight: 22,
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    textAlign: "center"
+    lineHeight: 23
   },
   heroTitle: {
     color: colors.ink,
-    fontFamily: fonts.displayExtraBold,
-    fontSize: 28,
-    lineHeight: 36,
-    marginTop: spacing.sm,
-    textAlign: "center"
+    fontFamily: fonts.display,
+    fontSize: 30,
+    lineHeight: 40,
+    marginTop: spacing.lg
   },
-  mark: { height: 64, width: 64 },
-  panel: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: radius.xl,
-    borderWidth: 0.5,
-    // Elevation on light, nothing on dark: a white plate on a near-white page
-    // has no contrast left to separate it, and DESIGN.md §2 forbids shadows
-    // on the dark theme, where it does not need one.
-    elevation: colors.shadowOpacity === 0 ? 0 : 3,
-    gap: spacing.lg,
-    padding: spacing.lg,
-    shadowColor: colors.shadow,
-    shadowOffset: { height: 6, width: 0 },
-    shadowOpacity: colors.shadowOpacity,
-    shadowRadius: 16
-  },
-  topRow: { flexDirection: "row" }
+  panel: { gap: spacing.lg, padding: spacing.lg },
+  topRow: { flexDirection: "row", paddingTop: spacing.sm }
 }));

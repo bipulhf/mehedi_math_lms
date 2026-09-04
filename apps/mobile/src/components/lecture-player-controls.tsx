@@ -28,7 +28,7 @@ function PlayIcon(): JSX.Element {
   const colors = useThemeColors();
   return (
     <Svg height={ICON_SIZE} viewBox="0 0 24 24" width={ICON_SIZE}>
-      <Path d="M7 5v14l12-7z" fill={colors.ink} />
+      <Path d="M7 5v14l12-7z" fill={colors.paper} />
     </Svg>
   );
 }
@@ -37,8 +37,8 @@ function PauseIcon(): JSX.Element {
   const colors = useThemeColors();
   return (
     <Svg height={ICON_SIZE} viewBox="0 0 24 24" width={ICON_SIZE}>
-      <Rect fill={colors.ink} height={14} rx={1} width={4} x={6} y={5} />
-      <Rect fill={colors.ink} height={14} rx={1} width={4} x={14} y={5} />
+      <Rect fill={colors.paper} height={14} rx={1} width={4} x={6} y={5} />
+      <Rect fill={colors.paper} height={14} rx={1} width={4} x={14} y={5} />
     </Svg>
   );
 }
@@ -50,7 +50,7 @@ function FullscreenIcon(): JSX.Element {
       <Path
         d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"
         fill="none"
-        stroke={colors.ink}
+        stroke={colors.paper}
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeWidth={1.8}
@@ -197,16 +197,20 @@ export function VideoControls({
 }
 
 const useStyles = makeStyles((colors) => ({
+  // A scrim under the bar: a white time code over a bright frame of video is
+  // unreadable, and the video is the one surface the palette cannot control.
   bottomBar: {
     alignItems: "center",
-    bottom: 0,
+    backgroundColor: "rgba(13, 13, 13, 0.42)",
+    borderRadius: radius.pill,
+    bottom: spacing.sm,
     flexDirection: "row",
     gap: spacing.sm,
-    left: 0,
-    paddingHorizontal: spacing.sm,
+    left: spacing.sm,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     position: "absolute",
-    right: 0
+    right: spacing.sm
   },
   center: {
     alignItems: "center",
@@ -225,11 +229,11 @@ const useStyles = makeStyles((colors) => ({
   },
   playButton: {
     alignItems: "center",
-    backgroundColor: "rgba(13, 13, 13, 0.5)",
+    backgroundColor: "rgba(13, 13, 13, 0.55)",
     borderRadius: radius.full,
-    height: 52,
+    height: 60,
     justifyContent: "center",
-    width: 52
+    width: 60
   },
   scrubZone: {
     flex: 1,
@@ -243,7 +247,7 @@ const useStyles = makeStyles((colors) => ({
     gap: spacing.xs
   },
   thumb: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.paper,
     borderRadius: radius.full,
     height: THUMB_SIZE,
     marginLeft: -THUMB_SIZE / 2,
@@ -252,20 +256,20 @@ const useStyles = makeStyles((colors) => ({
     width: THUMB_SIZE
   },
   time: {
-    color: colors.ink,
-    fontFamily: fonts.monoLabel,
+    color: colors.paper,
+    fontFamily: fonts.numeric,
     fontSize: 12,
-    minWidth: 34,
+    minWidth: 38,
     textAlign: "center"
   },
   track: {
-    backgroundColor: colors.barTrack,
+    backgroundColor: "rgba(255, 255, 255, 0.32)",
     borderRadius: radius.pill,
     height: BAR_HEIGHT,
     overflow: "visible"
   },
   trackFill: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.paper,
     borderRadius: radius.pill,
     height: BAR_HEIGHT
   }

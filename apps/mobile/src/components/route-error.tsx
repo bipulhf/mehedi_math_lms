@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { Body, Button, Card, Heading, Screen } from "@/src/components/ui";
+import { IconTile } from "@/src/components/ui-display";
 import { ApiError } from "@/src/lib/api-client";
 import { useT } from "@/src/lib/locale";
 import { spacing } from "@/src/theme/tokens";
@@ -29,12 +30,16 @@ export function ScreenErrorBoundary({ error, retry }: ErrorBoundaryProps): JSX.E
   return (
     <Screen style={styles.screen}>
       <Card>
+        <IconTile icon={isOffline ? "cloud-offline" : "alert-circle"} size={52} tint="coral" />
+        <View style={{ height: spacing.lg }} />
         <Heading>{isOffline ? t("error.offlineTitle") : t("error.screenTitle")}</Heading>
         <View style={{ height: spacing.md }} />
         <Body muted>{isOffline ? t("error.offlineBody") : error.message}</Body>
         <View style={{ height: spacing.xl }} />
         <Button
+          icon="refresh"
           label={t("action.retry")}
+          stretch
           onPress={() => {
             void retry();
           }}

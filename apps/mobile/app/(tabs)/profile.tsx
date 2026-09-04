@@ -1,36 +1,38 @@
 import { locales, localeNames, type Locale } from "@mma/i18n";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
-import { Badge, Body, Button, Card, Heading, Screen, ScreenSkeleton, SkeletonBlock, Title } from "@/src/components/ui";
+import {
+  Badge,
+  Body,
+  Button,
+  Card,
+  Screen,
+  ScreenSkeleton,
+  SkeletonBlock,
+  tabScrollInset,
+  Title
+} from "@/src/components/ui";
+import { CurvedHeader, HeaderBar, ListGroup, ListRow } from "@/src/components/ui-layout";
 import { Avatar, StreakTrack } from "@/src/components/ui-display";
-import { SignInPrompt } from "@/src/components/sign-in-prompt";
 import { getOwnProfile } from "@/src/lib/api/profiles";
 import { useLocale, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useHasPassword, useSession, useSignOut } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { fonts, radius, spacing } from "@/src/theme/tokens";
-import { makeStyles, useThemeColors } from "@/src/theme/theme";
+import { fonts, layout, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
-function sfToIon(sf: string): string {
-  const map: Record<string, string> = {
-    "globe": "globe-outline",
-    "info.circle": "information-circle",
-    "envelope": "mail",
-    "ladybug": "bug",
-    "key": "key",
-    "doc.text": "document-text",
-    "creditcard": "card",
-    "plus.bubble": "chatbubble-ellipses",
-    "rectangle.portrait.and.arrow.right": "log-out"
-  };
-  return map[sf] ?? "cube";
-}
+/**
+ * The account.
+ *
+ * Identity is a plate lifted into the cobalt header, and everything the student
+ * can actually do is one list of rows under it — the same row component the
+ * exams and payments screens use, so a tap here looks like a tap there.
+ */
 
 /**
  * Two pills, both always visible, mirroring the web switcher. A single toggle
@@ -68,62 +70,8 @@ function LanguageSwitcher(): JSX.Element {
   );
 }
 
-/**
- * A grouped settings row — label, chevron, one tap away. What used to be nine
- * separate bordered cards (each with its own title and a paragraph repeating
- * what the label already said) is now one list, the OS-settings convention
- * every reference app in this redesign also lands on. The lead paragraphs
- * are gone on purpose: a row's destination screen carries whatever context
- * it needs, and nine explanatory sentences on the way there was the clutter
- * this consolidation exists to remove.
- */
-function SettingsRow({
-  icon,
-  isBusy = false,
-  isLast = false,
-  label,
-  onPress
-}: {
-  icon?: string;
-  isBusy?: boolean;
-  isLast?: boolean;
-  label: string;
-  onPress: () => void;
-}): JSX.Element {
-  const styles = useStyles();
-  const colors = useThemeColors();
-  return (
-    <Pressable
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ busy: isBusy }}
-      disabled={isBusy}
-      onPress={() => {
-        void Haptics.selectionAsync();
-        onPress();
-      }}
-      style={({ pressed }) => [
-        styles.settingsRow,
-        isLast ? null : styles.settingsRowDivider,
-        pressed ? styles.rowPressed : null
-      ]}
-    >
-      <View style={styles.settingsRowLeft}>
-        {icon ? (
-          <View style={styles.settingsIconWrap}>
-            <Ionicons color={colors.muted} name={sfToIon(icon) as never} size={16} />
-          </View>
-        ) : null}
-        <Text style={styles.settingsRowLabel}>{isBusy ? `${label}…` : label}</Text>
-      </View>
-      <Ionicons color={colors.mutedFaint} name="chevron-forward" size={14} />
-    </Pressable>
-  );
-}
-
 export default function ProfileScreen(): JSX.Element {
   const styles = useStyles();
-  const colors = useThemeColors();
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
@@ -140,13 +88,10 @@ export default function ProfileScreen(): JSX.Element {
     return <ScreenSkeleton noHeader rows={2} />;
   }
 
+  // Signed out, this tab *is* the way in — so it goes straight to the sign-in
+  // screen rather than to a page whose only content is a button to it.
   if (!session) {
-    return (
-      <Screen noHeader style={styles.content}>
-        <SignInPrompt />
-        <LanguageSwitcher />
-      </Screen>
-    );
+    return <Redirect href="/sign-in" />;
   }
 
   // The session's flag is the one the API enforces against; the profile record
@@ -154,167 +99,180 @@ export default function ProfileScreen(): JSX.Element {
   // session is the one to believe.
   const isProfileComplete = session.session.profileCompleted;
   const phone = profile?.studentProfile?.phone ?? profile?.teacherProfile?.phone ?? null;
+  const name = profile?.user.name ?? session.user.name;
+  const email = profile?.user.email ?? session.user.email;
+  const photo =
+    profile?.user.image ??
+    profile?.studentProfile?.profilePhoto ??
+    profile?.teacherProfile?.profilePhoto ??
+    null;
 
   return (
-    <Screen noHeader>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Heading>{t("nav.profile")}</Heading>
+    <Screen>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <CurvedHeader>
+          <HeaderBar subtitle={t("nav.profile")} title={t("profile.detailsTitle")} />
+        </CurvedHeader>
 
-        {isPending ? (
-          <Card>
-            <SkeletonBlock height={20} width="50%" />
-            <View style={{ height: spacing.sm }} />
-            <SkeletonBlock height={14} width="70%" />
-          </Card>
-        ) : (
-          <Card>
-            <View style={styles.profileIdentity}>
-              <Avatar
-                name={profile?.user.name ?? session.user.name}
-                photo={
-                  profile?.user.image ??
-                  profile?.studentProfile?.profilePhoto ??
-                  profile?.teacherProfile?.profilePhoto ??
-                  null
-                }
-                size={72}
-              />
-              <View style={styles.profileText}>
-                <Title>{profile?.user.name ?? session.user.name}</Title>
-                <Body muted>{profile?.user.email ?? session.user.email}</Body>
+        <View style={styles.body}>
+          {isPending ? (
+            <SkeletonBlock height={140} style={styles.identitySkeleton} />
+          ) : (
+            <Card style={styles.identity}>
+              <View style={styles.identityRow}>
+                <Avatar name={name} photo={photo} size={68} />
+                <View style={styles.identityText}>
+                  <Text numberOfLines={1} style={styles.identityName}>
+                    {name}
+                  </Text>
+                  <Text numberOfLines={1} style={styles.identityMeta}>
+                    {email}
+                  </Text>
+                  {phone ? (
+                    <Text numberOfLines={1} style={styles.identityMeta}>
+                      {phone}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
-            {phone ? (
-              <>
-                <View style={{ height: spacing.xs }} />
-                <Body muted>{phone}</Body>
-              </>
-            ) : null}
-            <View style={{ height: spacing.md }} />
-            <Badge>{session.session.role}</Badge>
-            <View style={styles.identityStreak}>
-              <StreakTrack
-                days={streak.days}
-                label={t("dash.streak")}
-                streakCount={streak.streakCount}
-              />
-            </View>
-          </Card>
-        )}
-
-        {/* The one row that stays a standalone, emphasised card rather than a
-            settings row -- an incomplete profile blocks the account, and that
-            is not a fact to bury in a list. */}
-        <Card>
-          <Title>
-            {isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}
-          </Title>
-          <View style={{ height: spacing.sm }} />
-          <Body muted>
-            {isProfileComplete ? t("profile.detailsLead") : t("profile.completeLead")}
-          </Body>
-          <View style={{ height: spacing.lg }} />
-          <Button
-            label={isProfileComplete ? t("profile.editProfile") : t("profile.completeProfile")}
-            onPress={() => router.push("/profile-complete")}
-            variant={isProfileComplete ? "outline" : "ink"}
-          />
-        </Card>
-
-        <View style={styles.groupLabel}>
-          <Text style={styles.groupLabelText}>{t("locale.label").toUpperCase()}</Text>
-        </View>
-        <Card style={styles.settingsCard}>
-          <View style={[styles.settingsRow, styles.settingsRowDivider]}>
-            <View style={styles.settingsRowLeft}>
-              <View style={styles.settingsIconWrap}>
-                <Ionicons color={colors.muted} name="globe-outline" size={16} />
+              <View style={styles.identityBadges}>
+                <Badge tone="info">{session.session.role}</Badge>
               </View>
-              <Text style={styles.settingsRowLabel}>{t("locale.label")}</Text>
-            </View>
-            <LanguageSwitcher />
-          </View>
-          <SettingsRow icon="info.circle" label={t("about.title")} onPress={() => router.push("/about")} />
-          <SettingsRow icon="envelope" label={t("contact.title")} onPress={() => router.push("/contact")} />
-          <SettingsRow icon="ladybug" label={t("profile.reportBug")} onPress={() => router.push("/bug-report")} />
-          {hasPassword ? (
-            <SettingsRow
-              icon="key"
-              label={t("profile.changePassword")}
-              onPress={() => router.push("/change-password")}
+            </Card>
+          )}
+
+          <Card>
+            <StreakTrack
+              days={streak.days}
+              label={t("dash.streak")}
+              streakCount={streak.streakCount}
             />
-          ) : null}
-          <SettingsRow icon="doc.text" label={t("exams.title")} onPress={() => router.push("/exams")} />
-          <SettingsRow icon="creditcard" label={t("profile.viewPayments")} onPress={() => router.push("/payments")} />
-          <SettingsRow icon="plus.bubble" label={t("messages.new")} onPress={() => router.push("/messages/new")} />
-          <SettingsRow
-            icon="rectangle.portrait.and.arrow.right"
-            isBusy={signOut.isPending}
-            isLast
-            label={t("profile.signOut")}
-            onPress={() => {
-              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-              signOut.mutate(undefined, {
-                onSuccess: () => {
-                  router.replace("/sign-in");
-                }
-              });
-            }}
-          />
-        </Card>
+          </Card>
+
+          {/* The one thing that stays a standalone card rather than a row: an
+              incomplete profile blocks the account, and that is not a fact to
+              bury in a list. */}
+          <Card tone={isProfileComplete ? undefined : "gold"}>
+            <Title>
+              {isProfileComplete ? t("profile.detailsTitle") : t("profile.completeTitle")}
+            </Title>
+            <View style={{ height: spacing.sm }} />
+            <Body muted>
+              {isProfileComplete ? t("profile.detailsLead") : t("profile.completeLead")}
+            </Body>
+            <View style={{ height: spacing.lg }} />
+            <Button
+              icon={isProfileComplete ? "create" : "arrow-forward"}
+              label={isProfileComplete ? t("profile.editProfile") : t("profile.completeProfile")}
+              onPress={() => router.push("/profile-complete")}
+              stretch
+              variant={isProfileComplete ? "outline" : "ink"}
+            />
+          </Card>
+
+          <ListGroup title={t("nav.myCourses")}>
+            <ListRow
+              icon="document-text"
+              onPress={() => router.push("/exams")}
+              tint="coral"
+              title={t("exams.title")}
+            />
+            <ListRow
+              icon="card"
+              onPress={() => router.push("/payments")}
+              tint="mint"
+              title={t("profile.viewPayments")}
+            />
+            <ListRow
+              icon="chatbubble-ellipses"
+              isLast
+              onPress={() => router.push("/messages/new")}
+              tint="brand"
+              title={t("messages.new")}
+            />
+          </ListGroup>
+
+          <ListGroup title={t("locale.label")}>
+            <ListRow
+              icon="globe"
+              tint="sky"
+              title={t("locale.label")}
+              trailing={<LanguageSwitcher />}
+            />
+            {hasPassword ? (
+              <ListRow
+                icon="key"
+                onPress={() => router.push("/change-password")}
+                tint="gold"
+                title={t("profile.changePassword")}
+              />
+            ) : null}
+            <ListRow
+              icon="information-circle"
+              onPress={() => router.push("/about")}
+              tint="lilac"
+              title={t("about.title")}
+            />
+            <ListRow
+              icon="mail"
+              onPress={() => router.push("/contact")}
+              tint="mint"
+              title={t("contact.title")}
+            />
+            <ListRow
+              icon="bug"
+              isLast
+              onPress={() => router.push("/bug-report")}
+              tint="coral"
+              title={t("profile.reportBug")}
+            />
+          </ListGroup>
+
+          <ListGroup>
+            <ListRow
+              icon="log-out"
+              isBusy={signOut.isPending}
+              isDestructive
+              isLast
+              onPress={() => {
+                void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                signOut.mutate(undefined, {
+                  onSuccess: () => {
+                    router.replace("/sign-in");
+                  }
+                });
+              }}
+              tint="coral"
+              title={t("profile.signOut")}
+            />
+          </ListGroup>
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  content: { gap: spacing.lg, padding: spacing.lg },
-  groupLabel: { paddingHorizontal: spacing.sm, paddingTop: spacing.md },
-  groupLabelText: {
-    color: colors.mutedFaint,
-    fontFamily: fonts.monoLabel,
-    fontSize: 11,
-    letterSpacing: 0.66,
-    textTransform: "uppercase"
-  },
-  identityStreak: { paddingTop: spacing.lg },
-  languageLabel: { color: colors.muted, fontFamily: fonts.bodyMedium, fontSize: 13 },
-  languageLabelActive: { color: colors.ink },
+  body: { gap: spacing.lg, paddingHorizontal: spacing.lg },
+  identity: { gap: spacing.lg, marginTop: -layout.headerOverlap },
+  identityBadges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  identityMeta: { color: colors.muted, fontFamily: fonts.body, fontSize: 14 },
+  identityName: { color: colors.ink, fontFamily: fonts.display, fontSize: 21, lineHeight: 28 },
+  identityRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
+  identitySkeleton: { borderRadius: radius.square, marginTop: -layout.headerOverlap },
+  identityText: { flex: 1, gap: 1 },
+  languageLabel: { color: colors.muted, fontFamily: fonts.bodySemiBold, fontSize: 13 },
+  languageLabelActive: { color: colors.onAccent },
   languagePill: {
     backgroundColor: colors.panelWarm,
-    borderColor: colors.hairlineFaint,
-    borderRadius: radius.full,
-    borderWidth: 0.5,
+    borderRadius: radius.pill,
     justifyContent: "center",
-    minHeight: 32,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs
+    minHeight: 34,
+    paddingHorizontal: spacing.md
   },
-  languagePillActive: { backgroundColor: colors.chipActive, borderColor: colors.accent },
-  languageRow: { flexDirection: "row", gap: spacing.sm },
-  profileIdentity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
-  profileText: { flex: 1, gap: spacing.xs },
-  rowPressed: { backgroundColor: colors.rowHover },
-  settingsCard: { overflow: "hidden", padding: 0 },
-  settingsIconWrap: {
-    alignItems: "center",
-    backgroundColor: colors.panelWarm,
-    borderRadius: 7,
-    height: 28,
-    justifyContent: "center",
-    width: 28
-  },
-  settingsRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 52,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
-  },
-  settingsRowDivider: { borderBottomColor: colors.hairlineFaint, borderBottomWidth: 0.5 },
-  settingsRowLabel: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 15 },
-  settingsRowLeft: { alignItems: "center", flexDirection: "row", gap: spacing.sm }
+  languagePillActive: { backgroundColor: colors.accent },
+  languageRow: { flexDirection: "row", gap: 6 },
+  scroll: { paddingBottom: tabScrollInset }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

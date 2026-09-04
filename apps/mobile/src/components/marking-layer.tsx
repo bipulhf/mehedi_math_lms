@@ -13,7 +13,7 @@ import { PanResponder, StyleSheet, TextInput, View } from "react-native";
 import { Image } from "expo-image";
 import Svg, { Polyline, Text as SvgText } from "react-native-svg";
 
-import { radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 export type MarkingTool = "PEN" | "ERASER" | "NOTE" | MarkingStamp;
@@ -246,6 +246,7 @@ export function MarkingLayer({
       return (
         <SvgText
           fill={colorHex[element.color]}
+          fontFamily={fonts.displayBold}
           fontSize={element.size * height}
           key={element.id}
           textAnchor="middle"
@@ -262,8 +263,10 @@ export function MarkingLayer({
     return (
       <SvgText
         fill={colorHex[element.color]}
+        // The app's own text face, so a teacher's note on a script matches
+        // every other word in the app rather than the handset's system font.
+        fontFamily={fonts.bodySemiBold}
         fontSize={size}
-        fontWeight="500"
         key={element.id}
         textAnchor="start"
         x={element.x * width}

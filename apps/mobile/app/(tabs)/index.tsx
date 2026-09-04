@@ -5,40 +5,46 @@ import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import {
-  Badge,
-  Body,
-  Button,
-  Caption,
-  Card,
-  CoverImage,
-  EmptyState,
-  ErrorNotice,
-  Heading,
-  Screen,
-  SkeletonBlock,
-  Title
-} from "@/src/components/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import { ProgressTrack, StreakTrack } from "@/src/components/ui-display";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  ErrorNotice,
+  IconButton,
+  Screen,
+  SkeletonBlock,
+  tabScrollInset
+} from "@/src/components/ui";
+import { CurvedHeader } from "@/src/components/ui-layout";
+import {
+  Avatar,
+  IconTile,
+  ProgressRing,
+  ProgressTrack,
+  SectionHeader,
+  StatCard,
+  StreakTrack
+} from "@/src/components/ui-display";
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
-import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { fonts, layout, radius, spacing, tintForKey, type TintName } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
-function sfToIon(sf: string): string {
-  const map: Record<string, string> = {
-    "book.fill": "book",
-    "checkmark.circle.fill": "checkmark-circle",
-    "chart.bar.fill": "bar-chart"
-  };
-  return map[sf] ?? "cube";
-}
+/**
+ * The student's home.
+ *
+ * The screen answers one question before any other — *where was I* — so the
+ * cobalt header carries only identity, and the first white plate, half of it
+ * lifted into that colour, is the course in progress with the ring showing how
+ * far in. Everything else is a shelf under it.
+ */
 
 /**
  * Downloading and sharing is a phone-shaped action, more so than a desktop one
@@ -73,49 +79,77 @@ function DocumentAction({
 
   return (
     <View style={styles.rowAction}>
-      <Button isBusy={isBusy} label={label} onPress={() => void share()} variant="outline" />
+      <Button
+        icon={kind === "certificate" ? "ribbon" : "receipt"}
+        isBusy={isBusy}
+        label={label}
+        onPress={() => void share()}
+        size="xs"
+        variant="soft"
+      />
       {error ? <ErrorNotice message={error} /> : null}
     </View>
   );
 }
 
+/**
+ * A shelf row: the course's initial in its own colour, the title, and the bar.
+ * A cover thumbnail at this size is a smear — the letter and the colour are
+ * what a student actually recognises a row by.
+ */
 const EnrollmentRow = memo(function EnrollmentRow({
   enrollment
 }: {
   enrollment: StudentEnrollment;
 }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
   const format = useFormat();
   const isComplete = enrollment.status === "COMPLETED" || enrollment.completedAt !== null;
+  const tint = colors.tint[tintForKey(enrollment.course.id)];
   const card = (
     <Pressable
       accessibilityLabel={enrollment.course.title}
       accessibilityRole="link"
-      style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+      style={({ pressed }) => [pressed ? styles.pressed : null]}
     >
-      <Card style={styles.rowCard}>
-        <CoverImage bleed height={140} uri={enrollment.course.coverImageUrl} />
-        <View style={styles.rowBody}>
-          <Title>{enrollment.course.title}</Title>
+      <Card>
+        <View style={styles.rowTop}>
+          <View style={[styles.rowMark, { backgroundColor: tint.bg }]}>
+            <Text style={[styles.rowMarkText, { color: tint.fg }]}>
+              {enrollment.course.title.trim().charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.rowText}>
+            <Text numberOfLines={2} style={styles.rowTitle}>
+              {enrollment.course.title}
+            </Text>
+            <Text style={styles.rowMeta}>{enrollment.category.name}</Text>
+          </View>
+          <Text style={styles.rowPercent}>
+            {isComplete ? "100%" : format.percent(enrollment.progressPercentage)}
+          </Text>
+        </View>
+
+        <View style={styles.rowTrack}>
           <ProgressTrack
             completed={enrollment.progressPercentage}
             isComplete={isComplete}
             label={`${enrollment.course.title} ${t("mine.progress")}`}
             total={100}
           />
-          <View style={styles.rowMeta}>
-            <Body muted>
-              {isComplete ? t("mine.completed") : format.percent(enrollment.progressPercentage)}
-            </Body>
+        </View>
+
+        {!enrollment.accessGranted || enrollment.cancelledAt || isComplete ? (
+          <View style={styles.rowBadges}>
+            {isComplete ? <Badge tone="success">{t("mine.completed")}</Badge> : null}
             {!enrollment.accessGranted ? (
               <Badge tone="attention">{t("mine.paymentPending")}</Badge>
             ) : null}
-            {enrollment.cancelledAt ? (
-              <Badge tone="attention">{t("mine.accessEnded")}</Badge>
-            ) : null}
+            {enrollment.cancelledAt ? <Badge tone="danger">{t("mine.accessEnded")}</Badge> : null}
           </View>
-        </View>
+        ) : null}
       </Card>
     </Pressable>
   );
@@ -159,25 +193,31 @@ const EnrollmentRow = memo(function EnrollmentRow({
   );
 });
 
-function SummaryMetric({
+/** One of the four squares under the resume card. */
+function QuickAction({
   icon,
   label,
-  value
+  onPress,
+  tint
 }: {
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  value: string;
+  onPress: () => void;
+  tint: TintName;
 }): JSX.Element {
   const styles = useStyles();
-  const colors = useThemeColors();
   return (
-    <View style={styles.metric}>
-      <View style={styles.metricIcon}>
-        <Ionicons color={colors.accent} name={sfToIon(icon) as never} size={16} />
-      </View>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-    </View>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.quickAction, pressed ? styles.pressed : null]}
+    >
+      <IconTile icon={icon} size={52} tint={tint} />
+      <Text numberOfLines={1} style={styles.quickLabel}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -199,9 +239,7 @@ function PaymentReminderRow({
 
   return (
     <View style={styles.paymentItem}>
-      <View style={styles.paymentIcon}>
-        <Ionicons color={colors.warning} name="alert-circle" size={20} />
-      </View>
+      <IconTile icon="card" size={40} tint="gold" />
       <Link
         asChild
         href={{ params: { courseId: enrollment.course.slug }, pathname: "/courses/[courseId]" }}
@@ -222,66 +260,51 @@ function PaymentReminderRow({
         accessibilityRole="button"
         hitSlop={spacing.sm}
         onPress={onDismiss}
-        style={styles.paymentDismissBtn}
       >
-        <Ionicons color={colors.mutedFaint} name="close-circle" size={20} />
+        <Ionicons color={colors.mutedFaint} name="close" size={20} />
       </Pressable>
     </View>
   );
 }
 
 /**
- * Traces `StudentDashboardHeader` + two course rows below it, block for
- * block, rather than a couple of generic cards — the point of a skeleton is
- * that the real screen doesn't visibly jump into place once it loads.
+ * Traces the header, the resume plate and two shelf rows block for block — the
+ * point of a skeleton is that the real screen doesn't visibly jump into place.
  */
 function HomeSkeleton(): JSX.Element {
   const styles = useStyles();
   return (
     <View>
-      <View style={styles.hero}>
-        <SkeletonBlock height={12} width="40%" />
-        <View style={{ height: spacing.xs }} />
-        <SkeletonBlock height={30} width="70%" />
-      </View>
-
-      <View style={styles.resumeWrap}>
-        <SkeletonBlock height={14} width="30%" />
-        <Card>
-          <SkeletonBlock height={160} />
-          <View style={styles.resumeBody}>
-            <SkeletonBlock height={20} width="75%" />
-            <SkeletonBlock height={8} />
-            <SkeletonBlock height={44} />
+      <CurvedHeader>
+        <View style={styles.headerRow}>
+          <SkeletonBlock height={48} style={styles.skeletonAvatar} width={48} />
+          <View style={styles.headerText}>
+            <SkeletonBlock height={10} width="35%" />
+            <View style={{ height: spacing.sm }} />
+            <SkeletonBlock height={20} width="60%" />
           </View>
-        </Card>
-      </View>
-
-      <View style={styles.streakWrap}>
-        <SkeletonBlock height={64} />
-      </View>
-
-      <View style={styles.metrics}>
-        {[0, 1, 2].map((key) => (
-          <View key={key} style={styles.metric}>
-            <SkeletonBlock height={24} width="60%" />
-            <SkeletonBlock height={14} width="80%" />
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.coursesHeading}>
-        <SkeletonBlock height={22} width="40%" />
-      </View>
-
-      <View style={styles.skeletonList}>
+        </View>
+      </CurvedHeader>
+      <View style={styles.body}>
+        <SkeletonBlock height={132} style={styles.skeletonResume} />
+        <View style={styles.quickRow}>
+          {[0, 1, 2, 3].map((key) => (
+            <View key={key} style={styles.quickAction}>
+              <SkeletonBlock height={52} style={styles.skeletonTile} width={52} />
+              <SkeletonBlock height={10} width="70%" />
+            </View>
+          ))}
+        </View>
+        <View style={styles.statRow}>
+          {[0, 1, 2].map((key) => (
+            <SkeletonBlock height={104} key={key} style={styles.skeletonStat} />
+          ))}
+        </View>
         {[0, 1].map((key) => (
           <Card key={key}>
-            <SkeletonBlock height={140} />
-            <View style={styles.rowBody}>
-              <SkeletonBlock height={20} width="60%" />
-              <SkeletonBlock height={8} />
-            </View>
+            <SkeletonBlock height={20} width="55%" />
+            <View style={{ height: spacing.md }} />
+            <SkeletonBlock height={8} />
           </Card>
         ))}
       </View>
@@ -296,6 +319,7 @@ function StudentDashboardHeader({
   completedCourses,
   format,
   name,
+  photo,
   resumeEnrollment,
   router,
   t
@@ -306,6 +330,7 @@ function StudentDashboardHeader({
   completedCourses: number;
   format: ReturnType<typeof useFormat>;
   name: string;
+  photo: string | null;
   resumeEnrollment: StudentEnrollment | undefined;
   router: ReturnType<typeof useRouter>;
   t: ReturnType<typeof useT>;
@@ -320,14 +345,45 @@ function StudentDashboardHeader({
 
   return (
     <View>
-      <View style={styles.hero}>
-        <Text style={styles.heroEyebrow}>{t("dash.learningSummary")}</Text>
-        <Text style={styles.heroTitle}>{t("dash.greeting", { name })}</Text>
-      </View>
+      <CurvedHeader>
+        <View style={styles.headerRow}>
+          <Link asChild href="/profile">
+            <Pressable accessibilityLabel={t("nav.profile")} accessibilityRole="link">
+              <Avatar name={name} photo={photo} ring size={48} />
+            </Pressable>
+          </Link>
+          <View style={styles.headerText}>
+            <Text style={styles.headerEyebrow}>{t("dash.learningSummary")}</Text>
+            <Text numberOfLines={1} style={styles.headerName}>
+              {t("dash.greeting", { name })}
+            </Text>
+          </View>
+          <IconButton
+            accessibilityLabel={t("nav.notify")}
+            icon="notifications"
+            onPress={() => router.push("/inbox")}
+            tone="onPaper"
+          />
+        </View>
 
-      {resumeEnrollment ? (
-        <View style={styles.resumeWrap}>
-          <Caption>{t("dash.resume")}</Caption>
+        {/* A search bar that is really a door: this app's catalogue lives one
+            tab over, and typing here would only duplicate it. */}
+        <Pressable
+          accessibilityLabel={t("courses.searchPlaceholder")}
+          accessibilityRole="button"
+          onPress={() => router.push("/explore")}
+          style={({ pressed }) => [styles.searchDoor, pressed ? styles.pressed : null]}
+        >
+          <Ionicons color={colors.mutedFaint} name="search" size={19} />
+          <Text numberOfLines={1} style={styles.searchDoorText}>
+            {t("courses.searchPlaceholder")}
+          </Text>
+        </Pressable>
+      </CurvedHeader>
+
+      <View style={styles.body}>
+        {/* The one plate that overlaps the colour above it. */}
+        {resumeEnrollment ? (
           <Link
             asChild
             href={{
@@ -338,74 +394,121 @@ function StudentDashboardHeader({
             <Pressable
               accessibilityLabel={resumeEnrollment.course.title}
               accessibilityRole="link"
-              style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+              style={({ pressed }) => [styles.lift, pressed ? styles.pressed : null]}
             >
-              <Card style={styles.resumeCard}>
-                <CoverImage bleed height={160} uri={resumeEnrollment.course.coverImageUrl} />
-                <View style={styles.resumeBody}>
-                  <Title numberOfLines={2}>{resumeEnrollment.course.title}</Title>
-                  <ProgressTrack
-                    completed={resumeEnrollment.progressPercentage}
+              <Card>
+                <View style={styles.resumeRow}>
+                  <ProgressRing
                     label={`${resumeEnrollment.course.title} ${t("mine.progress")}`}
-                    total={100}
+                    percent={resumeEnrollment.progressPercentage}
+                    size={62}
                   />
-                  <View style={styles.resumeAction}>
-                    <Text style={styles.resumeActionLabel}>{t("mine.resume")}</Text>
-                    <Ionicons color={colors.actionForeground} name="play" size={12} />
+                  <View style={styles.resumeText}>
+                    <Text style={styles.resumeEyebrow}>{t("dash.resume")}</Text>
+                    <Text numberOfLines={2} style={styles.resumeTitle}>
+                      {resumeEnrollment.course.title}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.resumeAction}>
+                  <View style={styles.resumeButton}>
+                    <Ionicons color={colors.onAccent} name="play" size={14} />
+                    <Text style={styles.resumeButtonLabel}>{t("mine.resume")}</Text>
                   </View>
                 </View>
               </Card>
             </Pressable>
           </Link>
-        </View>
-      ) : null}
-
-      <View style={styles.streakWrap}>
-        <StreakTrack days={streak.days} label={t("dash.streak")} streakCount={streak.streakCount} />
-      </View>
-
-      <View style={styles.metrics}>
-        <SummaryMetric
-          icon="book.fill"
-          label={t("dash.activeCourses")}
-          value={format.number(activeCourses)}
-        />
-        <SummaryMetric
-          icon="checkmark.circle.fill"
-          label={t("dash.completedCourses")}
-          value={format.number(completedCourses)}
-        />
-        <SummaryMetric
-          icon="chart.bar.fill"
-          label={t("dash.averageProgress")}
-          value={format.percent(averageProgress)}
-        />
-      </View>
-
-      {visiblePayments.length > 0 ? (
-        <View style={styles.paymentWrap}>
-          <Badge tone="attention">{t("dash.paymentAttention")}</Badge>
-          <Text style={styles.paymentLead}>
-            {t("dash.paymentAttentionLead", { count: format.number(visiblePayments.length) })}
-          </Text>
-          {visiblePayments.slice(0, 2).map((enrollment) => (
-            <PaymentReminderRow
-              enrollment={enrollment}
-              key={enrollment.id}
-              onDismiss={() =>
-                setDismissedPaymentIds((current) => new Set(current).add(enrollment.id))
-              }
+        ) : (
+          <Card style={styles.lift}>
+            <Text style={styles.resumeEyebrow}>{t("dash.learningSummary")}</Text>
+            <Text numberOfLines={2} style={styles.resumeTitle}>
+              {t("dash.browseCourses")}
+            </Text>
+            <View style={{ height: spacing.lg }} />
+            <Button
+              icon="compass"
+              label={t("mine.browse")}
+              onPress={() => router.push("/explore")}
+              stretch
             />
-          ))}
+          </Card>
+        )}
+
+        <View style={styles.quickRow}>
+          <QuickAction
+            icon="document-text"
+            label={t("exams.title")}
+            onPress={() => router.push("/exams")}
+            tint="coral"
+          />
+          <QuickAction
+            icon="chatbubbles"
+            label={t("nav.messages")}
+            onPress={() => router.push("/inbox")}
+            tint="mint"
+          />
+          <QuickAction
+            icon="card"
+            label={t("nav.payments")}
+            onPress={() => router.push("/payments")}
+            tint="sky"
+          />
+          <QuickAction
+            icon="compass"
+            label={t("nav.explore")}
+            onPress={() => router.push("/explore")}
+            tint="lilac"
+          />
         </View>
-      ) : null}
 
-      <View style={styles.examsWrap}>
-        <Button label={t("exams.title")} onPress={() => router.push("/exams")} variant="outline" />
-      </View>
+        <View style={styles.statRow}>
+          <StatCard
+            icon="book"
+            label={t("dash.activeCourses")}
+            tint="brand"
+            value={format.number(activeCourses)}
+          />
+          <StatCard
+            icon="checkmark-circle"
+            label={t("dash.completedCourses")}
+            tint="mint"
+            value={format.number(completedCourses)}
+          />
+          <StatCard
+            icon="trending-up"
+            label={t("dash.averageProgress")}
+            tint="gold"
+            value={format.percent(averageProgress)}
+          />
+        </View>
 
-      <View style={styles.coursesHeading}>
-        <Heading>{t("nav.myCourses")}</Heading>
+        <Card>
+          <StreakTrack days={streak.days} label={t("dash.streak")} streakCount={streak.streakCount} />
+        </Card>
+
+        {visiblePayments.length > 0 ? (
+          <Card style={styles.paymentWrap} tone="gold">
+            <Text style={styles.paymentLead}>
+              {t("dash.paymentAttentionLead", { count: format.number(visiblePayments.length) })}
+            </Text>
+            {visiblePayments.slice(0, 2).map((enrollment) => (
+              <PaymentReminderRow
+                enrollment={enrollment}
+                key={enrollment.id}
+                onDismiss={() =>
+                  setDismissedPaymentIds((current) => new Set(current).add(enrollment.id))
+                }
+              />
+            ))}
+          </Card>
+        ) : null}
+
+        <SectionHeader
+          actionLabel={t("action.showAll")}
+          onAction={() => router.push("/explore")}
+          title={t("nav.myCourses")}
+        />
       </View>
     </View>
   );
@@ -431,7 +534,7 @@ export default function HomeScreen(): JSX.Element {
 
   if (isSessionPending) {
     return (
-      <Screen noHeader>
+      <Screen>
         <HomeSkeleton />
       </Screen>
     );
@@ -439,8 +542,7 @@ export default function HomeScreen(): JSX.Element {
 
   // Home needs an account, and while signed out its tab is not in the bar at
   // all — so a visitor who lands here (cold start, deep link) is sent to the
-  // one public tab rather than left on a screen they cannot navigate away
-  // from. Explore carries the sign-in prompt from the account tab.
+  // one public tab rather than left on a screen they cannot navigate away from.
   if (!session) {
     return <Redirect href="/explore" />;
   }
@@ -483,6 +585,7 @@ export default function HomeScreen(): JSX.Element {
       completedCourses={completedCourses.length}
       format={format}
       name={session.user.name}
+      photo={session.user.image}
       resumeEnrollment={resumeEnrollment}
       router={router}
       t={t}
@@ -490,24 +593,22 @@ export default function HomeScreen(): JSX.Element {
   );
 
   return (
-    <Screen noHeader>
+    <Screen>
       {isPending ? (
         <HomeSkeleton />
       ) : visibleEnrollments.length === 0 ? (
-        <View>
+        <View style={styles.emptyScroll}>
           {listHeader}
-          <View style={styles.emptyWrap}>
-            <EmptyState message={t("mine.empty")} />
-          </View>
+          <EmptyState message={t("mine.empty")} />
         </View>
       ) : (
         <FlashList
           contentContainerStyle={styles.list}
           data={visibleEnrollments}
           keyExtractor={keyExtractor}
-          ListFooterComponent={<View style={styles.listFooter} />}
           ListHeaderComponent={listHeader}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </Screen>
@@ -515,127 +616,111 @@ export default function HomeScreen(): JSX.Element {
 }
 
 const useStyles = makeStyles((colors) => ({
-  coursesHeading: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
-  emptyWrap: { padding: spacing.lg },
-  examsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  hero: {
-    backgroundColor: colors.background,
-    gap: 6,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md
-  },
-  heroEyebrow: {
-    color: colors.mutedFaint,
+  body: { gap: spacing.lg, paddingHorizontal: spacing.lg },
+  emptyScroll: { gap: spacing.lg, paddingBottom: tabScrollInset },
+  headerEyebrow: {
+    color: colors.paper,
     fontFamily: fonts.monoLabel,
     fontSize: 11,
-    letterSpacing: 0.72,
+    letterSpacing: 0.9,
+    opacity: 0.8,
     textTransform: "uppercase"
   },
-  heroTitle: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 30, lineHeight: 38 },
-  list: { padding: spacing.lg, paddingBottom: spacing.xl },
-  listFooter: { height: spacing.xxl },
-  metric: {
-    alignItems: "center",
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 16,
-    borderWidth: 0.5,
-    flex: 1,
-    gap: 6,
-    padding: spacing.md
-  },
-  metricIcon: {
-    alignItems: "center",
-    backgroundColor: "rgba(77,159,255,0.12)",
-    borderRadius: radius.full,
-    height: 32,
-    justifyContent: "center",
-    width: 32
-  },
-  metricLabel: {
-    color: colors.mutedFaint,
-    fontFamily: fonts.monoLabel,
-    fontSize: 10,
-    letterSpacing: 0.5,
-    textAlign: "center",
-    textTransform: "uppercase"
-  },
-  metricValue: { color: colors.ink, fontFamily: fonts.displayExtraBold, fontSize: 26, textAlign: "center" },
-  metrics: { flexDirection: "row", gap: spacing.sm, marginHorizontal: spacing.lg, marginTop: spacing.lg },
+  headerName: { color: colors.paper, fontFamily: fonts.display, fontSize: 23, lineHeight: 31 },
+  headerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  headerText: { flex: 1, gap: 1 },
+  // Everything that rises into the header does it by exactly this much.
+  lift: { marginTop: -layout.headerOverlap },
+  list: { paddingBottom: tabScrollInset },
   padded: { padding: spacing.lg },
   paymentAction: {
     color: colors.accent,
-    fontFamily: fonts.bodySemiBold,
+    fontFamily: fonts.displaySemiBold,
     fontSize: 13,
-    marginTop: 4
+    marginTop: 2
   },
-  paymentDismissBtn: { padding: spacing.xs },
-  paymentIcon: { paddingTop: 2 },
   paymentItem: {
     alignItems: "center",
     backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 12,
-    borderWidth: 0.5,
+    borderRadius: radius.md,
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: spacing.md,
     padding: spacing.md
   },
   paymentLead: {
-    color: colors.muted,
-    fontFamily: fonts.body,
+    color: colors.tint.gold.fg,
+    fontFamily: fonts.bodySemiBold,
     fontSize: 14,
-    lineHeight: 20,
-    marginBottom: spacing.sm,
-    marginTop: spacing.xs
+    lineHeight: 21
   },
   paymentLink: { flex: 1 },
-  paymentTitle: { color: colors.ink, fontFamily: fonts.bodyMedium, fontSize: 15, lineHeight: 20 },
-  paymentWrap: {
-    backgroundColor: "rgba(245,167,35,0.08)",
-    borderColor: "rgba(245,167,35,0.18)",
-    borderRadius: 16,
-    borderWidth: 0.5,
-    gap: spacing.sm,
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.lg,
-    padding: spacing.md
+  paymentTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 15, lineHeight: 21 },
+  paymentWrap: { gap: spacing.md },
+  pressed: { opacity: 0.92, transform: [{ scale: 0.985 }] },
+  quickAction: { alignItems: "center", flex: 1, gap: spacing.sm },
+  quickLabel: {
+    color: colors.inkMuted,
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 12,
+    textAlign: "center"
   },
-  resumeBody: { gap: spacing.sm, padding: spacing.lg },
-  resumeCard: { overflow: "hidden", padding: 0 },
-  resumeAction: {
+  quickRow: { flexDirection: "row", gap: spacing.sm },
+  resumeAction: { paddingTop: spacing.lg },
+  resumeButton: {
     alignItems: "center",
-    backgroundColor: colors.brandOrange,
-    borderRadius: 12,
+    alignSelf: "flex-start",
+    backgroundColor: colors.accent,
+    borderRadius: radius.tile,
     flexDirection: "row",
     gap: spacing.sm,
-    justifyContent: "center",
-    minHeight: 52,
+    minHeight: 44,
     paddingHorizontal: spacing.xl
   },
-  resumeActionLabel: {
-    color: colors.actionForeground,
-    fontFamily: fonts.displaySemiBold,
-    fontSize: 15
+  resumeButtonLabel: { color: colors.onAccent, fontFamily: fonts.displayBold, fontSize: 15 },
+  resumeEyebrow: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: "uppercase"
   },
-  resumeWrap: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  row: { gap: spacing.sm, marginBottom: spacing.lg },
+  resumeRow: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
+  resumeText: { flex: 1, gap: 2 },
+  resumeTitle: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 19, lineHeight: 26 },
+  row: { gap: spacing.sm, paddingBottom: spacing.md, paddingHorizontal: spacing.lg },
   rowAction: { gap: spacing.sm },
-  rowActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingHorizontal: spacing.xs },
-  rowBody: { gap: spacing.sm, padding: spacing.lg },
-  rowCard: { overflow: "hidden", padding: 0 },
-  rowMeta: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  skeletonList: { gap: spacing.lg, padding: spacing.lg },
-  streakWrap: {
-    backgroundColor: colors.panelWarm,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 16,
-    borderWidth: 0.5,
-    marginHorizontal: spacing.lg,
+  rowActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  rowBadges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingTop: spacing.md },
+  rowMark: {
+    alignItems: "center",
+    borderRadius: radius.tile,
+    height: 52,
+    justifyContent: "center",
+    width: 52
+  },
+  rowMarkText: { fontFamily: fonts.display, fontSize: 22 },
+  rowMeta: { color: colors.muted, fontFamily: fonts.body, fontSize: 13 },
+  rowPercent: { color: colors.accent, fontFamily: fonts.numeric, fontSize: 16 },
+  rowText: { flex: 1, gap: 1 },
+  rowTitle: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 16, lineHeight: 22 },
+  rowTop: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  rowTrack: { paddingTop: spacing.md },
+  searchDoor: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: radius.tile,
+    flexDirection: "row",
+    gap: spacing.sm,
     marginTop: spacing.lg,
-    padding: spacing.lg
-  }
+    minHeight: 50,
+    paddingHorizontal: spacing.lg
+  },
+  searchDoorText: { color: colors.mutedFaint, flex: 1, fontFamily: fonts.body, fontSize: 15 },
+  skeletonAvatar: { borderRadius: radius.full },
+  skeletonResume: { borderRadius: radius.square, marginTop: -layout.headerOverlap },
+  skeletonStat: { borderRadius: radius.square, flex: 1 },
+  skeletonTile: { borderRadius: radius.tile },
+  statRow: { flexDirection: "row", gap: spacing.sm }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

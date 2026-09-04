@@ -1,14 +1,14 @@
-import { BottomSheet } from "@expo/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
-import { Body, Caption, Title } from "@/src/components/ui";
-import { AccordionRow } from "@/src/components/ui-display";
+import { Body, Caption } from "@/src/components/ui";
+import { Sheet } from "@/src/components/sheet";
+import { AccordionRow, IconTile } from "@/src/components/ui-display";
 import type { ContentLecture } from "@/src/lib/api/content";
 import type { AssessmentTestSummary } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
-import { spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
@@ -47,31 +47,44 @@ function ChapterItem({
   onSelect: () => void;
 }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
+  const isTest = item.kind === "test";
 
   return (
     <Pressable
       accessibilityLabel={item.title}
       accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
       onPress={onSelect}
       style={[styles.itemRow, isSelected ? styles.itemRowActive : null]}
     >
+      {/* What kind of stop this is, in colour: a paper is coral, a class is
+          cobalt, and a class already watched is mint. Glyphs in text
+          (▶ ✓ ○) were doing this job and read as typos. */}
+      <IconTile
+        icon={isTest ? "document-text" : item.lecture.type === "TEXT" ? "book" : "play"}
+        size={38}
+        tint={isTest ? "coral" : isCompleted ? "mint" : "brand"}
+      />
       <View style={styles.itemRowText}>
         <Body numberOfLines={1}>{item.title}</Body>
         <Caption>
           {item.kind === "lecture"
-            ? `${item.lecture.type === "TEXT" ? "" : "▶ "}${
-                item.lecture.videoDuration
-                  ? t("course.minutes", { count: item.lecture.videoDuration })
-                  : t("player.selfPaced")
-              }`
+            ? item.lecture.videoDuration
+              ? t("course.minutes", { count: item.lecture.videoDuration })
+              : t("player.selfPaced")
             : `${t("player.questionCount", { count: item.test.questionCount })} · ${t(
                 "player.totalMarks",
                 { count: item.test.totalMarks }
               )}`}
         </Caption>
       </View>
-      <Caption>{item.kind === "test" ? "✦" : isCompleted ? "✓" : "○"}</Caption>
+      {isCompleted ? (
+        <Ionicons color={colors.success} name="checkmark-circle" size={20} />
+      ) : (
+        <Ionicons color={colors.mutedFaint} name="chevron-forward" size={17} />
+      )}
     </Pressable>
   );
 }
@@ -107,88 +120,69 @@ export function LessonPickerSheet({
   selectedItemId: string | null;
   visible: boolean;
 }): JSX.Element {
-  const colors = useThemeColors();
   const styles = useStyles();
   const t = useT();
 
   return (
-    <BottomSheet
-      isPresented={visible}
-      onDismiss={onClose}
-      showDragIndicator
-      snapPoints={["half", "full"]}
-    >
-      <View style={styles.sheetHeader}>
-        <Title>{t("player.navigator")}</Title>
-        <Pressable
-          accessibilityLabel={t("common.close")}
-          accessibilityRole="button"
-          hitSlop={spacing.sm}
-          onPress={onClose}
-          style={styles.closeButton}
-        >
-          <Ionicons color={colors.mutedFaint} name="close-circle" size={26} />
-        </Pressable>
-      </View>
+    <Sheet isPresented={visible} onDismiss={onClose} title={t("player.navigator")}>
       <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
-        {chapters.map((chapter) => {
-          const chapterItems = navigationItems.filter((item) => item.chapterId === chapter.id);
+        <View style={styles.sheetPlate}>
+          {chapters.map((chapter) => {
+            const chapterItems = navigationItems.filter(
+              (item) => item.chapterId === chapter.id
+            );
 
-          return (
-            <AccordionRow
-              isOpen={openChapterId === chapter.id}
-              key={chapter.id}
-              meta={chapterItems.length}
-              onToggle={() => onToggleChapter(chapter.id)}
-              title={chapter.title}
-            >
-              <View style={{ gap: spacing.xs }}>
-                {chapterItems.map((item) => (
-                  <ChapterItem
-                    isCompleted={
-                      item.kind === "lecture" && Boolean(completedIds.has(item.lecture.id))
-                    }
-                    isSelected={selectedItemId === item.id}
-                    item={item}
-                    key={item.id}
-                    onSelect={() => onSelect(item.id)}
-                  />
-                ))}
-              </View>
-            </AccordionRow>
-          );
-        })}
-        <View style={{ height: spacing.xl }} />
+            return (
+              <AccordionRow
+                isOpen={openChapterId === chapter.id}
+                key={chapter.id}
+                meta={chapterItems.length}
+                onToggle={() => onToggleChapter(chapter.id)}
+                title={chapter.title}
+              >
+                <View style={{ gap: spacing.xs }}>
+                  {chapterItems.map((item) => (
+                    <ChapterItem
+                      isCompleted={
+                        item.kind === "lecture" && Boolean(completedIds.has(item.lecture.id))
+                      }
+                      isSelected={selectedItemId === item.id}
+                      item={item}
+                      key={item.id}
+                      onSelect={() => onSelect(item.id)}
+                    />
+                  ))}
+                </View>
+              </AccordionRow>
+            );
+          })}
+        </View>
       </ScrollView>
-    </BottomSheet>
+    </Sheet>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  closeButton: { padding: spacing.xs },
   itemRow: {
     alignItems: "center",
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 12,
-    borderWidth: 0.5,
+    backgroundColor: colors.panelWarm,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md
   },
-  itemRowActive: { backgroundColor: colors.chipActive, borderColor: colors.accent },
+  itemRowActive: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
   itemRowText: { flex: 1, gap: 2 },
-  sheetContent: { gap: spacing.md, padding: spacing.lg },
-  sheetHeader: {
-    alignItems: "center",
-    borderBottomColor: colors.hairlineFaint,
-    borderBottomWidth: 0.5,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm
+  // The chapters sit on one plate rather than as free rows on the sheet, the
+  // same shape the filter sheet uses for its groups.
+  sheetContent: { padding: spacing.lg, paddingTop: spacing.sm },
+  sheetPlate: {
+    backgroundColor: colors.card,
+    borderRadius: radius.square,
+    overflow: "hidden"
   }
 }));

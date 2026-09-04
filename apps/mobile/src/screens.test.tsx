@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { render, screen, waitFor } from "@testing-library/react-native";
 import type { JSX, ReactNode } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -256,31 +256,24 @@ describe("signed-out tabs", () => {
     expect(enrollments).not.toHaveBeenCalled();
   });
 
-  test("inbox stops at a sign-in prompt instead of navigating during tab mount", async () => {
+  test("inbox sends a signed-out visitor to the sign-in screen", async () => {
     renderScreen(<InboxScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+      expect(mockRedirect).toHaveBeenCalledWith("/sign-in");
     });
   });
 
-  // The account tab is the signed-out visitor's way in, so it offers both
-  // routes -- someone without an account should not have to find sign-up
-  // inside the sign-in screen.
-  test("profile offers both sign-in and sign-up instead of navigating during tab mount", async () => {
+  // The account tab *is* the way in when signed out, so it goes straight to the
+  // sign-in screen rather than to a page whose only content is a button to it.
+  test("profile sends a signed-out visitor to the sign-in screen", async () => {
     const profile = jest.spyOn(profilesApi, "getOwnProfile");
 
     renderScreen(<ProfileScreen />);
 
     await waitFor(() => {
-      expect(screen.getByText("চালিয়ে যেতে লগ ইন করো")).toBeTruthy();
+      expect(mockRedirect).toHaveBeenCalledWith("/sign-in");
     });
     expect(profile).not.toHaveBeenCalled();
-
-    fireEvent.press(screen.getByRole("button", { name: "লগ ইন" }));
-    expect(mockRouterPush).toHaveBeenCalledWith("/sign-in");
-
-    fireEvent.press(screen.getByRole("button", { name: "অ্যাকাউন্ট খোল" }));
-    expect(mockRouterPush).toHaveBeenCalledWith("/sign-up");
   });
 });

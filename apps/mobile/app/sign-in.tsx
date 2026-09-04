@@ -125,6 +125,7 @@ export default function SignInScreen(): JSX.Element {
             label={t("auth.signIn")}
             onPress={handleSubmit}
             size="lg"
+            stretch
           />
 
           {/* Right-aligned and quiet: the way out of a problem, not one of the

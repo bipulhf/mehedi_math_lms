@@ -1,27 +1,36 @@
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { Redirect } from "expo-router";
+import { Redirect, Stack, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback } from "react";
-import { StyleSheet, View } from "react-native";
+import { Text, View } from "react-native";
 
 import {
   Badge,
-  Caption,
   Card,
   EmptyState,
-  Heading,
+  IconButton,
   Screen,
   ScreenSkeleton,
-  SkeletonBlock,
-  Title
+  SkeletonBlock
 } from "@/src/components/ui";
-import { PriceText } from "@/src/components/ui-display";
+import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
+import { IconTile } from "@/src/components/ui-display";
 import { listMyPayments, type PaymentHistoryItem } from "@/src/lib/api/payments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
+import { fonts, layout, radius, spacing, type TintName } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
+
+/**
+ * What the student has paid, and what is still owed.
+ *
+ * The screen opens with the total rather than with a list, because that is the
+ * number anybody comes here to check. Each payment below it is one row with the
+ * outcome in colour — paid green, waiting gold, failed coral — so the history
+ * reads without being read.
+ */
 
 const STATUS_LABEL = {
   FAILED: "pay.failed",
@@ -30,48 +39,70 @@ const STATUS_LABEL = {
   SUCCESS: "pay.success"
 } as const;
 
+const STATUS_LOOK: Record<
+  PaymentHistoryItem["status"],
+  {
+    icon: "card" | "checkmark-circle" | "close-circle" | "time";
+    tint: TintName;
+    tone: "attention" | "danger" | "info" | "success";
+  }
+> = {
+  FAILED: { icon: "close-circle", tint: "coral", tone: "danger" },
+  PENDING: { icon: "time", tint: "gold", tone: "attention" },
+  REFUNDED: { icon: "card", tint: "sky", tone: "info" },
+  SUCCESS: { icon: "checkmark-circle", tint: "mint", tone: "success" }
+};
+
 const PaymentRow = memo(function PaymentRow({ item }: { item: PaymentHistoryItem }): JSX.Element {
+  const styles = useStyles();
   const t = useT();
   const format = useFormat();
+  const look = STATUS_LOOK[item.status];
 
   return (
     <View style={styles.row}>
-      <Card>
-        <View style={styles.rowBody}>
-          <View style={styles.rowHeader}>
-            <Title>{item.course.title}</Title>
-            <PriceText amount={item.amount} />
-          </View>
-          <View style={styles.rowMeta}>
-            <Badge tone={item.status === "SUCCESS" ? "success" : "attention"}>
-              {t(STATUS_LABEL[item.status])}
-            </Badge>
-            <Caption>{format.dateTime(item.createdAt)}</Caption>
-          </View>
-          <Caption tone="faint">{item.transactionId}</Caption>
+      <IconTile icon={look.icon} size={44} tint={look.tint} />
+      <View style={styles.rowText}>
+        <Text numberOfLines={2} style={styles.rowTitle}>
+          {item.course.title}
+        </Text>
+        <Text style={styles.rowMeta}>{format.dateTime(item.createdAt)}</Text>
+        <View style={styles.rowFoot}>
+          <Badge tone={look.tone}>{t(STATUS_LABEL[item.status])}</Badge>
+          <Text numberOfLines={1} style={styles.transaction}>
+            {item.transactionId}
+          </Text>
         </View>
-      </Card>
+      </View>
+      <Text style={styles.amount}>{format.currency(item.amount)}</Text>
     </View>
   );
 });
 
 function PaymentsSkeleton(): JSX.Element {
+  const styles = useStyles();
+
   return (
-    <View style={styles.skeletonList}>
-      {[0, 1, 2].map((key) => (
-        <Card key={key}>
-          <View style={styles.rowBody}>
-            <SkeletonBlock height={18} width="60%" />
-            <SkeletonBlock height={14} width="40%" />
+    <View style={styles.sheet}>
+      {[0, 1, 2, 3].map((key) => (
+        <View key={key} style={styles.row}>
+          <SkeletonBlock height={44} style={styles.skeletonTile} width={44} />
+          <View style={styles.rowText}>
+            <SkeletonBlock height={16} width="70%" />
+            <View style={{ height: spacing.sm }} />
+            <SkeletonBlock height={13} width="40%" />
           </View>
-        </Card>
+        </View>
       ))}
     </View>
   );
 }
 
 export default function PaymentsScreen(): JSX.Element {
+  const styles = useStyles();
+  const router = useRouter();
   const t = useT();
+  const format = useFormat();
   const { isPending: isSessionPending, session } = useSession();
   const { data: payments = [], isPending } = useQuery({
     enabled: Boolean(session),
@@ -93,36 +124,104 @@ export default function PaymentsScreen(): JSX.Element {
     return <Redirect href="/sign-in" />;
   }
 
+  const paid = payments
+    .filter((payment) => payment.status === "SUCCESS")
+    .reduce((total, payment) => total + Number(payment.amount), 0);
+  const pending = payments.filter((payment) => payment.status === "PENDING").length;
+
   return (
     <Screen>
-      <View style={styles.header}>
-        <Heading>{t("mine.paymentHistory")}</Heading>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <CurvedHeader>
+        <HeaderBar
+          left={
+            <IconButton
+              accessibilityLabel={t("common.back")}
+              icon="chevron-back"
+              onPress={() => router.back()}
+              tone="onPaper"
+            />
+          }
+          subtitle={t("nav.payments")}
+          title={t("mine.paymentHistory")}
+        />
+      </CurvedHeader>
+
+      <View style={styles.body}>
+        <Card style={styles.summary}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>{t("pay.success")}</Text>
+            <Text style={styles.summaryValue}>{format.currency(paid)}</Text>
+          </View>
+          <View style={styles.summaryRule} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>{t("pay.pending")}</Text>
+            <Text style={styles.summaryValue}>{format.number(pending)}</Text>
+          </View>
+        </Card>
       </View>
 
       {isPending ? (
         <PaymentsSkeleton />
       ) : payments.length === 0 ? (
-        <EmptyState message={t("pay.empty")} />
+        <View style={styles.empty}>
+          <EmptyState message={t("pay.empty")} />
+        </View>
       ) : (
-        <FlashList
-          contentContainerStyle={styles.list}
-          data={payments}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-        />
+        <View style={styles.sheet}>
+          <FlashList
+            contentContainerStyle={styles.list}
+            data={payments}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       )}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  header: { padding: spacing.lg },
-  list: { padding: spacing.lg },
-  row: { marginBottom: spacing.lg },
-  rowBody: { gap: spacing.sm, paddingTop: spacing.md },
-  rowHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  rowMeta: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  skeletonList: { gap: spacing.lg, padding: spacing.lg }
-});
+const useStyles = makeStyles((colors) => ({
+  amount: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 17 },
+  body: { paddingHorizontal: spacing.lg },
+  empty: { paddingTop: spacing.xl },
+  list: { paddingBottom: spacing.xxl },
+  row: {
+    alignItems: "center",
+    borderBottomColor: colors.separator,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg
+  },
+  rowFoot: { alignItems: "center", flexDirection: "row", gap: spacing.sm, paddingTop: 2 },
+  rowMeta: { color: colors.muted, fontFamily: fonts.body, fontSize: 13 },
+  rowText: { flex: 1, gap: 1 },
+  rowTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 15, lineHeight: 21 },
+  sheet: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.curve,
+    borderTopRightRadius: radius.curve,
+    flex: 1,
+    marginTop: spacing.lg,
+    overflow: "hidden"
+  },
+  skeletonTile: { borderRadius: radius.tile },
+  summary: { flexDirection: "row", marginTop: -layout.headerOverlap },
+  summaryItem: { flex: 1, gap: 2 },
+  summaryLabel: {
+    color: colors.mutedFaint,
+    fontFamily: fonts.monoLabel,
+    fontSize: 10,
+    letterSpacing: 0.9,
+    textTransform: "uppercase"
+  },
+  summaryRule: { backgroundColor: colors.separator, marginHorizontal: spacing.lg, width: 1 },
+  summaryValue: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 22 },
+  transaction: { color: colors.mutedFaint, flexShrink: 1, fontFamily: fonts.monoLabel, fontSize: 10 }
+}));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

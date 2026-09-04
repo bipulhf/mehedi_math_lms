@@ -84,10 +84,10 @@ export function GoogleSignInButton({
 const useStyles = makeStyles((colors) => ({
   button: {
     alignItems: "center",
-    backgroundColor: colors.panelWarm,
+    backgroundColor: colors.card,
     borderColor: colors.hairline,
-    borderRadius: radius.sm + 2,
-    borderWidth: 1,
+    borderRadius: radius.tile,
+    borderWidth: 1.5,
     flexDirection: "row",
     gap: spacing.sm,
     justifyContent: "center",
@@ -95,7 +95,7 @@ const useStyles = makeStyles((colors) => ({
     paddingHorizontal: spacing.lg
   },
   buttonBusy: { opacity: 0.6 },
-  buttonPressed: { backgroundColor: colors.chipActive, transform: [{ scale: 0.99 }] },
+  buttonPressed: { backgroundColor: colors.panelWarm, transform: [{ scale: 0.98 }] },
   container: { gap: spacing.md },
   label: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 16 }
 }));

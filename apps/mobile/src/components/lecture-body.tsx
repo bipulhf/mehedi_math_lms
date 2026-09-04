@@ -7,7 +7,7 @@ import { LecturePlayer } from "@/src/components/lecture-player";
 import { Body, Button, Caption, Card, Title } from "@/src/components/ui";
 import type { ContentLecture } from "@/src/lib/api/content";
 import { useFormat, useT } from "@/src/lib/locale";
-import { fonts, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 /** A lecture whose body is a PDF is a reading, not a video, and reads as one. */
@@ -156,19 +156,22 @@ const useStyles = makeStyles((colors) => ({
   bodyStack: { gap: spacing.md },
   materialRow: {
     alignItems: "center",
-    borderColor: colors.hairline,
-    borderWidth: 1,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
     flexDirection: "row",
     justifyContent: "space-between",
-    minHeight: 44,
+    minHeight: 48,
     padding: spacing.md
   },
   materialText: { flex: 1, gap: 2 },
   panel: {
     backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
     padding: spacing.lg
   },
   textContent: {
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
     color: colors.ink,
     fontFamily: fonts.body,
     fontSize: 16,

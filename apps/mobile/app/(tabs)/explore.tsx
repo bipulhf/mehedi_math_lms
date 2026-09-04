@@ -6,41 +6,40 @@ import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-import { BottomSheet } from "@expo/ui";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
 
 import { BannerStrip } from "@/src/components/banner-strip";
+import { BrandLockup } from "@/src/components/brand-lockup";
+import { FilterSheet, type FilterSection } from "@/src/components/filter-sheet";
 import {
   Badge,
-  Body,
   Button,
-  Caption,
   Card,
   CoverImage,
   EmptyState,
-  Heading,
+  IconButton,
   Screen,
   SkeletonBlock,
-  Title
+  tabScrollInset
 } from "@/src/components/ui";
-import { Avatar, FilterPill, PriceText } from "@/src/components/ui-display";
+import { CurvedHeader } from "@/src/components/ui-layout";
+import { FilterPill, PriceText, RatingMark } from "@/src/components/ui-display";
 import { listCategories } from "@/src/lib/api/categories";
 import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { stripHtml } from "@/src/lib/html";
 import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 type SortOrder = "newest" | "priceLow" | "priceHigh";
 
-/** The meta line under a card title: lessons · free lessons. No total length. */
-function courseMetaParts(
+/** The one meta line a grid tile has room for: lessons, then free lessons. */
+function courseMetaLine(
   course: CourseSummary,
   t: Translator,
   format: Formatters
-): readonly string[] {
+): string {
   const parts: string[] = [];
 
   if (course.stats.lectureCount > 0) {
@@ -51,7 +50,7 @@ function courseMetaParts(
     parts.push(t("course.freeLessons", { count: format.number(course.stats.freeLessonCount) }));
   }
 
-  return parts;
+  return parts.join(" · ");
 }
 
 function sortCourses(
@@ -68,65 +67,53 @@ function sortCourses(
 }
 
 /**
- * Memoised with a stable key: FlashList recycles rows, and an unmemoised item
- * re-renders the whole visible window on every keystroke in the search field.
+ * A catalogue tile.
+ *
+ * The catalogue is a **two-column grid**, not a stack of full-width cards: a
+ * student browsing is comparing courses, and a list that shows one and a half
+ * of them at a time makes comparing impossible. What survives the narrower
+ * column is what actually decides a tap — the cover, the name, the price.
  */
-const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary }): JSX.Element {
+const CourseTile = memo(function CourseTile({ course }: { course: CourseSummary }): JSX.Element {
   const styles = useStyles();
   const t = useT();
   const format = useFormat();
-  const teacher = course.teachers[0];
-  const extraTeachers = course.teachers.length - 1;
-  const meta = courseMetaParts(course, t, format);
+  const meta = courseMetaLine(course, t, format);
 
   return (
     <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}>
       <Pressable
         accessibilityLabel={course.title}
         accessibilityRole="link"
-        style={({ pressed }) => [styles.row, pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
+        style={({ pressed }) => [styles.tileWrap, pressed ? styles.pressed : null]}
       >
-        <Card style={styles.rowCard}>
+        <Card flush style={styles.tile}>
           <View>
-            <CoverImage bleed height={150} uri={course.coverImageUrl} />
+            <CoverImage bleed height={112} uri={course.coverImageUrl} />
             {course.isExamOnly ? (
-              <View style={styles.coverBadge}>
+              <View style={styles.tileFlag}>
                 <Badge tone="attention">{t("course.examOnly")}</Badge>
               </View>
             ) : null}
           </View>
-          <View style={styles.rowBody}>
-            <Text style={styles.metaText}>
-              {course.category ? <Text style={styles.metaText}>{course.category.name}</Text> : null}
-              {meta.length > 0 ? (
-                <Text style={styles.metaText}>
-                  {" · "}
-                  {meta.join(" · ")}
-                </Text>
-              ) : null}
-            </Text>
-            <Text style={styles.titleText} numberOfLines={2}>
+          <View style={styles.tileBody}>
+            {course.category ? (
+              <Text numberOfLines={1} style={styles.tileCategory}>
+                {course.category.name}
+              </Text>
+            ) : null}
+            <Text numberOfLines={2} style={styles.tileTitle}>
               {course.title}
             </Text>
-            <Body muted numberOfLines={2}>
-              {stripHtml(course.description)}
-            </Body>
-            {teacher ? (
-              <View style={styles.teacherRow}>
-                <Avatar name={teacher.name} photo={teacher.profilePhoto} size={28} />
-                <Text numberOfLines={1} style={styles.teacherName}>
-                  {teacher.name}
-                  {extraTeachers > 0 ? ` +${format.number(extraTeachers)}` : ""}
-                </Text>
-              </View>
+            {meta.length > 0 ? (
+              <Text numberOfLines={1} style={styles.tileMeta}>
+                {meta}
+              </Text>
             ) : null}
-            <View style={styles.footer}>
+            <View style={styles.tileFoot}>
               <PriceText amount={course.price} />
               {course.stats.reviewCount > 0 ? (
-                <Caption>
-                  {format.rating(course.stats.reviewAverage ?? 0)} ·{" "}
-                  {t("course.reviews", { count: format.number(course.stats.reviewCount) })}
-                </Caption>
+                <RatingMark value={course.stats.reviewAverage ?? 0} />
               ) : null}
             </View>
           </View>
@@ -139,16 +126,18 @@ const CourseRow = memo(function CourseRow({ course }: { course: CourseSummary })
 function CatalogSkeleton(): JSX.Element {
   const styles = useStyles();
   return (
-    <View style={styles.skeletonList}>
-      {[0, 1, 2].map((key) => (
-        <Card key={key}>
-          <SkeletonBlock height={150} />
-          <View style={styles.rowBody}>
-            <SkeletonBlock height={16} width="70%" />
-            <SkeletonBlock height={20} />
-            <SkeletonBlock height={14} width="80%" />
-          </View>
-        </Card>
+    <View style={styles.skeletonGrid}>
+      {[0, 1, 2, 3].map((key) => (
+        <View key={key} style={styles.tileWrap}>
+          <Card flush style={styles.tile}>
+            <SkeletonBlock height={112} />
+            <View style={styles.tileBody}>
+              <SkeletonBlock height={10} width="50%" />
+              <SkeletonBlock height={16} width="90%" />
+              <SkeletonBlock height={14} width="40%" />
+            </View>
+          </Card>
+        </View>
       ))}
     </View>
   );
@@ -199,7 +188,7 @@ export default function CatalogScreen(): JSX.Element {
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: CourseSummary }) => <CourseRow course={item} />,
+    ({ item }: { item: CourseSummary }) => <CourseTile course={item} />,
     []
   );
   const keyExtractor = useCallback((item: CourseSummary) => item.id, []);
@@ -209,210 +198,207 @@ export default function CatalogScreen(): JSX.Element {
     { label: t("courses.sort.priceLow"), value: "priceLow" },
     { label: t("courses.sort.priceHigh"), value: "priceHigh" }
   ];
-  const activeFilterCount = [levelId !== null, isFreeOnly, sortOrder !== "newest"].filter(
-    Boolean
-  ).length;
+  const activeFilterCount = [
+    levelId !== null,
+    subjectId !== null,
+    isFreeOnly,
+    sortOrder !== "newest"
+  ].filter(Boolean).length;
 
-  return (
-    <Screen noHeader>
+  // The subject group only exists once a level is picked, which is also the
+  // order the two are read in.
+  const filterSections: readonly FilterSection[] = [
+    {
+      key: "level",
+      kind: "choice",
+      label: t("courses.level"),
+      onChange: (value) => {
+        setLevelId(value === "" ? null : value);
+        setSubjectId(null);
+      },
+      options: [
+        { label: t("courses.allLevels"), value: "" },
+        ...categories.map((level) => ({ label: level.name, value: level.id }))
+      ],
+      value: levelId ?? ""
+    },
+    ...(selectedLevel === null
+      ? []
+      : [
+          {
+            key: "subject",
+            kind: "choice" as const,
+            label: t("courses.subject"),
+            onChange: (value: string) => setSubjectId(value === "" ? null : value),
+            options: [
+              { label: t("courses.allLevels"), value: "" },
+              ...selectedLevel.children.map((subject) => ({
+                label: subject.name,
+                value: subject.id
+              }))
+            ],
+            value: subjectId ?? ""
+          }
+        ]),
+    {
+      key: "free",
+      kind: "toggle",
+      label: t("courses.freeOnly"),
+      onChange: setIsFreeOnly,
+      value: isFreeOnly
+    },
+    {
+      key: "sort",
+      kind: "choice",
+      label: t("courses.sortLabel"),
+      onChange: (value) => setSortOrder(value as SortOrder),
+      options: sortOptions.map((option) => ({ label: option.label, value: option.value })),
+      value: sortOrder
+    }
+  ];
+
+  const listHeader = (
+    <View style={styles.headerBlock}>
       {/* The app's storefront is where web puts it too — on the public layout,
           not behind the sign-in. */}
       <BannerStrip />
 
-      <View style={styles.header}>
-        <Heading>{t("courses.title")}</Heading>
-        <View style={styles.searchRow}>
-          <View style={styles.searchWrap}>
-            <Ionicons color={colors.mutedFaint} name="search" size={18} />
-            <TextInput
-              accessibilityLabel={t("courses.searchPlaceholder")}
-              onChangeText={setSearch}
-              placeholder={t("courses.searchPlaceholder")}
-              placeholderTextColor={colors.placeholder}
-              selectionColor={colors.accent}
-              style={styles.search}
-              value={search}
+      {categories.length > 0 ? (
+        <ScrollView
+          contentContainerStyle={styles.chipRow}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.chipStrip}
+        >
+          <FilterPill
+            isSelected={levelId === null}
+            label={t("courses.allLevels")}
+            onPress={() => {
+              setLevelId(null);
+              setSubjectId(null);
+            }}
+          />
+          {categories.map((level) => (
+            <FilterPill
+              isSelected={levelId === level.id}
+              key={level.id}
+              label={level.name}
+              onPress={() => {
+                setLevelId(level.id === levelId ? null : level.id);
+                setSubjectId(null);
+              }}
             />
-            {search.length > 0 ? (
-              <Pressable
-                accessibilityLabel={t("action.clearFilters")}
-                accessibilityRole="button"
-                hitSlop={spacing.sm}
-                onPress={() => setSearch("")}
-                style={styles.searchClear}
-              >
-                <Ionicons color={colors.mutedFaint} name="close-circle" size={18} />
-              </Pressable>
-            ) : null}
-          </View>
-          <Pressable
+          ))}
+        </ScrollView>
+      ) : null}
+
+      <View style={styles.resultRow}>
+        <Text style={styles.resultText}>
+          {t("courses.resultCount", {
+            shown: format.number(courses.length),
+            total: format.number(data?.items.length ?? courses.length)
+          })}
+        </Text>
+        {activeFilterCount > 0 || search.length > 0 ? (
+          <Pressable hitSlop={spacing.sm} onPress={resetFilters}>
+            <Text style={styles.clearLink}>{t("action.clearFilters")}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+
+  return (
+    <Screen>
+      <CurvedHeader overlap={false} style={styles.header}>
+        {/* The storefront is the one screen a visitor can reach without an
+            account, so it is the one that says whose academy this is. */}
+        <View style={styles.brandRow}>
+          <BrandLockup />
+          <IconButton
             accessibilityLabel={t("courses.filters")}
-            accessibilityRole="button"
+            badge={activeFilterCount > 0}
+            icon="options"
             onPress={() => {
               void Haptics.selectionAsync();
               setIsFilterSheetOpen(true);
             }}
-            style={({ pressed }) => [
-              styles.filterButton,
-              activeFilterCount > 0 ? styles.filterButtonActive : null,
-              pressed ? { opacity: 0.7 } : null
-            ]}
-          >
-            <Ionicons
-              color={activeFilterCount > 0 ? colors.onAccent : colors.ink}
-              name="options"
-              size={18}
-            />
-            {activeFilterCount > 0 ? (
-              <View style={styles.filterBadge}>
-                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
-              </View>
-            ) : null}
-          </Pressable>
+            tone="onPaper"
+          />
         </View>
-        <View style={styles.resultRow}>
-          <Caption>
-            {t("courses.resultCount", {
-              shown: format.number(courses.length),
-              total: format.number(data?.items.length ?? courses.length)
-            })}
-          </Caption>
-          {activeFilterCount > 0 ? (
-            <Pressable onPress={resetFilters}>
-              <Text style={styles.clearLink}>{t("action.clearFilters")}</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      </View>
+        <Text style={styles.headerTitle}>{t("courses.title")}</Text>
 
-      <BottomSheet
-        isPresented={isFilterSheetOpen}
-        onDismiss={() => setIsFilterSheetOpen(false)}
-        showDragIndicator
-      >
-        <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.sheetHeader}>
-            <Title>{t("courses.filters")}</Title>
+        <View style={styles.searchWrap}>
+          <Ionicons color={colors.mutedFaint} name="search" size={19} />
+          <TextInput
+            accessibilityLabel={t("courses.searchPlaceholder")}
+            onChangeText={setSearch}
+            placeholder={t("courses.searchPlaceholder")}
+            placeholderTextColor={colors.placeholder}
+            selectionColor={colors.accent}
+            style={styles.search}
+            value={search}
+          />
+          {search.length > 0 ? (
             <Pressable
-              accessibilityLabel={t("common.close")}
+              accessibilityLabel={t("action.clearFilters")}
               accessibilityRole="button"
               hitSlop={spacing.sm}
-              onPress={() => setIsFilterSheetOpen(false)}
+              onPress={() => setSearch("")}
             >
-              <Ionicons color={colors.mutedFaint} name="close-circle" size={26} />
+              <Ionicons color={colors.mutedFaint} name="close-circle" size={18} />
             </Pressable>
-          </View>
-
-          <View style={styles.sheetSection}>
-            <Text style={styles.sheetLabel}>{t("courses.allLevels")}</Text>
-            <View style={styles.sheetPills}>
-              <FilterPill
-                isSelected={levelId === null}
-                label={t("courses.allLevels")}
-                onPress={() => {
-                  setLevelId(null);
-                  setSubjectId(null);
-                }}
-              />
-              {categories.map((level) => (
-                <FilterPill
-                  isSelected={levelId === level.id}
-                  key={level.id}
-                  label={level.name}
-                  onPress={() => {
-                    setLevelId(level.id);
-                    setSubjectId(null);
-                  }}
-                />
-              ))}
-            </View>
-          </View>
-
-          {selectedLevel !== null ? (
-            <View style={styles.sheetSection}>
-              <Text style={styles.sheetLabel}>{selectedLevel.name}</Text>
-              <View style={styles.sheetPills}>
-                <FilterPill
-                  isSelected={subjectId === null}
-                  label={t("courses.allLevels")}
-                  onPress={() => setSubjectId(null)}
-                />
-                {selectedLevel.children.map((subject) => (
-                  <FilterPill
-                    isSelected={subjectId === subject.id}
-                    key={subject.id}
-                    label={subject.name}
-                    onPress={() => setSubjectId(subject.id)}
-                  />
-                ))}
-              </View>
-            </View>
           ) : null}
+        </View>
+      </CurvedHeader>
 
-          <View style={styles.sheetSection}>
-            <Text style={styles.sheetLabel}>Options</Text>
-            <View style={styles.sheetPills}>
-              <FilterPill
-                isSelected={isFreeOnly}
-                label={t("courses.freeOnly")}
-                onPress={() => setIsFreeOnly((current) => !current)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.sheetSection}>
-            <Text style={styles.sheetLabel}>Sort</Text>
-            <View style={styles.sheetPills}>
-              {sortOptions.map((option) => (
-                <FilterPill
-                  isSelected={sortOrder === option.value}
-                  key={option.value}
-                  label={option.label}
-                  onPress={() => setSortOrder(option.value)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.sheetFooter}>
-            <Button
-              label={t("action.clearFilters")}
-              onPress={() => {
-                resetFilters();
-                setIsFilterSheetOpen(false);
-              }}
-              variant="outline"
-            />
-            <View style={{ flex: 1 }}>
-              <Button
-                label={t("common.close")}
-                onPress={() => setIsFilterSheetOpen(false)}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </BottomSheet>
+      <FilterSheet
+        activeCount={activeFilterCount}
+        isPresented={isFilterSheetOpen}
+        onClear={() => {
+          resetFilters();
+          setIsFilterSheetOpen(false);
+        }}
+        onDismiss={() => setIsFilterSheetOpen(false)}
+        sections={filterSections}
+        summary={t("courses.resultCount", {
+          shown: format.number(courses.length),
+          total: format.number(data?.items.length ?? courses.length)
+        })}
+        title={t("courses.filters")}
+      />
 
       {isPending ? (
-        <CatalogSkeleton />
+        <View>
+          {listHeader}
+          <CatalogSkeleton />
+        </View>
       ) : courses.length === 0 ? (
-        <EmptyState
-          action={
-            <Button
-              label={t("action.clearFilters")}
-              onPress={resetFilters}
-              size="sm"
-              variant="outline"
-            />
-          }
-          message={t("empty.courses")}
-        />
+        <View>
+          {listHeader}
+          <EmptyState
+            action={
+              <Button
+                label={t("action.clearFilters")}
+                onPress={resetFilters}
+                size="sm"
+                stretch
+                variant="outline"
+              />
+            }
+            icon="magnifyingglass"
+            message={t("empty.courses")}
+          />
+        </View>
       ) : (
         <FlashList
-          contentContainerStyle={styles.list}
+          contentContainerStyle={styles.grid}
           data={courses}
           keyExtractor={keyExtractor}
+          ListHeaderComponent={listHeader}
+          numColumns={2}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </Screen>
@@ -420,86 +406,65 @@ export default function CatalogScreen(): JSX.Element {
 }
 
 const useStyles = makeStyles((colors) => ({
-  clearLink: { color: colors.accent, fontFamily: fonts.bodyMedium, fontSize: 13 },
-  coverBadge: { left: spacing.sm, position: "absolute", top: spacing.sm },
-  filterBadge: {
-    alignItems: "center",
-    backgroundColor: colors.onAccent,
-    borderRadius: radius.full,
-    height: 16,
-    justifyContent: "center",
-    minWidth: 16,
-    paddingHorizontal: 3,
-    position: "absolute",
-    right: -6,
-    top: -6
+  brandRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  chipRow: { gap: spacing.sm, paddingHorizontal: spacing.lg },
+  chipStrip: { flexGrow: 0 },
+  clearLink: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 13 },
+  grid: { paddingBottom: tabScrollInset, paddingHorizontal: spacing.sm },
+  header: { gap: spacing.lg, paddingBottom: spacing.lg },
+  headerTitle: {
+    color: colors.paper,
+    fontFamily: fonts.display,
+    fontSize: 24,
+    lineHeight: 32,
+    marginBottom: -spacing.xs
   },
-  filterBadgeText: { color: colors.accent, fontFamily: fonts.displayBold, fontSize: 10 },
-  filterButton: {
-    alignItems: "center",
-    backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 12,
-    borderWidth: 0.5,
-    height: 52,
-    justifyContent: "center",
-    width: 52
-  },
-  filterButtonActive: { backgroundColor: colors.accent, borderColor: colors.accent },
-  footer: {
+  headerBlock: { gap: spacing.md, paddingTop: spacing.lg },
+  pressed: { opacity: 0.92, transform: [{ scale: 0.98 }] },
+  resultRow: {
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.lg
   },
-  header: { gap: spacing.md, padding: spacing.lg },
-  list: { padding: spacing.lg },
-  metaText: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
-  resultRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
-  row: { marginBottom: spacing.lg },
-  rowBody: { gap: spacing.sm, padding: spacing.lg },
-  rowCard: { overflow: "hidden", padding: 0 },
+  resultText: { color: colors.mutedLight, fontFamily: fonts.body, fontSize: 13 },
   search: {
     color: colors.ink,
     flex: 1,
     fontFamily: fonts.body,
-    fontSize: 16,
+    fontSize: 15,
     paddingVertical: spacing.md
   },
-  searchClear: { padding: spacing.xs },
-  searchIcon: { marginRight: spacing.sm },
-  searchRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
   searchWrap: {
     alignItems: "center",
-    backgroundColor: colors.input,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 14,
-    borderWidth: 0.5,
-    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: radius.tile,
     flexDirection: "row",
+    gap: spacing.sm,
     minHeight: 52,
-    paddingHorizontal: spacing.md
+    paddingHorizontal: spacing.lg
   },
-  sheetContent: { gap: spacing.xl, padding: spacing.lg, paddingBottom: spacing.xxl },
-  sheetFooter: { flexDirection: "row", gap: spacing.md, paddingTop: spacing.md },
-  sheetHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  sheetLabel: {
-    color: colors.mutedFaint,
+  skeletonGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: spacing.sm },
+  tile: { flex: 1 },
+  tileBody: { gap: 4, padding: spacing.md },
+  tileCategory: {
+    color: colors.accent,
     fontFamily: fonts.monoLabel,
-    fontSize: 11,
-    letterSpacing: 0.66,
+    fontSize: 10,
+    letterSpacing: 0.8,
     textTransform: "uppercase"
   },
-  sheetPills: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, paddingTop: spacing.sm },
-  sheetSection: { gap: spacing.xs },
-  skeletonList: { gap: spacing.lg, padding: spacing.lg },
-  teacherName: { color: colors.muted, flex: 1, fontFamily: fonts.body, fontSize: 14 },
-  teacherRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  titleText: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 18, lineHeight: 24 }
+  tileFlag: { left: spacing.sm, position: "absolute", top: spacing.sm },
+  tileFoot: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    paddingTop: spacing.xs
+  },
+  tileMeta: { color: colors.muted, fontFamily: fonts.body, fontSize: 12 },
+  tileTitle: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 15, lineHeight: 21 },
+  tileWrap: { flex: 1, padding: spacing.sm }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

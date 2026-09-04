@@ -5,7 +5,6 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import {
-  Badge,
   Body,
   Button,
   Caption,
@@ -14,7 +13,8 @@ import {
   Field,
   Heading,
   Screen,
-  ScreenSkeleton
+  ScreenSkeleton,
+  SuccessNotice
 } from "@/src/components/ui";
 import { changePassword } from "@/src/lib/auth";
 import { useT } from "@/src/lib/locale";
@@ -72,7 +72,7 @@ export default function ChangePasswordScreen(): JSX.Element {
           <Body muted>{t("password.lead", { count: PASSWORD_FLOOR })}</Body>
 
           {error ? <ErrorNotice message={error} /> : null}
-          {hasChanged ? <Badge tone="success">{t("password.changed")}</Badge> : null}
+          {hasChanged ? <SuccessNotice message={t("password.changed")} /> : null}
 
           <Card style={styles.form}>
             <Field
@@ -121,6 +121,8 @@ export default function ChangePasswordScreen(): JSX.Element {
             disabled={!canSubmit}
             isBusy={submit.isPending}
             label={t("password.update")}
+            size="lg"
+            stretch
             onPress={() => {
               setError(null);
               submit.mutate({ currentPassword, newPassword });
@@ -133,7 +135,7 @@ export default function ChangePasswordScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg },
+  content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
   flex: { flex: 1 },
   form: { gap: spacing.lg },
   hint: { paddingTop: spacing.xs }

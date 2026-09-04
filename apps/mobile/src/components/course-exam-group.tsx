@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 import { Badge, Body, Button, Caption, SkeletonBlock } from "@/src/components/ui";
-import { AccordionRow } from "@/src/components/ui-display";
+import { AccordionRow, IconTile } from "@/src/components/ui-display";
 import type { AssessmentChapterSummary } from "@/src/lib/api/tests";
 import { listMySubmissions, listTestSubmissions } from "@/src/lib/api/tests";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 /**
@@ -147,7 +147,16 @@ export function CourseExamGroup({
 
               {chapter.tests.map((test) => (
                 <View key={test.id} style={styles.examCard}>
-                  <Body>{test.title}</Body>
+                  <View style={styles.examHead}>
+                    <IconTile
+                      icon={test.type === "WRITTEN" ? "create" : "list"}
+                      size={38}
+                      tint={test.type === "WRITTEN" ? "coral" : "brand"}
+                    />
+                    <Text numberOfLines={2} style={styles.examTitle}>
+                      {test.title}
+                    </Text>
+                  </View>
                   <Caption>
                     {format.number(test.questionCount)} {t("ab.questions")} ·{" "}
                     {format.number(test.totalMarks)} {t("qe.marks")}
@@ -166,7 +175,10 @@ export function CourseExamGroup({
                     <ExamStatusLine isStudent={isStudent} testId={test.id} />
                   </View>
                   <Button
+                    icon={isStudent ? "trophy" : "checkmark-done"}
                     label={isStudent ? t("exams.seeResult") : t("exams.markPapers")}
+                    size="sm"
+                    stretch
                     onPress={() =>
                       router.push(
                         isStudent
@@ -189,10 +201,11 @@ export function CourseExamGroup({
 const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   examCard: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderWidth: 1,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
     gap: spacing.sm,
     padding: spacing.md
-  }
+  },
+  examHead: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  examTitle: { color: colors.ink, flex: 1, fontFamily: fonts.displaySemiBold, fontSize: 15, lineHeight: 21 }
 }));

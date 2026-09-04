@@ -3,34 +3,32 @@ import { useQuery } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { getActiveBanner } from "@/src/lib/api/banners";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { fonts, spacing } from "@/src/theme/tokens";
-import { useThemeColors, type ThemeColors } from "@/src/theme/theme";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors, type ThemeColors } from "@/src/theme/theme";
 
 /**
- * The same curated backgrounds the web strip uses, as values Metro can bundle
- * — a preset is a background already paired with a text colour known to read
- * on it, not a free colour picker.
- *
- * `SPECTRUM` is a three-stop gradient on web. There is no gradient here without
- * a native dependency, so it takes the middle stop, which is the one the other
- * two were chosen around.
+ * The five presets an admin can pick from, mapped onto the app's pastel
+ * families rather than onto saturated fills. A promo strip sits above the
+ * catalogue every visit — a full-strength colour there would out-shout the
+ * courses it is advertising, so each preset is the wash and the ink already
+ * known to read on it.
  */
 function presetColors(
   colors: ThemeColors
 ): Record<BannerPreset, { background: string; foreground: string }> {
   return {
-    CYAN: { background: colors.accent, foreground: colors.onAccent },
-    INK: { background: colors.panelWarm, foreground: colors.ink },
-    ORANGE: { background: colors.brandOrange, foreground: colors.actionForeground },
-    SPECTRUM: { background: colors.brandOrangeStrong, foreground: colors.actionForeground },
-    YELLOW: { background: colors.brandOrangeStrong, foreground: colors.actionForeground }
+    CYAN: { background: colors.tint.sky.bg, foreground: colors.tint.sky.fg },
+    INK: { background: colors.tint.brand.bg, foreground: colors.tint.brand.fg },
+    ORANGE: { background: colors.tint.coral.bg, foreground: colors.tint.coral.fg },
+    SPECTRUM: { background: colors.tint.lilac.bg, foreground: colors.tint.lilac.fg },
+    YELLOW: { background: colors.tint.gold.bg, foreground: colors.tint.gold.fg }
   };
 }
 
@@ -44,6 +42,7 @@ function presetColors(
  * reads as a sentence rather than as markup.
  */
 export function BannerStrip(): JSX.Element | null {
+  const styles = useStyles();
   const colors = useThemeColors();
   const t = useT();
   const [dismissedId, setDismissedId] = useState<string | null>(null);
@@ -95,17 +94,19 @@ export function BannerStrip(): JSX.Element | null {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(() => ({
   dismissBtn: { alignItems: "center", justifyContent: "center", padding: spacing.xs },
   link: { fontFamily: fonts.bodyMedium, fontSize: 15, textDecorationLine: "underline" },
-  message: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22 },
+  message: { fontFamily: fonts.bodySemiBold, fontSize: 15, lineHeight: 22 },
   strip: {
     alignItems: "center",
-    borderRadius: 0,
+    borderRadius: radius.square,
     flexDirection: "row",
     gap: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md
   },
   text: { flex: 1, gap: spacing.xs }
-});
+}));

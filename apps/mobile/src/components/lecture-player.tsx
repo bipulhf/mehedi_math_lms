@@ -249,11 +249,11 @@ export function LecturePlayer({
 }
 
 const useStyles = makeStyles((colors) => ({
+  // The stage is ink, not cream: a video letterboxes, and the bars either side
+  // of it should read as part of the player rather than as a hole in the page.
   stage: {
-    backgroundColor: colors.background,
-    borderColor: colors.hairlineFaint,
+    backgroundColor: colors.ink,
     borderRadius: radius.square,
-    borderWidth: 0.5,
     overflow: "hidden"
   },
   video: { aspectRatio: 16 / 9, width: "100%" }

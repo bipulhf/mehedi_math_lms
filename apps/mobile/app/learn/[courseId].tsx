@@ -2,7 +2,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -18,12 +18,13 @@ import {
   Caption,
   Card,
   EmptyState,
-  Heading,
+  IconButton,
   Screen,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
-import { StatCard, Tabs } from "@/src/components/ui-display";
+import { CurvedHeader, HeaderBar, StickyBar } from "@/src/components/ui-layout";
+import { IconTile, ProgressRing, StatCard, Tabs } from "@/src/components/ui-display";
 import { type ContentLecture, getCourseContent } from "@/src/lib/api/content";
 import { getCourse } from "@/src/lib/api/courses";
 import { listCourseNotices } from "@/src/lib/api/notices";
@@ -33,7 +34,7 @@ import { ApiError } from "@/src/lib/api-client";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useRecordStudyActivity } from "@/src/lib/use-streak";
-import { radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
@@ -265,46 +266,82 @@ export default function CoursePlayerScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: course?.title ?? t("player.navigator") }} />
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* The header carries the course and how far in the student is; the ring
+          is the one number they check on the way back to a half-read course. */}
+      <CurvedHeader overlap={false} style={styles.playerHeader}>
+        <HeaderBar
+          left={
+            <IconButton
+              accessibilityLabel={t("common.back")}
+              icon="chevron-back"
+              onPress={() => router.back()}
+              tone="onPaper"
+            />
+          }
+          right={
+            <ProgressRing
+              label={t("mine.progress")}
+              percent={progress?.completionPercentage ?? 0}
+              size={54}
+              tone="onColor"
+            />
+          }
+          subtitle={course?.category?.name ?? t("player.navigator")}
+          title={course?.title ?? t("player.navigator")}
+        />
+        <Text style={styles.playerHeaderMeta}>
+          {t("dash.progress", {
+            done: format.number(progress?.completedLectures ?? 0),
+            percent: format.percent(progress?.completionPercentage ?? 0),
+            total: format.number(progress?.totalLectures ?? lectures.length)
+          })}
+        </Text>
+      </CurvedHeader>
+
       <ScrollView contentContainerStyle={styles.content}>
         {hasJustCompletedCourse ? (
           <CourseCompletionNotice onDismiss={() => setHasJustCompletedCourse(false)} />
         ) : null}
 
-        <Card>
-          <View style={styles.badgesRow}>
-            {course?.category ? <Badge>{course.category.name}</Badge> : null}
-            <Badge tone={isCourseCompleted ? "neutral" : "quiet"}>
-              {isCourseCompleted ? t("player.courseCompleted") : t("player.inProgress")}
-            </Badge>
-          </View>
-          <View style={{ height: spacing.md }} />
-          <Heading>{course?.title}</Heading>
-          {course?.description ? <View style={{ height: spacing.sm }} /> : null}
-          {course?.description ? <Body muted>{course.description}</Body> : null}
-          <View style={[styles.statsRow, { paddingTop: spacing.lg }]}>
-            <StatCard label={t("player.completed")} value={progress?.completedLectures ?? 0} />
-            <StatCard
-              label={t("player.lectures")}
-              value={progress?.totalLectures ?? lectures.length}
-            />
-            <StatCard
-              label={t("mine.progress")}
-              value={format.percent(progress?.completionPercentage ?? 0)}
-            />
-            <StatCard
-              label={t("player.assessments")}
-              value={assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
-            />
-          </View>
-          {lectures.length > 0 ? (
+        <View style={styles.statsRow}>
+          <StatCard
+            icon="checkmark-circle"
+            label={t("player.completed")}
+            tint="mint"
+            value={progress?.completedLectures ?? 0}
+          />
+          <StatCard
+            icon="play-circle"
+            label={t("player.lectures")}
+            tint="brand"
+            value={progress?.totalLectures ?? lectures.length}
+          />
+          <StatCard
+            icon="document-text"
+            label={t("player.assessments")}
+            tint="coral"
+            value={assessments.reduce((sum, chapter) => sum + chapter.tests.length, 0)}
+          />
+        </View>
+
+        {lectures.length > 0 ? (
+          <Card>
+            <View style={styles.badgesRow}>
+              <Caption tone="faint">{t("mine.progress")}</Caption>
+              <Badge tone={isCourseCompleted ? "success" : "quiet"}>
+                {isCourseCompleted ? t("player.courseCompleted") : t("player.inProgress")}
+              </Badge>
+            </View>
+            <View style={{ height: spacing.md }} />
             <ChunkedProgress
               completedIds={completedIds}
               currentLectureId={selectedLecture?.id ?? null}
               lectures={lectures}
             />
-          ) : null}
-        </Card>
+          </Card>
+        ) : null}
 
         <Pressable
           accessibilityLabel={t("player.lessonsAndTests")}
@@ -314,12 +351,15 @@ export default function CoursePlayerScreen(): JSX.Element {
         >
           <Card>
             <View style={styles.lessonsTriggerRow}>
+              <IconTile icon="list" size={44} tint="brand" />
               <View style={styles.lessonsTriggerText}>
                 <Caption tone="faint">{t("player.lessonsAndTests")}</Caption>
-                <Body numberOfLines={1}>{selectedItem?.title ?? t("player.noLectures")}</Body>
+                <Text numberOfLines={1} style={styles.lessonsTriggerTitle}>
+                  {selectedItem?.title ?? t("player.noLectures")}
+                </Text>
               </View>
               <View style={styles.chevronWrap}>
-                <Ionicons color={colors.mutedFaint} name="chevron-forward" size={16} />
+                <Ionicons color={colors.muted} name="chevron-forward" size={16} />
               </View>
             </View>
           </Card>
@@ -366,12 +406,12 @@ export default function CoursePlayerScreen(): JSX.Element {
                   ? t("player.watchedDone")
                   : t("player.activeLecture")}
               </Badge>
-              <Badge tone="quiet">
+              <Badge tone="info">
                 {getPdfMaterial(selectedLecture) !== null
                   ? "PDF"
                   : selectedLecture.type === "TEXT"
-                    ? "TEXT"
-                    : "▶"}
+                    ? t("player.selfPaced")
+                    : t("player.play")}
               </Badge>
             </View>
             <Title>{selectedLecture.title}</Title>
@@ -467,22 +507,35 @@ export default function CoursePlayerScreen(): JSX.Element {
           )
         ) : null}
 
-        {selectedItem !== null ? (
-          <View style={styles.prevNext}>
-            <Button
-              disabled={selectedIndex <= 0}
-              label={t("common.previous")}
-              onPress={() => goToIndex(selectedIndex - 1)}
-              variant="outline"
-            />
-            <Button
-              disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
-              label={t("common.next")}
-              onPress={() => goToIndex(selectedIndex + 1)}
-            />
-          </View>
-        ) : null}
       </ScrollView>
+
+      {/* Moving through the course is the one thing this screen is for, so the
+          two keys that do it never scroll away. */}
+      {selectedItem !== null ? (
+        <StickyBar>
+          <View style={styles.prevNext}>
+            <View style={styles.prevNextItem}>
+              <Button
+                disabled={selectedIndex <= 0}
+                icon="arrow-back"
+                label={t("common.previous")}
+                onPress={() => goToIndex(selectedIndex - 1)}
+                stretch
+                variant="outline"
+              />
+            </View>
+            <View style={styles.prevNextItem}>
+              <Button
+                disabled={selectedIndex === -1 || selectedIndex >= navigationItems.length - 1}
+                icon="arrow-forward"
+                label={t("common.next")}
+                onPress={() => goToIndex(selectedIndex + 1)}
+                stretch
+              />
+            </View>
+          </View>
+        </StickyBar>
+      ) : null}
 
       <LessonPickerSheet
         chapters={chapters}
@@ -511,13 +564,13 @@ const useStyles = makeStyles((colors) => ({
   chevronWrap: {
     alignItems: "center",
     backgroundColor: colors.panelWarm,
-    borderRadius: radius.full,
-    height: 28,
+    borderRadius: radius.md,
+    height: 32,
     justifyContent: "center",
-    width: 28
+    width: 32
   },
   chunk: {
-    backgroundColor: colors.chipActive,
+    backgroundColor: colors.barTrack,
     borderRadius: radius.full,
     flex: 1,
     height: 8,
@@ -526,11 +579,15 @@ const useStyles = makeStyles((colors) => ({
   chunkCurrent: { backgroundColor: colors.brandGold },
   chunkDone: { backgroundColor: colors.accent },
   chunkRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
-  content: { gap: spacing.md, padding: spacing.lg },
+  content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxxl },
   lessonsTriggerRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
-  lessonsTriggerText: { flex: 1, gap: 2 },
+  lessonsTriggerText: { flex: 1, gap: 1 },
+  lessonsTriggerTitle: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 16 },
   noticeHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  playerHeader: { gap: spacing.md, paddingBottom: spacing.lg },
+  playerHeaderMeta: { color: colors.paper, fontFamily: fonts.body, fontSize: 13, opacity: 0.85 },
   prevNext: { flexDirection: "row", gap: spacing.md },
+  prevNextItem: { flex: 1 },
   statsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }
 }));
 

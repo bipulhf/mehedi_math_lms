@@ -1,25 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
-import { Linking, Pressable, ScrollView, View } from "react-native";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 
 import {
   Body,
-  Caption,
   Card,
   CoverImage,
   EmptyState,
-  Heading,
   Screen,
   ScreenSkeleton,
   Title
 } from "@/src/components/ui";
-import { Avatar, PriceText, RingedWord } from "@/src/components/ui-display";
+import { Avatar, PriceText, StatCard } from "@/src/components/ui-display";
 import { HtmlContent } from "@/src/components/html-content";
 import { getPublicTeacherBySlug } from "@/src/lib/api/profiles";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 export default function TeacherProfileScreen(): JSX.Element {
@@ -51,16 +49,40 @@ export default function TeacherProfileScreen(): JSX.Element {
     <Screen>
       <Stack.Screen options={{ title: profile.user.name }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
-          <Avatar name={profile.user.name} photo={teacherPhoto} size={112} />
+        {/* Identity on one plate, the way the account screen does it. */}
+        <Card style={styles.hero}>
+          <Avatar name={profile.user.name} photo={teacherPhoto} size={84} />
           <View style={styles.heroText}>
-            <RingedWord>
-              <Heading>{profile.user.name}</Heading>
-            </RingedWord>
+            <Text numberOfLines={2} style={styles.heroName}>
+              {profile.user.name}
+            </Text>
             {profile.teacherProfile?.specializations ? (
               <HtmlContent html={profile.teacherProfile.specializations} muted />
             ) : null}
           </View>
+        </Card>
+
+        <View style={styles.metrics}>
+          <StatCard
+            icon="book"
+            label={t("common.courses")}
+            tint="brand"
+            value={format.number(profile.metrics.publishedCourseCount)}
+          />
+          <StatCard
+            icon="chatbubbles"
+            label={t("common.reviews")}
+            tint="mint"
+            value={format.number(profile.metrics.reviewCount)}
+          />
+          {profile.metrics.reviewAverage === null ? null : (
+            <StatCard
+              icon="star"
+              label={t("common.rating")}
+              tint="gold"
+              value={format.rating(profile.metrics.reviewAverage)}
+            />
+          )}
         </View>
 
         {profile.teacherProfile?.bio ? (
@@ -95,25 +117,12 @@ export default function TeacherProfileScreen(): JSX.Element {
               accessibilityLabel={`${t("teacher.phone")} ${format.digits(phone)}`}
               accessibilityRole="link"
               onPress={() => void Linking.openURL(`tel:${phone}`)}
+              style={styles.phoneRow}
             >
-              <Body muted>{format.digits(phone)}</Body>
+              <Text style={styles.phoneText}>{format.digits(phone)}</Text>
             </Pressable>
           </Card>
         ) : null}
-
-        <View style={styles.metrics}>
-          <Metric
-            label={t("common.courses")}
-            value={format.number(profile.metrics.publishedCourseCount)}
-          />
-          <Metric label={t("common.reviews")} value={format.number(profile.metrics.reviewCount)} />
-          {profile.metrics.reviewAverage === null ? null : (
-            <Metric
-              label={t("common.rating")}
-              value={format.rating(profile.metrics.reviewAverage)}
-            />
-          )}
-        </View>
 
         <Title>{t("common.courses")}</Title>
         {profile.courses.length === 0 ? (
@@ -130,10 +139,10 @@ export default function TeacherProfileScreen(): JSX.Element {
                 accessibilityRole="link"
                 style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
               >
-                <Card style={styles.courseCard}>
-                  <CoverImage bleed height={120} uri={course.coverImageUrl} />
+                <Card flush style={styles.courseCard}>
+                  <CoverImage bleed height={140} uri={course.coverImageUrl} />
                   <View style={styles.courseText}>
-                    <Title>{course.title}</Title>
+                    <Title numberOfLines={2}>{course.title}</Title>
                     <Body muted numberOfLines={2}>
                       {course.description.replace(/<[^>]*>/g, "")}
                     </Body>
@@ -149,32 +158,23 @@ export default function TeacherProfileScreen(): JSX.Element {
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }): JSX.Element {
-  const styles = useStyles();
-  return (
-    <View style={styles.metric}>
-      <Title>{value}</Title>
-      <Caption>{label}</Caption>
-    </View>
-  );
-}
-
 const useStyles = makeStyles((colors) => ({
-  content: { gap: spacing.lg, padding: spacing.lg },
-  courseCard: { gap: 0, marginBottom: spacing.md, overflow: "hidden", padding: 0 },
-  courseText: { gap: spacing.sm, padding: spacing.md },
+  content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
+  courseCard: { marginBottom: spacing.md },
+  courseText: { gap: spacing.sm, padding: spacing.lg },
   hero: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
-  heroText: { flex: 1, gap: spacing.sm },
-  metric: { flex: 1, gap: spacing.xs },
-  metrics: {
-    borderBottomColor: colors.hairline,
-    borderBottomWidth: 1,
-    borderTopColor: colors.hairline,
-    borderTopWidth: 1,
-    flexDirection: "row",
-    gap: spacing.md,
-    paddingVertical: spacing.md
-  }
+  heroName: { color: colors.ink, fontFamily: fonts.display, fontSize: 23, lineHeight: 30 },
+  heroText: { flex: 1, gap: spacing.xs },
+  metrics: { flexDirection: "row", gap: spacing.sm },
+  phoneRow: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.pill,
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: spacing.lg
+  },
+  phoneText: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 15 }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

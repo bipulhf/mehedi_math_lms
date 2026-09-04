@@ -49,17 +49,23 @@ export default function ForgotPasswordScreen(): JSX.Element {
         {/* The mark of a thing that worked. A confirmation with nothing on it
             but two buttons reads as another form to fill in. */}
         <View style={styles.sentMark}>
-          <Ionicons color={colors.correct} name="mail-open-outline" size={28} />
+          <Ionicons color={colors.tint.mint.fg} name="mail-open" size={30} />
         </View>
         <Title>{t("auth.resetLinkSent")}</Title>
         <Body muted>{t("auth.resetLinkSentLead", { email: sentTo })}</Body>
-        <Button label={t("auth.signIn")} onPress={() => router.replace("/sign-in")} size="lg" />
+        <Button
+          label={t("auth.signIn")}
+          onPress={() => router.replace("/sign-in")}
+          size="lg"
+          stretch
+        />
         <Button
           label={t("auth.sendToAnotherEmail")}
           onPress={() => {
             setEmail("");
             setSentTo(null);
           }}
+          stretch
           variant="outline"
         />
       </AuthScaffold>
@@ -108,6 +114,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
         label={send.isPending ? t("auth.sendingResetLink") : t("auth.sendResetLink")}
         onPress={() => send.mutate()}
         size="lg"
+        stretch
       />
     </AuthScaffold>
   );
@@ -118,11 +125,11 @@ const useStyles = makeStyles((colors) => ({
   sentMark: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: colors.chipActive,
-    borderRadius: radius.full,
-    height: 56,
+    backgroundColor: colors.tint.mint.bg,
+    borderRadius: radius.tile,
+    height: 64,
     justifyContent: "center",
-    width: 56
+    width: 64
   }
 }));
 

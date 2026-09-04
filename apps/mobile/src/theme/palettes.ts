@@ -1,17 +1,35 @@
 /**
- * The two palettes, transcribed value for value from the light and dark blocks
- * of `apps/web/src/styles/app.css`. `DESIGN.md` is the authority; this file
- * only restates it in a form Metro can bundle.
+ * The app's one palette: **cream and cobalt**.
  *
- * Keeping the *names* identical across both palettes is what lets a component
- * be written once: it asks for `colors.card` and gets white on light, navy on
- * dark. Keeping them identical to the web tokens is what lets a screen ported
- * from web land on the right colour without a lookup.
+ * The page is a warm off-white rather than a cool grey, which is the single
+ * decision the rest of the design hangs off — paper, not glass. On it sit white
+ * plates, one saturated cobalt that every action is drawn in, and a gold that
+ * marks the thing worth noticing. The five other families are supporting
+ * colour: a subject, a status, a category, never decoration.
+ *
+ * Cobalt is the brand blue taken to full strength (`#007bff` is the logo's, and
+ * it is too pale to carry a button on cream), and the gold is the brand's own.
+ *
+ * The app is light only. A dark transcription of this would be a different
+ * design wearing the same names.
  */
 
-/** Every colour a screen may ask for. Both palettes fill all of it. */
+/** A supporting family: a wash to fill with, ink that reads on it, a solid. */
+export interface Tint {
+  /** The pale fill — a plate, an icon well, a chip. */
+  bg: string;
+  /** The readable ink on `bg`, and the colour of the icon inside it. */
+  fg: string;
+  /** The saturated version, for a filled bar, a dot, a mark. */
+  solid: string;
+}
+
+/** Every colour a screen may ask for. */
 export interface ThemeColors {
   accent: string;
+  /** The two stops every hero block and primary fill is drawn with. */
+  accentGradient: readonly [string, string];
+  accentSoft: string;
   accentStrong: string;
   actionForeground: string;
   background: string;
@@ -27,6 +45,8 @@ export interface ThemeColors {
   correct: string;
   dotIdle: string;
   error: string;
+  errorSoft: string;
+  /** The warm rule between grouped rows. There are very few of these. */
   hairline: string;
   hairlineFaint: string;
   ink: string;
@@ -39,6 +59,7 @@ export interface ThemeColors {
   onAccent: string;
   onError: string;
   online: string;
+  /** The second surface: a well inside a card, a trough, a quiet row. */
   panelWarm: string;
   paper: string;
   placeholder: string;
@@ -49,111 +70,101 @@ export interface ThemeColors {
   shadow: string;
   shadowOpacity: number;
   success: string;
+  successSoft: string;
+  /** The six families. A seventh is a colour nobody can name. */
+  tint: {
+    brand: Tint;
+    coral: Tint;
+    gold: Tint;
+    lilac: Tint;
+    mint: Tint;
+    sky: Tint;
+  };
   warning: string;
+  warningSoft: string;
 }
 
-export const darkColors: ThemeColors = {
-  /** Interactive blue. Lighter than the logo's #007bff, which is 4.1:1 on this
-   * navy — readable as a rule, not as the word a student is meant to tap. */
-  accent: "#4d9fff",
-  accentStrong: "#7ab6ff",
-  /** Dark text on a bright constant fill: a gold badge, a white chip. */
-  actionForeground: "#172033",
-  background: "#0b1220",
-  barIdle: "#334155",
-  /** Translucent navigation / tab bar fill — card over background. */
-  barTranslucent: "rgba(23, 32, 51, 0.92)",
-  barTrack: "#1e293b",
-  brandBlue: "#007bff",
-  brandGold: "#f5c066",
-  brandOrange: "#f5a723",
-  brandOrangeStrong: "#ffbf4d",
-  card: "#172033",
-  chipActive: "rgba(77, 159, 255, 0.16)",
-  correct: "#4ade80",
-  dotIdle: "#3a4a63",
-  error: "#f87171",
-  hairline: "#283548",
-  hairlineFaint: "#1f2b3d",
-  ink: "#f8fafc",
-  inkMuted: "#cbd5e1",
-  /** A field's own fill, one step below the card it sits on. */
-  input: "#111827",
-  lineStrong: "#3a4a63",
-  muted: "#94a3b8",
-  mutedFaint: "#8496ae",
-  mutedLight: "#8a9ab0",
-  /** What text on top of `accent` is — the page's navy, not white, which is
-   * 2.6:1 on this blue. */
-  onAccent: "#0b1220",
-  onError: "#0b1220",
-  online: "#4ade80",
-  panelWarm: "#111827",
-  /** Literal white, for anything sitting on a photograph or a video. */
-  paper: "#ffffff",
-  placeholder: "#8496ae",
-  placeholderFill: "#1e293b",
-  /** Anything that floats over the page needs a fill you cannot see through. */
-  popover: "#1e293b",
-  rowHover: "rgba(77, 159, 255, 0.1)",
-  /** The 0.5pt hairline drawn between grouped rows. */
-  separator: "rgba(40, 53, 72, 0.8)",
-  /** What lifts a card off the page. Elevation on light, nothing on dark:
-   * DESIGN.md §2 forbids shadows on the dark theme, where contrast does the
-   * work a shadow would. */
-  shadow: "transparent",
-  shadowOpacity: 0,
-  success: "#4ade80",
-  warning: "#fbbf24"
-};
-
 export const lightColors: ThemeColors = {
-  accent: "#0069db",
-  accentStrong: "#0056b8",
-  actionForeground: "#172033",
-  background: "#f7f9fc",
-  barIdle: "#cbd5e1",
-  barTranslucent: "rgba(255, 255, 255, 0.94)",
-  barTrack: "#e2e8f0",
+  /** Cobalt. Everything a student taps to move forward is this. */
+  accent: "#2B4FF6",
+  accentGradient: ["#3A63FF", "#1B34C7"],
+  accentSoft: "#E7ECFF",
+  accentStrong: "#1B34C7",
+  actionForeground: "#ffffff",
+  /** Cream. The whole design starts here. */
+  background: "#FBF7F1",
+  barIdle: "#D9D2C6",
+  barTrack: "#EDE6DA",
+  barTranslucent: "#ffffff",
   brandBlue: "#007bff",
-  brandGold: "#9a6300",
-  brandOrange: "#f5a723",
-  brandOrangeStrong: "#dc9109",
+  brandGold: "#F5A524",
+  brandOrange: "#FF6B4A",
+  brandOrangeStrong: "#E04B2A",
   card: "#ffffff",
-  chipActive: "rgba(0, 123, 255, 0.11)",
-  correct: "#15803d",
-  dotIdle: "#cbd5e1",
-  error: "#dc2626",
-  hairline: "#e2e8f0",
-  hairlineFaint: "#eaeff5",
-  ink: "#172033",
-  inkMuted: "#334155",
-  input: "#ffffff",
-  lineStrong: "#cbd5e1",
-  muted: "#5b6779",
-  mutedFaint: "#667085",
-  mutedLight: "#616d80",
+  chipActive: "#E7ECFF",
+  correct: "#0E9F6E",
+  dotIdle: "#CFC7BA",
+  error: "#E5484D",
+  errorSoft: "#FDECEC",
+  hairline: "#EBE3D7",
+  hairlineFaint: "#F2ECE2",
+  /** Warm near-black. Pure black on cream reads as a hole. */
+  ink: "#161A23",
+  inkMuted: "#39404F",
+  input: "#F6F2EB",
+  lineStrong: "#D9D2C6",
+  muted: "#6A7285",
+  mutedFaint: "#9AA0AE",
+  mutedLight: "#7C8394",
   onAccent: "#ffffff",
   onError: "#ffffff",
-  online: "#15803d",
-  panelWarm: "#f1f5f9",
+  online: "#0E9F6E",
+  panelWarm: "#F6F2EB",
   paper: "#ffffff",
-  placeholder: "#616d80",
-  placeholderFill: "#e2e8f0",
+  placeholder: "#A7AAB6",
+  placeholderFill: "#EFE9DF",
   popover: "#ffffff",
-  rowHover: "rgba(0, 123, 255, 0.07)",
-  separator: "rgba(226, 232, 240, 0.9)",
-  // A white card on a near-white page needs the shadow the dark theme does
-  // not: there is no contrast left to separate them.
-  shadow: "#0f172a",
-  shadowOpacity: 0.07,
-  success: "#15803d",
-  warning: "#b45309"
+  rowHover: "#F3F1FF",
+  separator: "#F2ECE2",
+  /** Warm shadow, so a white plate on cream looks lit rather than dirty. */
+  shadow: "#4A3B26",
+  shadowOpacity: 0.1,
+  success: "#0E9F6E",
+  successSoft: "#E3F7EF",
+  tint: {
+    brand: { bg: "#E7ECFF", fg: "#1B34C7", solid: "#2B4FF6" },
+    coral: { bg: "#FFEBE6", fg: "#C13A1E", solid: "#FF6B4A" },
+    gold: { bg: "#FFF3DC", fg: "#96610A", solid: "#F5A524" },
+    lilac: { bg: "#F1EBFF", fg: "#5B34C4", solid: "#8B5CF6" },
+    mint: { bg: "#E3F7EF", fg: "#08674A", solid: "#12B886" },
+    sky: { bg: "#E2F3FE", fg: "#0B6390", solid: "#2BA7E8" }
+  },
+  warning: "#B45309",
+  warningSoft: "#FFF3DC"
 };
 
-export type ColorScheme = "dark" | "light";
+/** The families in a fixed order, for anything that colours a list by position. */
+export const tintCycle = ["brand", "gold", "mint", "lilac", "coral", "sky"] as const;
+
+export type TintName = (typeof tintCycle)[number];
+
+/** A stable family for a string id — the same course keeps the same colour. */
+export function tintForKey(key: string): TintName {
+  let hash = 0;
+
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash * 31 + key.charCodeAt(index)) % 100_000;
+  }
+
+  return tintCycle[hash % tintCycle.length] ?? "brand";
+}
+
+/**
+ * One scheme. The type stays so `makeStyles` keeps its per-scheme cache and a
+ * second palette could return without touching every call site.
+ */
+export type ColorScheme = "light";
 
 export const palettes: Record<ColorScheme, ThemeColors> = {
-  dark: darkColors,
   light: lightColors
 };

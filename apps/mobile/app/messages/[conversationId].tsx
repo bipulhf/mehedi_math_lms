@@ -16,6 +16,8 @@ import {
   ScreenSkeleton,
   SkeletonBlock
 } from "@/src/components/ui";
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import { PresenceDot } from "@/src/components/ui-display";
 import {
   getConversation,
@@ -199,8 +201,18 @@ export default function ConversationScreen(): JSX.Element {
             >
               {/* A hidden message keeps its place in the thread as a tombstone.
                   The original is retained server-side for admin review. ADR-0004. */}
-              <Body muted={message.isHidden}>{message.content}</Body>
-              <Caption>{format.dateTime(message.createdAt)}</Caption>
+              <Text
+                style={[
+                  styles.bubbleText,
+                  message.isOwn ? styles.bubbleTextOwn : null,
+                  message.isHidden ? styles.bubbleTextHidden : null
+                ]}
+              >
+                {message.content}
+              </Text>
+              <Text style={[styles.bubbleTime, message.isOwn ? styles.bubbleTimeOwn : null]}>
+                {format.dateTime(message.createdAt)}
+              </Text>
             </View>
           ))}
 
@@ -223,14 +235,17 @@ export default function ConversationScreen(): JSX.Element {
               <View style={{ height: spacing.md }} />
               <Button
                 disabled={reportReason.trim().length < MINIMUM_REPORT_LENGTH}
+                icon="flag"
                 isBusy={report.isPending}
                 label={t("msg.submitReport")}
                 onPress={() => report.mutate(reportReason.trim())}
+                stretch
               />
               <View style={{ height: spacing.sm }} />
               <Button
                 label={t("action.cancel")}
                 onPress={() => setIsReporting(false)}
+                stretch
                 variant="ghost"
               />
             </Card>
@@ -260,12 +275,26 @@ export default function ConversationScreen(): JSX.Element {
             style={styles.composerInput}
             value={draft}
           />
-          <Button
-            disabled={draft.trim().length === 0}
-            isBusy={send.isPending}
-            label={t("msg.send")}
+          {/* A round send key, not a labelled button: the composer is a bar,
+              and a word in it costs the draft a third of its width. */}
+          <Pressable
+            accessibilityLabel={t("msg.send")}
+            accessibilityRole="button"
+            accessibilityState={{ busy: send.isPending, disabled: draft.trim().length === 0 }}
+            disabled={draft.trim().length === 0 || send.isPending}
             onPress={() => send.mutate(draft.trim())}
-          />
+            style={({ pressed }) => [
+              styles.sendButton,
+              draft.trim().length === 0 ? styles.sendButtonIdle : null,
+              pressed ? styles.sendButtonPressed : null
+            ]}
+          >
+            <Ionicons
+              color={draft.trim().length === 0 ? colors.mutedFaint : colors.onAccent}
+              name="send"
+              size={18}
+            />
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </Screen>
@@ -274,7 +303,7 @@ export default function ConversationScreen(): JSX.Element {
 
 const useStyles = makeStyles((colors) => ({
   bubble: {
-    borderRadius: 18,
+    borderRadius: radius.xl,
     gap: 4,
     maxWidth: "82%",
     paddingHorizontal: spacing.lg,
@@ -282,36 +311,46 @@ const useStyles = makeStyles((colors) => ({
   },
   bubbleHidden: {
     backgroundColor: colors.panelWarm,
-    borderColor: colors.hairlineFaint,
+    borderColor: colors.lineStrong,
     borderStyle: "dashed",
-    borderWidth: 0.5
+    borderWidth: 1
   },
   bubbleOther: {
     alignSelf: "flex-start",
     backgroundColor: colors.card,
-    borderBottomLeftRadius: 6
+    borderBottomLeftRadius: 6,
+    elevation: 2,
+    shadowColor: colors.shadow,
+    shadowOffset: { height: 4, width: 0 },
+    shadowOpacity: colors.shadowOpacity,
+    shadowRadius: 10
   },
+  // Yours is the violet one. A thread of two identical grey bubbles is a
+  // transcript; two colours is a conversation.
   bubbleOwn: {
     alignSelf: "flex-end",
-    backgroundColor: colors.chipActive,
-    borderBottomRightRadius: 6,
-    borderColor: colors.accent,
-    borderWidth: 0.5
+    backgroundColor: colors.accent,
+    borderBottomRightRadius: 6
   },
+  bubbleText: { color: colors.ink, fontFamily: fonts.body, fontSize: 16, lineHeight: 24 },
+  bubbleTextHidden: { color: colors.mutedFaint, fontStyle: "italic" },
+  bubbleTextOwn: { color: colors.onAccent },
+  bubbleTime: { color: colors.mutedFaint, fontFamily: fonts.monoLabel, fontSize: 10 },
+  bubbleTimeOwn: { color: colors.paper, opacity: 0.75 },
   composer: {
     alignItems: "flex-end",
     backgroundColor: colors.background,
-    borderTopColor: colors.hairlineFaint,
-    borderTopWidth: 0.5,
+    borderTopColor: colors.separator,
+    borderTopWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
     padding: spacing.md
   },
   composerInput: {
     backgroundColor: colors.card,
-    borderColor: colors.hairlineFaint,
-    borderRadius: 20,
-    borderWidth: 0.5,
+    borderColor: colors.hairline,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
     color: colors.ink,
     flex: 1,
     fontFamily: fonts.body,
@@ -327,14 +366,26 @@ const useStyles = makeStyles((colors) => ({
   headerPresence: { alignItems: "center", flexDirection: "row", gap: spacing.xs, marginTop: 2 },
   headerTitle: { maxWidth: 220 },
   reportInput: {
-    backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    backgroundColor: colors.input,
+    borderRadius: radius.tile,
     color: colors.ink,
-    minHeight: 96,
-    padding: spacing.md,
+    fontFamily: fonts.body,
+    fontSize: 15,
+    minHeight: 110,
+    padding: spacing.lg,
     textAlignVertical: "top"
   },
-  reportLink: { alignSelf: "center", padding: spacing.md }
+  reportLink: { alignSelf: "center", padding: spacing.md },
+  sendButton: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radius.full,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  sendButtonIdle: { backgroundColor: colors.panelWarm },
+  sendButtonPressed: { opacity: 0.85, transform: [{ scale: 0.94 }] }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

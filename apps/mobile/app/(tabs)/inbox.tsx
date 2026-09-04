@@ -1,25 +1,23 @@
 import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useRouter } from "expo-router";
+import { Link, Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import {
-  Badge,
-  Body,
   Button,
-  Caption,
-  Card,
   EmptyState,
-  Heading,
+  IconButton,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
-  Title
+  tabScrollInset
 } from "@/src/components/ui";
-import { PresenceDot, Tabs } from "@/src/components/ui-display";
-import { SignInPrompt } from "@/src/components/sign-in-prompt";
+import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
+import { Avatar, IconTile, PresenceDot, Tabs } from "@/src/components/ui-display";
 import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
 import {
   listNotifications,
@@ -32,14 +30,17 @@ import { queryKeys } from "@/src/lib/query";
 import { stripHtml } from "@/src/lib/html";
 import { usePushRegistration } from "@/src/lib/use-push-registration";
 import { useSession } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { fonts, radius, spacing, type TintName } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
- * Messages and notifications, one tab instead of two — the 2026 edtech
- * complaint every source agreed on was notification overload from too many
- * separate feeds, not too few. A segmented control inside one Inbox keeps
- * both reachable without spending two of the four tab slots on them.
+ * Messages and notifications, one tab instead of two — the complaint every
+ * source agreed on was notification overload from too many separate feeds, not
+ * too few.
+ *
+ * The list is one white sheet with hairlines between rows rather than a stack
+ * of floating cards. A feed is a single continuous thing, and forty shadows
+ * down a screen is the fastest way to make a phone app look like a web page.
  */
 
 type InboxSegment = "messages" | "notifications";
@@ -63,6 +64,28 @@ function notificationHref(record: NotificationRecord): string | null {
   return null;
 }
 
+/** Colour by what the notification is about, so the feed is scannable. */
+function notificationLook(record: NotificationRecord): {
+  icon: keyof typeof Ionicons.glyphMap;
+  tint: TintName;
+} {
+  const data = record.data;
+
+  if (data && typeof data.conversationId === "string") {
+    return { icon: "chatbubble", tint: "mint" };
+  }
+
+  if (data && typeof data.courseId === "string") {
+    return { icon: "school", tint: "brand" };
+  }
+
+  if (data && typeof data.paymentId === "string") {
+    return { icon: "card", tint: "gold" };
+  }
+
+  return { icon: "notifications", tint: "sky" };
+}
+
 const ConversationRow = memo(function ConversationRow({
   conversation
 }: {
@@ -71,6 +94,7 @@ const ConversationRow = memo(function ConversationRow({
   const styles = useStyles();
   const t = useT();
   const format = useFormat();
+  const hasUnread = conversation.unreadCount > 0;
 
   return (
     <Link
@@ -83,23 +107,37 @@ const ConversationRow = memo(function ConversationRow({
       <Pressable
         accessibilityLabel={conversation.user.name}
         accessibilityRole="link"
-        style={styles.row}
+        style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
       >
-        <Card>
-          <View style={styles.rowHeader}>
-            <View style={styles.rowName}>
-              <PresenceDot isOnline={conversation.user.isOnline} />
-              <Title>{conversation.user.name}</Title>
-            </View>
-            {conversation.unreadCount > 0 ? <Badge>{conversation.unreadCount}</Badge> : null}
+        <View>
+          <Avatar name={conversation.user.name} photo={conversation.user.image} size={50} />
+          <View style={styles.presenceAnchor}>
+            <PresenceDot isOnline={conversation.user.isOnline} />
           </View>
-          <Body muted numberOfLines={1}>
-            {conversation.lastMessage?.content ?? t("messages.noMessages")}
-          </Body>
-          {conversation.lastMessageAt ? (
-            <Caption>{format.date(conversation.lastMessageAt)}</Caption>
-          ) : null}
-        </Card>
+        </View>
+        <View style={styles.rowText}>
+          <View style={styles.rowHead}>
+            <Text numberOfLines={1} style={styles.rowName}>
+              {conversation.user.name}
+            </Text>
+            {conversation.lastMessageAt ? (
+              <Text style={styles.rowTime}>{format.date(conversation.lastMessageAt)}</Text>
+            ) : null}
+          </View>
+          <View style={styles.rowHead}>
+            <Text
+              numberOfLines={1}
+              style={[styles.rowPreview, hasUnread ? styles.rowPreviewUnread : null]}
+            >
+              {conversation.lastMessage?.content ?? t("messages.noMessages")}
+            </Text>
+            {hasUnread ? (
+              <View style={styles.unreadPill}>
+                <Text style={styles.unreadPillText}>{conversation.unreadCount}</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
       </Pressable>
     </Link>
   );
@@ -107,7 +145,6 @@ const ConversationRow = memo(function ConversationRow({
 
 function MessagesPane({ canMessage }: { canMessage: boolean }): JSX.Element {
   const styles = useStyles();
-  const router = useRouter();
   const t = useT();
   const { data: conversations = [], isPending } = useQuery({
     enabled: canMessage,
@@ -124,43 +161,60 @@ function MessagesPane({ canMessage }: { canMessage: boolean }): JSX.Element {
   if (!canMessage) {
     return (
       <View style={styles.padded}>
-        <EmptyState message={t("messages.unavailableLead")} title={t("messages.unavailable")} />
+        <EmptyState
+          icon="bubble.left"
+          message={t("messages.unavailableLead")}
+          title={t("messages.unavailable")}
+        />
+      </View>
+    );
+  }
+
+  if (isPending) {
+    return (
+      <View style={styles.sheet}>
+        {[0, 1, 2, 3].map((key) => (
+          <View key={key} style={styles.row}>
+            <SkeletonBlock height={50} style={styles.skeletonAvatar} width={50} />
+            <View style={styles.rowText}>
+              <SkeletonBlock height={16} width="45%" />
+              <View style={{ height: spacing.sm }} />
+              <SkeletonBlock height={13} width="80%" />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  if (conversations.length === 0) {
+    return (
+      <View style={styles.padded}>
+        <EmptyState
+          icon="bubble.left"
+          message={t("messages.emptyLead")}
+          title={t("messages.emptyTitle")}
+        />
       </View>
     );
   }
 
   return (
-    <View style={styles.pane}>
-      <View style={styles.paneAction}>
-        <Button label={t("messages.new")} onPress={() => router.push("/messages/new")} size="sm" />
-      </View>
-
-      {isPending ? (
-        <View style={styles.skeletonList}>
-          {[0, 1, 2, 3].map((key) => (
-            <Card key={key}>
-              <SkeletonBlock height={18} width="45%" />
-              <View style={{ height: spacing.sm }} />
-              <SkeletonBlock height={14} width="85%" />
-            </Card>
-          ))}
-        </View>
-      ) : conversations.length === 0 ? (
-        <EmptyState message={t("messages.emptyLead")} title={t("messages.emptyTitle")} />
-      ) : (
-        <FlashList
-          contentContainerStyle={styles.list}
-          data={conversations}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-        />
-      )}
+    <View style={styles.sheet}>
+      <FlashList
+        contentContainerStyle={styles.list}
+        data={conversations}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
 
 function NotificationsPane(): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const router = useRouter();
   const t = useT();
   const format = useFormat();
@@ -192,6 +246,8 @@ function NotificationsPane(): JSX.Element {
   const renderItem = useCallback(
     ({ item }: { item: NotificationRecord }) => {
       const href = notificationHref(item);
+      const look = notificationLook(item);
+      const isUnread = item.readAt === null;
 
       return (
         <Pressable
@@ -204,64 +260,90 @@ function NotificationsPane(): JSX.Element {
               router.push(href as never);
             }
           }}
-          style={styles.row}
+          style={({ pressed }) => [
+            styles.row,
+            isUnread ? styles.rowUnread : null,
+            pressed ? styles.rowPressed : null
+          ]}
         >
-          <Card style={item.readAt ? styles.cardRead : undefined}>
-            <Title>{item.title}</Title>
-            <View style={{ height: spacing.xs }} />
-            <Body muted>{stripHtml(item.body)}</Body>
-            <View style={{ height: spacing.sm }} />
-            <Caption>{format.dateTime(item.createdAt)}</Caption>
-          </Card>
+          <IconTile icon={look.icon} size={46} tint={look.tint} />
+          <View style={styles.rowText}>
+            <View style={styles.rowHead}>
+              <Text numberOfLines={1} style={styles.rowName}>
+                {item.title}
+              </Text>
+              {isUnread ? <View style={styles.unreadDot} /> : null}
+            </View>
+            <Text numberOfLines={2} style={styles.rowBody}>
+              {stripHtml(item.body)}
+            </Text>
+            <Text style={styles.rowTime}>{format.dateTime(item.createdAt)}</Text>
+          </View>
+          {href === null ? null : (
+            <Ionicons color={colors.mutedFaint} name="chevron-forward" size={16} />
+          )}
         </Pressable>
       );
     },
-    [format, markRead, router]
+    [colors, format, markRead, router, styles]
   );
   const keyExtractor = useCallback((item: NotificationRecord) => item.id, []);
 
   const hasUnread = (data?.items ?? []).some((item) => item.readAt === null);
 
+  if (isPending) {
+    return (
+      <View style={styles.sheet}>
+        {[0, 1, 2].map((key) => (
+          <View key={key} style={styles.row}>
+            <SkeletonBlock height={46} style={styles.skeletonTile} width={46} />
+            <View style={styles.rowText}>
+              <SkeletonBlock height={16} width="50%" />
+              <View style={{ height: spacing.sm }} />
+              <SkeletonBlock height={13} />
+            </View>
+          </View>
+        ))}
+      </View>
+    );
+  }
+
+  if ((data?.items.length ?? 0) === 0) {
+    return (
+      <View style={styles.padded}>
+        <EmptyState message={t("notifications.emptyLead")} title={t("notifications.emptyTitle")} />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.pane}>
+    <View style={styles.sheet}>
       {hasUnread ? (
-        <View style={styles.paneAction}>
+        <View style={styles.sheetAction}>
           <Button
+            icon="checkmark-done"
             isBusy={markAllRead.isPending}
             label={t("notifications.markAllRead")}
             onPress={() => markAllRead.mutate()}
-            size="sm"
-            variant="outline"
+            size="xs"
+            variant="soft"
           />
         </View>
       ) : null}
-
-      {isPending ? (
-        <View style={styles.skeletonList}>
-          {[0, 1, 2].map((key) => (
-            <Card key={key}>
-              <SkeletonBlock height={16} width="40%" />
-              <View style={{ height: spacing.sm }} />
-              <SkeletonBlock height={14} />
-            </Card>
-          ))}
-        </View>
-      ) : (data?.items.length ?? 0) === 0 ? (
-        <EmptyState message={t("notifications.emptyLead")} title={t("notifications.emptyTitle")} />
-      ) : (
-        <FlashList
-          contentContainerStyle={styles.list}
-          data={data?.items ?? []}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-        />
-      )}
+      <FlashList
+        contentContainerStyle={styles.list}
+        data={data?.items ?? []}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
 
 export default function InboxScreen(): JSX.Element {
   const styles = useStyles();
+  const router = useRouter();
   const t = useT();
   const [segment, setSegment] = useState<InboxSegment>("messages");
   const { isPending: isSessionPending, session } = useSession();
@@ -273,49 +355,98 @@ export default function InboxScreen(): JSX.Element {
     return <ScreenSkeleton noHeader rows={4} />;
   }
 
+  // Signed out, this tab is not in the bar at all; anybody who reaches it by
+  // deep link belongs on the way in, not on an empty feed.
   if (!session) {
-    return (
-      <Screen noHeader style={styles.padded}>
-        <SignInPrompt />
-      </Screen>
-    );
+    return <Redirect href="/sign-in" />;
   }
 
   return (
-    <Screen noHeader>
-      <View style={styles.header}>
-        <Heading>{t("nav.inbox")}</Heading>
+    <Screen>
+      <CurvedHeader overlap={false} style={styles.header}>
+        <HeaderBar
+          right={
+            canMessage ? (
+              <IconButton
+                accessibilityLabel={t("messages.new")}
+                icon="create"
+                onPress={() => router.push("/messages/new")}
+                tone="onPaper"
+              />
+            ) : undefined
+          }
+          subtitle={t("nav.inbox")}
+          title={segment === "messages" ? t("nav.messages") : t("nav.notify")}
+        />
+      </CurvedHeader>
+
+      <View style={styles.tabsWrap}>
+        <Tabs
+          inset={false}
+          label={t("nav.inbox")}
+          onChange={setSegment}
+          tabs={[
+            { isActive: segment === "messages", label: t("nav.messages"), value: "messages" },
+            { isActive: segment === "notifications", label: t("nav.notify"), value: "notifications" }
+          ]}
+          value={segment}
+        />
       </View>
-      <Tabs
-        label={t("nav.inbox")}
-        onChange={setSegment}
-        tabs={[
-          { isActive: segment === "messages", label: t("nav.messages"), value: "messages" },
-          { isActive: segment === "notifications", label: t("nav.notify"), value: "notifications" }
-        ]}
-        value={segment}
-      />
+
       {segment === "messages" ? <MessagesPane canMessage={canMessage} /> : <NotificationsPane />}
     </Screen>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  cardRead: { backgroundColor: colors.panelWarm },
-  header: { padding: spacing.lg },
-  list: { padding: spacing.lg },
-  padded: { padding: spacing.lg },
-  pane: { flex: 1 },
-  paneAction: { alignItems: "flex-end", paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  row: { marginBottom: spacing.md },
-  rowHeader: {
+  header: { paddingBottom: spacing.lg },
+  list: { paddingBottom: tabScrollInset },
+  padded: { paddingTop: spacing.lg },
+  presenceAnchor: { bottom: 0, position: "absolute", right: 0 },
+  row: {
     alignItems: "center",
+    borderBottomColor: colors.separator,
+    borderBottomWidth: 1,
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.xs
+    gap: spacing.md,
+    minHeight: 84,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
   },
-  rowName: { alignItems: "center", flex: 1, flexDirection: "row", gap: spacing.sm },
-  skeletonList: { gap: spacing.md, padding: spacing.lg }
+  rowBody: { color: colors.muted, fontFamily: fonts.body, fontSize: 14, lineHeight: 20 },
+  rowHead: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  rowName: { color: colors.ink, flex: 1, fontFamily: fonts.displayBold, fontSize: 16 },
+  rowPressed: { backgroundColor: colors.rowHover },
+  rowPreview: { color: colors.muted, flex: 1, fontFamily: fonts.body, fontSize: 14 },
+  rowPreviewUnread: { color: colors.ink, fontFamily: fonts.bodySemiBold },
+  rowText: { flex: 1, gap: 2 },
+  rowTime: { color: colors.mutedFaint, fontFamily: fonts.monoLabel, fontSize: 10, letterSpacing: 0.6 },
+  rowUnread: { backgroundColor: colors.accentSoft },
+  // The feed is one plate with its top corners curved into the page, not a
+  // stack of cards. It runs to the bottom of the screen behind the nav bar.
+  sheet: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: radius.curve,
+    borderTopRightRadius: radius.curve,
+    flex: 1,
+    marginTop: spacing.md,
+    overflow: "hidden"
+  },
+  sheetAction: { alignItems: "flex-end", paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  skeletonAvatar: { borderRadius: radius.full },
+  skeletonTile: { borderRadius: radius.tile },
+  tabsWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  unreadDot: { backgroundColor: colors.accent, borderRadius: radius.full, height: 9, width: 9 },
+  unreadPill: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radius.full,
+    justifyContent: "center",
+    minWidth: 24,
+    paddingHorizontal: 6,
+    paddingVertical: 3
+  },
+  unreadPillText: { color: colors.onAccent, fontFamily: fonts.displayBold, fontSize: 12 }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

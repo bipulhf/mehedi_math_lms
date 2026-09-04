@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 
 import { spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- Expo bundled image asset
 const mark = require("@/assets/images/splash-icon.png") as number;
@@ -24,16 +24,21 @@ const WORDMARK_ASPECT = 1402 / 122;
  */
 export function BootSplash({ onLayout }: { onLayout?: () => void }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
+
   return (
     <View onLayout={onLayout} style={styles.root}>
       <Image contentFit="contain" source={mark} style={styles.mark} />
-      <Image contentFit="contain" source={wordmark} style={styles.wordmark} />
+      {/* The wordmark artwork is near-white, drawn for a dark surface. This
+          screen is cream, so it is tinted to ink — untinted it was white on
+          white and the name simply did not appear. */}
+      <Image contentFit="contain" source={wordmark} style={styles.wordmark} tintColor={colors.ink} />
     </View>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  mark: { height: 200, width: 200 },
+  mark: { height: 168, width: 168 },
   root: {
     alignItems: "center",
     backgroundColor: colors.background,
@@ -41,5 +46,5 @@ const useStyles = makeStyles((colors) => ({
     gap: spacing.lg,
     justifyContent: "center"
   },
-  wordmark: { aspectRatio: WORDMARK_ASPECT, width: 240 }
+  wordmark: { aspectRatio: WORDMARK_ASPECT, width: 232 }
 }));

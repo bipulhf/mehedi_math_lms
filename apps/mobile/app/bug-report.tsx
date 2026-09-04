@@ -17,6 +17,7 @@ import {
   Heading,
   Screen,
   ScreenSkeleton,
+  SuccessNotice,
   Title
 } from "@/src/components/ui";
 import { createBugReport, listMyBugReports } from "@/src/lib/api/bugs";
@@ -25,7 +26,7 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { HtmlContent } from "@/src/components/html-content";
 import { useSession } from "@/src/lib/use-session";
-import { spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 /**
@@ -108,7 +109,7 @@ export default function BugReportScreen(): JSX.Element {
           <Body muted>{t("bug.lead")}</Body>
 
           {error ? <ErrorNotice message={error} /> : null}
-          {hasSubmitted ? <Badge tone="faded">{t("bug.sent")}</Badge> : null}
+          {hasSubmitted ? <SuccessNotice message={t("bug.sent")} /> : null}
 
           <Card style={styles.form}>
             <Field
@@ -137,12 +138,14 @@ export default function BugReportScreen(): JSX.Element {
               </View>
             </View>
             <Button
+              icon="image"
               isBusy={uploadScreenshot.isPending}
               label={t("bug.chooseScreenshot")}
               onPress={() => {
                 setError(null);
                 uploadScreenshot.mutate();
               }}
+              stretch
               variant="outline"
             />
             {screenshotUrl ? <CoverImage height={180} uri={screenshotUrl} /> : null}
@@ -152,6 +155,8 @@ export default function BugReportScreen(): JSX.Element {
             disabled={!canSubmit}
             isBusy={submit.isPending}
             label={t("bug.send")}
+            size="lg"
+            stretch
             onPress={() => {
               setError(null);
               submit.mutate({
@@ -172,7 +177,7 @@ export default function BugReportScreen(): JSX.Element {
               <Card key={report.id}>
                 <View style={styles.reportHeader}>
                   <Title>{report.title}</Title>
-                  <Badge tone={report.priority === "HIGH" ? "attention" : "neutral"}>
+                  <Badge tone={report.priority === "HIGH" ? "danger" : "quiet"}>
                     {report.priority}
                   </Badge>
                 </View>
@@ -180,7 +185,7 @@ export default function BugReportScreen(): JSX.Element {
                 <HtmlContent html={report.description} muted />
                 <View style={{ height: spacing.sm }} />
                 <View style={styles.reportMeta}>
-                  <Badge tone={report.status === "RESOLVED" ? "success" : "neutral"}>
+                  <Badge tone={report.status === "RESOLVED" ? "success" : "info"}>
                     {report.status}
                   </Badge>
                   <Caption>{format.date(report.createdAt)}</Caption>
@@ -207,11 +212,16 @@ export default function BugReportScreen(): JSX.Element {
 }
 
 const useStyles = makeStyles((colors) => ({
-  content: { gap: spacing.lg, padding: spacing.lg },
+  content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
   flex: { flex: 1 },
   form: { gap: spacing.lg },
   hint: { paddingTop: spacing.xs },
-  adminNote: { backgroundColor: colors.panelWarm, gap: spacing.xs, padding: spacing.md },
+  adminNote: {
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md,
+    gap: spacing.xs,
+    padding: spacing.md
+  },
   multiline: { minHeight: 120, paddingTop: spacing.md, textAlignVertical: "top" },
   reportHeader: {
     alignItems: "center",

@@ -1,14 +1,16 @@
 import { useMutation } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { Body, Button, Caption, ErrorNotice, Field } from "@/src/components/ui";
 import type { CouponPreview, CouponRejectionReason } from "@/src/lib/api/coupons";
 import { previewCoupon } from "@/src/lib/api/coupons";
 import { useFormat, useT } from "@/src/lib/locale";
-import { spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 import type { MessageKey } from "@mma/i18n";
 
 /** What the screen holds once a code has been checked and accepted. */
@@ -54,6 +56,7 @@ export function CourseCouponField({
   publicCode
 }: CourseCouponFieldProps): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
   const format = useFormat();
   const [code, setCode] = useState("");
@@ -99,9 +102,10 @@ export function CourseCouponField({
 
   if (applied) {
     return (
-      <View style={styles.container}>
+      <View style={styles.appliedPlate}>
         <View style={styles.appliedRow}>
-          <Body>{t("coupon.applied", { code: applied.code })}</Body>
+          <Ionicons color={colors.success} name="pricetag" size={18} />
+          <Text style={styles.appliedText}>{t("coupon.applied", { code: applied.code })}</Text>
           <Pressable
             accessibilityLabel={t("coupon.remove")}
             accessibilityRole="button"
@@ -111,7 +115,7 @@ export function CourseCouponField({
               setCode("");
             }}
           >
-            <Caption>{t("coupon.remove")}</Caption>
+            <Text style={styles.removeText}>{t("coupon.remove")}</Text>
           </Pressable>
         </View>
 
@@ -143,10 +147,12 @@ export function CourseCouponField({
         value={code}
       />
       <Button
+        icon="pricetag"
         isBusy={preview.isPending}
         label={t("coupon.apply")}
         onPress={() => submit(code)}
-        variant="outline"
+        stretch
+        variant="soft"
       />
 
       {error ? <ErrorNotice message={error} /> : null}
@@ -159,9 +165,9 @@ export function CourseCouponField({
           onPress={() => submit(publicCode)}
           style={styles.publicCode}
         >
-          <Caption>
+          <Text style={styles.publicCodeText}>
             {t("coupon.bannerApply")} — {publicCode}
-          </Caption>
+          </Text>
         </Pressable>
       )}
     </View>
@@ -175,16 +181,27 @@ const useStyles = makeStyles((colors) => ({
     gap: spacing.sm,
     justifyContent: "space-between"
   },
-  container: {
-    borderTopColor: colors.hairline,
-    borderTopWidth: 1,
+  appliedPlate: {
+    backgroundColor: colors.successSoft,
+    borderRadius: radius.md,
     gap: spacing.sm,
-    paddingTop: spacing.md
+    padding: spacing.md
   },
+  appliedText: { color: colors.tint.mint.fg, flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 15 },
+  container: { gap: spacing.md },
+  removeText: { color: colors.muted, fontFamily: fonts.bodySemiBold, fontSize: 13 },
   line: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between"
   },
-  publicCode: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" }
+  publicCode: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.tint.gold.bg,
+    borderRadius: radius.pill,
+    justifyContent: "center",
+    minHeight: 40,
+    paddingHorizontal: spacing.md
+  },
+  publicCodeText: { color: colors.tint.gold.fg, fontFamily: fonts.bodySemiBold, fontSize: 13 }
 }));

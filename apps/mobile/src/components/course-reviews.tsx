@@ -1,7 +1,9 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { HtmlContent } from "@/src/components/html-content";
 import {
@@ -21,8 +23,9 @@ import {
 } from "@/src/lib/api/reviews";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { radius, spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { Avatar } from "@/src/components/ui-display";
+import { fonts, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * Course reviews. The app could enrol but not review, so mobile students never
@@ -35,15 +38,28 @@ import { makeStyles } from "@/src/theme/theme";
 
 const RATINGS = [1, 2, 3, 4, 5] as const;
 
-function Stars({ rating }: { rating: number }): JSX.Element {
+/** Five stars, drawn. `★`/`☆` in a text run rendered as two different glyph
+ *  widths in Bangla fallback and read as damaged text. */
+function Stars({ rating, size = 15 }: { rating: number; size?: number }): JSX.Element {
+  const styles = useStyles();
+  const colors = useThemeColors();
+
   return (
-    <Caption>
-      {"★".repeat(rating)}
-      {"☆".repeat(5 - rating)}
-    </Caption>
+    <View style={styles.starRow}>
+      {RATINGS.map((star) => (
+        <Ionicons
+          color={star <= rating ? colors.tint.gold.solid : colors.barIdle}
+          key={star}
+          name={star <= rating ? "star" : "star-outline"}
+          size={size}
+        />
+      ))}
+    </View>
   );
 }
 
+/** Tap the star you mean. A row of numbered chips asked the reader to do the
+ *  conversion themselves. */
 function RatingPicker({
   onChange,
   value
@@ -52,6 +68,8 @@ function RatingPicker({
   value: number;
 }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
+
   return (
     <View style={styles.ratingRow}>
       {RATINGS.map((rating) => (
@@ -59,11 +77,15 @@ function RatingPicker({
           accessibilityLabel={`${rating} star${rating === 1 ? "" : "s"}`}
           accessibilityRole="radio"
           accessibilityState={{ selected: value === rating }}
+          hitSlop={spacing.xs}
           key={rating}
           onPress={() => onChange(rating)}
-          style={[styles.ratingChip, value === rating ? styles.ratingChipActive : null]}
         >
-          <Body>{rating}</Body>
+          <Ionicons
+            color={rating <= value ? colors.tint.gold.solid : colors.barIdle}
+            name={rating <= value ? "star" : "star-outline"}
+            size={34}
+          />
         </Pressable>
       ))}
     </View>
@@ -164,29 +186,43 @@ export function CourseReviews({
               value={comment}
             />
             <Button
+              icon="send"
               isBusy={submit.isPending}
               label={t("review.post")}
               onPress={() => submit.mutate()}
+              stretch
             />
             <Button
               label={t("action.cancel")}
               onPress={() => setIsWriting(false)}
+              stretch
               variant="ghost"
             />
           </View>
         ) : (
-          <Button label={t("review.write")} onPress={() => setIsWriting(true)} variant="outline" />
+          <Button
+            icon="star"
+            label={t("review.write")}
+            onPress={() => setIsWriting(true)}
+            stretch
+            variant="outline"
+          />
         )
       ) : null}
 
       {reviews.length === 0 ? (
         <Body muted>{t("detail.noReviews")}</Body>
       ) : (
-        reviews.map((review) => (
-          <View key={review.id} style={styles.review}>
-            <View style={styles.header}>
-              <Body>{review.authorName}</Body>
-              <Stars rating={review.rating} />
+        reviews.map((review, index) => (
+          <View key={review.id} style={[styles.review, index === 0 ? null : styles.reviewDivider]}>
+            <View style={styles.reviewHead}>
+              <Avatar name={review.authorName} photo={null} size={36} />
+              <View style={styles.reviewWho}>
+                <Text numberOfLines={1} style={styles.reviewName}>
+                  {review.authorName}
+                </Text>
+                <Stars rating={review.rating} size={13} />
+              </View>
             </View>
             {review.comment ? <HtmlContent html={review.comment} muted /> : null}
           </View>
@@ -205,16 +241,11 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: "space-between"
   },
   multiline: { minHeight: 96, paddingTop: spacing.md, textAlignVertical: "top" },
-  ratingChip: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    minWidth: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm
-  },
-  ratingChipActive: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
   ratingRow: { flexDirection: "row", gap: spacing.sm },
-  review: { gap: spacing.xs, paddingVertical: spacing.sm }
+  review: { gap: spacing.sm, paddingVertical: spacing.md },
+  reviewDivider: { borderTopColor: colors.separator, borderTopWidth: 1 },
+  reviewHead: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  reviewName: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 15 },
+  reviewWho: { flex: 1, gap: 3 },
+  starRow: { flexDirection: "row", gap: 2 }
 }));

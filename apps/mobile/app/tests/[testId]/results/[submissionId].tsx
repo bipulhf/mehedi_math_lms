@@ -9,7 +9,9 @@ import { CourseCompletionNotice } from "@/src/components/course-completion-notic
 import { HtmlContent } from "@/src/components/html-content";
 import { MarkingLayer } from "@/src/components/marking-layer";
 import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
-import { Badge, Button, Caption, Card, Screen, SkeletonBlock, Title } from "@/src/components/ui";
+import { Badge, Button, Caption, Card, IconButton, Screen, SkeletonBlock } from "@/src/components/ui";
+import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
+import { ProgressRing } from "@/src/components/ui-display";
 import { getSubmissionDetail, getTestDetail } from "@/src/lib/api/tests";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
@@ -77,41 +79,74 @@ export default function SubmissionResultScreen(): JSX.Element {
 
   const answerMap = new Map(submission.answers.map((answer) => [answer.questionId, answer]));
 
+  const maxScore = submission.maxScore ?? test.totalMarks;
+  const percent = maxScore <= 0 ? 0 : ((submission.score ?? 0) / maxScore) * 100;
+
   return (
     <Screen>
-      <Stack.Screen options={{ title: test.title }} />
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* The score is the screen. A student who just submitted wants the number
+          and the verdict; everything else is detail under it. */}
+      <CurvedHeader overlap={false} style={styles.resultHeader}>
+        <HeaderBar
+          left={
+            <IconButton
+              accessibilityLabel={t("common.back")}
+              icon="chevron-back"
+              onPress={() => router.back()}
+              tone="onPaper"
+            />
+          }
+          subtitle={
+            submission.status === "GRADED" ? t("test.finalResult") : t("test.submissionReceived")
+          }
+          title={test.title}
+        />
+        <View style={styles.resultScoreRow}>
+          <ProgressRing label={t("test.score", { max: maxScore, score: submission.score ?? 0 })} percent={percent} size={84} tone="onColor" />
+          <View style={styles.resultScoreText}>
+            <Text style={styles.resultScore}>
+              {submission.score ?? 0}
+              <Text style={styles.resultScoreMax}>/{maxScore}</Text>
+            </Text>
+            {submission.passed !== null ? (
+              <View
+                style={[
+                  styles.verdict,
+                  { backgroundColor: submission.passed ? colors.success : colors.error }
+                ]}
+              >
+                <Text style={styles.verdictText}>
+                  {submission.passed ? t("test.passed") : t("test.failed")}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      </CurvedHeader>
+
       <ScrollView contentContainerStyle={styles.content}>
         {isCelebrating ? (
           <CourseCompletionNotice onDismiss={() => setIsCelebrating(false)} />
         ) : null}
 
         <Card style={{ gap: spacing.md }}>
-          <Title>{test.title}</Title>
-          <Caption>
-            {submission.status === "GRADED" ? t("test.finalResult") : t("test.submissionReceived")}
-          </Caption>
           <View style={styles.badgesRow}>
             <Badge tone="quiet">
               {t("test.attemptLabel", { number: submission.attemptNumber })}
             </Badge>
-            <Badge>{submission.status}</Badge>
-            <Badge>
-              {t("test.score", {
-                max: submission.maxScore ?? test.totalMarks,
-                score: submission.score ?? 0
-              })}
+            <Badge tone={submission.status === "GRADED" ? "success" : "info"}>
+              {submission.status}
             </Badge>
             {test.passingScore !== null ? (
-              <Badge tone="quiet">{t("test.passScore", { count: test.passingScore })}</Badge>
-            ) : null}
-            {submission.passed !== null ? (
-              <Badge tone={submission.passed ? "success" : "attention"}>
-                {submission.passed ? t("test.passed") : t("test.failed")}
-              </Badge>
+              <Badge tone="attention">{t("test.passScore", { count: test.passingScore })}</Badge>
             ) : null}
           </View>
           <Button
+            icon="time"
             label={t("test.viewHistory")}
+            stretch
             variant="outline"
             onPress={() => router.push({ params: { testId }, pathname: "/tests/[testId]/history" })}
           />
@@ -234,21 +269,21 @@ export default function SubmissionResultScreen(): JSX.Element {
 
 const useStyles = makeStyles((colors) => ({
   badgesRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  content: { gap: spacing.md, padding: spacing.lg },
+  content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxxl },
   optionRow: {
     alignItems: "center",
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
+    backgroundColor: colors.panelWarm,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
     justifyContent: "space-between",
     padding: spacing.md
   },
-  optionRowCorrect: { backgroundColor: colors.chipActive, borderColor: colors.correct },
-  optionRowWrong: { borderColor: colors.error },
+  optionRowCorrect: { backgroundColor: colors.successSoft, borderColor: colors.correct },
+  optionRowWrong: { backgroundColor: colors.errorSoft, borderColor: colors.error },
   outcomePill: {
     alignSelf: "flex-start",
     borderRadius: radius.pill,
@@ -256,7 +291,18 @@ const useStyles = makeStyles((colors) => ({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs
   },
-  outcomePillText: { fontFamily: fonts.bodySemiBold, fontSize: 13 }
+  outcomePillText: { fontFamily: fonts.displaySemiBold, fontSize: 12 },
+  resultHeader: { gap: spacing.xl, paddingBottom: spacing.xl },
+  resultScore: { color: colors.paper, fontFamily: fonts.display, fontSize: 40 },
+  resultScoreMax: { color: colors.paper, fontFamily: fonts.numeric, fontSize: 18, opacity: 0.8 },
+  resultScoreRow: { alignItems: "center", flexDirection: "row", gap: spacing.xl },
+  resultScoreText: { alignItems: "flex-start", flex: 1, gap: spacing.sm },
+  verdict: {
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 7
+  },
+  verdictText: { color: colors.paper, fontFamily: fonts.displayBold, fontSize: 13, letterSpacing: 0.4 }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

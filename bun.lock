@@ -57,8 +57,8 @@
       "name": "@mma/mobile",
       "version": "1.0.0",
       "dependencies": {
-        "@expo-google-fonts/archivo": "^0.4.2",
-        "@expo-google-fonts/hind-siliguri": "^0.4.1",
+        "@expo-google-fonts/anek-bangla": "^0.4.1",
+        "@expo-google-fonts/baloo-da-2": "^0.4.2",
         "@mma/i18n": "workspace:*",
         "@mma/shared": "workspace:*",
         "@react-native-async-storage/async-storage": "2.2.0",
@@ -585,9 +585,9 @@
 
     "@exodus/bytes": ["@exodus/bytes@1.15.1", "", { "peerDependencies": { "@noble/hashes": "^1.8.0 || ^2.0.0" }, "optionalPeers": ["@noble/hashes"] }, "sha512-S6mL0yNB/Abt9Ei4tq8gDhcczc4S3+vQ4ra7vxnAf+YHC02srtqxKKZghx2Dq6p0e66THKwR6r8N6P95wEty7Q=="],
 
-    "@expo-google-fonts/archivo": ["@expo-google-fonts/archivo@0.4.2", "", {}, "sha512-FLhI4/ZVIFSHHxx15Z7Rr4QX/4ZrJozEebBEFSdHSRRwULGCuSIpbb3dz56Hslux6LZEnJ1mVpZ6CyVpUzLwIg=="],
+    "@expo-google-fonts/anek-bangla": ["@expo-google-fonts/anek-bangla@0.4.1", "", {}, "sha512-/ntb/auqswMkSCakQtqtfmX15J4E0UWoJuY9A9yndZ1C5mOIqaHFfr12Eguunc6SIzjQbTFFwvWfnP+5mvvqpA=="],
 
-    "@expo-google-fonts/hind-siliguri": ["@expo-google-fonts/hind-siliguri@0.4.1", "", {}, "sha512-x6OODAk3r/pYCzrOp+wrnKbnbjl+MCdjR8B8JkZc1KFCoo6blzz4pvRLkj6zKq+rfi2NpwF+2pfT9L2uZVNdrw=="],
+    "@expo-google-fonts/baloo-da-2": ["@expo-google-fonts/baloo-da-2@0.4.2", "", {}, "sha512-4E9cvfgn065/H2vdxMq6KkMVpa2jTl99zOY0PEEL9jPgnR9+q8xURZCoOMMZraFu+/R6fk4TW+nc0peA486aWA=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.27", "", {}, "sha512-cnb3DZnWUWpezGFkJ8y4MT5f/lw6FcgDzeJzic+T+vpQHLHG1cg3SC3i1w1i8Bk4xKR4HPY3t9iIRNvtr5ml8A=="],
 

@@ -1,15 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 import type { JSX } from "react";
 import { Pressable } from "react-native";
 
 import { HtmlContent } from "@/src/components/html-content";
-import { Body, Caption, Card, EmptyState, SkeletonBlock, Title } from "@/src/components/ui";
+import { Body, Card, EmptyState, SkeletonBlock, Title } from "@/src/components/ui";
 import { getCourseRoutine } from "@/src/lib/api/routines";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * The routine as a student reads it: whichever halves the teacher published.
@@ -19,6 +21,7 @@ import { makeStyles } from "@/src/theme/theme";
  */
 export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
 
   const { data, isPending } = useQuery({
@@ -65,8 +68,9 @@ export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Elem
           }}
           style={styles.attachmentRow}
         >
+          <Ionicons color={colors.accent} name="document-attach" size={18} />
           <Body numberOfLines={1}>{routine.attachmentName ?? t("routine.openAttachment")}</Body>
-          <Caption>↗</Caption>
+          <Ionicons color={colors.accent} name="open-outline" size={16} />
         </Pressable>
       ) : null}
     </>
@@ -76,12 +80,12 @@ export function CourseRoutinePanel({ courseId }: { courseId: string }): JSX.Elem
 const useStyles = makeStyles((colors) => ({
   attachmentRow: {
     alignItems: "center",
-    borderColor: colors.hairline,
-    borderWidth: 1,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md,
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
-    minHeight: 44,
+    minHeight: 48,
     padding: spacing.md
   }
 }));

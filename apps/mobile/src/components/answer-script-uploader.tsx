@@ -208,12 +208,12 @@ const useStyles = makeStyles((colors) => ({
   container: { gap: spacing.sm },
   empty: {
     backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     padding: spacing.lg
   },
   page: {
     backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     gap: spacing.sm,
     padding: spacing.sm
   },
@@ -225,8 +225,8 @@ const useStyles = makeStyles((colors) => ({
   pageButtons: { flexDirection: "row", gap: spacing.xs },
   progress: {
     backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     padding: spacing.sm
   },
-  thumbnail: { borderRadius: radius.sm, height: 220, width: "100%" }
+  thumbnail: { borderRadius: radius.md, height: 220, width: "100%" }
 }));

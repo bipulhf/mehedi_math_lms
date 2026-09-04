@@ -115,6 +115,8 @@ export function PhoneOtpForm({ onSignedIn }: PhoneOtpFormProps): JSX.Element {
           isBusy={sendOtp.isPending}
           label={t("auth.sendCode")}
           onPress={handleSendPress}
+          size="lg"
+          stretch
         />
       </View>
     );
@@ -145,6 +147,8 @@ export function PhoneOtpForm({ onSignedIn }: PhoneOtpFormProps): JSX.Element {
         isBusy={verifyOtp.isPending}
         label={t("auth.verifyCode")}
         onPress={handleVerifyPress}
+        size="lg"
+        stretch
       />
 
       {secondsUntilResend > 0 ? (
@@ -173,5 +177,5 @@ export function PhoneOtpForm({ onSignedIn }: PhoneOtpFormProps): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  form: { gap: spacing.md }
+  form: { gap: spacing.lg }
 });

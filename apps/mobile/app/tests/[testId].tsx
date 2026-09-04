@@ -4,9 +4,12 @@ import { Image } from "expo-image";
 import { Redirect, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { AnswerScriptUploader } from "@/src/components/answer-script-uploader";
+import { CurvedHeader, HeaderBar, StickyBar } from "@/src/components/ui-layout";
 import { HtmlContent } from "@/src/components/html-content";
 import {
   Badge,
@@ -15,6 +18,7 @@ import {
   Caption,
   Card,
   ErrorNotice,
+  IconButton,
   Screen,
   ScreenSkeleton,
   SkeletonBlock,
@@ -33,8 +37,8 @@ import { useExamFocusGuard } from "@/src/lib/use-exam-focus-guard";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { queryKeys } from "@/src/lib/query";
-import { radius, spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 interface DraftAnswer {
   selectedOptionId?: string | undefined;
@@ -49,6 +53,7 @@ function formatRemaining(seconds: number): string {
 
 export default function TestScreen(): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const { testId } = useLocalSearchParams<{ testId: string }>();
   const router = useRouter();
   const t = useT();
@@ -314,6 +319,7 @@ export default function TestScreen(): JSX.Element {
             <Title>{test?.title ?? t("test.alreadySubmitted")}</Title>
             <Body muted>{t("test.alreadySubmittedLead")}</Body>
             <Button
+              icon="trophy"
               label={t("test.seeResult")}
               onPress={() =>
                 router.push({
@@ -321,20 +327,26 @@ export default function TestScreen(): JSX.Element {
                   pathname: "/tests/[testId]/results/[submissionId]"
                 })
               }
+              size="lg"
+              stretch
             />
             {canRetake ? (
               <Button
+                icon="refresh"
                 label={t("test.takeAgain")}
                 onPress={() => setIsRetaking(true)}
+                stretch
                 variant="outline"
               />
             ) : null}
             {test?.type === "MCQ" ? (
               <Button
+                icon="podium"
                 label={t("leaderboard.title")}
                 onPress={() =>
                   router.push({ params: { testId }, pathname: "/tests/[testId]/leaderboard" })
                 }
+                stretch
                 variant="outline"
               />
             ) : null}
@@ -369,21 +381,61 @@ export default function TestScreen(): JSX.Element {
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: test.title }} />
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Sitting a paper is a mode, not a page: the header carries the clock
+          and the count, and nothing else competes with the question. */}
+      <CurvedHeader overlap={false} style={styles.examHeader}>
+        <HeaderBar
+          left={
+            <IconButton
+              accessibilityLabel={t("common.back")}
+              icon="chevron-back"
+              onPress={() => router.back()}
+              tone="onPaper"
+            />
+          }
+          right={
+            timeRemainingSeconds === null ? undefined : (
+              <View style={styles.timerChip}>
+                <Ionicons color={colors.tint.gold.fg} name="time" size={15} />
+                <Text style={styles.timerValue}>{formatRemaining(timeRemainingSeconds)}</Text>
+              </View>
+            )
+          }
+          subtitle={t("test.answered", {
+            count: answeredCount,
+            total: test.questions.length
+          })}
+          title={test.title}
+        />
+        <View style={styles.examProgress}>
+          <View
+            style={[
+              styles.examProgressFill,
+              {
+                width: `${Math.max(4, (answeredCount / Math.max(1, test.questions.length)) * 100)}%`
+              }
+            ]}
+          />
+        </View>
+      </CurvedHeader>
+
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Card style={{ gap: spacing.md }}>
-          <Title>{test.title}</Title>
           {isStaff && test.type === "WRITTEN" ? (
             <Button
               label={t("marking.openPaper")}
               onPress={() =>
                 router.push({ params: { testId: test.id }, pathname: "/tests/[testId]/marking" })
               }
+              stretch
               variant="outline"
             />
           ) : null}
           {test.type === "MCQ" ? (
             <Button
+              icon="trophy"
               label={t("leaderboard.title")}
               onPress={() =>
                 router.push({
@@ -391,27 +443,19 @@ export default function TestScreen(): JSX.Element {
                   pathname: "/tests/[testId]/leaderboard"
                 })
               }
+              stretch
               variant="outline"
             />
           ) : null}
           {test.type === "MCQ" ? <Body muted>{t("test.focusWarningApp")}</Body> : null}
-          <View style={styles.badgeRow}>
-            <Badge>
-              {t("test.answered", { count: answeredCount, total: test.questions.length })}
-            </Badge>
-            {test.maxAttempts !== null ? (
-              <Badge>
+          {test.maxAttempts !== null ? (
+            <View style={styles.badgeRow}>
+              <Badge tone="info">
                 {t("test.attemptIndicator", {
                   current: (test.attemptsUsed ?? 0) + 1,
                   total: test.maxAttempts
                 })}
               </Badge>
-            ) : null}
-          </View>
-          {timeRemainingSeconds !== null ? (
-            <View style={styles.timerPanel}>
-              <Caption>{t("test.timeRemaining")}</Caption>
-              <Body>{formatRemaining(timeRemainingSeconds)}</Body>
             </View>
           ) : null}
           <View style={styles.questionGrid}>
@@ -425,11 +469,21 @@ export default function TestScreen(): JSX.Element {
                   accessibilityState={{ selected: isCurrent }}
                   key={question.id}
                   onPress={() => setCurrentQuestionIndex(index)}
-                  style={[styles.questionDot, isCurrent ? styles.questionDotCurrent : null]}
+                  style={[
+                    styles.questionDot,
+                    isAnswered(question.id) ? styles.questionDotAnswered : null,
+                    isCurrent ? styles.questionDotCurrent : null
+                  ]}
                 >
-                  <Caption tone={isAnswered(question.id) && !isCurrent ? "muted" : "faint"}>
+                  <Text
+                    style={[
+                      styles.questionDotText,
+                      isAnswered(question.id) ? styles.questionDotTextAnswered : null,
+                      isCurrent ? styles.questionDotTextCurrent : null
+                    ]}
+                  >
                     {index + 1}
-                  </Caption>
+                  </Text>
                 </Pressable>
               );
             })}
@@ -464,9 +518,10 @@ export default function TestScreen(): JSX.Element {
                 const selectedOptionId = draftAnswers[currentQuestion.id]?.selectedOptionId;
                 const isLocked = test.lockAnswerOnSelect && Boolean(selectedOptionId);
 
-                return currentQuestion.options.map((option) => {
+                return currentQuestion.options.map((option, optionIndex) => {
                   const isSelected = selectedOptionId === option.id;
                   const isDisabled = isLocked && !isSelected;
+                  const letter = String.fromCharCode(65 + optionIndex);
 
                   return (
                     <Pressable
@@ -486,7 +541,22 @@ export default function TestScreen(): JSX.Element {
                         isDisabled ? styles.optionDisabled : null
                       ]}
                     >
-                      <MathBody text={option.optionText} />
+                      {/* A letter, not a radio: a student reading a paper thinks
+                          in "C", and the mark should be the same shape as the
+                          answer they would write down. */}
+                      <View style={[styles.letter, isSelected ? styles.letterSelected : null]}>
+                        <Text
+                          style={[
+                            styles.letterText,
+                            isSelected ? styles.letterTextSelected : null
+                          ]}
+                        >
+                          {letter}
+                        </Text>
+                      </View>
+                      <View style={styles.optionText}>
+                        <MathBody text={option.optionText} />
+                      </View>
                     </Pressable>
                   );
                 });
@@ -506,69 +576,119 @@ export default function TestScreen(): JSX.Element {
             />
           )}
 
-          <View style={styles.prevNext}>
+        </Card>
+      </ScrollView>
+
+      <StickyBar>
+        <View style={styles.prevNext}>
+          <View style={styles.prevNextItem}>
             <Button
               disabled={currentQuestionIndex === 0}
+              icon="arrow-back"
               label={t("common.previous")}
               onPress={() => setCurrentQuestionIndex((value) => Math.max(0, value - 1))}
+              stretch
               variant="outline"
             />
+          </View>
+          <View style={styles.prevNextItem}>
             {currentQuestionIndex === test.questions.length - 1 ? (
               <Button
+                icon="checkmark-circle"
                 isBusy={isSubmitting}
                 label={isSubmitting ? t("test.submitting") : t("test.confirmSubmitAction")}
                 onPress={confirmSubmit}
+                stretch
               />
             ) : (
               <Button
+                icon="arrow-forward"
                 label={t("common.next")}
                 onPress={() =>
-                  setCurrentQuestionIndex((value) => Math.min(test.questions.length - 1, value + 1))
+                  setCurrentQuestionIndex((value) =>
+                    Math.min(test.questions.length - 1, value + 1)
+                  )
                 }
+                stretch
               />
             )}
           </View>
-        </Card>
-      </ScrollView>
+        </View>
+      </StickyBar>
     </Screen>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
   badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
-  content: { gap: spacing.md, padding: spacing.lg },
+  content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxl },
+  examHeader: { gap: spacing.lg, paddingBottom: spacing.lg },
+  examProgress: {
+    backgroundColor: "rgba(255, 255, 255, 0.28)",
+    borderRadius: radius.full,
+    height: 6,
+    overflow: "hidden"
+  },
+  examProgressFill: { backgroundColor: colors.paper, borderRadius: radius.full, height: "100%" },
   metaRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between"
   },
   option: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
+    alignItems: "center",
+    backgroundColor: colors.panelWarm,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 1.5,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 60,
     padding: spacing.lg
   },
   optionDisabled: { opacity: 0.5 },
-  optionSelected: { backgroundColor: colors.chipActive, borderColor: colors.accent },
+  optionSelected: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
+  optionText: { flex: 1 },
   prevNext: { flexDirection: "row", gap: spacing.md },
+  prevNextItem: { flex: 1 },
   questionDot: {
     alignItems: "center",
-    borderColor: colors.hairline,
-    borderRadius: radius.pill,
-    borderWidth: 1,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.full,
     height: 44,
     justifyContent: "center",
     width: 44
   },
-  questionDotCurrent: { backgroundColor: colors.chipActive, borderColor: colors.chipActive },
+  // Answered is mint, the one you are on is the violet: the grid is the map of
+  // the paper, and it should be readable without counting.
+  questionDotAnswered: { backgroundColor: colors.tint.mint.bg },
+  questionDotCurrent: { backgroundColor: colors.accent },
+  questionDotText: { color: colors.muted, fontFamily: fonts.numeric, fontSize: 14 },
+  questionDotTextAnswered: { color: colors.tint.mint.fg },
+  questionDotTextCurrent: { color: colors.onAccent },
   questionGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  questionImage: { borderRadius: radius.sm, height: 200, width: "100%" },
-  timerPanel: {
-    backgroundColor: colors.panelWarm,
-    gap: spacing.xs,
-    padding: spacing.md
-  }
+  questionImage: { borderRadius: radius.md, height: 200, width: "100%" },
+  letter: {
+    alignItems: "center",
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    height: 34,
+    justifyContent: "center",
+    width: 34
+  },
+  letterSelected: { backgroundColor: colors.accent },
+  letterText: { color: colors.muted, fontFamily: fonts.displayBold, fontSize: 15 },
+  letterTextSelected: { color: colors.onAccent },
+  timerChip: {
+    alignItems: "center",
+    backgroundColor: colors.tint.gold.bg,
+    borderRadius: radius.pill,
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8
+  },
+  timerValue: { color: colors.tint.gold.fg, fontFamily: fonts.numeric, fontSize: 15 }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

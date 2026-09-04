@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { JSX } from "react";
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 import {
   Body,
@@ -13,6 +13,7 @@ import {
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
+import { Avatar } from "@/src/components/ui-display";
 import {
   createLectureComment,
   deleteLectureComment,
@@ -22,7 +23,7 @@ import {
 } from "@/src/lib/api/comments";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
+import { fonts, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 /**
@@ -76,8 +77,11 @@ function CommentEntry({
   return (
     <View style={styles.comment}>
       <View style={styles.commentHeader}>
-        <Caption>{comment.user.name}</Caption>
-        <Caption>{format.date(comment.createdAt)}</Caption>
+        <Avatar name={comment.user.name} photo={null} size={32} />
+        <Text numberOfLines={1} style={styles.commentAuthor}>
+          {comment.user.name}
+        </Text>
+        <Text style={styles.commentTime}>{format.date(comment.createdAt)}</Text>
       </View>
 
       {isEditing ? (
@@ -253,12 +257,14 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
         />
         <Button
           disabled={draft.trim().length === 0}
+          icon="send"
           isBusy={post.isPending}
           label={t("comment.post")}
           onPress={() => {
             setError(null);
             post.mutate();
           }}
+          stretch
         />
       </View>
 
@@ -287,16 +293,20 @@ export function LectureComments({ lectureId }: { lectureId: string }): JSX.Eleme
 
 const useStyles = makeStyles((colors) => ({
   actionsRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  comment: { gap: spacing.xs },
-  commentHeader: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
+  comment: { gap: spacing.sm },
+  commentAuthor: { color: colors.ink, flex: 1, fontFamily: fonts.displaySemiBold, fontSize: 15 },
+  commentHeader: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  commentTime: { color: colors.mutedFaint, fontFamily: fonts.monoLabel, fontSize: 10 },
   composer: { gap: spacing.md, paddingBottom: spacing.lg },
   editActions: { flexDirection: "row", gap: spacing.sm },
   multiline: { minHeight: 80, paddingTop: spacing.md, textAlignVertical: "top" },
+  // A reply is indented behind a cobalt rule rather than a grey hairline: it
+  // is the one place in a thread where depth has to be read at a glance.
   reply: {
-    borderLeftColor: colors.hairline,
-    borderLeftWidth: 2,
+    borderLeftColor: colors.accentSoft,
+    borderLeftWidth: 3,
     gap: spacing.xs,
-    marginLeft: spacing.md,
+    marginLeft: spacing.lg,
     paddingLeft: spacing.md
   },
   replyBanner: {
@@ -305,5 +315,10 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: "space-between"
   },
   skeleton: { gap: spacing.sm },
-  thread: { gap: spacing.sm, paddingVertical: spacing.sm }
+  thread: {
+    borderTopColor: colors.separator,
+    borderTopWidth: 1,
+    gap: spacing.md,
+    paddingVertical: spacing.md
+  }
 }));

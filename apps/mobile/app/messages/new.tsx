@@ -4,6 +4,8 @@ import type { JSX } from "react";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import {
   Body,
   Caption,
@@ -21,10 +23,12 @@ import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
+import { useThemeColors } from "@/src/theme/theme";
 
 const MIN_SEARCH = 2;
 
 export default function NewConversationScreen(): JSX.Element {
+  const colors = useThemeColors();
   const router = useRouter();
   const t = useT();
   const { isPending: isSessionPending, session } = useSession();
@@ -119,7 +123,7 @@ export default function NewConversationScreen(): JSX.Element {
                     </Caption>
                   </View>
                 </View>
-                <Caption tone="faint">{t("messages.start")}</Caption>
+                <Ionicons color={colors.mutedFaint} name="chevron-forward" size={17} />
               </Card>
             </Pressable>
           ))
@@ -130,7 +134,7 @@ export default function NewConversationScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg },
+  content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
   participantBody: { flex: 1, gap: spacing.xs },
   participantPresence: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
   participantRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },

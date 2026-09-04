@@ -1,10 +1,12 @@
 // Imported per weight, not from the package root: the root index re-exports
 // every weight and italic, and Metro bundles each one it can see — about 10MB
 // of TTF for the six files this app registers.
-import { Archivo_500Medium } from "@expo-google-fonts/archivo/500Medium";
-import { HindSiliguri_400Regular } from "@expo-google-fonts/hind-siliguri/400Regular";
-import { HindSiliguri_500Medium } from "@expo-google-fonts/hind-siliguri/500Medium";
-import { HindSiliguri_600SemiBold } from "@expo-google-fonts/hind-siliguri/600SemiBold";
+import { AnekBangla_400Regular } from "@expo-google-fonts/anek-bangla/400Regular";
+import { AnekBangla_500Medium } from "@expo-google-fonts/anek-bangla/500Medium";
+import { AnekBangla_600SemiBold } from "@expo-google-fonts/anek-bangla/600SemiBold";
+import { BalooDa2_600SemiBold } from "@expo-google-fonts/baloo-da-2/600SemiBold";
+import { BalooDa2_700Bold } from "@expo-google-fonts/baloo-da-2/700Bold";
+import { BalooDa2_800ExtraBold } from "@expo-google-fonts/baloo-da-2/800ExtraBold";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -41,23 +43,24 @@ void SplashScreen.preventAutoHideAsync();
  * one level up, so this cannot be inlined into the component that mounts it.
  */
 function AppStack(): JSX.Element {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const t = useT();
 
   return (
     <>
-      {/* The bar's own glyphs, not the app's: light content over a dark theme,
-          dark content over a light one. */}
-      <StatusBar animated style={isDark ? "light" : "dark"} />
+      {/* The bar's own glyphs: dark content, because the app is light. */}
+      <StatusBar animated style="dark" />
       <Stack
         screenOptions={{
           animation: "slide_from_right",
           contentStyle: { backgroundColor: colors.background },
-          headerBlurEffect: isDark ? "dark" : "light",
+          headerBackButtonDisplayMode: "minimal",
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: "transparent" },
-          headerTintColor: colors.ink,
-          headerTitleStyle: { fontFamily: fonts.displayBold, fontSize: 17 },
+          headerStyle: { backgroundColor: colors.background },
+          // The chevron is the violet: on a page this pale it is the only
+          // thing on the bar a thumb is meant to find.
+          headerTintColor: colors.accent,
+          headerTitleStyle: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 17 },
           headerLargeTitle: false,
           headerTransparent: false
         }}
@@ -91,14 +94,16 @@ export default function RootLayout(): JSX.Element {
   // Created in state, not at module scope: a fast refresh would otherwise keep
   // a client whose cache no longer matches the code that filled it.
   const [queryClient] = useState(createMobileQueryClient);
-  // Three Hind Siliguri weights plus one Archivo. Several `fonts` entries map
-  // to the same family on purpose — the design sets everything in words in one
-  // family, and Archivo is only for Latin numerals and small all-caps labels.
+  // Six files: three weights of each family. Both draw Bangla and Latin, so a
+  // heading in either script is set in the face it was designed for — and
+  // `fonts.monoLabel` / `fonts.numeric` map onto weights already listed here.
   const [fontsLoaded, fontError] = useFonts({
-    [fonts.bodyMedium]: HindSiliguri_400Regular,
-    [fonts.bodySemiBold]: HindSiliguri_500Medium,
-    [fonts.displayExtraBold]: HindSiliguri_600SemiBold,
-    [fonts.monoLabel]: Archivo_500Medium
+    [fonts.body]: AnekBangla_400Regular,
+    [fonts.bodyMedium]: AnekBangla_500Medium,
+    [fonts.bodySemiBold]: AnekBangla_600SemiBold,
+    [fonts.display]: BalooDa2_800ExtraBold,
+    [fonts.displayBold]: BalooDa2_700Bold,
+    [fonts.displaySemiBold]: BalooDa2_600SemiBold
   });
   const isReady = fontsLoaded || fontError !== null;
 

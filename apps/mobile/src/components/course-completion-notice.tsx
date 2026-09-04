@@ -1,10 +1,13 @@
 import type { JSX } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { Body, Title } from "@/src/components/ui";
+import { IconTile } from "@/src/components/ui-display";
 import { useT } from "@/src/lib/locale";
 import { radius, spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /**
  * The one moment in the app shell that earns a celebration: a student just
@@ -17,10 +20,12 @@ import { makeStyles } from "@/src/theme/theme";
  */
 export function CourseCompletionNotice({ onDismiss }: { onDismiss: () => void }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const t = useT();
 
   return (
     <View style={styles.notice}>
+      <IconTile icon="trophy" size={44} tint="mint" />
       <View style={styles.text}>
         <Title>{t("player.courseCompleted")}</Title>
         <Body muted>{t("player.courseCompletedToast")}</Body>
@@ -31,19 +36,17 @@ export function CourseCompletionNotice({ onDismiss }: { onDismiss: () => void })
         hitSlop={spacing.sm}
         onPress={onDismiss}
       >
-        <Text style={styles.dismiss}>&times;</Text>
+        <Ionicons color={colors.muted} name="close" size={20} />
       </Pressable>
     </View>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
-  dismiss: { color: colors.muted, fontSize: 24 },
   notice: {
-    alignItems: "flex-start",
-    borderColor: colors.accent,
+    alignItems: "center",
+    backgroundColor: colors.successSoft,
     borderRadius: radius.square,
-    borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
     padding: spacing.lg

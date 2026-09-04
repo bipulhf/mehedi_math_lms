@@ -146,6 +146,7 @@ export default function ProfileCompleteScreen(): JSX.Element {
                 <Body>{t("profile.photo")}</Body>
                 <Caption>{t("profile.photoLead")}</Caption>
                 <Button
+                  icon="camera"
                   isBusy={uploadPhoto.isPending}
                   label={t("profile.choosePhoto")}
                   onPress={() => {
@@ -183,7 +184,14 @@ export default function ProfileCompleteScreen(): JSX.Element {
             ))}
           </Card>
 
-          <Button isBusy={save.isPending} label={t("action.save")} onPress={handleSubmit} />
+          <Button
+            icon="checkmark"
+            isBusy={save.isPending}
+            label={t("action.save")}
+            onPress={handleSubmit}
+            size="lg"
+            stretch
+          />
           <Caption>{t("profile.completeFormLead")}</Caption>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -192,7 +200,7 @@ export default function ProfileCompleteScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.lg, padding: spacing.lg },
+  content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
   fieldError: { paddingTop: spacing.xs },
   flex: { flex: 1 },
   form: { gap: spacing.lg },

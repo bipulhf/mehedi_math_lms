@@ -89,12 +89,12 @@ export default function TestHistoryScreen(): JSX.Element {
               <Body>{t("test.attemptLabel", { number: submission.attemptNumber })}</Body>
               <Caption>{format.date(submission.createdAt)}</Caption>
               <View style={styles.badgesRow}>
-                <Badge tone="quiet">{submission.status}</Badge>
+                <Badge tone="info">{submission.status}</Badge>
                 <Badge tone="quiet">
                   {submission.score ?? 0}/{submission.maxScore ?? test.totalMarks}
                 </Badge>
                 {submission.passed !== null ? (
-                  <Badge tone={submission.passed ? "success" : "attention"}>
+                  <Badge tone={submission.passed ? "success" : "danger"}>
                     {submission.passed ? t("test.passed") : t("test.failed")}
                   </Badge>
                 ) : null}

@@ -76,10 +76,12 @@ export default function PreviewScreen(): JSX.Element {
           <Card style={{ gap: spacing.md }}>
             <Body muted>{t("player.pdfLead")}</Body>
             <Button
+              icon="document-text"
               label={t("player.openPdf")}
               onPress={() => {
                 void WebBrowser.openBrowserAsync(pdf.fileUrl);
               }}
+              stretch
               variant="outline"
             />
           </Card>
@@ -103,7 +105,7 @@ export default function PreviewScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  content: { gap: spacing.md, padding: spacing.lg },
+  content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxxl },
   padded: { padding: spacing.lg }
 });
 

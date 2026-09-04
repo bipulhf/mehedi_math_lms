@@ -6,6 +6,8 @@ import type { JSX } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, TextInput, useWindowDimensions, View } from "react-native";
 
+import type Ionicons from "@expo/vector-icons/Ionicons";
+
 import { HtmlContent } from "@/src/components/html-content";
 import { ScriptChallengePanel } from "@/src/components/script-challenge-panel";
 import { MarkingLayer, type MarkingTool } from "@/src/components/marking-layer";
@@ -37,20 +39,29 @@ import {
   type MarkingWorkItem
 } from "@/src/lib/marking-work-list";
 import { queryKeys } from "@/src/lib/query";
-import { radius, spacing } from "@/src/theme/tokens";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 /** Renewed well inside the API's two-minute claim, so a working teacher never loses it. */
 const claimRenewalMs = 45_000;
 const markingSaveDebounceMs = 700;
 
-const tools: readonly { label: string; value: MarkingTool }[] = [
-  { label: "✎", value: "PEN" },
-  { label: "✓", value: "TICK" },
-  { label: "✗", value: "CROSS" },
-  { label: "½", value: "HALF" },
-  { label: "T", value: "NOTE" },
-  { label: "⌫", value: "ERASER" }
+/**
+ * The marking tools. The icon is what the teacher looks for; the label is what
+ * a screen reader says, and what a tooltipless button needs to stay usable when
+ * two tools draw similar marks.
+ */
+const tools: readonly {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: MarkingTool;
+}[] = [
+  { icon: "brush", label: "Pen", value: "PEN" },
+  { icon: "checkmark", label: "Tick", value: "TICK" },
+  { icon: "close", label: "Cross", value: "CROSS" },
+  { icon: "remove", label: "Half", value: "HALF" },
+  { icon: "text", label: "Note", value: "NOTE" },
+  { icon: "backspace", label: "Eraser", value: "ERASER" }
 ];
 
 const markingColors: readonly MarkingColor[] = ["RED", "GREEN", "BLUE", "BLACK"];
@@ -359,6 +370,7 @@ export default function MarkingScreen(): JSX.Element {
             <View style={styles.row}>
               {tools.map((item) => (
                 <Button
+                  icon={item.icon}
                   key={item.value}
                   label={item.label}
                   onPress={() => setTool(item.value)}
@@ -431,6 +443,7 @@ export default function MarkingScreen(): JSX.Element {
               />
               <Caption tone="faint">{t("marking.outOf", { marks: activeAnswer.marks })}</Caption>
               <Button
+                icon="checkmark"
                 isBusy={isBusy}
                 label={isLastAnswerOfPaper ? t("marking.saveAndSubmit") : t("marking.saveMark")}
                 onPress={() => void saveMarkAndAdvance()}
@@ -444,27 +457,39 @@ export default function MarkingScreen(): JSX.Element {
 }
 
 const useStyles = makeStyles((colors) => ({
-  content: { gap: spacing.md, padding: spacing.lg },
-  guide: { backgroundColor: colors.panelWarm, borderRadius: radius.sm, padding: spacing.md },
+  content: { gap: spacing.md, padding: spacing.lg, paddingBottom: spacing.xxxl },
+  guide: {
+    backgroundColor: colors.tint.gold.bg,
+    borderRadius: radius.md,
+    gap: spacing.xs,
+    padding: spacing.md
+  },
   markInput: {
-    backgroundColor: colors.card,
-    borderColor: colors.hairline,
-    borderRadius: radius.sm,
-    borderWidth: 1,
+    backgroundColor: colors.input,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     color: colors.ink,
-    minHeight: 44,
-    minWidth: 80,
-    padding: spacing.sm
+    fontFamily: fonts.numeric,
+    fontSize: 17,
+    minHeight: 52,
+    minWidth: 88,
+    paddingHorizontal: spacing.md,
+    textAlign: "center"
   },
   queueRow: {
     alignItems: "center",
     backgroundColor: colors.panelWarm,
-    borderRadius: radius.sm,
+    borderColor: "transparent",
+    borderRadius: radius.md,
+    borderWidth: 1.5,
     flexDirection: "row",
+    gap: spacing.md,
     justifyContent: "space-between",
-    padding: spacing.md
+    minHeight: 52,
+    paddingHorizontal: spacing.md
   },
-  queueRowActive: { backgroundColor: colors.chipActive },
+  queueRowActive: { backgroundColor: colors.accentSoft, borderColor: colors.accent },
   row: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }
 }));
 

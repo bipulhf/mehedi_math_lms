@@ -4,6 +4,8 @@ import { Link, Stack } from "expo-router";
 import type { JSX } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import Ionicons from "@expo/vector-icons/Ionicons";
+
 import {
   Body,
   Caption,
@@ -19,10 +21,11 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api/profiles";
 import { queryKeys } from "@/src/lib/query";
 import { fonts, spacing } from "@/src/theme/tokens";
-import { makeStyles } from "@/src/theme/theme";
+import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Element {
   const styles = useStyles();
+  const colors = useThemeColors();
   const format = useFormat();
   const t = useT();
 
@@ -49,12 +52,18 @@ function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Elemen
             </Body>
           ) : null}
           <View style={styles.meta}>
-            <Caption>
-              {format.number(teacher.courseCount)} {t("common.courses")}
-            </Caption>
-            <Caption>
-              {format.number(teacher.studentCount)} {t("common.students")}
-            </Caption>
+            <View style={styles.metaItem}>
+              <Ionicons color={colors.tint.brand.solid} name="book" size={14} />
+              <Caption>
+                {format.number(teacher.courseCount)} {t("common.courses")}
+              </Caption>
+            </View>
+            <View style={styles.metaItem}>
+              <Ionicons color={colors.tint.mint.solid} name="people" size={14} />
+              <Caption>
+                {format.number(teacher.studentCount)} {t("common.students")}
+              </Caption>
+            </View>
           </View>
         </Card>
       </Pressable>
@@ -95,18 +104,20 @@ export default function TeachersScreen(): JSX.Element {
 }
 
 const useStyles = makeStyles((colors) => ({
-  content: { padding: spacing.lg },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxxl },
   header: { gap: spacing.sm, paddingBottom: spacing.lg },
   identity: { alignItems: "center", flexDirection: "row", gap: spacing.md },
   identityText: { flex: 1, gap: spacing.xs },
   meta: {
-    borderTopColor: colors.hairline,
+    borderTopColor: colors.separator,
     borderTopWidth: 1,
     flexDirection: "row",
     gap: spacing.lg,
+    marginTop: spacing.sm,
     paddingTop: spacing.md
   },
-  name: { color: colors.ink, fontFamily: fonts.displaySemiBold, fontSize: 19 },
+  metaItem: { alignItems: "center", flexDirection: "row", gap: 6 },
+  name: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 18 },
   row: { marginBottom: spacing.md }
 }));
 

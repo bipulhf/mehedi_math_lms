@@ -17,7 +17,7 @@ import {
 import { listScriptChallenges, raiseScriptChallenge } from "@/src/lib/api/challenges";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { spacing } from "@/src/theme/tokens";
+import { radius, spacing } from "@/src/theme/tokens";
 import { makeStyles } from "@/src/theme/theme";
 
 /** The floor `raiseScriptChallengeSchema` enforces; shown so it is not a surprise. */
@@ -106,7 +106,7 @@ export function ScriptChallengePanel({
       <View style={styles.header}>
         <Title>{t("challenge.title")}</Title>
         {latest ? (
-          <Badge tone="quiet">
+          <Badge tone={latest.status === "OPEN" ? "attention" : "success"}>
             {latest.status === "OPEN" ? t("challenge.statusOpen") : t("challenge.statusResolved")}
           </Badge>
         ) : null}
@@ -154,9 +154,11 @@ export function ScriptChallengePanel({
           />
           <Caption tone="faint">{t("challenge.reasonHint")}</Caption>
           <Button
+            icon="flag"
             isBusy={raise.isPending}
             label={raise.isPending ? t("challenge.raising") : t("challenge.raise")}
             onPress={submit}
+            stretch
             variant="outline"
           />
         </View>
@@ -167,16 +169,16 @@ export function ScriptChallengePanel({
 
 const useStyles = makeStyles((colors) => ({
   entry: {
-    borderLeftColor: colors.hairline,
-    borderLeftWidth: 2,
+    backgroundColor: colors.panelWarm,
+    borderRadius: radius.md,
     gap: spacing.xs,
-    paddingLeft: spacing.md
+    padding: spacing.md
   },
   form: {
-    borderTopColor: colors.hairline,
+    borderTopColor: colors.separator,
     borderTopWidth: 1,
-    gap: spacing.sm,
-    paddingTop: spacing.md
+    gap: spacing.md,
+    paddingTop: spacing.lg
   },
   header: {
     alignItems: "center",

@@ -133,6 +133,7 @@ export default function SignUpScreen(): JSX.Element {
             label={t("auth.signUp")}
             onPress={handleSubmit}
             size="lg"
+            stretch
           />
         </>
       )}
