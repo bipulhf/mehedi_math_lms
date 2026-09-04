@@ -1,9 +1,7 @@
-import type { Formatters, Translator } from "@mma/i18n";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -11,20 +9,17 @@ import * as Haptics from "expo-haptics";
 
 import { BannerStrip } from "@/src/components/banner-strip";
 import { BrandLockup } from "@/src/components/brand-lockup";
-import { FilterSheet, type FilterSection } from "@/src/components/filter-sheet";
 import {
-  Badge,
-  Button,
-  Card,
-  CoverImage,
-  EmptyState,
-  IconButton,
-  Screen,
-  SkeletonBlock,
-  tabScrollInset
-} from "@/src/components/ui";
+  CourseGridRow,
+  CourseGridSkeleton,
+  pairCourses,
+  useCourseGridMetrics,
+  type CoursePair
+} from "@/src/components/course-grid";
+import { FilterSheet, type FilterSection } from "@/src/components/filter-sheet";
+import { Button, EmptyState, IconButton, Screen, tabScrollInset } from "@/src/components/ui";
 import { CurvedHeader } from "@/src/components/ui-layout";
-import { FilterPill, PriceText, RatingMark } from "@/src/components/ui-display";
+import { FilterPill } from "@/src/components/ui-display";
 import { listCategories } from "@/src/lib/api/categories";
 import { type CourseSummary, listCourses } from "@/src/lib/api/courses";
 import { useFormat, useT } from "@/src/lib/locale";
@@ -33,25 +28,6 @@ import { fonts, radius, spacing } from "@/src/theme/tokens";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 type SortOrder = "newest" | "priceLow" | "priceHigh";
-
-/** The one meta line a grid tile has room for: lessons, then free lessons. */
-function courseMetaLine(
-  course: CourseSummary,
-  t: Translator,
-  format: Formatters
-): string {
-  const parts: string[] = [];
-
-  if (course.stats.lectureCount > 0) {
-    parts.push(t("course.lessons", { count: format.number(course.stats.lectureCount) }));
-  }
-
-  if (course.stats.freeLessonCount > 0) {
-    parts.push(t("course.freeLessons", { count: format.number(course.stats.freeLessonCount) }));
-  }
-
-  return parts.join(" · ");
-}
 
 function sortCourses(
   courses: readonly CourseSummary[],
@@ -64,116 +40,6 @@ function sortCourses(
   const direction = order === "priceLow" ? 1 : -1;
 
   return [...courses].sort((a, b) => (Number(a.price) - Number(b.price)) * direction);
-}
-
-/**
- * A catalogue tile.
- *
- * The catalogue is a **two-column grid**, not a stack of full-width cards: a
- * student browsing is comparing courses, and a list that shows one and a half
- * of them at a time makes comparing impossible. What survives the narrower
- * column is what actually decides a tap — the cover, the name, the price.
- */
-const CourseTile = memo(function CourseTile({ course }: { course: CourseSummary }): JSX.Element {
-  const styles = useStyles();
-  const t = useT();
-  const format = useFormat();
-  const meta = courseMetaLine(course, t, format);
-
-  return (
-    <Link asChild href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}>
-      <Pressable
-        accessibilityLabel={course.title}
-        accessibilityRole="link"
-        style={({ pressed }) => [styles.tileWrap, pressed ? styles.pressed : null]}
-      >
-        <Card flush style={styles.tile}>
-          <View>
-            <CoverImage bleed height={112} uri={course.coverImageUrl} />
-            {course.isExamOnly ? (
-              <View style={styles.tileFlag}>
-                <Badge tone="attention">{t("course.examOnly")}</Badge>
-              </View>
-            ) : null}
-          </View>
-          <View style={styles.tileBody}>
-            {course.category ? (
-              <Text numberOfLines={1} style={styles.tileCategory}>
-                {course.category.name}
-              </Text>
-            ) : null}
-            <Text numberOfLines={2} style={styles.tileTitle}>
-              {course.title}
-            </Text>
-            {meta.length > 0 ? (
-              <Text numberOfLines={1} style={styles.tileMeta}>
-                {meta}
-              </Text>
-            ) : null}
-            <View style={styles.tileFoot}>
-              <PriceText amount={course.price} />
-              {course.stats.reviewCount > 0 ? (
-                <RatingMark value={course.stats.reviewAverage ?? 0} />
-              ) : null}
-            </View>
-          </View>
-        </Card>
-      </Pressable>
-    </Link>
-  );
-});
-
-/**
- * Two tiles on one row, and that row is what the list recycles.
- *
- * FlashList's own `numColumns` is not used here. A recycled item must not carry
- * `flex: 1` — the list warns about it, and a flexed tile measures wrong in a
- * column cell, which put every course in the left column and left the right one
- * empty. Owning the row means the halves are ours to size and the list only
- * ever sees a full-width item.
- */
-const CourseGridRow = memo(function CourseGridRow({
-  pair
-}: {
-  pair: { key: string; left: CourseSummary; right: CourseSummary | null };
-}): JSX.Element {
-  const styles = useStyles();
-
-  return (
-    <View style={styles.gridRow}>
-      <CourseTile course={pair.left} />
-      {pair.right === null ? (
-        // The odd tile keeps its half of the row rather than stretching across it.
-        <View style={styles.tileWrap} />
-      ) : (
-        <CourseTile course={pair.right} />
-      )}
-    </View>
-  );
-});
-
-function CatalogSkeleton(): JSX.Element {
-  const styles = useStyles();
-  return (
-    <View>
-      {[0, 1].map((row) => (
-        <View key={row} style={styles.gridRow}>
-          {[0, 1].map((key) => (
-            <View key={key} style={styles.tileWrap}>
-              <Card flush style={styles.tile}>
-                <SkeletonBlock height={112} />
-                <View style={styles.tileBody}>
-                  <SkeletonBlock height={10} width="50%" />
-                  <SkeletonBlock height={16} width="90%" />
-                  <SkeletonBlock height={14} width="40%" />
-                </View>
-              </Card>
-            </View>
-          ))}
-        </View>
-      ))}
-    </View>
-  );
 }
 
 export default function CatalogScreen(): JSX.Element {
@@ -223,32 +89,17 @@ export default function CatalogScreen(): JSX.Element {
   // Paired here rather than by `numColumns`, so the list item is always a full
   // row. `courses` is a fresh array each render only when the query or the sort
   // changes, which is exactly when the pairing has to be redone.
-  const pairs = useMemo(() => {
-    const rows: { key: string; left: CourseSummary; right: CourseSummary | null }[] = [];
+  const pairs = useMemo(() => pairCourses(courses), [courses]);
 
-    for (let index = 0; index < courses.length; index += 2) {
-      const left = courses[index];
-
-      if (left === undefined) {
-        break;
-      }
-
-      rows.push({ key: left.id, left, right: courses[index + 1] ?? null });
-    }
-
-    return rows;
-  }, [courses]);
+  // One measurement for the whole grid rather than one per tile, so every tile
+  // on the screen is the same width and a rotation moves all of them together.
+  const metrics = useCourseGridMetrics();
 
   const renderItem = useCallback(
-    ({ item }: { item: { key: string; left: CourseSummary; right: CourseSummary | null } }) => (
-      <CourseGridRow pair={item} />
-    ),
-    []
+    ({ item }: { item: CoursePair }) => <CourseGridRow metrics={metrics} pair={item} />,
+    [metrics]
   );
-  const keyExtractor = useCallback(
-    (item: { key: string; left: CourseSummary; right: CourseSummary | null }) => item.key,
-    []
-  );
+  const keyExtractor = useCallback((item: CoursePair) => item.key, []);
 
   const sortOptions: readonly { label: string; value: SortOrder }[] = [
     { label: t("courses.sort.newest"), value: "newest" },
@@ -425,13 +276,15 @@ export default function CatalogScreen(): JSX.Element {
         title={t("courses.filters")}
       />
 
+      {/* All three states scroll and all three clear the docked nav bar, so the
+          screen does not gain or lose a scrollbar as the query settles. */}
       {isPending ? (
-        <View>
+        <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
           {listHeader}
-          <CatalogSkeleton />
-        </View>
+          <CourseGridSkeleton />
+        </ScrollView>
       ) : courses.length === 0 ? (
-        <View>
+        <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
           {listHeader}
           <EmptyState
             action={
@@ -446,7 +299,7 @@ export default function CatalogScreen(): JSX.Element {
             icon="magnifyingglass"
             message={t("empty.courses")}
           />
-        </View>
+        </ScrollView>
       ) : (
         <FlashList
           contentContainerStyle={styles.grid}
@@ -466,8 +319,9 @@ const useStyles = makeStyles((colors) => ({
   chipRow: { gap: spacing.sm, paddingHorizontal: spacing.lg },
   chipStrip: { flexGrow: 0 },
   clearLink: { color: colors.accent, fontFamily: fonts.displaySemiBold, fontSize: 13 },
-  grid: { paddingBottom: tabScrollInset, paddingHorizontal: spacing.sm },
-  gridRow: { flexDirection: "row" },
+  // No horizontal padding: the grid rows carry the screen inset themselves, so
+  // the banner in the header can still run edge to edge.
+  grid: { paddingBottom: tabScrollInset },
   header: { gap: spacing.lg, paddingBottom: spacing.lg },
   headerTitle: {
     color: colors.paper,
@@ -476,8 +330,7 @@ const useStyles = makeStyles((colors) => ({
     lineHeight: 32,
     marginBottom: -spacing.xs
   },
-  headerBlock: { gap: spacing.md, paddingTop: spacing.lg },
-  pressed: { opacity: 0.92, transform: [{ scale: 0.98 }] },
+  headerBlock: { gap: spacing.md, paddingBottom: spacing.md, paddingTop: spacing.lg },
   resultRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -500,27 +353,7 @@ const useStyles = makeStyles((colors) => ({
     gap: spacing.sm,
     minHeight: 52,
     paddingHorizontal: spacing.lg
-  },
-  tile: { flex: 1 },
-  tileBody: { gap: 4, padding: spacing.md },
-  tileCategory: {
-    color: colors.accent,
-    fontFamily: fonts.monoLabel,
-    fontSize: 10,
-    letterSpacing: 0.8,
-    textTransform: "uppercase"
-  },
-  tileFlag: { left: spacing.sm, position: "absolute", top: spacing.sm },
-  tileFoot: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-    justifyContent: "space-between",
-    paddingTop: spacing.xs
-  },
-  tileMeta: { color: colors.muted, fontFamily: fonts.body, fontSize: 12 },
-  tileTitle: { color: colors.ink, fontFamily: fonts.displayBold, fontSize: 15, lineHeight: 21 },
-  tileWrap: { flex: 1, padding: spacing.sm }
+  }
 }));
 
 export { ScreenErrorBoundary as ErrorBoundary } from "@/src/components/route-error";

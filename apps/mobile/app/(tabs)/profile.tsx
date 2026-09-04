@@ -11,11 +11,16 @@ import {
   Button,
   Card,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock,
   tabScrollInset,
   Title
 } from "@/src/components/ui";
+import {
+  SkeletonBody,
+  SkeletonCard,
+  SkeletonHeader,
+  SkeletonRows
+} from "@/src/components/skeletons";
 import { CurvedHeader, HeaderBar, ListGroup, ListRow } from "@/src/components/ui-layout";
 import { Avatar, StreakTrack } from "@/src/components/ui-display";
 import { getOwnProfile } from "@/src/lib/api/profiles";
@@ -85,7 +90,16 @@ export default function ProfileScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton noHeader rows={2} />;
+    return (
+      <Screen>
+        <SkeletonHeader overlap={false} />
+        <SkeletonBody tabInset>
+          <SkeletonCard lines={2} />
+          <SkeletonCard lines={1} />
+          <SkeletonRows leading="tile" rows={4} />
+        </SkeletonBody>
+      </Screen>
+    );
   }
 
   // Signed out, this tab *is* the way in — so it goes straight to the sign-in

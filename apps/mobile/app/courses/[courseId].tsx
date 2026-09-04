@@ -21,10 +21,10 @@ import {
   ErrorNotice,
   IconButton,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
+import { SkeletonHero, SkeletonStickyBar } from "@/src/components/skeletons";
 import { StickyBar } from "@/src/components/ui-layout";
 import {
   AccordionRow,
@@ -159,7 +159,12 @@ export default function CourseDetailScreen(): JSX.Element {
     router.push({ params: { courseId: course?.id ?? courseId }, pathname: "/learn/[courseId]" });
 
   if (courseQuery?.isPending) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <Screen>
+        <SkeletonHero coverHeight={280} />
+        <SkeletonStickyBar />
+      </Screen>
+    );
   }
 
   if (!course) {

@@ -9,6 +9,13 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { AnswerScriptUploader } from "@/src/components/answer-script-uploader";
+import {
+  SkeletonBody,
+  SkeletonCard,
+  SkeletonHeader,
+  SkeletonRows,
+  SkeletonStickyBar
+} from "@/src/components/skeletons";
 import { CurvedHeader, HeaderBar, StickyBar } from "@/src/components/ui-layout";
 import { HtmlContent } from "@/src/components/html-content";
 import {
@@ -20,7 +27,6 @@ import {
   ErrorNotice,
   IconButton,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock,
   Title
 } from "@/src/components/ui";
@@ -301,7 +307,16 @@ export default function TestScreen(): JSX.Element {
   const isLoading = isPending || isLoadingAttempts || isStartingSubmission;
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={3} />;
+    return (
+      <Screen>
+        <SkeletonHeader hasLeading overlap={false} />
+        <SkeletonBody>
+          <SkeletonCard lines={3} />
+          <SkeletonRows leading="none" rows={4} />
+        </SkeletonBody>
+        <SkeletonStickyBar />
+      </Screen>
+    );
   }
 
   if (!session) {

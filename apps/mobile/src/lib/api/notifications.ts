@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
+import { apiGet, apiGetPaginated, apiPost, apiPut, buildQueryString } from "@/src/lib/api-client";
 
 /** The notification list, its unread count, and this device's push token. */
 
@@ -12,10 +12,24 @@ export interface NotificationRecord {
   type: "NOTICE" | "PAYMENT" | "COURSE" | "MESSAGE" | "BUG_REPORT" | "SYSTEM";
 }
 
-export async function listNotifications(): Promise<{ items: readonly NotificationRecord[] }> {
-  return apiGet<{ items: readonly NotificationRecord[] }>(
+/**
+ * `apiGetPaginated`, not `apiGet`, because the endpoint answers with the
+ * `{ status, data: [...], pagination }` envelope that `paginated()` writes on
+ * the API side — `data` is the array itself, there is no `items` key on it.
+ * This used to call `apiGet` and claim `{ items }`, so `data.items` was
+ * `undefined` at runtime while type-checking cleanly, and the notifications
+ * list died on `Cannot read property 'length' of undefined`. Shaped like
+ * `listCourses` now, which is the convention for every paginated list here.
+ */
+export async function listNotifications(): Promise<{
+  items: readonly NotificationRecord[];
+  pages: number;
+}> {
+  const response = await apiGetPaginated<NotificationRecord>(
     `notifications${buildQueryString({ limit: 30, page: 1 })}`
   );
+
+  return { items: response.data, pages: response.pagination.pages };
 }
 
 export async function getNotificationUnreadCount(): Promise<number> {

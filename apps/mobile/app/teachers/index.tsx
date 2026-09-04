@@ -13,7 +13,6 @@ import {
   EmptyState,
   Heading,
   Screen,
-  ScreenSkeleton
 } from "@/src/components/ui";
 import { Avatar } from "@/src/components/ui-display";
 import { stripHtml } from "@/src/lib/html";
@@ -21,6 +20,7 @@ import { useFormat, useT } from "@/src/lib/locale";
 import { listPublicTeachers, type TeacherDirectoryEntry } from "@/src/lib/api/profiles";
 import { queryKeys } from "@/src/lib/query";
 import { fonts, spacing } from "@/src/theme/tokens";
+import { SkeletonHeading, SkeletonRows, SkeletonScreen } from "@/src/components/skeletons";
 import { makeStyles, useThemeColors } from "@/src/theme/theme";
 
 function TeacherRow({ teacher }: { teacher: TeacherDirectoryEntry }): JSX.Element {
@@ -80,7 +80,12 @@ export default function TeachersScreen(): JSX.Element {
   });
 
   if (isPending) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonRows leading="avatar" rows={5} />
+      </SkeletonScreen>
+    );
   }
 
   return (

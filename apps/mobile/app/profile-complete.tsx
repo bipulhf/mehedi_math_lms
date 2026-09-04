@@ -14,9 +14,14 @@ import {
   Field,
   Heading,
   Screen,
-  ScreenSkeleton
 } from "@/src/components/ui";
 import { Avatar } from "@/src/components/ui-display";
+import {
+  SkeletonCard,
+  SkeletonForm,
+  SkeletonHeading,
+  SkeletonScreen
+} from "@/src/components/skeletons";
 import { getOwnProfile, updateOwnProfile } from "@/src/lib/api/profiles";
 import { pickAndUploadImage } from "@/src/lib/image-upload";
 import { useT } from "@/src/lib/locale";
@@ -97,7 +102,13 @@ export default function ProfileCompleteScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonCard lines={1} />
+        <SkeletonForm fields={4} />
+      </SkeletonScreen>
+    );
   }
 
   if (!session) {
@@ -105,7 +116,13 @@ export default function ProfileCompleteScreen(): JSX.Element {
   }
 
   if (isProfilePending || !hasLoadedProfile) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonCard lines={1} />
+        <SkeletonForm fields={4} />
+      </SkeletonScreen>
+    );
   }
 
   const { fields } = profileFormShape(role);

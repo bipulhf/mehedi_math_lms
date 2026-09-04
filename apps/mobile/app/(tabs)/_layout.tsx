@@ -4,7 +4,6 @@ import type { JSX } from "react";
 
 import { BottomNav } from "@/src/components/bottom-nav";
 import { listConversations } from "@/src/lib/api/messages";
-import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
 import { useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
@@ -30,18 +29,14 @@ export default function TabsLayout(): JSX.Element {
     queryFn: listConversations,
     queryKey: queryKeys.conversations()
   });
-  const { data: unreadNotifications = 0 } = useQuery({
-    enabled: Boolean(session),
-    queryFn: getNotificationUnreadCount,
-    queryKey: queryKeys.unreadNotifications()
-  });
-  const unreadMessages = (conversations ?? []).reduce(
+  // Messages only. Notifications used to be the inbox's second segment and were
+  // added in here; they live behind the bell on the home header now, and that
+  // bell carries its own badge, so counting them twice would point the reader
+  // at the wrong tab.
+  const unreadInbox = (conversations ?? []).reduce(
     (sum, conversation) => sum + conversation.unreadCount,
     0
   );
-  // One badge for the merged Inbox tab -- a student doesn't care which half of
-  // the tab has something new, only that it does.
-  const unreadInbox = unreadMessages + unreadNotifications;
   const visible = isSignedIn ? ["index", "explore", "inbox", "profile"] : ["explore", "profile"];
 
   return (

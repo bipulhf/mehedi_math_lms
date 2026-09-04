@@ -13,9 +13,9 @@ import {
   ErrorNotice,
   Heading,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock
 } from "@/src/components/ui";
+import { SkeletonThread } from "@/src/components/skeletons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import { PresenceDot } from "@/src/components/ui-display";
@@ -140,7 +140,11 @@ export default function ConversationScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <Screen>
+        <SkeletonThread bubbles={6} />
+      </Screen>
+    );
   }
 
   if (!session) {

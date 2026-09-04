@@ -45,6 +45,11 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: 3000,
+      // Every interface, not just loopback. Better Auth is served from here,
+      // not from the API, so a phone or emulator running the mobile app signs
+      // in against this origin — and on localhost-only it cannot reach it at
+      // all. `EXPO_PUBLIC_WEB_ORIGIN` points at this machine's LAN address.
+      host: true,
       // Packages are consumed as TypeScript source, so Vite follows the
       // node_modules/@mma/* symlinks out into packages/ and watches real
       // files there — which is what makes a package edit hot-reload. What it

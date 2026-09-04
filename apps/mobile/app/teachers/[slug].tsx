@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import type { JSX } from "react";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -9,15 +9,16 @@ import {
   CoverImage,
   EmptyState,
   Screen,
-  ScreenSkeleton,
   Title
 } from "@/src/components/ui";
+import { LinkPressable } from "@/src/components/link-pressable";
 import { Avatar, PriceText, StatCard } from "@/src/components/ui-display";
 import { HtmlContent } from "@/src/components/html-content";
 import { getPublicTeacherBySlug } from "@/src/lib/api/profiles";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
 import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { SkeletonCard, SkeletonHero, SkeletonScreen } from "@/src/components/skeletons";
 import { makeStyles } from "@/src/theme/theme";
 
 export default function TeacherProfileScreen(): JSX.Element {
@@ -31,7 +32,13 @@ export default function TeacherProfileScreen(): JSX.Element {
   });
 
   if (isPending) {
-    return <ScreenSkeleton rows={4} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={1} />
+        <SkeletonHero coverHeight={140} />
+      </SkeletonScreen>
+    );
   }
 
   if (!profile) {
@@ -129,28 +136,24 @@ export default function TeacherProfileScreen(): JSX.Element {
           <EmptyState message={t("teachers.empty")} />
         ) : (
           profile.courses.map((course) => (
-            <Link
-              asChild
+            <LinkPressable
+              accessibilityLabel={course.title}
               href={{ params: { courseId: course.slug }, pathname: "/courses/[courseId]" }}
               key={course.id}
+              pressedStyle={styles.coursePressed}
+              style={styles.courseCard}
             >
-              <Pressable
-                accessibilityLabel={course.title}
-                accessibilityRole="link"
-                style={({ pressed }) => [pressed ? { opacity: 0.92, transform: [{ scale: 0.98 }] } : null]}
-              >
-                <Card flush style={styles.courseCard}>
-                  <CoverImage bleed height={140} uri={course.coverImageUrl} />
-                  <View style={styles.courseText}>
-                    <Title numberOfLines={2}>{course.title}</Title>
-                    <Body muted numberOfLines={2}>
-                      {course.description.replace(/<[^>]*>/g, "")}
-                    </Body>
-                    <PriceText amount={course.price} />
-                  </View>
-                </Card>
-              </Pressable>
-            </Link>
+              <Card flush>
+                <CoverImage bleed height={140} uri={course.coverImageUrl} />
+                <View style={styles.courseText}>
+                  <Title numberOfLines={2}>{course.title}</Title>
+                  <Body muted numberOfLines={2}>
+                    {course.description.replace(/<[^>]*>/g, "")}
+                  </Body>
+                  <PriceText amount={course.price} />
+                </View>
+              </Card>
+            </LinkPressable>
           ))
         )}
       </ScrollView>
@@ -161,6 +164,7 @@ export default function TeacherProfileScreen(): JSX.Element {
 const useStyles = makeStyles((colors) => ({
   content: { gap: spacing.lg, padding: spacing.lg, paddingBottom: spacing.xxxl },
   courseCard: { marginBottom: spacing.md },
+  coursePressed: { opacity: 0.92, transform: [{ scale: 0.98 }] },
   courseText: { gap: spacing.sm, padding: spacing.lg },
   hero: { alignItems: "center", flexDirection: "row", gap: spacing.lg },
   heroName: { color: colors.ink, fontFamily: fonts.display, fontSize: 23, lineHeight: 30 },

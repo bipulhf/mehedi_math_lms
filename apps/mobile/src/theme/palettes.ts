@@ -68,6 +68,8 @@ export interface ThemeColors {
   paper: string;
   placeholder: string;
   placeholderFill: string;
+  /** A skeleton block drawn on the indigo header rather than on a white plate. */
+  placeholderFillOnColor: string;
   popover: string;
   rowHover: string;
   separator: string;
@@ -136,6 +138,7 @@ export const lightColors: ThemeColors = {
   paper: "#ffffff",
   placeholder: "#A7AAB6",
   placeholderFill: "#EFE9DF",
+  placeholderFillOnColor: "rgba(255, 255, 255, 0.22)",
   popover: "#ffffff",
   rowHover: "#F3F5FC",
   separator: "#F2ECE2",

@@ -15,8 +15,12 @@ import {
   Field,
   Heading,
   Screen,
-  ScreenSkeleton
 } from "@/src/components/ui";
+import {
+  SkeletonHeading,
+  SkeletonRows,
+  SkeletonScreen
+} from "@/src/components/skeletons";
 import { Avatar, PresenceDot } from "@/src/components/ui-display";
 import { createConversation, searchMessageParticipants } from "@/src/lib/api/messages";
 import { useT } from "@/src/lib/locale";
@@ -65,7 +69,12 @@ export default function NewConversationScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={2} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonRows leading="avatar" rows={5} />
+      </SkeletonScreen>
+    );
   }
 
   if (!session) {
@@ -92,7 +101,7 @@ export default function NewConversationScreen(): JSX.Element {
         {!canSearch ? (
           <EmptyState message={t("messages.searchPrompt", { count: MIN_SEARCH })} />
         ) : isPending ? (
-          <ScreenSkeleton rows={3} />
+          <SkeletonRows leading="avatar" rows={4} />
         ) : participants.length === 0 ? (
           <EmptyState message={t("messages.noMatch")} />
         ) : (

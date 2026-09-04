@@ -1,90 +1,42 @@
 import { FlashList } from "@shopify/flash-list";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, Redirect, useRouter } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { memo, useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
-
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { memo, useCallback } from "react";
+import { Text, View } from "react-native";
 
 import {
-  Button,
   EmptyState,
   IconButton,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock,
   tabScrollInset
 } from "@/src/components/ui";
-import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
-import { Avatar, IconTile, PresenceDot, Tabs } from "@/src/components/ui-display";
-import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
+import { LinkPressable } from "@/src/components/link-pressable";
 import {
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-  type NotificationRecord
-} from "@/src/lib/api/notifications";
+  SkeletonBody,
+  SkeletonHeader,
+  SkeletonRows
+} from "@/src/components/skeletons";
+import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
+import { Avatar, PresenceDot } from "@/src/components/ui-display";
+import { listConversations, type MessageConversation } from "@/src/lib/api/messages";
 import { useFormat, useT } from "@/src/lib/locale";
 import { queryKeys } from "@/src/lib/query";
-import { stripHtml } from "@/src/lib/html";
 import { usePushRegistration } from "@/src/lib/use-push-registration";
 import { useSession } from "@/src/lib/use-session";
-import { fonts, radius, spacing, type TintName } from "@/src/theme/tokens";
-import { makeStyles, useThemeColors } from "@/src/theme/theme";
+import { fonts, radius, spacing } from "@/src/theme/tokens";
+import { makeStyles } from "@/src/theme/theme";
 
 /**
- * Messages and notifications, one tab instead of two — the complaint every
- * source agreed on was notification overload from too many separate feeds, not
- * too few.
+ * Conversations, and only conversations. Notifications used to share this tab
+ * behind a segmented control; they are their own screen now, reached from the
+ * bell on the home header — see `app/notifications.tsx`.
  *
  * The list is one white sheet with hairlines between rows rather than a stack
  * of floating cards. A feed is a single continuous thing, and forty shadows
  * down a screen is the fastest way to make a phone app look like a web page.
  */
-
-type InboxSegment = "messages" | "notifications";
-
-/**
- * Where a notification should take the student. Mirrors the web app's
- * `resolveNotificationLink`, routed by id because mobile addresses courses and
- * conversations by id rather than by slug.
- */
-function notificationHref(record: NotificationRecord): string | null {
-  const data = record.data;
-
-  if (data && typeof data.courseId === "string") {
-    return `/learn/${data.courseId}`;
-  }
-
-  if (data && typeof data.conversationId === "string") {
-    return `/messages/${data.conversationId}`;
-  }
-
-  return null;
-}
-
-/** Colour by what the notification is about, so the feed is scannable. */
-function notificationLook(record: NotificationRecord): {
-  icon: keyof typeof Ionicons.glyphMap;
-  tint: TintName;
-} {
-  const data = record.data;
-
-  if (data && typeof data.conversationId === "string") {
-    return { icon: "chatbubble", tint: "mint" };
-  }
-
-  if (data && typeof data.courseId === "string") {
-    return { icon: "school", tint: "brand" };
-  }
-
-  if (data && typeof data.paymentId === "string") {
-    return { icon: "card", tint: "gold" };
-  }
-
-  return { icon: "notifications", tint: "sky" };
-}
 
 const ConversationRow = memo(function ConversationRow({
   conversation
@@ -97,49 +49,45 @@ const ConversationRow = memo(function ConversationRow({
   const hasUnread = conversation.unreadCount > 0;
 
   return (
-    <Link
-      asChild
+    <LinkPressable
+      accessibilityLabel={conversation.user.name}
       href={{
         params: { conversationId: conversation.id },
         pathname: "/messages/[conversationId]"
       }}
+      pressedStyle={styles.rowPressed}
+      style={styles.row}
     >
-      <Pressable
-        accessibilityLabel={conversation.user.name}
-        accessibilityRole="link"
-        style={({ pressed }) => [styles.row, pressed ? styles.rowPressed : null]}
-      >
-        <View>
-          <Avatar name={conversation.user.name} photo={conversation.user.image} size={50} />
-          <View style={styles.presenceAnchor}>
-            <PresenceDot isOnline={conversation.user.isOnline} />
-          </View>
+      <View>
+        <Avatar name={conversation.user.name} photo={conversation.user.image} size={50} />
+        <View style={styles.presenceAnchor}>
+          <PresenceDot isOnline={conversation.user.isOnline} />
         </View>
-        <View style={styles.rowText}>
-          <View style={styles.rowHead}>
-            <Text numberOfLines={1} style={styles.rowName}>
-              {conversation.user.name}
-            </Text>
-            {conversation.lastMessageAt ? (
-              <Text style={styles.rowTime}>{format.date(conversation.lastMessageAt)}</Text>
-            ) : null}
-          </View>
-          <View style={styles.rowHead}>
-            <Text
-              numberOfLines={1}
-              style={[styles.rowPreview, hasUnread ? styles.rowPreviewUnread : null]}
-            >
-              {conversation.lastMessage?.content ?? t("messages.noMessages")}
-            </Text>
-            {hasUnread ? (
-              <View style={styles.unreadPill}>
-                <Text style={styles.unreadPillText}>{conversation.unreadCount}</Text>
-              </View>
-            ) : null}
-          </View>
+      </View>
+      <View style={styles.rowText}>
+        <View style={styles.rowHead}>
+          <Text numberOfLines={1} style={styles.rowName}>
+            {conversation.user.name}
+          </Text>
+          {conversation.lastMessageAt ? (
+            <Text style={styles.rowTime}>{format.date(conversation.lastMessageAt)}</Text>
+          ) : null}
         </View>
-      </Pressable>
-    </Link>
+        <View style={styles.rowHead}>
+          <Text
+            numberOfLines={1}
+            style={[styles.rowPreview, hasUnread ? styles.rowPreviewUnread : null]}
+          >
+            {conversation.lastMessage?.content ?? t("messages.noMessages")}
+          </Text>
+          {hasUnread ? (
+            <View style={styles.unreadPill}>
+              <Text style={styles.unreadPillText}>{conversation.unreadCount}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </LinkPressable>
   );
 });
 
@@ -212,147 +160,24 @@ function MessagesPane({ canMessage }: { canMessage: boolean }): JSX.Element {
   );
 }
 
-function NotificationsPane(): JSX.Element {
-  const styles = useStyles();
-  const colors = useThemeColors();
-  const router = useRouter();
-  const t = useT();
-  const format = useFormat();
-  const queryClient = useQueryClient();
-
-  const { data, isPending } = useQuery({
-    queryFn: listNotifications,
-    queryKey: queryKeys.notifications()
-  });
-  const refreshAll = async (): Promise<void> => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications() }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.unreadNotifications() })
-    ]);
-  };
-  const markRead = useMutation({
-    mutationFn: markNotificationRead,
-    onSuccess: async () => {
-      await refreshAll();
-    }
-  });
-  const markAllRead = useMutation({
-    mutationFn: markAllNotificationsRead,
-    onSuccess: async () => {
-      await refreshAll();
-    }
-  });
-
-  const renderItem = useCallback(
-    ({ item }: { item: NotificationRecord }) => {
-      const href = notificationHref(item);
-      const look = notificationLook(item);
-      const isUnread = item.readAt === null;
-
-      return (
-        <Pressable
-          accessibilityLabel={item.title}
-          accessibilityRole="button"
-          disabled={Boolean(item.readAt)}
-          onPress={() => {
-            markRead.mutate(item.id);
-            if (href !== null) {
-              router.push(href as never);
-            }
-          }}
-          style={({ pressed }) => [
-            styles.row,
-            isUnread ? styles.rowUnread : null,
-            pressed ? styles.rowPressed : null
-          ]}
-        >
-          <IconTile icon={look.icon} size={46} tint={look.tint} />
-          <View style={styles.rowText}>
-            <View style={styles.rowHead}>
-              <Text numberOfLines={1} style={styles.rowName}>
-                {item.title}
-              </Text>
-              {isUnread ? <View style={styles.unreadDot} /> : null}
-            </View>
-            <Text numberOfLines={2} style={styles.rowBody}>
-              {stripHtml(item.body)}
-            </Text>
-            <Text style={styles.rowTime}>{format.dateTime(item.createdAt)}</Text>
-          </View>
-          {href === null ? null : (
-            <Ionicons color={colors.mutedFaint} name="chevron-forward" size={16} />
-          )}
-        </Pressable>
-      );
-    },
-    [colors, format, markRead, router, styles]
-  );
-  const keyExtractor = useCallback((item: NotificationRecord) => item.id, []);
-
-  const hasUnread = (data?.items ?? []).some((item) => item.readAt === null);
-
-  if (isPending) {
-    return (
-      <View style={styles.sheet}>
-        {[0, 1, 2].map((key) => (
-          <View key={key} style={styles.row}>
-            <SkeletonBlock height={46} style={styles.skeletonTile} width={46} />
-            <View style={styles.rowText}>
-              <SkeletonBlock height={16} width="50%" />
-              <View style={{ height: spacing.sm }} />
-              <SkeletonBlock height={13} />
-            </View>
-          </View>
-        ))}
-      </View>
-    );
-  }
-
-  if ((data?.items.length ?? 0) === 0) {
-    return (
-      <View style={styles.padded}>
-        <EmptyState message={t("notifications.emptyLead")} title={t("notifications.emptyTitle")} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.sheet}>
-      {hasUnread ? (
-        <View style={styles.sheetAction}>
-          <Button
-            icon="checkmark-done"
-            isBusy={markAllRead.isPending}
-            label={t("notifications.markAllRead")}
-            onPress={() => markAllRead.mutate()}
-            size="xs"
-            variant="soft"
-          />
-        </View>
-      ) : null}
-      <FlashList
-        contentContainerStyle={styles.list}
-        data={data?.items ?? []}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
-  );
-}
-
 export default function InboxScreen(): JSX.Element {
   const styles = useStyles();
   const router = useRouter();
   const t = useT();
-  const [segment, setSegment] = useState<InboxSegment>("messages");
   const { isPending: isSessionPending, session } = useSession();
   const canMessage = session?.session.role === "STUDENT" || session?.session.role === "TEACHER";
 
   usePushRegistration(Boolean(session));
 
   if (isSessionPending) {
-    return <ScreenSkeleton noHeader rows={4} />;
+    return (
+      <Screen>
+        <SkeletonHeader hasAction overlap={false} />
+        <SkeletonBody tabInset>
+          <SkeletonRows leading="avatar" rows={5} />
+        </SkeletonBody>
+      </Screen>
+    );
   }
 
   // Signed out, this tab is not in the bar at all; anybody who reaches it by
@@ -376,24 +201,11 @@ export default function InboxScreen(): JSX.Element {
             ) : undefined
           }
           subtitle={t("nav.inbox")}
-          title={segment === "messages" ? t("nav.messages") : t("nav.notify")}
+          title={t("nav.messages")}
         />
       </CurvedHeader>
 
-      <View style={styles.tabsWrap}>
-        <Tabs
-          inset={false}
-          label={t("nav.inbox")}
-          onChange={setSegment}
-          tabs={[
-            { isActive: segment === "messages", label: t("nav.messages"), value: "messages" },
-            { isActive: segment === "notifications", label: t("nav.notify"), value: "notifications" }
-          ]}
-          value={segment}
-        />
-      </View>
-
-      {segment === "messages" ? <MessagesPane canMessage={canMessage} /> : <NotificationsPane />}
+      <MessagesPane canMessage={canMessage} />
     </Screen>
   );
 }

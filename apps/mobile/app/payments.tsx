@@ -11,9 +11,14 @@ import {
   EmptyState,
   IconButton,
   Screen,
-  ScreenSkeleton,
   SkeletonBlock
 } from "@/src/components/ui";
+import {
+  SkeletonBody,
+  SkeletonCard,
+  SkeletonHeader,
+  SkeletonRows
+} from "@/src/components/skeletons";
 import { CurvedHeader, HeaderBar } from "@/src/components/ui-layout";
 import { IconTile } from "@/src/components/ui-display";
 import { listMyPayments, type PaymentHistoryItem } from "@/src/lib/api/payments";
@@ -117,7 +122,15 @@ export default function PaymentsScreen(): JSX.Element {
   const keyExtractor = useCallback((item: PaymentHistoryItem) => item.id, []);
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={3} />;
+    return (
+      <Screen>
+        <SkeletonHeader hasLeading overlap={false} />
+        <SkeletonBody>
+          <SkeletonCard lines={1} />
+          <SkeletonRows leading="tile" rows={4} />
+        </SkeletonBody>
+      </Screen>
+    );
   }
 
   if (!session) {

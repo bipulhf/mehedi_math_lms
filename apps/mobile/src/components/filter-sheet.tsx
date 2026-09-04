@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, useWindowDimensions, View } from "react-native";
 
 import { Button } from "@/src/components/ui";
 import { Sheet } from "@/src/components/sheet";
@@ -23,6 +23,9 @@ import { makeStyles, useThemeColors } from "@/src/theme/theme";
  * The footer is the other half of the fix: it says how many results the current
  * selection produces, so the sheet can be judged before it is dismissed.
  */
+
+/** The drag indicator Material3 draws above our content, in points. */
+const DRAG_INDICATOR_HEIGHT = 56;
 
 export interface FilterChoiceOption {
   label: string;
@@ -144,9 +147,24 @@ export function FilterSheet({
 }): JSX.Element {
   const styles = useStyles();
   const t = useT();
+  const { height } = useWindowDimensions();
 
   return (
-    <Sheet isPresented={isPresented} onDismiss={onDismiss} title={title}>
+    // Sized to fit the sheet's *resting* height, not the screen.
+    //
+    // Material3 opens a modal sheet partially expanded, which is half the
+    // screen — measured at 432 of 873dp on a Pixel. The sheet then sizes itself
+    // to its content, so content taller than that half does not make the sheet
+    // taller: it pushes the footer, the two buttons the sheet exists for, off
+    // the bottom edge, and the only way to reach them is to drag the sheet up
+    // first. Half the window less the drag indicator above the content is what
+    // keeps header, list and footer visible together on open.
+    <Sheet
+      contentStyle={{ maxHeight: Math.round(height * 0.5) - DRAG_INDICATOR_HEIGHT }}
+      isPresented={isPresented}
+      onDismiss={onDismiss}
+      title={title}
+    >
       <View style={styles.sheet}>
         {activeCount > 0 ? (
           <View style={styles.countRow}>
@@ -200,12 +218,19 @@ export function FilterSheet({
                 disabled={activeCount === 0}
                 label={t("action.clearFilters")}
                 onPress={onClear}
+                size="sm"
                 stretch
                 variant="outline"
               />
             </View>
             <View style={styles.footerAction}>
-              <Button icon="checkmark" label={t("action.save")} onPress={onDismiss} stretch />
+              <Button
+                icon="checkmark"
+                label={t("action.save")}
+                onPress={onDismiss}
+                size="sm"
+                stretch
+              />
             </View>
           </View>
         </View>
@@ -273,7 +298,9 @@ const useStyles = makeStyles((colors) => ({
   rowPressed: { backgroundColor: colors.rowHover },
   rowSubtitle: { color: colors.muted, fontFamily: fonts.body, fontSize: 13 },
   rowText: { flex: 1, gap: 1 },
-  scroll: { flexGrow: 0, maxHeight: 400 },
+  // Shrinks into whatever the header and footer leave, so dragging the sheet
+  // taller actually gives the list more room instead of dead space.
+  scroll: { flexGrow: 0, flexShrink: 1 },
   section: { gap: spacing.sm },
   sectionLabel: {
     color: colors.mutedFaint,
@@ -284,7 +311,7 @@ const useStyles = makeStyles((colors) => ({
     textTransform: "uppercase"
   },
   sections: { gap: spacing.lg, padding: spacing.lg, paddingTop: spacing.xs },
-  sheet: { alignSelf: "stretch" },
+  sheet: { alignSelf: "stretch", flexShrink: 1 },
   summary: { color: colors.muted, fontFamily: fonts.bodySemiBold, fontSize: 13, textAlign: "center" },
   track: {
     backgroundColor: colors.barTrack,

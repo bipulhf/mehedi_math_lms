@@ -76,6 +76,7 @@ function AppStack(): JSX.Element {
           options={{ title: t("msg.conversationTitle") }}
         />
         <Stack.Screen name="messages/new" options={{ title: t("messages.newTitle") }} />
+        <Stack.Screen name="notifications" options={{ title: t("nav.notify") }} />
         <Stack.Screen name="payments" options={{ title: t("profile.paymentTitle") }} />
         <Stack.Screen name="change-password" options={{ title: t("password.title") }} />
         <Stack.Screen name="profile-complete" options={{ title: t("profc.title") }} />

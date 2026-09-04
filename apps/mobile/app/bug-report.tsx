@@ -16,7 +16,6 @@ import {
   Field,
   Heading,
   Screen,
-  ScreenSkeleton,
   SuccessNotice,
   Title
 } from "@/src/components/ui";
@@ -27,6 +26,12 @@ import { queryKeys } from "@/src/lib/query";
 import { HtmlContent } from "@/src/components/html-content";
 import { useSession } from "@/src/lib/use-session";
 import { radius, spacing } from "@/src/theme/tokens";
+import {
+  SkeletonForm,
+  SkeletonHeading,
+  SkeletonRows,
+  SkeletonScreen
+} from "@/src/components/skeletons";
 import { makeStyles } from "@/src/theme/theme";
 
 /**
@@ -88,7 +93,12 @@ export default function BugReportScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={2} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonForm fields={2} />
+      </SkeletonScreen>
+    );
   }
 
   if (!session) {
@@ -169,7 +179,7 @@ export default function BugReportScreen(): JSX.Element {
 
           <Title>{t("bug.yourReports")}</Title>
           {isPending ? (
-            <ScreenSkeleton rows={2} />
+            <SkeletonRows leading="none" rows={2} />
           ) : reports.length === 0 ? (
             <EmptyState message={t("bug.emptyLead")} title={t("bug.emptyTitle")} />
           ) : (

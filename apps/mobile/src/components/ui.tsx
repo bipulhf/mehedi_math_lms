@@ -512,37 +512,6 @@ export function EmptyState({
 }
 
 /**
- * The shape a screen shows before its session resolves. Even the boot state is
- * a skeleton of the screen that is about to arrive, never a spinner.
- */
-export function ScreenSkeleton({
-  rows = 3,
-  noHeader = false
-}: {
-  rows?: number;
-  /** See `Screen`'s `noHeader` — same reasoning. */
-  noHeader?: boolean;
-}): JSX.Element {
-  const styles = useStyles();
-  const insets = useSafeAreaInsets();
-
-  return (
-    <View
-      style={[styles.screenSkeleton, noHeader ? { paddingTop: insets.top + spacing.lg } : null]}
-    >
-      <SkeletonBlock height={30} width="45%" />
-      {Array.from({ length: rows }).map((_, index) => (
-        <Card key={index}>
-          <SkeletonBlock height={18} width="60%" />
-          <View style={{ height: spacing.sm }} />
-          <SkeletonBlock height={14} />
-        </Card>
-      ))}
-    </View>
-  );
-}
-
-/**
  * A block that breathes. The pulse runs on Reanimated's UI thread, so it keeps
  * time while the JS thread is busy with the very work it stands in for — which
  * is the only moment it is ever on screen.
@@ -550,10 +519,13 @@ export function ScreenSkeleton({
 export function SkeletonBlock({
   height,
   style,
+  tone = "onCard",
   width
 }: {
   height: number;
   style?: StyleProp<ViewStyle>;
+  /** `onColor` draws the block on the indigo header instead of on paper. */
+  tone?: "onCard" | "onColor";
   width?: number | `${number}%`;
 }): JSX.Element {
   const styles = useStyles();
@@ -571,7 +543,13 @@ export function SkeletonBlock({
 
   return (
     <Animated.View
-      style={[styles.skeleton, { height, width: width ?? "100%" }, animated, style]}
+      style={[
+        styles.skeleton,
+        tone === "onColor" ? styles.skeletonOnColor : null,
+        { height, width: width ?? "100%" },
+        animated,
+        style
+      ]}
     />
   );
 }
@@ -800,6 +778,7 @@ const useStyles = makeStyles((colors) => ({
   screen: { backgroundColor: colors.background, flex: 1 },
   screenSkeleton: { flex: 1, gap: spacing.lg, padding: spacing.lg },
   skeleton: { backgroundColor: colors.placeholderFill, borderRadius: radius.sm },
+  skeletonOnColor: { backgroundColor: colors.placeholderFillOnColor },
   successNotice: {
     alignItems: "center",
     backgroundColor: colors.successSoft,

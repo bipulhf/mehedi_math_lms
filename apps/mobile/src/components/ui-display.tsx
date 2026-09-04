@@ -567,16 +567,22 @@ export function StatCard({
 /** A price formatted through the shared locale formatter. */
 export function PriceText({
   amount,
-  onColor = false
+  onColor = false,
+  size = "lg"
 }: {
   amount: number | string;
   onColor?: boolean;
+  /** `md` is for a half-width tile, where 20pt and a rating do not both fit. */
+  size?: "lg" | "md";
 }): JSX.Element {
   const styles = useStyles();
   const format = useFormat();
 
   return (
-    <Text style={[styles.price, onColor ? styles.priceOnColor : null]}>
+    <Text
+      numberOfLines={1}
+      style={[styles.price, size === "md" ? styles.priceMd : null, onColor ? styles.priceOnColor : null]}
+    >
       {format.currency(amount)}
     </Text>
   );
@@ -661,9 +667,10 @@ const useStyles = makeStyles((colors) => ({
     width: 14
   },
   presenceDotOnline: { backgroundColor: colors.online },
-  price: { color: colors.ink, fontFamily: fonts.numeric, fontSize: 20 },
+  price: { color: colors.ink, flexShrink: 1, fontFamily: fonts.numeric, fontSize: 20 },
+  priceMd: { fontSize: 16, lineHeight: 22 },
   priceOnColor: { color: colors.paper },
-  rating: { alignItems: "center", flexDirection: "row", gap: 4 },
+  rating: { alignItems: "center", flexDirection: "row", flexShrink: 0, gap: 4 },
   ratingText: { color: colors.inkMuted, fontFamily: fonts.bodySemiBold, fontSize: 13 },
   ringLabel: { color: colors.ink, fontFamily: fonts.numeric },
   ringLabelOnColor: { color: colors.paper },

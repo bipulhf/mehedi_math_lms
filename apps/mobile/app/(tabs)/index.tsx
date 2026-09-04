@@ -18,6 +18,7 @@ import {
   SkeletonBlock,
   tabScrollInset
 } from "@/src/components/ui";
+import { LinkPressable } from "@/src/components/link-pressable";
 import { CurvedHeader } from "@/src/components/ui-layout";
 import {
   Avatar,
@@ -31,6 +32,7 @@ import {
 import { listMyEnrollments, type StudentEnrollment } from "@/src/lib/api/enrollments";
 import { shareEnrollmentDocument, type DocumentKind } from "@/src/lib/documents";
 import { useFormat, useT } from "@/src/lib/locale";
+import { getNotificationUnreadCount } from "@/src/lib/api/notifications";
 import { queryKeys } from "@/src/lib/query";
 import { useSession } from "@/src/lib/use-session";
 import { useStreak } from "@/src/lib/use-streak";
@@ -338,6 +340,12 @@ function StudentDashboardHeader({
   const styles = useStyles();
   const colors = useThemeColors();
   const streak = useStreak();
+  // The bell is the only way into notifications now, so it has to say when
+  // there is something behind it.
+  const { data: unreadNotifications = 0 } = useQuery({
+    queryFn: getNotificationUnreadCount,
+    queryKey: queryKeys.unreadNotifications()
+  });
   const [dismissedPaymentIds, setDismissedPaymentIds] = useState<ReadonlySet<string>>(new Set());
   const visiblePayments = awaitingPayment.filter(
     (enrollment) => !dismissedPaymentIds.has(enrollment.id)
@@ -358,10 +366,14 @@ function StudentDashboardHeader({
               {t("dash.greeting", { name })}
             </Text>
           </View>
+          {/* Straight to the notifications feed. It used to open the inbox,
+              which then showed messages and made the reader find the other
+              segment themselves. */}
           <IconButton
             accessibilityLabel={t("nav.notify")}
+            badge={unreadNotifications > 0}
             icon="notifications"
-            onPress={() => router.push("/inbox")}
+            onPress={() => router.push("/notifications")}
             tone="onPaper"
           />
         </View>
@@ -384,41 +396,37 @@ function StudentDashboardHeader({
       <View style={styles.body}>
         {/* The one plate that overlaps the colour above it. */}
         {resumeEnrollment ? (
-          <Link
-            asChild
+          <LinkPressable
+            accessibilityLabel={resumeEnrollment.course.title}
             href={{
               params: { courseId: resumeEnrollment.course.id },
               pathname: "/learn/[courseId]"
             }}
+            pressedStyle={styles.pressed}
+            style={styles.lift}
           >
-            <Pressable
-              accessibilityLabel={resumeEnrollment.course.title}
-              accessibilityRole="link"
-              style={({ pressed }) => [styles.lift, pressed ? styles.pressed : null]}
-            >
-              <Card>
-                <View style={styles.resumeRow}>
-                  <ProgressRing
-                    label={`${resumeEnrollment.course.title} ${t("mine.progress")}`}
-                    percent={resumeEnrollment.progressPercentage}
-                    size={62}
-                  />
-                  <View style={styles.resumeText}>
-                    <Text style={styles.resumeEyebrow}>{t("dash.resume")}</Text>
-                    <Text numberOfLines={2} style={styles.resumeTitle}>
-                      {resumeEnrollment.course.title}
-                    </Text>
-                  </View>
+            <Card>
+              <View style={styles.resumeRow}>
+                <ProgressRing
+                  label={`${resumeEnrollment.course.title} ${t("mine.progress")}`}
+                  percent={resumeEnrollment.progressPercentage}
+                  size={62}
+                />
+                <View style={styles.resumeText}>
+                  <Text style={styles.resumeEyebrow}>{t("dash.resume")}</Text>
+                  <Text numberOfLines={2} style={styles.resumeTitle}>
+                    {resumeEnrollment.course.title}
+                  </Text>
                 </View>
-                <View style={styles.resumeAction}>
-                  <View style={styles.resumeButton}>
-                    <Ionicons color={colors.onAccent} name="play" size={14} />
-                    <Text style={styles.resumeButtonLabel}>{t("mine.resume")}</Text>
-                  </View>
+              </View>
+              <View style={styles.resumeAction}>
+                <View style={styles.resumeButton}>
+                  <Ionicons color={colors.onAccent} name="play" size={14} />
+                  <Text style={styles.resumeButtonLabel}>{t("mine.resume")}</Text>
                 </View>
-              </Card>
-            </Pressable>
-          </Link>
+              </View>
+            </Card>
+          </LinkPressable>
         ) : (
           <Card style={styles.lift}>
             <Text style={styles.resumeEyebrow}>{t("dash.learningSummary")}</Text>

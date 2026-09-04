@@ -13,10 +13,10 @@ import {
   Field,
   Heading,
   Screen,
-  ScreenSkeleton,
   SuccessNotice
 } from "@/src/components/ui";
 import { changePassword } from "@/src/lib/auth";
+import { SkeletonForm, SkeletonHeading, SkeletonScreen } from "@/src/components/skeletons";
 import { useT } from "@/src/lib/locale";
 import { useSession } from "@/src/lib/use-session";
 import { spacing } from "@/src/theme/tokens";
@@ -46,7 +46,12 @@ export default function ChangePasswordScreen(): JSX.Element {
   });
 
   if (isSessionPending) {
-    return <ScreenSkeleton rows={2} />;
+    return (
+      <SkeletonScreen>
+        <SkeletonHeading />
+        <SkeletonForm fields={3} />
+      </SkeletonScreen>
+    );
   }
 
   if (!session) {
