@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, Redirect, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { memo, useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -605,10 +605,16 @@ export default function HomeScreen(): JSX.Element {
       {isPending ? (
         <HomeSkeleton />
       ) : visibleEnrollments.length === 0 ? (
-        <View style={styles.emptyScroll}>
+        // A student with no courses still gets the whole dashboard above the
+        // empty state, and that is taller than a phone — so this branch needs
+        // a scroller of its own rather than the plain view it used to be.
+        <ScrollView
+          contentContainerStyle={styles.emptyScroll}
+          showsVerticalScrollIndicator={false}
+        >
           {listHeader}
           <EmptyState message={t("mine.empty")} />
-        </View>
+        </ScrollView>
       ) : (
         <FlashList
           contentContainerStyle={styles.list}

@@ -16,8 +16,6 @@ import type { JSX } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { Host } from "@expo/ui";
-
 import { BootSplash } from "@/src/components/boot-splash";
 import { LocaleProvider, useT } from "@/src/lib/locale";
 import { asyncStoragePersister, createMobileQueryClient } from "@/src/lib/query";
@@ -130,18 +128,23 @@ export default function RootLayout(): JSX.Element {
 
   return (
     <SafeAreaProvider>
-      <Host style={{ flex: 1 }}>
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
-        >
-          <ThemeProvider>
-            <LocaleProvider>
-              <AppStack />
-            </LocaleProvider>
-          </ThemeProvider>
-        </PersistQueryClientProvider>
-      </Host>
+      {/* No `Host` here on purpose. `@expo/ui`'s `Host` is a native
+        `ExpoUI.HostView` — a SwiftUI hosting view on iOS, a `ComposeView` on
+        Android — so wrapping the app in one puts every React Native view
+        inside a Compose/SwiftUI tree, and that host swallows the touch stream
+        before `ReactScrollView` sees it: no list on any screen scrolls.
+        The components that need a host bring their own; `BottomSheet` renders
+        one internally on both platforms. */}
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ maxAge: 24 * 60 * 60 * 1000, persister: asyncStoragePersister }}
+      >
+        <ThemeProvider>
+          <LocaleProvider>
+            <AppStack />
+          </LocaleProvider>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }
